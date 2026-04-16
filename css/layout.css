@@ -66,7 +66,7 @@
   display: flex; align-items: center; gap: 10px;
   text-decoration: none;
 }
-.nav-logo-img { height: 36px; filter: brightness(0) invert(1); }
+.nav-logo img, .nav-logo-img { height: 36px; filter: brightness(0) invert(1); }
 .nav-logo-name {
   font-family: var(--font-sans); font-weight: 700;
   color: #fff; font-size: 13px;
