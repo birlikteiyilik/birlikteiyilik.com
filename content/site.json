@@ -15,9 +15,9 @@
     "nsosyal": "https://nsosyal.com/birlikteiyilik"
   },
   "apps": {
-    "ios": "https://apps.apple.com/app/birlikte-iyilik-akademi/id6504849498",
-    "android": "https://play.google.com/store/apps/details?id=com.BirlikteIyilikAkademi.app",
-    "live": false
+    "ios": "https://apps.apple.com/us/app/birlikte-i-yilik-akademi/id1576298699",
+    "android": "https://play.google.com/store/apps/details?id=com.biri.uygulamasi&hl=tr",
+    "live": true
   },
   "forms": {
     "online": "https://forms.gle/5a9TSS7XAUxJUCt59",
