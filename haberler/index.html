@@ -71,7 +71,7 @@
     </div>
   </div>
   <style>
-  .app-banner{background:linear-gradient(90deg,#E20439 0%,#c4003a 40%,#9b0030 100%);color:#fff;padding:10px 0;position:relative;z-index:1100;}
+  .app-banner{background:linear-gradient(90deg,#E20439 0%,#c4003a 40%,#9b0030 100%);color:#fff;padding:10px 0;position:fixed;top:0;left:0;right:0;z-index:2000;}
   .app-banner-inner{max-width:1200px;margin:0 auto;padding:0 20px;display:flex;align-items:center;gap:14px;flex-wrap:nowrap;}
   .app-banner-icon{width:36px;height:36px;border-radius:8px;flex-shrink:0;object-fit:contain;}
   .app-banner-text{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.3;}
@@ -91,14 +91,30 @@
   </style>
   <script>
   (function(){
-    if(localStorage.getItem('appBannerClosed')==='1'){
-      var b=document.getElementById('appBanner');
-      if(b)b.style.display='none';
+    var b=document.getElementById('appBanner');
+    if(!b)return;
+    if(localStorage.getItem('appBannerClosed')==='1'){b.style.display='none';return;}
+    function _applyOffset(){
+      var h=b.offsetHeight;
+      var nav=document.querySelector('.site-nav');
+      var main=document.getElementById('main-content');
+      if(nav)nav.style.top=h+'px';
+      if(main)main.style.paddingTop=(72+h)+'px';
     }
+    if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',_applyOffset);}
+    else{_applyOffset();}
   })();
   function closeBanner(){
     var b=document.getElementById('appBanner');
-    if(b){b.style.transition='opacity .25s';b.style.opacity='0';setTimeout(function(){b.style.display='none';},260);}
+    var nav=document.querySelector('.site-nav');
+    var main=document.getElementById('main-content');
+    if(b){b.style.transition='opacity .25s';b.style.opacity='0';
+      setTimeout(function(){
+        b.style.display='none';
+        if(nav){nav.style.transition='top .2s ease';nav.style.top='0';}
+        if(main){main.style.transition='padding-top .2s ease';main.style.paddingTop='72px';}
+      },260);
+    }
     localStorage.setItem('appBannerClosed','1');
   }
   </script>
@@ -250,6 +266,18 @@ target="_blank" rel="noopener"           data-track="click_apply_online">
     <button class="filter" onclick="filterNews('etkinlik')">Etkinlikler</button>
   </div>
   <div class="grid grid-3" id="haberlerGrid">
+    <div class="card news-card" data-cat="haber">
+      <img src="https://raw.githubusercontent.com/birlikteiyilik/birlikteiyilik.com/main/images/uploads/1776347445065_Ekran_g_r_nt_s__2026-04-16_161228.png" alt="Yeni Sitemiz Yayında" class="news-card-img" loading="lazy">
+      <div class="card-body">
+        <div class="card-meta-row">
+          <span class="card-category cat-badge-haber">HABER</span>
+          <p class="card-date">16 Nisan 2026</p>
+        </div>
+        <h3><a href="#" onclick="openArticle('yeni-sitemiz-yayinda');return false;">Yeni Sitemiz Yayında</a></h3>
+        <p>birlikteiyilik.com yeni adresiyle yayında!</p>
+        <a href="#" onclick="openArticle('yeni-sitemiz-yayinda');return false;" class="btn btn-secondary btn-sm mt-4">Devamını Oku</a>
+      </div>
+    </div>
     <div class="card news-card" data-cat="duyuru">
       <div class="card-image-placeholder cat-duyuru"></div>
       <div class="card-body">
