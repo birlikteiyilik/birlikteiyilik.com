@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /yonetim/
+Disallow: /api/
+Disallow: /content/
+Disallow: /_src/
+
+Sitemap: https://birlikteiyilik.com/sitemap.xml

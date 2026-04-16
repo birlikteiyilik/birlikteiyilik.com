@@ -1,0 +1,28 @@
+{
+  "title": "Birlikte İyilik Akademi",
+  "tagline": "Değerler Eğitimi",
+  "description": "Değer odaklı eğitim, online ve yüz yüze başvuru, gönüllü öğretmen çağrıları, duyurular ve mobil uygulama tek merkezde.",
+  "url": "https://birlikteiyilik.com",
+  "email": "bilgi@birlikteiyilik.com",
+  "phone": "0534 811 77 57",
+  "phone_href": "tel:+905348117757",
+  "whatsapp": "https://wa.me/905348117757",
+  "address": "",
+  "social": {
+    "instagram": "https://www.instagram.com/birlikteiyilik_akademi",
+    "youtube": "https://www.youtube.com/@birlikteiyilik",
+    "whatsapp_channel": "https://whatsapp.com/channel/0029Vb1NGubDJ6H34vSC9e0o",
+    "nsosyal": "https://nsosyal.com/birlikteiyilik"
+  },
+  "apps": {
+    "ios": "https://apps.apple.com/app/birlikte-iyilik-akademi/id6504849498",
+    "android": "https://play.google.com/store/apps/details?id=com.BirlikteIyilikAkademi.app",
+    "live": false
+  },
+  "forms": {
+    "online": "https://forms.gle/5a9TSS7XAUxJUCt59",
+    "yuz_yuze": "https://forms.gle/5a9TSS7XAUxJUCt59",
+    "gonullu": "https://forms.gle/YgeEqBwNRAKZWrpH6"
+  },
+  "ga_id": ""
+}

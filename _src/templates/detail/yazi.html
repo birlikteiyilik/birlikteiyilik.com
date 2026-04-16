@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% set crumbs = [{"label": "Yazılar", "url": "/yazilar"}, {"label": article.title, "url": "/yazilar/" + article.slug}] %}
+{% block title %}{{ article.title }} | Değer Odaklı Yazılar | {{ site.title }}{% endblock %}
+{% block description %}{{ article.excerpt }}{% endblock %}
+{% block breadcrumb %}{% include 'partials/breadcrumb.html' %}{% endblock %}
+
+{% block schema %}
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","headline":"{{ article.title }}","datePublished":"{{ article.date }}","description":"{{ article.excerpt }}","author":{"@type":"Organization","name":"Birlikte İyilik Akademi"},"publisher":{"@type":"EducationalOrganization","name":"Birlikte İyilik Akademi","url":"{{ site_url }}","logo":{"@type":"ImageObject","url":"{{ site_url }}/images/logo.png"}}}
+</script>
+{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container container-narrow">
+    {% if article.tags %}
+    <div class="mb-4">{% for t in article.tags %}<span class="badge badge-primary" style="margin-right:4px;">{{ t }}</span>{% endfor %}</div>
+    {% endif %}
+    <h1>{{ article.title }}</h1>
+    <p class="text-muted mb-8">{{ article.date | tr_date }}{% if article.author %} &middot; {{ article.author }}{% endif %}</p>
+
+    <div class="content-body">
+      {{ article.content | safe }}
+    </div>
+
+    {% if article.source_url %}
+    <p class="text-sm text-muted mt-8">Kaynak: <a href="{{ article.source_url }}" target="_blank" rel="noopener">Orijinal yazı</a></p>
+    {% endif %}
+
+    <div class="mt-12" style="border-top:1px solid var(--color-border);padding-top:var(--s-8);">
+      <h3 style="font-family:var(--font-sans);">Diğer Yazılar</h3>
+      <div class="grid grid-3 mt-6">
+        {% for other in articles[:3] if other.slug != article.slug %}
+        <div class="card news-card">
+          <div class="card-image">✍️</div>
+          <div class="card-body">
+            <h3 style="font-size:14px;"><a href="/yazilar/{{ other.slug }}">{{ other.title }}</a></h3>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="text-center mt-8">
+      <a href="/yazilar" class="btn btn-secondary">Tüm Yazılar</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

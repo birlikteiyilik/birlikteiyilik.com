@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% set crumbs = [{"label": "Videolar", "url": "/videolar"}] %}
+{% block title %}Videolar | {{ site.title }}{% endblock %}
+{% block description %}Birlikte İyilik Akademi video içerikleri — etkinlik, eğitim ve kurum kültürü.{% endblock %}
+{% block breadcrumb %}{% include 'partials/breadcrumb.html' %}{% endblock %}
+
+{% block content %}
+<section class="page-hero"><div class="container"><h1>Videolar</h1><p>Etkinlik, eğitim ve kurum kültürü videoları.</p></div></section>
+<section class="section"><div class="container">
+  <div class="grid grid-3">
+    {% for vid in videos %}
+    <div class="card">
+      {% if vid.youtube_id %}
+      <div class="video-thumb"><iframe src="https://www.youtube-nocookie.com/embed/{{ vid.youtube_id }}" title="{{ vid.title }}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+      {% else %}
+      <div style="padding:var(--s-8);text-align:center;background:var(--color-primary-light);border-radius:var(--radius-md);margin-bottom:var(--s-4);font-size:2rem;">🎬</div>
+      {% endif %}
+      <h4>{{ vid.title }}</h4>
+      <p class="text-sm">{{ vid.description | truncate_words(20) }}</p>
+      {% if vid.tags %}<div class="mt-2">{% for t in vid.tags %}<span class="badge badge-muted" style="margin-right:4px;">{{ t }}</span>{% endfor %}</div>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  <div class="text-center mt-8">
+    <a href="{{ site.social.youtube }}" class="btn btn-secondary" target="_blank" rel="noopener" data-track="social_click">YouTube Kanalımız</a>
+  </div>
+</div></section>
+{% endblock %}

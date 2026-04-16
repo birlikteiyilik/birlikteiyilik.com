@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% set crumbs = [{"label": "Uygulama", "url": "/uygulama"}] %}
+{% block title %}Mobil Uygulama | {{ site.title }}{% endblock %}
+{% block description %}Birlikte İyilik Akademi mobil uygulaması — veli ve öğretmen girişi, takip, duyurular.{% endblock %}
+{% block breadcrumb %}{% include 'partials/breadcrumb.html' %}{% endblock %}
+
+{% block content %}
+<section class="page-hero"><div class="container"><h1>Mobil Uygulama</h1><p>Cebinizde takip, erişim ve iletişim.</p></div></section>
+<section class="section"><div class="container">
+  <div class="app-section">
+    <div class="app-mockup">
+      <img src="/images/app_home.png" alt="Birlikte İyilik Akademi mobil uygulama ekran görüntüsü" style="border-radius:var(--radius-xl);box-shadow:var(--shadow-lg);">
+    </div>
+    <div>
+      <h2>{{ homepage.app.title }}</h2>
+      <p>{{ homepage.app.subtitle }}</p>
+      <ul class="app-features">
+        {% for feat in homepage.app.features %}
+        <li>{{ feat }}</li>
+        {% endfor %}
+      </ul>
+
+      <h3 class="mt-8" style="font-family:var(--font-sans);">Veli Girişi</h3>
+      <p>Çocuğunuzun devam durumu, ders performansı, gelişim raporları ve öğretmenle mesajlaşma — tümüne tek uygulamadan erişin.</p>
+
+      <h3 class="mt-6" style="font-family:var(--font-sans);">Öğretmen Girişi</h3>
+      <p>Öğrenci listesi, ders planları, devam takibi, rapor oluşturma ve veli iletişimi — öğretmenler için özel panel.</p>
+
+      <div class="store-badges mt-8">
+        {% if site.apps.live %}
+        <a href="{{ site.apps.android }}" class="store-badge" data-track="click_googleplay" target="_blank" rel="noopener">
+          <span class="store-badge-icon" aria-hidden="true">&#9654;</span> Google Play'den İndir
+        </a>
+        <a href="{{ site.apps.ios }}" class="store-badge" data-track="click_appstore" target="_blank" rel="noopener">
+          <span class="store-badge-icon" aria-hidden="true">&#63743;</span> App Store'dan İndir
+        </a>
+        {% else %}
+        <span class="store-badge" style="opacity:0.6;cursor:default;">
+          <span class="store-badge-icon" aria-hidden="true">&#9654;</span> Google Play — Yakında
+        </span>
+        <span class="store-badge" style="opacity:0.6;cursor:default;">
+          <span class="store-badge-icon" aria-hidden="true">&#63743;</span> App Store — Yakında
+        </span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div></section>
+{% endblock %}

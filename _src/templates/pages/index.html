@@ -1,0 +1,378 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ site.title }} | {{ site.tagline }}{% endblock %}
+{% block description %}{{ site.description }}{% endblock %}
+
+{% block schema %}
+<script type="application/ld+json">
+[{
+  "@context": "https://schema.org",
+  "@type": "EducationalOrganization",
+  "name": "Birlikte İyilik Akademi",
+  "url": "{{ site_url }}",
+  "logo": "{{ site_url }}/images/logo.png",
+  "description": "{{ site.description }}",
+  "email": "{{ site.email }}",
+  "telephone": "{{ site.phone }}",
+  "sameAs": [
+    "{{ site.social.instagram }}",
+    "{{ site.social.youtube }}"
+  ]
+},
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Birlikte İyilik Akademi",
+  "url": "{{ site_url }}"
+}]
+</script>
+{% endblock %}
+
+{% block content %}
+
+<!-- 1. HERO -->
+<section class="hero" id="hero">
+  <div class="hero-content">
+    <img src="/images/logo_hero.png" alt="" class="hero-logo" aria-hidden="true">
+    <img src="/images/slogan.png" alt="Degerler Egitimi" class="hero-slogan">
+    <h1>{{ homepage.hero.title }}</h1>
+    <p>{{ homepage.hero.subtitle }}</p>
+    <div class="hero-cta">
+      <a href="{{ homepage.hero.cta1.url }}" class="btn btn-white btn-lg" data-track="click_apply_online" target="_blank" rel="noopener">{{ homepage.hero.cta1.label }}</a>
+      <a href="{{ homepage.hero.cta2.url }}" class="btn btn-ghost btn-lg" data-track="click_apply_inperson" target="_blank" rel="noopener">{{ homepage.hero.cta2.label }}</a>
+    </div>
+  </div>
+</section>
+
+<!-- 2. HIZLI ERISIM KARTLARI -->
+<section class="section" id="hizli-erisim">
+  <div class="container">
+    <div class="section-header">
+      <h2>{{ homepage.quick_cards.title }}</h2>
+    </div>
+    <div class="grid grid-4">
+      {% for card in homepage.quick_cards.cards %}
+      <a href="{{ card.url }}" class="card quick-card"
+         {% if card.url.startswith('http') %}target="_blank" rel="noopener"{% endif %}
+         data-track="{% if 'Online' in card.label %}click_apply_online{% elif 'Yuz' in card.label %}click_apply_inperson{% elif 'Gonullu' in card.label %}click_volunteer{% endif %}">
+        <span class="card-icon" aria-hidden="true">{{ card.icon }}</span>
+        <h3>{{ card.label }}</h3>
+        <p>{{ card.desc }}</p>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- 3. KURUM TANITIMI -->
+<section class="section bg-white" id="hakkinda">
+  <div class="container">
+    <div class="grid grid-2" style="align-items:center;">
+      <div>
+        <h2>{{ homepage.about.title }}</h2>
+        <p>{{ homepage.about.text }}</p>
+        <div class="d-flex gap-4 flex-wrap mt-6">
+          <a href="{{ homepage.about.cta1.url }}" class="btn btn-primary">{{ homepage.about.cta1.label }}</a>
+          <a href="{{ homepage.about.cta2.url }}" class="btn btn-secondary">{{ homepage.about.cta2.label }}</a>
+        </div>
+      </div>
+      <div class="text-center">
+        <img src="/images/app_home.png" alt="Birlikte Iyilik Akademi mobil uygulama" style="max-width:260px;margin:0 auto;border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4. PROGRAMLAR -->
+<section class="section" id="programlar">
+  <div class="container">
+    <div class="section-header">
+      <h2>{{ homepage.programs.title }}</h2>
+      <p>{{ homepage.programs.subtitle }}</p>
+    </div>
+    <div class="grid grid-3" id="programsGrid">
+      {% for prog in programs[:5] %}
+      <div class="card program-card">
+        <span class="card-icon" aria-hidden="true">{{ prog.icon }}</span>
+        <h3>{{ prog.title }}</h3>
+        <p class="card-meta">{{ prog.model }} &middot; {{ prog.target }}</p>
+        <p>{{ prog.short }}</p>
+        <div class="card-footer">
+          <a href="/egitimler/{{ prog.id }}" class="btn btn-secondary btn-sm">Detaylar</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="text-center mt-8">
+      <a href="/egitimler" class="btn btn-primary">Tum Programlari Incele</a>
+    </div>
+  </div>
+</section>
+
+<!-- 5. NASIL ISLIYOR? -->
+<section class="section bg-white" id="nasil-isliyor">
+  <div class="container container-narrow">
+    <div class="section-header">
+      <h2>{{ homepage.process.title }}</h2>
+      <p>{{ homepage.process.subtitle }}</p>
+    </div>
+    <div class="timeline">
+      {% for step in homepage.process.steps %}
+      <div class="timeline-step">
+        <span class="timeline-dot">{{ step.step }}</span>
+        <h4>{{ step.title }}</h4>
+        <p>{{ step.desc }}</p>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="text-center mt-8">
+      <a href="{{ site.forms.online }}" class="btn btn-primary" data-track="click_apply_online" target="_blank" rel="noopener">Simdi Basvur</a>
+    </div>
+  </div>
+</section>
+
+<!-- 6. ETKI SAYACLARI -->
+<section class="section bg-soft" id="etki">
+  <div class="container">
+    <div class="section-header">
+      <h2>{{ homepage.impact.title }}</h2>
+      <p>{{ homepage.impact.subtitle }}</p>
+    </div>
+    <div class="counter-grid">
+      {% for c in homepage.impact.counters %}
+      <div class="counter-item">
+        <div class="counter-value" data-counter="{{ c.value }}" data-suffix="{{ c.suffix }}">0</div>
+        <div class="counter-label">{{ c.label }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="text-center mt-8">
+      <a href="/etki" class="btn btn-secondary">Etki Sayfasi</a>
+    </div>
+  </div>
+</section>
+
+<!-- 7. HABERLER & DUYURULAR — Carousel -->
+<section class="section" id="haberler">
+  <div class="container">
+    <div class="section-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+      <div>
+        <h2>{{ homepage.news_section.title }}</h2>
+        <p>{{ homepage.news_section.subtitle }}</p>
+      </div>
+      <a href="/haberler" class="btn btn-secondary btn-sm">Tüm Haberler →</a>
+    </div>
+    <div class="carousel" id="newsCarousel">
+      <div class="carousel-track" id="newsTrack"></div>
+    </div>
+    <div class="carousel-dots" id="newsDots"></div>
+  </div>
+</section>
+
+<!-- 8. ETKINLIKLER -->
+<section class="section bg-white" id="etkinlikler">
+  <div class="container">
+    <div class="section-header">
+      <h2>{{ homepage.events_section.title }}</h2>
+      <p>{{ homepage.events_section.subtitle }}</p>
+    </div>
+    <div class="grid grid-3" id="eventsGrid"></div>
+  </div>
+</section>
+
+<!-- 9. YAZILAR — Carousel -->
+<section class="section" id="icerik">
+  <div class="container">
+    <div class="section-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+      <div>
+        <h2>{{ homepage.articles_section.title }}</h2>
+        <p>{{ homepage.articles_section.subtitle }}</p>
+      </div>
+      <a href="/yazilar" class="btn btn-secondary btn-sm">Tüm Yazılar →</a>
+    </div>
+    <div class="carousel" id="articlesCarousel">
+      <div class="carousel-track" id="articlesTrack"></div>
+    </div>
+    <div class="carousel-dots" id="articlesDots"></div>
+  </div>
+</section>
+
+<!-- 10. UYGULAMA -->
+<section class="section bg-white" id="uygulama">
+  <div class="container">
+    <div class="app-section">
+      <div class="app-mockup">
+        <img src="/images/app_home.png" alt="Birlikte Iyilik Akademi mobil uygulama" style="border-radius:var(--radius-xl);box-shadow:var(--shadow-lg);">
+      </div>
+      <div>
+        <h2>{{ homepage.app.title }}</h2>
+        <p>{{ homepage.app.subtitle }}</p>
+        <ul class="app-features">
+          {% for feat in homepage.app.features %}
+          <li>{{ feat }}</li>
+          {% endfor %}
+        </ul>
+        <div class="store-badges">
+          {% if site.apps.live %}
+          <a href="{{ site.apps.android }}" class="store-badge" data-track="click_googleplay" target="_blank" rel="noopener">
+            <span class="store-badge-icon" aria-hidden="true">&#9654;</span> Google Play
+          </a>
+          <a href="{{ site.apps.ios }}" class="store-badge" data-track="click_appstore" target="_blank" rel="noopener">
+            <span class="store-badge-icon" aria-hidden="true">&#63743;</span> App Store
+          </a>
+          {% else %}
+          <span class="store-badge" style="opacity:0.6;cursor:default;">
+            <span class="store-badge-icon" aria-hidden="true">&#9654;</span> Google Play — Yakında
+          </span>
+          <span class="store-badge" style="opacity:0.6;cursor:default;">
+            <span class="store-badge-icon" aria-hidden="true">&#63743;</span> App Store — Yakında
+          </span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 11. DESTEK OL -->
+<section class="section bg-soft" id="destek">
+  <div class="container">
+    <div class="section-header">
+      <h2>{{ homepage.support.title }}</h2>
+      <p>{{ homepage.support.subtitle }}</p>
+    </div>
+    <div class="grid grid-3">
+      {% for s in homepage.support.cards %}
+      <div class="card support-card">
+        <span class="card-icon" aria-hidden="true">{{ s.icon }}</span>
+        <h3>{{ s.title }}</h3>
+        <p>{{ s.desc }}</p>
+        <a href="{{ s.url }}" class="btn btn-primary btn-sm mt-4">{{ s.cta }}</a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- İLETİŞİM -->
+<section class="section bg-white" id="iletisim">
+  <div class="container container-narrow">
+    <div class="section-header">
+      <h2>İletişim</h2>
+      <p>Sorularınız için bize ulaşın</p>
+    </div>
+    <div class="grid grid-3" style="text-align:center;">
+      <a href="{{ site.whatsapp }}" class="card quick-card" target="_blank" rel="noopener" data-track="click_whatsapp">
+        <span class="card-icon" aria-hidden="true">💬</span>
+        <h3>WhatsApp</h3>
+        <p>{{ site.phone }}</p>
+      </a>
+      <a href="tel:{{ site.phone_href }}" class="card quick-card" data-track="click_call">
+        <span class="card-icon" aria-hidden="true">📞</span>
+        <h3>Telefon</h3>
+        <p>{{ site.phone }}</p>
+      </a>
+      <a href="mailto:{{ site.email }}" class="card quick-card">
+        <span class="card-icon" aria-hidden="true">✉️</span>
+        <h3>E-posta</h3>
+        <p>{{ site.email }}</p>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Dynamic content: carousel + API -->
+<script>
+(function(){
+  var API='/api/bia-news', base='{{ base }}';
+  var TR_M=['','Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+  function trD(d){if(!d)return'';var p=d.split('-');return parseInt(p[2])+' '+TR_M[parseInt(p[1])]+' '+p[0];}
+  function trunc(t,n){var w=t.split(' ');return w.length<=n?t:w.slice(0,n).join(' ')+'...';}
+  function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+  function pub(type){return fetch(API+'?type='+type+'&public=1').then(function(r){return r.json();}).then(function(d){return d.data;});}
+  var CATS={haber:'HABER',duyuru:'DUYURU',etkinlik:'ETKİNLİK',icerik:'İÇERİK'};
+
+  function buildCard(item){
+    var cat=item.category||'haber';
+    var img=item.image
+      ?'<img src="'+esc(item.image)+'" alt="'+esc(item.title)+'" class="news-card-img" loading="lazy">'
+      :'<div class="card-image-placeholder cat-'+cat+'"></div>';
+    return '<div class="carousel-card"><div class="card news-card" style="height:100%;">'+img+
+      '<div class="card-body"><div class="card-meta-row"><span class="card-category cat-badge-'+cat+'">'+(CATS[cat]||cat)+'</span><p class="card-date">'+trD(item.date)+'</p></div>'+
+      '<h3 style="font-size:.95rem;">'+esc(item.title)+'</h3>'+
+      '<p style="font-size:.85rem;">'+esc(trunc(item.excerpt||'',15))+'</p>'+
+      '<a href="#" onclick="openArticle(\''+item.slug+'\');return false;" class="btn btn-secondary btn-sm mt-4">Devamını Oku</a></div></div></div>';
+  }
+
+  function initCarousel(trackId, dotsId){
+    var track=document.getElementById(trackId);
+    var dotsEl=document.getElementById(dotsId);
+    if(!track)return;
+    var cards=track.querySelectorAll('.carousel-card');
+    if(cards.length<=3){dotsEl.style.display='none';return;}
+    // Dots
+    var pages=Math.ceil(cards.length/3);
+    var dots='';
+    for(var i=0;i<pages;i++) dots+='<button class="dot'+(i===0?' active':'')+'" onclick="scrollCarousel(\''+trackId+'\',\''+dotsId+'\','+i+')"></button>';
+    dotsEl.innerHTML=dots;
+  }
+
+  // News carousel (exclude icerik)
+  pub('news').then(function(items){
+    var news=items.filter(function(i){return i.category!=='icerik';});
+    var track=document.getElementById('newsTrack');
+    if(!track||!news.length)return;
+    track.innerHTML=news.slice(0,12).map(buildCard).join('');
+    initCarousel('newsTrack','newsDots');
+  })['catch'](function(){});
+
+  // Articles carousel (only icerik)
+  pub('news').then(function(items){
+    var arts=items.filter(function(i){return i.category==='icerik';});
+    var track=document.getElementById('articlesTrack');
+    if(!track||!arts.length)return;
+    track.innerHTML=arts.slice(0,12).map(buildCard).join('');
+    initCarousel('articlesTrack','articlesDots');
+  })['catch'](function(){});
+
+  // Events
+  pub('events').then(function(evs){
+    var el=document.getElementById('eventsGrid');
+    if(!el||!evs||!evs.length){if(el)el.innerHTML='<p class="text-muted">Yakında yeni etkinlikler eklenecek.</p>';return;}
+    var upcoming=evs.filter(function(e){return!e.past;}).slice(0,3);
+    if(!upcoming.length)upcoming=evs.slice(0,3);
+    el.innerHTML=upcoming.map(function(ev){return '<div class="card event-card"><div class="event-date-badge"><div class="day">'+(ev.date||'').slice(8,10)+'</div><div class="month">'+trD(ev.date)+'</div></div><div><h4 style="margin-bottom:var(--s-1);">'+esc(ev.title)+'</h4><p class="text-sm text-muted mb-0">'+esc(ev.time||'')+' &middot; '+esc(ev.location||'')+'</p></div></div>';}).join('');
+  })['catch'](function(){});
+
+  // Programs
+  pub('programs').then(function(progs){
+    var el=document.getElementById('programsGrid');
+    if(!el||!progs||!progs.length)return;
+    el.innerHTML=progs.slice(0,5).map(function(p){return '<div class="card program-card"><span class="card-icon" aria-hidden="true">'+esc(p.icon||'📚')+'</span><h3>'+esc(p.title)+'</h3><p class="card-meta">'+esc(p.model||'')+' &middot; '+esc(p.target||'')+'</p><p>'+esc(p.short||'')+'</p><div class="card-footer"><a href="'+base+'/egitimler/'+(p.id||'')+'" class="btn btn-secondary btn-sm">Detaylar</a></div></div>';}).join('');
+  })['catch'](function(){});
+
+  // Counters
+  pub('homepage').then(function(hp){
+    if(!hp||!hp.impact||!hp.impact.counters)return;
+    var cg=document.querySelector('.counter-grid');
+    if(!cg)return;
+    cg.innerHTML=hp.impact.counters.map(function(c){return '<div class="counter-item"><div class="counter-value" data-counter="'+c.value+'" data-suffix="'+(c.suffix||'')+'">'+c.value+(c.suffix||'')+'</div><div class="counter-label">'+esc(c.label)+'</div></div>';}).join('');
+  })['catch'](function(){});
+})();
+
+// Carousel scroll
+function scrollCarousel(trackId,dotsId,page){
+  var track=document.getElementById(trackId);
+  if(!track)return;
+  var card=track.querySelector('.carousel-card');
+  if(!card)return;
+  var gap=16;
+  var w=card.offsetWidth+gap;
+  track.scrollTo({left:page*w*3,behavior:'smooth'});
+  // Update dots
+  var dots=document.getElementById(dotsId);
+  if(!dots)return;
+  dots.querySelectorAll('.dot').forEach(function(d,i){d.classList.toggle('active',i===page);});
+}
+</script>
+{% endblock %}

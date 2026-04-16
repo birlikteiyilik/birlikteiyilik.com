@@ -1,0 +1,158 @@
+[
+  {
+    "id": "online-egitim",
+    "title": "Online Eğitim",
+    "short": "Çevrim içi ortamda, evden erişilebilir değerler eğitimi programı.",
+    "icon": "📚",
+    "description": "Online eğitim programımız, coğrafi engel tanımadan her ailenin çocuğuna değer odaklı eğitim sunmayı amaçlar. Haftalık düzenli dersler, birebir takip ve veli bilgilendirmesi ile süreç yönetilir.",
+    "target": "8-14 yaş arası öğrenciler",
+    "model": "Çevrim İçi",
+    "duration": "Dönemlik (16 hafta)",
+    "features": [
+      "Haftalık düzenli online dersler",
+      "Birebir öğrenci-öğretmen eşleşmesi",
+      "Kur'an-ı Kerim okuma ve anlama",
+      "Güzel ahlak ve değerler müfredatı",
+      "Uygulama üzerinden veli takibi",
+      "Dönem sonu değerlendirme raporu"
+    ],
+    "process": [
+      "Online başvuru formunu doldurun",
+      "Başvurunuz değerlendirilir ve sizinle iletişime geçilir",
+      "Uygun öğretmen ve grupla eşleştirilirsiniz",
+      "Eğitim programı başlar",
+      "Süreç uygulama üzerinden takip edilir"
+    ],
+    "cta_label": "Online Başvuru",
+    "cta_url": "https://forms.gle/5a9TSS7XAUxJUCt59",
+    "faq": [
+      {
+        "q": "Dersler hangi gün ve saatlerde?",
+        "a": "Ders programı kayıt sonrası öğretmen ve aile ile birlikte belirlenir."
+      },
+      {
+        "q": "Hangi platform kullanılıyor?",
+        "a": "Dersler Zoom veya benzeri bir video konferans aracı üzerinden yapılır."
+      },
+      {
+        "q": "Başvuru ücretsiz mi?",
+        "a": "Evet, tüm eğitim programlarımız ücretsizdir."
+      }
+    ]
+  },
+  {
+    "id": "yuz-yuze-egitim",
+    "title": "Yüz Yüze Eğitim",
+    "short": "Merkez ve şubelerde yüz yüze değerler eğitimi programı.",
+    "icon": "🏫",
+    "description": "Yüz yüze eğitim programımız, merkezlerimizde fiziksel ortamda gerçekleştirilen kapsamlı bir değerler eğitimi sunar. Grup dersleri, bireysel takip ve sosyal etkinliklerle zenginleştirilmiş bir deneyim.",
+    "target": "8-14 yaş arası öğrenciler",
+    "model": "Yüz Yüze",
+    "duration": "Dönemlik (16 hafta)",
+    "features": [
+      "Haftalık yüz yüze dersler",
+      "Küçük grup yapısı (6-10 öğrenci)",
+      "Kur'an-ı Kerim ve tecvid eğitimi",
+      "Güzel ahlak ve davranış gelişimi",
+      "Sosyal etkinlikler ve geziler",
+      "Düzenli veli görüşmeleri"
+    ],
+    "process": [
+      "Başvuru formunu doldurun",
+      "Size en yakın merkez belirlenir",
+      "Yüz yüze ön görüşme yapılır",
+      "Uygun gruba yerleştirilirsiniz",
+      "Eğitim programı başlar"
+    ],
+    "cta_label": "Yüz Yüze Başvuru",
+    "cta_url": "https://forms.gle/5a9TSS7XAUxJUCt59",
+    "faq": [
+      {
+        "q": "Hangi şehirlerde merkeziniz var?",
+        "a": "Merkez bilgileri başvuru sonrası paylaşılmaktadır."
+      },
+      {
+        "q": "Ulaşım desteği var mı?",
+        "a": "Merkezlerimiz toplu taşıma erişimine uygun konumlardadır."
+      }
+    ]
+  },
+  {
+    "id": "kuran-i-kerim",
+    "title": "Kur'an-ı Kerim Eğitimi",
+    "short": "Doğru okuma, tecvid ve anlama odaklı Kur'an-ı Kerim eğitimi.",
+    "icon": "📖",
+    "description": "Kur'an-ı Kerim eğitimimiz; doğru okuma (tecvid), anlama ve hayata geçirme odaklı sistematik bir müfredat sunar. Her öğrencinin seviyesine uygun ilerleyen bireysel program.",
+    "target": "Tüm yaş grupları",
+    "model": "Online & Yüz Yüze",
+    "duration": "Sürekli",
+    "features": [
+      "Elif-ba'dan başlayan kademeli ilerleme",
+      "Tecvid kurallarıyla doğru okuma",
+      "Kur'an-ı Kerim meali ve tefsiri",
+      "Bireysel seviye takibi",
+      "Hafızlık programı desteği"
+    ],
+    "process": [
+      "Başvuru yapın",
+      "Seviye tespiti gerçekleştirilir",
+      "Uygun müfredat belirlenir",
+      "Birebir veya grup dersleri başlar"
+    ],
+    "cta_label": "Programa Başvur",
+    "cta_url": "https://forms.gle/5a9TSS7XAUxJUCt59",
+    "faq": []
+  },
+  {
+    "id": "guzel-ahlak",
+    "title": "Güzel Ahlak Programı",
+    "short": "Değerler eğitimi ve hedef davranışlar üzerine kapsamlı program.",
+    "icon": "🌟",
+    "description": "Güzel Ahlak Programı; doğruluk, merhamet, sabır, şükür, yardımseverlik gibi temel değerleri çocuklara ve gençlere yaşantısal öğrenme yoluyla kazandırmayı hedefler.",
+    "target": "8-14 yaş arası öğrenciler",
+    "model": "Online & Yüz Yüze",
+    "duration": "Dönemlik (16 hafta)",
+    "features": [
+      "40 temel değer ve davranış hedefi",
+      "Hikâye ve örnek olay temelli öğrenme",
+      "Günlük hayat uygulamaları",
+      "Aile katılımlı etkinlikler",
+      "Değer odaklı proje çalışmaları"
+    ],
+    "process": [
+      "Online veya yüz yüze programa başvurun",
+      "Program kapsamı ve takvim paylaşılır",
+      "Dersler ve etkinlikler başlar"
+    ],
+    "cta_label": "Programa Başvur",
+    "cta_url": "https://forms.gle/5a9TSS7XAUxJUCt59",
+    "faq": []
+  },
+  {
+    "id": "ogrenci-koclugu-ve-takip",
+    "title": "Öğrenci Koçluğu & Takip",
+    "short": "Bireysel takip, veli iletişimi ve gelişim raporlama sistemi.",
+    "icon": "📊",
+    "description": "Öğrenci Koçluğu ve Takip sistemi, eğitim sürecinin sadece ders vermekten ibaret olmadığının kanıtıdır. Her öğrencinin gelişimi bireysel olarak izlenir, veliler düzenli bilgilendirilir ve süreç uygulama üzerinden şeffaf biçimde yönetilir.",
+    "target": "Tüm kayıtlı öğrenciler ve veliler",
+    "model": "Uygulama Destekli",
+    "duration": "Sürekli",
+    "features": [
+      "Birebir öğrenci koçluğu",
+      "Devam ve katılım takibi",
+      "Dönemsel gelişim raporları",
+      "Veli-öğretmen anlık mesajlaşma",
+      "Hedef belirleme ve izleme",
+      "Mobil uygulama ile 7/24 erişim"
+    ],
+    "process": [
+      "Eğitim programına kayıt olan her öğrenci otomatik dahil olur",
+      "Mobil uygulamayı indirin",
+      "Veli veya öğretmen girişi yapın",
+      "Gelişim raporlarını takip edin"
+    ],
+    "cta_label": "Uygulamayı İncele",
+    "cta_url": "/uygulama",
+    "faq": []
+  }
+]

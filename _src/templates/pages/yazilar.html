@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% set crumbs = [{"label": "Değer Odaklı Yazılar", "url": "/yazilar"}] %}
+{% block title %}Değer Odaklı Yazılar | {{ site.title }}{% endblock %}
+{% block description %}Güzel ahlak, tarih bilinci ve eğitim üzerine değer odaklı yazılar.{% endblock %}
+{% block breadcrumb %}{% include 'partials/breadcrumb.html' %}{% endblock %}
+
+{% block content %}
+<section class="page-hero"><div class="container"><h1>Değer Odaklı Yazılar</h1><p>Güzel ahlak, tarih bilinci ve eğitim üzerine derinlikli içerikler.</p></div></section>
+<section class="section"><div class="container">
+  <div class="grid grid-3" id="yazilarGrid">
+    {% for item in news if item.category == 'icerik' %}
+    <div class="card news-card">
+      {% if item.image %}
+      <img src="{{ item.image }}" alt="{{ item.title }}" class="news-card-img" loading="lazy">
+      {% else %}
+      <div class="card-image-placeholder cat-icerik"></div>
+      {% endif %}
+      <div class="card-body">
+        <div class="card-meta-row">
+          <span class="card-category cat-badge-icerik">İÇERİK</span>
+          <p class="card-date">{{ item.date | tr_date }}</p>
+        </div>
+        <h3><a href="#" onclick="openArticle('{{ item.slug }}');return false;">{{ item.title }}</a></h3>
+        <p>{{ item.excerpt | truncate_words(20) }}</p>
+        <a href="#" onclick="openArticle('{{ item.slug }}');return false;" class="btn btn-secondary btn-sm mt-4">Devamını Oku</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% set icerik_count = news | selectattr('category', 'equalto', 'icerik') | list | length %}
+  {% if icerik_count == 0 %}
+  <div class="text-center py-16"><p class="text-muted">Henüz yazı yok.</p></div>
+  {% endif %}
+</div></section>
+
+<script>
+(function(){
+  var API='/api/bia-news', base='{{ base }}';
+  var TR_MONTHS=['','Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+  function trDate(d){if(!d)return'';var p=d.split('-');return parseInt(p[2])+' '+TR_MONTHS[parseInt(p[1])]+' '+p[0];}
+  function trunc(t,n){var w=t.split(' ');return w.length<=n?t:w.slice(0,n).join(' ')+'...';}
+  function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+  fetch(API+'?type=news&public=1').then(function(r){return r.json();}).then(function(d){
+    var items=(d.data||[]).filter(function(i){return i.category==='icerik';});
+    var el=document.getElementById('yazilarGrid');
+    if(!el||!items.length)return;
+    el.innerHTML=items.map(function(item){
+      var img=item.image?'<img src="'+esc(item.image)+'" alt="'+esc(item.title)+'" class="news-card-img" loading="lazy">':'<div class="card-image-placeholder cat-icerik"></div>';
+      return '<div class="card news-card">'+img+'<div class="card-body"><div class="card-meta-row"><span class="card-category cat-badge-icerik">İÇERİK</span><p class="card-date">'+trDate(item.date)+'</p></div><h3><a href="#" onclick="openArticle(\''+item.slug+'\');return false;">'+esc(item.title)+'</a></h3><p>'+esc(trunc(item.excerpt||'',20))+'</p><a href="#" onclick="openArticle(\''+item.slug+'\');return false;" class="btn btn-secondary btn-sm mt-4">Devamını Oku</a></div></div>';
+    }).join('');
+  })['catch'](function(){});
+})();
+</script>
+{% endblock %}

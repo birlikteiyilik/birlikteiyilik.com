@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% set crumbs = [{"label": "İletişim", "url": "/iletisim"}] %}
+{% block title %}İletişim | {{ site.title }}{% endblock %}
+{% block description %}Birlikte İyilik Akademi iletişim bilgileri — telefon, e-posta, WhatsApp ve iletişim formu.{% endblock %}
+{% block breadcrumb %}{% include 'partials/breadcrumb.html' %}{% endblock %}
+
+{% block content %}
+<section class="page-hero"><div class="container"><h1>İletişim</h1><p>Bize ulaşmak için aşağıdaki kanalları kullanabilirsiniz.</p></div></section>
+<section class="section"><div class="container">
+  <div class="grid grid-2" style="gap:var(--s-12);">
+    <div>
+      <h2>İletişim Bilgileri</h2>
+      <div class="card mt-6">
+        <div class="doc-list">
+          <div class="doc-item">
+            <span class="doc-icon" aria-hidden="true">📞</span>
+            <div class="doc-info"><h4>Telefon</h4><p><a href="{{ site.phone_href }}" data-track="click_call">{{ site.phone }}</a></p></div>
+          </div>
+          <div class="doc-item">
+            <span class="doc-icon" aria-hidden="true">💬</span>
+            <div class="doc-info"><h4>WhatsApp</h4><p><a href="{{ site.whatsapp }}" target="_blank" rel="noopener" data-track="click_whatsapp">WhatsApp ile yazın</a></p></div>
+          </div>
+          <div class="doc-item">
+            <span class="doc-icon" aria-hidden="true">📧</span>
+            <div class="doc-info"><h4>E-posta</h4><p><a href="mailto:{{ site.email }}">{{ site.email }}</a></p></div>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="mt-8" style="font-family:var(--font-sans);">Sosyal Medya</h3>
+      <div class="d-flex gap-4 mt-4">
+        <a href="{{ site.social.instagram }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm" data-track="social_click">Instagram</a>
+        <a href="{{ site.social.youtube }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm" data-track="social_click">YouTube</a>
+      </div>
+    </div>
+
+    <div>
+      <h2>Mesaj Gönderin</h2>
+      <form class="mt-6" id="contactForm" onsubmit="return sendContact(event);">
+        <div class="form-group">
+          <label for="name" class="form-label">Adınız Soyadınız</label>
+          <input type="text" id="name" name="name" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label for="email" class="form-label">E-posta Adresiniz</label>
+          <input type="email" id="email" name="email" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label for="subject" class="form-label">Konu</label>
+          <select id="subject" name="subject" class="form-input">
+            <option value="">Konu seçin</option>
+            <option value="basvuru">Başvuru hakkında</option>
+            <option value="program">Program bilgisi</option>
+            <option value="uygulama">Uygulama desteği</option>
+            <option value="gonulluluk">Gönüllülük</option>
+            <option value="isbirligi">İş birliği</option>
+            <option value="diger">Diğer</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="message" class="form-label">Mesajınız</label>
+          <textarea id="message" name="message" class="form-input" required></textarea>
+        </div>
+        <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+          <button type="submit" class="btn btn-primary" style="flex:1;min-width:180px;" data-track="submit_contact_whatsapp">WhatsApp ile Gönder</button>
+          <a href="mailto:{{ site.email }}" class="btn btn-secondary" style="flex:1;min-width:180px;text-align:center;" data-track="submit_contact_email">E-posta ile Gönder</a>
+        </div>
+      </form>
+      <script>
+      function sendContact(e) {
+        e.preventDefault();
+        var n = document.getElementById('name').value.trim();
+        var em = document.getElementById('email').value.trim();
+        var s = document.getElementById('subject');
+        var konu = s.options[s.selectedIndex].text;
+        var m = document.getElementById('message').value.trim();
+        if (!n || !em || !m) return false;
+        var text = 'Merhaba, birlikteiyilik.com iletisim formu:\n\n'
+          + 'Ad: ' + n + '\nE-posta: ' + em + '\nKonu: ' + konu + '\n\nMesaj:\n' + m;
+        window.open('https://wa.me/905348117757?text=' + encodeURIComponent(text), '_blank');
+        return false;
+      }
+      </script>
+    </div>
+  </div>
+</div></section>
+{% endblock %}

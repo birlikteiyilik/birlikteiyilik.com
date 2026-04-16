@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>BİA Yönetim Paneli</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; color: #222; min-height: 100vh; }
+
+/* TOP BAR */
+.topbar { background: #E20439; color: #fff; padding: 0 20px; height: 56px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,.2); }
+.topbar-title { font-weight: 700; font-size: 1rem; white-space: nowrap; }
+.topbar-nav { margin-left: auto; display: flex; gap: 8px; align-items: center; overflow-x: auto; max-width: calc(100vw - 160px); padding-bottom: 2px; }
+.topbar-nav::-webkit-scrollbar { height: 3px; }
+.topbar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,.3); border-radius: 2px; }
+.topbar-btn { background: rgba(255,255,255,.15); border: none; color: #fff; padding: 6px 14px; border-radius: 6px; font-size: .85rem; cursor: pointer; font-weight: 600; white-space: nowrap; }
+.topbar-btn:hover { background: rgba(255,255,255,.25); }
+.topbar-btn.green { background: rgba(255,255,255,.9); color: #E20439; }
+.topbar-btn.green:hover { background: #fff; }
+
+/* LAYOUT */
+.container { max-width: 860px; margin: 28px auto; padding: 0 16px; }
+.card { background: #fff; border-radius: 10px; box-shadow: 0 1px 6px rgba(0,0,0,.08); padding: 28px; margin-bottom: 20px; }
+
+/* FORM FIELDS */
+.field { margin-bottom: 18px; }
+.field label { display: block; font-size: .83rem; font-weight: 600; color: #555; margin-bottom: 6px; }
+.field input, .field select, .field textarea {
+  width: 100%; padding: 10px 14px; border: 1.5px solid #d1d5db; border-radius: 8px;
+  font-size: .95rem; font-family: inherit; transition: border-color .15s;
+}
+.field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: #E20439; box-shadow: 0 0 0 3px rgba(226,4,57,.08); }
+.field textarea { min-height: 160px; resize: vertical; }
+.field-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media(max-width:600px) { .field-2 { grid-template-columns: 1fr; } }
+
+/* BUTTONS */
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px; border-radius: 8px; font-size: .9rem; font-weight: 600; cursor: pointer; border: none; transition: background .15s; text-decoration: none; }
+.btn-red { background: #E20439; color: #fff; }
+.btn-red:hover { background: #B00030; }
+.btn-gray { background: #f1f5f9; color: #334155; }
+.btn-gray:hover { background: #e2e8f0; }
+.btn-del { background: #fff; color: #dc2626; border: 1.5px solid #fca5a5; }
+.btn-del:hover { background: #fef2f2; }
+.btn-block { width: 100%; justify-content: center; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* NOTICE */
+.notice { padding: 12px 16px; border-radius: 8px; font-size: .88rem; margin-bottom: 16px; }
+.ok { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
+.err { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; }
+.info { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+
+/* NEWS LIST */
+.list-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.list-header h1 { font-size: 1.2rem; }
+.filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.filter { padding: 5px 13px; border-radius: 20px; font-size: .8rem; border: none; cursor: pointer; background: #f1f5f9; color: #475569; font-weight: 500; }
+.filter.on { background: #E20439; color: #fff; }
+.news-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: background .1s; }
+.news-item:hover { background: #fafafa; }
+.news-item:last-child { border-bottom: none; }
+.ni-date { font-size: .8rem; color: #888; white-space: nowrap; min-width: 90px; }
+.ni-title { flex: 1; font-size: .92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ni-star { font-size: .85rem; }
+.badge { display: inline-block; padding: 2px 9px; border-radius: 12px; font-size: .72rem; font-weight: 700; white-space: nowrap; }
+.b-duyuru { background: #dbeafe; color: #1d4ed8; }
+.b-haber { background: #dcfce7; color: #15803d; }
+.b-etkinlik { background: #fef9c3; color: #854d0e; }
+.b-icerik { background: #f3e8ff; color: #7e22ce; }
+.empty { text-align: center; padding: 40px; color: #aaa; font-size: .9rem; }
+
+/* EDIT FORM */
+.edit-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+.edit-header h1 { font-size: 1.2rem; }
+.edit-footer { display: flex; gap: 10px; margin-top: 20px; align-items: center; }
+
+/* SPINNER */
+.spin { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin .6s linear infinite; vertical-align: middle; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* SESSION TIMEOUT BAR */
+#sessionBar { position: fixed; bottom: 0; left: 0; right: 0; background: #fef3c7; color: #92400e; text-align: center; padding: 6px; font-size: .8rem; display: none; z-index: 200; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="topbar-title">BİA Yönetim</span>
+  <span id="userBadge" style="font-size:.73rem;background:rgba(255,255,255,.2);padding:3px 10px;border-radius:12px;white-space:nowrap;"></span>
+  <div class="topbar-nav" id="topNav">
+    <button class="topbar-btn" onclick="switchTab('news')">Haberler</button>
+    <button class="topbar-btn" onclick="switchTab('events')">Etkinlikler</button>
+    <button class="topbar-btn" onclick="switchTab('site')">Ayarlar</button>
+    <button class="topbar-btn" onclick="switchTab('homepage')">Ana Sayfa</button>
+    <button class="topbar-btn" onclick="switchTab('faq')">SSS</button>
+    <button class="topbar-btn" onclick="switchTab('programs')">Programlar</button>
+    <button class="topbar-btn green" onclick="rebuild()" id="rebuildBtn">Yayinla</button>
+    <button class="topbar-btn" onclick="logout()">Cikis</button>
+  </div>
+</div>
+
+<!-- HABER LİSTESİ -->
+<div id="mainScreen">
+  <div class="container">
+    <div id="mainNotice"></div>
+    <div class="list-header">
+      <h1>Haberler &amp; İçerikler</h1>
+      <button class="btn btn-red" onclick="showEdit(null)">+ Yeni Ekle</button>
+    </div>
+    <div class="filters" id="filterBar"></div>
+    <div class="card" style="padding:0;overflow:hidden;">
+      <div id="newsList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ETKİNLİK LİSTESİ -->
+<div id="eventsScreen" class="container" style="display:none;">
+  <div id="eventsMainNotice"></div>
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <h2 style="font-size:1.2rem;">Etkinlik Takvimi</h2>
+      <button class="btn btn-red" onclick="showEventEdit(null)">+ Yeni Etkinlik</button>
+    </div>
+    <div id="eventsList"></div>
+  </div>
+</div>
+
+<!-- ETKİNLİK DÜZENLEME FORMU -->
+<div id="eventEditScreen" class="container" style="display:none;">
+  <div id="eventEditNotice"></div>
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+      <button class="btn btn-gray" onclick="showEvents()">← Geri</button>
+      <h2 id="eventEditHeading" style="font-size:1.2rem;margin:0;">Yeni Etkinlik</h2>
+    </div>
+    <div class="field">
+      <label>Baslik *</label>
+      <input id="efTitle" type="text" oninput="autoEventSlug()">
+    </div>
+    <div class="field" style="display:none;">
+      <input id="efSlug" type="text">
+    </div>
+    <div class="field-2">
+      <div class="field">
+        <label>Tarih *</label>
+        <input id="efDate" type="date">
+      </div>
+      <div class="field">
+        <label>Saat</label>
+        <input id="efTime" type="time" value="10:00">
+      </div>
+    </div>
+    <div class="field-2">
+      <div class="field">
+        <label>Yer / Platform</label>
+        <input id="efLocation" type="text" placeholder="Online (Zoom), Istanbul...">
+      </div>
+      <div class="field">
+        <label>Tur</label>
+        <select id="efType">
+          <option value="online">Online</option>
+          <option value="yuz-yuze">Yuz Yuze</option>
+          <option value="karma">Karma</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Aciklama</label>
+      <textarea id="efDesc" rows="4" placeholder="Etkinlik hakkinda kisa bilgi..."></textarea>
+    </div>
+    <div class="field">
+      <label>Kayit / Katilim Linki (istege bagli)</label>
+      <input id="efRegUrl" type="url" placeholder="https://forms.gle/...">
+    </div>
+    <div class="field" style="display:flex;align-items:center;gap:8px;">
+      <input id="efPast" type="checkbox" style="width:auto;">
+      <label style="margin:0;">Gecmis etkinlik olarak isaretle</label>
+    </div>
+    <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap;">
+      <button id="saveEventBtn" class="btn btn-red" onclick="saveEvent()">Kaydet</button>
+      <button class="btn btn-gray" onclick="showEvents()">Iptal</button>
+      <button id="deleteEventBtn" class="btn btn-del" onclick="deleteEvent()" style="display:none;">Sil</button>
+    </div>
+  </div>
+</div>
+
+<!-- DÜZENLEME FORMU -->
+<div id="editScreen" style="display:none;">
+  <div class="container">
+    <div class="edit-header">
+      <button class="btn btn-gray" style="padding:7px 14px" onclick="showMain()">← Geri</button>
+      <h1 id="editHeading">Yeni Haber</h1>
+    </div>
+    <div class="card">
+      <div class="field">
+        <label>Baslik *</label>
+        <input id="fTitle" placeholder="Haber basligi..." oninput="autoSlug()">
+      </div>
+      <div class="field-2">
+        <div class="field">
+          <label>Tarih *</label>
+          <input id="fDate" type="date">
+        </div>
+        <div class="field">
+          <label>Kategori</label>
+          <select id="fCat">
+            <option value="haber">Haber</option>
+            <option value="duyuru">Duyuru</option>
+            <option value="etkinlik">Etkinlik</option>
+            <option value="icerik">Icerik / Makale</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Ozet <span style="font-weight:400;color:#aaa">(kart onizlemesi)</span></label>
+        <textarea id="fExcerpt" rows="3" placeholder="Kisa bir ozet yazin..."></textarea>
+      </div>
+      <div class="field">
+        <label style="display:flex;align-items:center;justify-content:space-between;">
+          <span>Icerik <span style="font-weight:400;color:#aaa">(HTML destekler — otomatik temizlenir)</span></span>
+          <button type="button" class="btn btn-gray" style="font-size:.78rem;padding:4px 10px;" onclick="cleanHtml()" title="Blogger'dan kopyalanan inline stilleri temizle">HTML Temizle</button>
+        </label>
+        <textarea id="fContent" placeholder="Haber icerigi..."></textarea>
+      </div>
+      <div class="field">
+        <label>Gorsel <span style="font-weight:400;color:#aaa">(cihazdan yukleyin)</span></label>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input id="fImage" placeholder="https://..." style="flex:1;" readonly>
+          <button type="button" class="btn btn-gray" style="white-space:nowrap;padding:9px 14px;" onclick="document.getElementById('imgFileInput').click()" id="uploadImgBtn">Yukle</button>
+          <input type="file" id="imgFileInput" accept=".jpg,.jpeg,.png,.webp,.gif" style="display:none;" onchange="uploadImage(this)">
+        </div>
+        <div id="imgUploadStatus" style="font-size:.8rem;margin-top:6px;"></div>
+        <div id="imgPreview" style="margin-top:8px;display:none;">
+          <img id="imgPreviewEl" style="max-height:120px;border-radius:6px;border:1px solid #e2e8f0;" alt="">
+        </div>
+      </div>
+      <div class="field" style="display:flex;align-items:center;gap:10px;">
+        <input type="checkbox" id="fFeatured" style="width:auto;height:18px;cursor:pointer;">
+        <label for="fFeatured" style="margin:0;cursor:pointer;font-weight:600;">One Cikar</label>
+      </div>
+      <input type="hidden" id="fSlug">
+      <input type="hidden" id="fSourceUrl">
+
+      <div id="editNotice" style="margin-top:4px;"></div>
+      <div class="edit-footer">
+        <button class="btn btn-red" onclick="saveItem()" id="saveBtn">Kaydet</button>
+        <button class="btn btn-gray" onclick="previewItem()">Onizle</button>
+        <button class="btn btn-gray" onclick="showMain()">Iptal</button>
+        <button class="btn btn-del" onclick="deleteItem()" id="deleteBtn" style="margin-left:auto;display:none;">Sil</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SITE AYARLARI -->
+<div id="siteScreen" class="container" style="display:none;">
+  <div id="siteNotice"></div>
+  <div class="card">
+    <h2 style="font-size:1.2rem;margin-bottom:24px;">Site Ayarlari</h2>
+    <div class="field-2">
+      <div class="field"><label>Telefon</label><input id="sPhone" type="text" placeholder="0534 811 77 57"></div>
+      <div class="field"><label>Telefon (href)</label><input id="sPhoneHref" type="text" placeholder="+905348117757"></div>
+    </div>
+    <div class="field"><label>E-posta</label><input id="sEmail" type="email" placeholder="bilgi@birlikteiyilik.com"></div>
+    <div class="field"><label>WhatsApp Linki</label><input id="sWhatsapp" type="url" placeholder="https://wa.me/905348117757"></div>
+    <div class="field"><label>Google Analytics ID</label><input id="sGaId" type="text" placeholder="G-XXXXXXXXXX"></div>
+    <div class="field"><label>Instagram</label><input id="sInstagram" type="url"></div>
+    <div class="field"><label>YouTube</label><input id="sYoutube" type="url"></div>
+    <div class="field-2">
+      <div class="field"><label>App Store (iOS)</label><input id="sIos" type="url"></div>
+      <div class="field"><label>Google Play (Android)</label><input id="sAndroid" type="url"></div>
+    </div>
+    <button id="saveSiteBtn" class="btn btn-red" onclick="saveSite()">Kaydet</button>
+  </div>
+</div>
+
+<!-- ANA SAYFA DÜZENLEYİCİ -->
+<div id="homepageScreen" class="container" style="display:none;">
+  <div id="homepageNotice"></div>
+  <div class="card" style="margin-bottom:16px;">
+    <h2 style="font-size:1.1rem;margin-bottom:20px;">Hero Bolumu</h2>
+    <div class="field"><label>Baslik</label><input id="hpHeroTitle" type="text"></div>
+    <div class="field"><label>Alt Baslik</label><textarea id="hpHeroSubtitle" rows="3"></textarea></div>
+  </div>
+  <div class="card" style="margin-bottom:16px;">
+    <h2 style="font-size:1.1rem;margin-bottom:20px;">Hakkimizda Bolumu</h2>
+    <div class="field"><label>Baslik</label><input id="hpAboutTitle" type="text"></div>
+    <div class="field"><label>Metin</label><textarea id="hpAboutText" rows="4"></textarea></div>
+  </div>
+  <div class="card" style="margin-bottom:16px;">
+    <h2 style="font-size:1.1rem;margin-bottom:20px;">Etki Sayaclari</h2>
+    <div id="countersList"></div>
+  </div>
+  <button id="saveHomepageBtn" class="btn btn-red" onclick="saveHomepage()">Kaydet</button>
+</div>
+
+<!-- SSS YÖNETİMİ -->
+<div id="faqScreen" class="container" style="display:none;">
+  <div id="faqNotice"></div>
+  <div id="faqList"></div>
+  <div style="text-align:center;margin:16px 0;">
+    <button class="btn btn-red" onclick="addFaqCategory()">+ Yeni Kategori</button>
+  </div>
+  <div style="text-align:right;margin-top:8px;">
+    <button id="saveFaqBtn" class="btn btn-red" onclick="saveFaq()">Tumunu Kaydet</button>
+  </div>
+</div>
+
+<!-- PROGRAMLAR -->
+<div id="programsScreen" class="container" style="display:none;">
+  <div id="programsNotice"></div>
+  <div id="programsList"></div>
+  <div style="text-align:right;margin-top:8px;">
+    <button id="saveProgramsBtn" class="btn btn-red" onclick="savePrograms()">Tumunu Kaydet</button>
+  </div>
+</div>
+
+<!-- SESSION TIMEOUT BAR -->
+<div id="sessionBar"></div>
+
+<script>
+// ── GÜVENLİK: Oturum kontrolü ──
+if (!sessionStorage.getItem('biaToken')) {
+  window.location.replace('/yonetim/');
+  throw new Error('Unauthorized');
+}
+
+const API = '/api/bia-news';
+const CATS = {haber:'Haber', duyuru:'Duyuru', etkinlik:'Etkinlik', icerik:'Icerik'};
+const TR = {'ş':'s','ı':'i','ö':'o','ü':'u','ç':'c','ğ':'g','â':'a','î':'i','û':'u'};
+
+// Kullanıcı adını göster
+const biaName = sessionStorage.getItem('biaName');
+if (biaName && biaName !== 'Admin') {
+  document.getElementById('userBadge').textContent = biaName;
+}
+
+// ── GÜVENLİK: Upload dosya tipi kontrolleri ──
+const ALLOWED_UPLOAD_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+const ALLOWED_UPLOAD_EXTS = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
+const MAX_UPLOAD_SIZE = 5 * 1024 * 1024; // 5MB
+
+// ── GÜVENLİK: DOMPurify yapılandırması ──
+const PURIFY_CONFIG = {
+  ALLOWED_TAGS: ['p','br','strong','em','b','i','u','h2','h3','h4','ul','ol','li','a','img','blockquote','span','div','hr','sub','sup','table','thead','tbody','tr','td','th'],
+  ALLOWED_ATTR: ['href','src','alt','class','target','rel','width','height'],
+  FORBID_TAGS: ['script','iframe','object','embed','form','input','style','link','meta','base','svg','math'],
+  FORBID_ATTR: ['onerror','onclick','onload','onmouseover','onfocus','onblur','onchange','onsubmit','style'],
+  ALLOW_DATA_ATTR: false,
+};
+
+function sanitizeHTML(html) {
+  if (typeof DOMPurify !== 'undefined') {
+    return DOMPurify.sanitize(html, PURIFY_CONFIG);
+  }
+  // Fallback: temel temizlik
+  return html.replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
+    .replace(/javascript\s*:/gi, '');
+}
+
+let token = sessionStorage.getItem('biaToken') || '';
+let news = [], sha = '', editIdx = null, filter = '';
+let events = [], eventsSha = '', eventEditIdx = null;
+
+// ── GÜVENLİK: Session timeout (30 dakika) ──
+const SESSION_TIMEOUT = 30 * 60 * 1000;
+const SESSION_WARN = 5 * 60 * 1000;
+let lastActivity = Date.now();
+
+function resetActivity() { lastActivity = Date.now(); hideSessionBar(); }
+document.addEventListener('click', resetActivity);
+document.addEventListener('keypress', resetActivity);
+document.addEventListener('scroll', resetActivity);
+
+function hideSessionBar() { document.getElementById('sessionBar').style.display = 'none'; }
+
+setInterval(() => {
+  const elapsed = Date.now() - lastActivity;
+  const remaining = SESSION_TIMEOUT - elapsed;
+  if (remaining <= 0) {
+    logout();
+    alert('Oturum zaman asimina ugradi. Lutfen tekrar giris yapin.');
+  } else if (remaining <= SESSION_WARN) {
+    const mins = Math.ceil(remaining / 60000);
+    const bar = document.getElementById('sessionBar');
+    bar.textContent = `Oturum ${mins} dakika icinde sona erecek. Devam etmek icin herhangi bir yere tiklayin.`;
+    bar.style.display = 'block';
+  }
+}, 30000);
+
+// ── API HELPER (yalnızca JWT Bearer) ──
+function authHeaders() {
+  return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
+}
+
+async function apiFetch(params) {
+  const qs = new URLSearchParams(params);
+  const r = await fetch(`${API}?${qs}`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  const d = await r.json();
+  if (r.status === 401) { logout(); throw new Error('Oturum süresi doldu'); }
+  if (!r.ok) throw new Error(d.error || 'Sunucu hatasi');
+  return d;
+}
+
+async function apiSave(params) {
+  const body = { ...params };
+  const r = await fetch(API, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify(body)
+  });
+  const d = await r.json();
+  if (r.status === 401) { logout(); throw new Error('Oturum süresi doldu'); }
+  if (!r.ok) throw new Error(d.error || 'Sunucu hatasi');
+  return d;
+}
+
+// ── SHA KURTARMA: Save hatası sonrası güncel sha'yı al ──
+async function recoverSha(type) {
+  try {
+    const d = await apiFetch({ type });
+    return { data: d.data, sha: d.sha };
+  } catch(e) { return null; }
+}
+
+function slugify(t) {
+  return t.toLowerCase().replace(/[şıöüçğâîû]/g,c=>TR[c]||c)
+    .normalize('NFKD').replace(/[^\w\s-]/g,'').replace(/[-\s]+/g,'-').replace(/^-|-$/g,'').slice(0,80);
+}
+function autoSlug() {
+  const t = document.getElementById('fTitle').value;
+  document.getElementById('fSlug').value = slugify(t);
+}
+
+// ── SCREEN HELPER ──
+const ALL_SCREENS = ['mainScreen','editScreen','eventsScreen','eventEditScreen','siteScreen','homepageScreen','faqScreen','programsScreen'];
+function showScreen(id) {
+  ALL_SCREENS.forEach(s => { const el = document.getElementById(s); if(el) el.style.display = 'none'; });
+  const target = document.getElementById(id);
+  if (target) target.style.display = 'block';
+  resetActivity();
+}
+
+// ── HABERLERİ YÜKLE ──
+async function loadNews() {
+  try {
+    const d = await apiFetch({ type: 'news' });
+    news = d.data; sha = d.sha;
+    showMain();
+  } catch(e) {
+    alert('Haberler yuklenemedi: ' + e.message);
+    logout();
+  }
+}
+
+function renderList() {
+  const filtered = filter ? news.filter(n => n.category === filter) : news;
+  let fb = `<button class="filter ${!filter?'on':''}" onclick="setFilter('')">Tumu (${news.length})</button>`;
+  Object.entries(CATS).forEach(([k,v]) => {
+    const cnt = news.filter(n=>n.category===k).length;
+    fb += `<button class="filter ${filter===k?'on':''}" onclick="setFilter('${k}')">${v} (${cnt})</button>`;
+  });
+  document.getElementById('filterBar').innerHTML = fb;
+
+  if (!filtered.length) {
+    document.getElementById('newsList').innerHTML = '<div class="empty">Henuz kayit yok</div>';
+    return;
+  }
+  document.getElementById('newsList').innerHTML = filtered.map(item => {
+    const i = news.indexOf(item);
+    const cat = item.category || 'haber';
+    const star = item.featured ? '<span class="ni-star">*</span>' : '';
+    const safeTitle = (item.title||'').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return `<div class="news-item" onclick="showEdit(${i})">
+      <span class="ni-date">${(item.date||'').replace(/</g,'&lt;')}</span>
+      ${star}
+      <span class="ni-title">${safeTitle}</span>
+      <span class="badge b-${cat}">${CATS[cat]||cat}</span>
+    </div>`;
+  }).join('');
+}
+
+function setFilter(f) { filter = f; renderList(); }
+
+function showMain() {
+  renderList();
+  showScreen('mainScreen');
+  document.getElementById('mainNotice').innerHTML = '';
+}
+
+function showEdit(idx) {
+  editIdx = idx;
+  const item = idx !== null ? news[idx] : {};
+  document.getElementById('editHeading').textContent = idx === null ? 'Yeni Haber Ekle' : 'Duzenle';
+  document.getElementById('fTitle').value = item.title || '';
+  document.getElementById('fSlug').value = item.slug || '';
+  document.getElementById('fDate').value = item.date || new Date().toISOString().slice(0,10);
+  document.getElementById('fCat').value = item.category || 'haber';
+  document.getElementById('fExcerpt').value = item.excerpt || '';
+  document.getElementById('fContent').value = item.content || '';
+  document.getElementById('fImage').value = item.image || '';
+  document.getElementById('fFeatured').checked = !!item.featured;
+  document.getElementById('fSourceUrl').value = item.source_url || '';
+  document.getElementById('deleteBtn').style.display = idx !== null ? 'inline-flex' : 'none';
+  document.getElementById('editNotice').innerHTML = '';
+  document.getElementById('imgUploadStatus').innerHTML = '';
+  updateImgPreview(item.image || '');
+  showScreen('editScreen');
+}
+
+async function saveItem() {
+  const title = document.getElementById('fTitle').value.trim();
+  if (!title) { document.getElementById('editNotice').innerHTML = '<div class="notice err">Baslik zorunlu.</div>'; return; }
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Kaydediliyor...';
+
+  // GÜVENLİK: HTML içeriği sanitize et
+  const rawContent = document.getElementById('fContent').value.trim();
+  const cleanContent = sanitizeHTML(rawContent);
+
+  const item = {
+    title, slug: document.getElementById('fSlug').value || slugify(title),
+    date: document.getElementById('fDate').value, category: document.getElementById('fCat').value,
+    excerpt: document.getElementById('fExcerpt').value.trim(),
+    content: cleanContent,
+    image: document.getElementById('fImage').value.trim(),
+    featured: document.getElementById('fFeatured').checked,
+    source_url: document.getElementById('fSourceUrl').value.trim(),
+  };
+  const newData = editIdx === null ? [...news, item] : news.map((n, i) => i === editIdx ? item : n);
+  try {
+    const d = await apiSave({ type: 'news', data: newData, sha, message: `BIA: "${title}" ${editIdx===null?'eklendi':'guncellendi'}` });
+    news = newData;
+    sha = d.sha;
+    document.getElementById('editNotice').innerHTML = '<div class="notice ok">Kaydedildi!</div>';
+    setTimeout(showMain, 900);
+  } catch(e) {
+    document.getElementById('editNotice').innerHTML = `<div class="notice err">${e.message}</div>`;
+    const rec = await recoverSha('news');
+    if (rec) sha = rec.sha;
+  }
+  btn.disabled = false; btn.innerHTML = 'Kaydet';
+}
+
+async function deleteItem() {
+  if (!confirm('Bu kaydi silmek istediginize emin misiniz?')) return;
+  const title = news[editIdx]?.title || '';
+  const newData = news.filter((_, i) => i !== editIdx);
+  try {
+    const d = await apiSave({ type: 'news', data: newData, sha, message: `BIA: "${title}" silindi` });
+    news = newData;
+    sha = d.sha; showMain();
+  } catch(e) {
+    document.getElementById('editNotice').innerHTML = `<div class="notice err">Silme hatasi: ${e.message}</div>`;
+    const rec = await recoverSha('news');
+    if (rec) sha = rec.sha;
+  }
+}
+
+async function rebuild() {
+  const btn = document.getElementById('rebuildBtn');
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span>';
+  try {
+    await apiFetch({ action: 'rebuild' });
+    document.getElementById('mainNotice').innerHTML = '<div class="notice info">Site yenileniyor... Vercel ~1 dakika icinde gunceller.</div>';
+  } catch(e) {}
+  btn.disabled = false; btn.innerHTML = 'Yayinla';
+}
+
+function previewItem() {
+  const title = document.getElementById('fTitle').value || 'Basliksiz';
+  const cat = document.getElementById('fCat').value || 'haber';
+  const date = document.getElementById('fDate').value || '';
+  const rawContent = document.getElementById('fContent').value || document.getElementById('fExcerpt').value || '';
+  const content = sanitizeHTML(rawContent);
+  const image = document.getElementById('fImage').value || '';
+  const CATNames = {haber:'HABER',duyuru:'DUYURU',etkinlik:'ETKINLIK',icerik:'ICERIK'};
+  const TR_M = ['','Ocak','Subat','Mart','Nisan','Mayis','Haziran','Temmuz','Agustos','Eylul','Ekim','Kasim','Aralik'];
+  let dateStr = '';
+  if (date) { const p = date.split('-'); dateStr = parseInt(p[2]) + ' ' + TR_M[parseInt(p[1])] + ' ' + p[0]; }
+  const safeTitle = title.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const imgHtml = image ? `<img src="${image.replace(/"/g,'&quot;')}" style="width:100%;max-height:360px;object-fit:cover;border-radius:12px 12px 0 0;" alt="">` : '';
+  const w = window.open('', '_blank', 'width=700,height=800');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Onizleme</title>
+    <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f5;padding:20px}
+    .card{background:#fff;border-radius:12px;max-width:640px;margin:0 auto;box-shadow:0 4px 20px rgba(0,0,0,.1);overflow:hidden}
+    .body{padding:24px 28px 32px}.badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:.75rem;font-weight:700;margin-bottom:12px;background:#FCE8EE;color:#E20439}
+    h1{font-size:1.5rem;margin-bottom:8px;font-family:Georgia,serif}.meta{color:#888;font-size:.9rem;margin-bottom:20px}
+    .content{line-height:1.8;font-size:.95rem}.content img{max-width:100%;border-radius:8px}
+    .bar{background:#E20439;color:#fff;padding:10px 20px;font-size:.8rem;text-align:center}</style></head>
+    <body><div class="bar">Onizleme — henuz kaydedilmedi</div>
+    <div class="card">${imgHtml}<div class="body"><span class="badge">${CATNames[cat]||cat}</span>
+    <h1>${safeTitle}</h1><p class="meta">${dateStr}</p><div class="content">${content}</div></div></div></body></html>`);
+  w.document.close();
+}
+
+function cleanHtml() {
+  const ta = document.getElementById('fContent');
+  let h = ta.value;
+  if (!h.trim()) return;
+  h = h.replace(/\s*(style|face|color|size|class|align|dir|lang|data-[^=]*)="[^"]*"/gi, '');
+  h = h.replace(/<span>\s*<\/span>/gi, '');
+  h = h.replace(/<div>\s*<\/div>/gi, '');
+  h = h.replace(/<font[^>]*>([\s\S]*?)<\/font>/gi, '$1');
+  h = h.replace(/<o:p[^>]*>[\s\S]*?<\/o:p>/gi, '');
+  h = h.replace(/(<br\s*\/?>\s*){3,}/gi, '<br><br>');
+  h = h.replace(/>\s{2,}</g, '> ');
+  h = h.replace(/<p>\s*<\/p>/gi, '');
+  ta.value = sanitizeHTML(h.trim());
+  document.getElementById('editNotice').innerHTML = '<div class="notice ok">HTML temizlendi ve guvenli hale getirildi.</div>';
+  setTimeout(() => { document.getElementById('editNotice').innerHTML = ''; }, 2000);
+}
+
+function updateImgPreview(url) {
+  const prev = document.getElementById('imgPreview');
+  const el = document.getElementById('imgPreviewEl');
+  if (url && url.startsWith('http')) {
+    el.src = url;
+    prev.style.display = 'block';
+  } else {
+    prev.style.display = 'none';
+  }
+}
+
+// ── GÜVENLİK: Dosya yükleme kontrolleri ──
+async function uploadImage(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const status = document.getElementById('imgUploadStatus');
+  const btn = document.getElementById('uploadImgBtn');
+
+  // Dosya tipi kontrolü
+  if (!ALLOWED_UPLOAD_TYPES.includes(file.type)) {
+    status.innerHTML = '<span style="color:#dc2626;">Gecersiz dosya tipi. Yalnizca JPG, PNG, WebP ve GIF kabul edilir.</span>';
+    input.value = '';
+    return;
+  }
+
+  // Uzanti kontrolü
+  const ext = '.' + file.name.split('.').pop().toLowerCase();
+  if (!ALLOWED_UPLOAD_EXTS.includes(ext)) {
+    status.innerHTML = '<span style="color:#dc2626;">Gecersiz dosya uzantisi. Yalnizca .jpg, .png, .webp, .gif kabul edilir.</span>';
+    input.value = '';
+    return;
+  }
+
+  // Cift uzanti kontrolü (ornek: foto.php.jpg)
+  const nameParts = file.name.split('.');
+  if (nameParts.length > 2) {
+    const dangerousExts = ['php','js','html','htm','svg','exe','bat','sh','py','rb','pl','cgi','asp','aspx','jsp'];
+    for (let i = 0; i < nameParts.length - 1; i++) {
+      if (dangerousExts.includes(nameParts[i].toLowerCase())) {
+        status.innerHTML = '<span style="color:#dc2626;">Supheli dosya adi reddedildi.</span>';
+        input.value = '';
+        return;
+      }
+    }
+  }
+
+  // Boyut kontrolü
+  if (file.size > MAX_UPLOAD_SIZE) {
+    status.innerHTML = '<span style="color:#dc2626;">Dosya cok buyuk (max 5MB).</span>';
+    input.value = '';
+    return;
+  }
+
+  btn.disabled = true;
+  status.innerHTML = '<span style="color:#888;">Yukleniyor...</span>';
+
+  try {
+    const base64 = await new Promise((res, rej) => {
+      const reader = new FileReader();
+      reader.onload = e => res(e.target.result.split(',')[1]);
+      reader.onerror = rej;
+      reader.readAsDataURL(file);
+    });
+
+    const ts = Date.now();
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+    const filename = `${ts}_${safeName}`;
+
+    const d = await apiSave({ type: 'upload', filename, content: base64 });
+
+    document.getElementById('fImage').value = d.url;
+    updateImgPreview(d.url);
+    status.innerHTML = '<span style="color:#15803d;">Yuklendi!</span>';
+    setTimeout(() => { status.innerHTML = ''; }, 3000);
+  } catch(e) {
+    status.innerHTML = `<span style="color:#dc2626;">${e.message}</span>`;
+  }
+  btn.disabled = false;
+  input.value = '';
+}
+
+// ── ETKİNLİKLER ──
+async function showEvents() {
+  if (!events.length && !eventsSha) {
+    try {
+      const d = await apiFetch({ type: 'events' });
+      events = d.data || []; eventsSha = d.sha;
+    } catch(e) {
+      document.getElementById('eventsMainNotice').innerHTML = `<div class="notice err">Yuklenemedi: ${e.message}</div>`;
+      return;
+    }
+  }
+  renderEventsList();
+  showScreen('eventsScreen');
+}
+
+function renderEventsList() {
+  const upcoming = events.filter(e => !e.past);
+  const past = events.filter(e => e.past);
+  let html = '';
+  if (!events.length) {
+    html = '<div class="empty">Henuz etkinlik yok</div>';
+  } else {
+    [...upcoming, ...past].forEach((ev) => {
+      const idx = events.indexOf(ev);
+      const safeTitle = (ev.title||'').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      html += `<div class="news-item" onclick="showEventEdit(${idx})" style="${ev.past ? 'opacity:.5' : ''}">
+        <span class="ni-date">${(ev.date||'').replace(/</g,'&lt;')}</span>
+        <span class="ni-title">${safeTitle}</span>
+        <span class="badge b-${ev.type||'online'}">${(ev.time||'').replace(/</g,'&lt;')} - ${(ev.location||'').replace(/</g,'&lt;')}</span>
+      </div>`;
+    });
+  }
+  document.getElementById('eventsList').innerHTML = html;
+}
+
+function showEventEdit(idx) {
+  eventEditIdx = idx;
+  const ev = idx !== null ? events[idx] : {};
+  document.getElementById('eventEditHeading').textContent = idx === null ? 'Yeni Etkinlik' : 'Etkinligi Duzenle';
+  document.getElementById('efTitle').value = ev.title || '';
+  document.getElementById('efSlug').value = ev.slug || '';
+  document.getElementById('efDate').value = ev.date || new Date().toISOString().slice(0,10);
+  document.getElementById('efTime').value = ev.time || '10:00';
+  document.getElementById('efLocation').value = ev.location || '';
+  document.getElementById('efType').value = ev.type || 'online';
+  document.getElementById('efDesc').value = ev.description || '';
+  document.getElementById('efRegUrl').value = ev.registration_url || '';
+  document.getElementById('efPast').checked = !!ev.past;
+  document.getElementById('deleteEventBtn').style.display = idx !== null ? 'inline-flex' : 'none';
+  document.getElementById('eventEditNotice').innerHTML = '';
+  showScreen('eventEditScreen');
+}
+
+function autoEventSlug() {
+  const t = document.getElementById('efTitle').value;
+  document.getElementById('efSlug').value = slugify(t);
+}
+
+async function saveEvent() {
+  const title = document.getElementById('efTitle').value.trim();
+  if (!title) { document.getElementById('eventEditNotice').innerHTML = '<div class="notice err">Baslik zorunlu.</div>'; return; }
+  const btn = document.getElementById('saveEventBtn');
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Kaydediliyor...';
+  const ev = {
+    title, slug: document.getElementById('efSlug').value || slugify(title),
+    date: document.getElementById('efDate').value, time: document.getElementById('efTime').value,
+    location: document.getElementById('efLocation').value.trim(), type: document.getElementById('efType').value,
+    description: document.getElementById('efDesc').value.trim(),
+    registration_url: document.getElementById('efRegUrl').value.trim(),
+    past: document.getElementById('efPast').checked,
+  };
+  const newData = eventEditIdx === null ? [...events, ev] : events.map((e, i) => i === eventEditIdx ? ev : e);
+  try {
+    const d = await apiSave({ type: 'events', data: newData, sha: eventsSha, message: `BIA: Etkinlik "${title}" ${eventEditIdx===null?'eklendi':'guncellendi'}` });
+    events = newData;
+    eventsSha = d.sha;
+    document.getElementById('eventEditNotice').innerHTML = '<div class="notice ok">Kaydedildi!</div>';
+    setTimeout(showEvents, 900);
+  } catch(e) {
+    document.getElementById('eventEditNotice').innerHTML = `<div class="notice err">${e.message}</div>`;
+    const rec = await recoverSha('events');
+    if (rec) eventsSha = rec.sha;
+  }
+  btn.disabled = false; btn.innerHTML = 'Kaydet';
+}
+
+async function deleteEvent() {
+  if (!confirm('Bu etkinligi silmek istediginize emin misiniz?')) return;
+  const title = events[eventEditIdx]?.title || '';
+  const newData = events.filter((_, i) => i !== eventEditIdx);
+  try {
+    const d = await apiSave({ type: 'events', data: newData, sha: eventsSha, message: `BIA: Etkinlik "${title}" silindi` });
+    events = newData;
+    eventsSha = d.sha; showEvents();
+  } catch(e) {
+    document.getElementById('eventEditNotice').innerHTML = `<div class="notice err">Silme hatasi: ${e.message}</div>`;
+    const rec = await recoverSha('events');
+    if (rec) eventsSha = rec.sha;
+  }
+}
+
+// ── TAB SWITCH ──
+let siteData = null, siteSha = '';
+let homepageData = null, homepageSha = '';
+let faqData = null, faqSha = '';
+let programsData = null, programsSha = '';
+
+async function switchTab(type) {
+  if (type === 'news') { showMain(); return; }
+  if (type === 'events') { showEvents(); return; }
+  if (type === 'site') { await loadAndShowSite(); return; }
+  if (type === 'homepage') { await loadAndShowHomepage(); return; }
+  if (type === 'faq') { await loadAndShowFaq(); return; }
+  if (type === 'programs') { await loadAndShowPrograms(); return; }
+}
+
+// ── SITE AYARLARI ──
+async function loadAndShowSite() {
+  if (!siteData) {
+    try { const res = await apiFetch({ type: 'site' }); siteData = res.data; siteSha = res.sha; }
+    catch(e) { alert('Yuklenemedi: ' + e.message); return; }
+  }
+  document.getElementById('sPhone').value = siteData.phone || '';
+  document.getElementById('sPhoneHref').value = siteData.phone_href || '';
+  document.getElementById('sEmail').value = siteData.email || '';
+  document.getElementById('sWhatsapp').value = siteData.whatsapp || '';
+  document.getElementById('sGaId').value = siteData.ga_id || '';
+  document.getElementById('sInstagram').value = siteData.social?.instagram || '';
+  document.getElementById('sYoutube').value = siteData.social?.youtube || '';
+  document.getElementById('sIos').value = siteData.apps?.ios || '';
+  document.getElementById('sAndroid').value = siteData.apps?.android || '';
+  showScreen('siteScreen');
+}
+
+async function saveSite() {
+  const btn = document.getElementById('saveSiteBtn');
+  btn.disabled = true; btn.textContent = 'Kaydediliyor...';
+  siteData.phone = document.getElementById('sPhone').value.trim();
+  siteData.phone_href = document.getElementById('sPhoneHref').value.trim();
+  siteData.email = document.getElementById('sEmail').value.trim();
+  siteData.whatsapp = document.getElementById('sWhatsapp').value.trim();
+  siteData.ga_id = document.getElementById('sGaId').value.trim();
+  if (!siteData.social) siteData.social = {};
+  siteData.social.instagram = document.getElementById('sInstagram').value.trim();
+  siteData.social.youtube = document.getElementById('sYoutube').value.trim();
+  if (!siteData.apps) siteData.apps = {};
+  siteData.apps.ios = document.getElementById('sIos').value.trim();
+  siteData.apps.android = document.getElementById('sAndroid').value.trim();
+  try {
+    const d = await apiSave({ type: 'site', data: siteData, sha: siteSha, message: 'BIA: Site ayarlari guncellendi' });
+    siteSha = d.sha;
+    document.getElementById('siteNotice').innerHTML = '<div class="notice ok">Kaydedildi! Site yeniden derlenince degisiklikler yayinlanir.</div>';
+  } catch(e) {
+    document.getElementById('siteNotice').innerHTML = `<div class="notice err">${e.message}</div>`;
+    const rec = await recoverSha('site');
+    if (rec) siteSha = rec.sha;
+  }
+  btn.disabled = false; btn.textContent = 'Kaydet';
+}
+
+// ── ANA SAYFA ──
+async function loadAndShowHomepage() {
+  if (!homepageData) {
+    try { const res = await apiFetch({ type: 'homepage' }); homepageData = res.data; homepageSha = res.sha; }
+    catch(e) { alert('Yuklenemedi: ' + e.message); return; }
+  }
+  document.getElementById('hpHeroTitle').value = homepageData.hero?.title || '';
+  document.getElementById('hpHeroSubtitle').value = homepageData.hero?.subtitle || '';
+  document.getElementById('hpAboutTitle').value = homepageData.about?.title || '';
+  document.getElementById('hpAboutText').value = homepageData.about?.text || '';
+  const counters = homepageData.impact?.counters || [];
+  document.getElementById('countersList').innerHTML = counters.map((c, i) => `
+    <div class="field-2" style="margin-bottom:8px;">
+      <div class="field"><label>Sayi ${i+1}</label><input type="number" id="cnt_val_${i}" value="${c.value}"></div>
+      <div class="field"><label>Etiket</label><input type="text" id="cnt_lbl_${i}" value="${(c.label||'').replace(/"/g,'&quot;')}"></div>
+    </div>`).join('');
+  showScreen('homepageScreen');
+}
+
+async function saveHomepage() {
+  const btn = document.getElementById('saveHomepageBtn');
+  btn.disabled = true; btn.textContent = 'Kaydediliyor...';
+  if (!homepageData.hero) homepageData.hero = {};
+  homepageData.hero.title = document.getElementById('hpHeroTitle').value.trim();
+  homepageData.hero.subtitle = document.getElementById('hpHeroSubtitle').value.trim();
+  if (!homepageData.about) homepageData.about = {};
+  homepageData.about.title = document.getElementById('hpAboutTitle').value.trim();
+  homepageData.about.text = document.getElementById('hpAboutText').value.trim();
+  const counters = homepageData.impact?.counters || [];
+  counters.forEach((c, i) => {
+    const valEl = document.getElementById(`cnt_val_${i}`);
+    const lblEl = document.getElementById(`cnt_lbl_${i}`);
+    if (valEl) c.value = parseInt(valEl.value) || c.value;
+    if (lblEl) c.label = lblEl.value.trim() || c.label;
+  });
+  try {
+    const d = await apiSave({ type: 'homepage', data: homepageData, sha: homepageSha, message: 'BIA: Ana sayfa guncellendi' });
+    homepageSha = d.sha;
+    document.getElementById('homepageNotice').innerHTML = '<div class="notice ok">Kaydedildi!</div>';
+  } catch(e) {
+    document.getElementById('homepageNotice').innerHTML = `<div class="notice err">${e.message}</div>`;
+    const rec = await recoverSha('homepage');
+    if (rec) homepageSha = rec.sha;
+  }
+  btn.disabled = false; btn.textContent = 'Kaydet';
+}
+
+// ── SSS ──
+async function loadAndShowFaq() {
+  if (!faqData) {
+    try { const res = await apiFetch({ type: 'faq' }); faqData = res.data; faqSha = res.sha; }
+    catch(e) { alert('Yuklenemedi: ' + e.message); return; }
+  }
+  renderFaq();
+  showScreen('faqScreen');
+}
+
+function renderFaq() {
+  document.getElementById('faqList').innerHTML = faqData.map((cat, ci) => {
+    const safeCat = (cat.category||'').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+    return `
+    <div class="card" style="margin-bottom:12px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+        <input type="text" value="${safeCat}" onchange="faqData[${ci}].category=this.value" style="flex:1;padding:8px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-weight:600;">
+        <button class="btn btn-del" style="padding:6px 12px;font-size:.8rem;" onclick="removeFaqCategory(${ci})">Kategori Sil</button>
+      </div>
+      ${cat.questions.map((q, qi) => {
+        const safeQ = (q.q||'').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+        const safeA = (q.a||'').replace(/</g,'&lt;');
+        return `
+        <div style="border:1px solid #e5e7eb;border-radius:8px;padding:12px;margin-bottom:8px;">
+          <div class="field"><label>Soru</label><input type="text" value="${safeQ}" onchange="faqData[${ci}].questions[${qi}].q=this.value" style="width:100%;padding:8px 12px;border:1.5px solid #d1d5db;border-radius:8px;"></div>
+          <div class="field"><label>Cevap</label><textarea rows="2" onchange="faqData[${ci}].questions[${qi}].a=this.value" style="width:100%;padding:8px 12px;border:1.5px solid #d1d5db;border-radius:8px;resize:vertical;">${safeA}</textarea></div>
+          <button class="btn btn-del" style="padding:4px 10px;font-size:.78rem;" onclick="removeFaqQ(${ci},${qi})">Soruyu Sil</button>
+        </div>`;
+      }).join('')}
+      <button class="btn btn-gray" style="width:100%;margin-top:4px;" onclick="addFaqQ(${ci})">+ Soru Ekle</button>
+    </div>`;
+  }).join('');
+}
+
+function addFaqCategory() { faqData.push({ category: 'Yeni Kategori', questions: [] }); renderFaq(); }
+function removeFaqCategory(ci) { if (!confirm('Bu kategoriyi silmek istiyor musunuz?')) return; faqData.splice(ci, 1); renderFaq(); }
+function addFaqQ(ci) { faqData[ci].questions.push({ q: '', a: '' }); renderFaq(); }
+function removeFaqQ(ci, qi) { faqData[ci].questions.splice(qi, 1); renderFaq(); }
+
+async function saveFaq() {
+  const btn = document.getElementById('saveFaqBtn');
+  btn.disabled = true; btn.textContent = 'Kaydediliyor...';
+  try {
+    const d = await apiSave({ type: 'faq', data: faqData, sha: faqSha, message: 'BIA: SSS guncellendi' });
+    faqSha = d.sha;
+    document.getElementById('faqNotice').innerHTML = '<div class="notice ok">Kaydedildi!</div>';
+  } catch(e) {
+    document.getElementById('faqNotice').innerHTML = `<div class="notice err">${e.message}</div>`;
+    const rec = await recoverSha('faq');
+    if (rec) faqSha = rec.sha;
+  }
+  btn.disabled = false; btn.textContent = 'Tumunu Kaydet';
+}
+
+// ── PROGRAMLAR ──
+async function loadAndShowPrograms() {
+  if (!programsData) {
+    try { const res = await apiFetch({ type: 'programs' }); programsData = res.data; programsSha = res.sha; }
+    catch(e) { alert('Yuklenemedi: ' + e.message); return; }
+  }
+  renderPrograms();
+  showScreen('programsScreen');
+}
+
+function renderPrograms() {
+  document.getElementById('programsList').innerHTML = programsData.map((p, i) => {
+    const safeIcon = (p.icon||'').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+    const safeTitle = (p.title||'').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+    const safeShort = (p.short||'').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+    const safeTarget = (p.target||'').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+    const safeModel = (p.model||'').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+    return `
+    <div class="card" style="margin-bottom:12px;">
+      <div class="field-2">
+        <div class="field"><label>Ikon</label><input type="text" value="${safeIcon}" onchange="programsData[${i}].icon=this.value" style="width:100%;padding:8px 12px;border:1.5px solid #d1d5db;border-radius:8px;"></div>
+        <div class="field"><label>Baslik</label><input type="text" value="${safeTitle}" onchange="programsData[${i}].title=this.value" style="width:100%;padding:8px 12px;border:1.5px solid #d1d5db;border-radius:8px;"></div>
+      </div>
+      <div class="field"><label>Kisa Aciklama</label><input type="text" value="${safeShort}" onchange="programsData[${i}].short=this.value" style="width:100%;padding:8px 12px;border:1.5px solid #d1d5db;border-radius:8px;"></div>
+      <div class="field-2">
+        <div class="field"><label>Hedef Kitle</label><input type="text" value="${safeTarget}" onchange="programsData[${i}].target=this.value" style="width:100%;padding:8px 12px;border:1.5px solid #d1d5db;border-radius:8px;"></div>
+        <div class="field"><label>Model</label><input type="text" value="${safeModel}" onchange="programsData[${i}].model=this.value" style="width:100%;padding:8px 12px;border:1.5px solid #d1d5db;border-radius:8px;"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function savePrograms() {
+  const btn = document.getElementById('saveProgramsBtn');
+  btn.disabled = true; btn.textContent = 'Kaydediliyor...';
+  try {
+    const d = await apiSave({ type: 'programs', data: programsData, sha: programsSha, message: 'BIA: Programlar guncellendi' });
+    programsSha = d.sha;
+    document.getElementById('programsNotice').innerHTML = '<div class="notice ok">Kaydedildi!</div>';
+  } catch(e) {
+    document.getElementById('programsNotice').innerHTML = `<div class="notice err">${e.message}</div>`;
+    const rec = await recoverSha('programs');
+    if (rec) programsSha = rec.sha;
+  }
+  btn.disabled = false; btn.textContent = 'Tumunu Kaydet';
+}
+
+function logout() {
+  sessionStorage.clear();
+  document.cookie = 'bia_auth=; path=/yonetim; max-age=0; SameSite=Lax; Secure';
+  window.location.replace('/yonetim/');
+}
+
+// ── BAŞLANGIÇ ──
+loadNews();
+</script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}Sayfa Bulunamadı | {{ site.title }}{% endblock %}
+{% block description %}Aradığınız sayfa bulunamadı.{% endblock %}
+
+{% block content %}
+<section class="section" style="min-height:60vh;display:flex;align-items:center;">
+  <div class="container text-center">
+    <div style="font-size:5rem;margin-bottom:var(--s-6);">🔍</div>
+    <h1>Sayfa Bulunamadı</h1>
+    <p class="mb-8">Aradığınız sayfa taşınmış veya kaldırılmış olabilir.</p>
+    <div class="d-flex gap-4 justify-center flex-wrap">
+      <a href="/" class="btn btn-primary">Ana Sayfaya Dön</a>
+      <a href="/iletisim" class="btn btn-secondary">İletişim</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

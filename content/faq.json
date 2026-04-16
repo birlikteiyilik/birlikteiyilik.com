@@ -1,0 +1,43 @@
+[
+  {
+    "category": "Başvuru",
+    "questions": [
+      { "q": "Başvuru ücretsiz mi?", "a": "Evet, tüm eğitim programlarımız tamamen ücretsizdir. Herhangi bir ücret talep edilmez." },
+      { "q": "Hangi yaş gruplarına eğitim veriyorsunuz?", "a": "Programlarımız 7-15 yaş arası çocuklara yöneliktir. Bazı özel programlarımız farklı yaş gruplarına da hitap edebilir." },
+      { "q": "Başvuru sonrası ne kadar sürede dönüş alırım?", "a": "Başvurular genellikle 1 hafta içinde değerlendirilir ve sizinle iletişime geçilir." },
+      { "q": "Birden fazla programa aynı anda başvurabilir miyim?", "a": "Evet, online ve yüz yüze programlara eş zamanlı başvuru yapabilirsiniz." }
+    ]
+  },
+  {
+    "category": "Eğitim",
+    "questions": [
+      { "q": "Online dersler nasıl işliyor?", "a": "Dersler Zoom veya benzeri platformlar üzerinden, belirlenen gün ve saatte gerçekleştirilir. Her ders yaklaşık 45-60 dakika sürer." },
+      { "q": "Müfredat ne içeriyor?", "a": "Müfredatımız Kur'an-ı Kerim okuma, güzel ahlak ve değerler eğitimi, siyer ve İslam tarihi konularını kapsar." },
+      { "q": "Öğretmenler kimlerdir?", "a": "Öğretmenlerimiz, oryantasyon programından geçmiş, alanında yetkin gönüllülerden oluşmaktadır." },
+      { "q": "Ders programını kim belirliyor?", "a": "Ders programı kayıt sonrası öğretmen ve aile ile birlikte belirlenir." }
+    ]
+  },
+  {
+    "category": "Uygulama",
+    "questions": [
+      { "q": "Uygulamayı nereden indirebilirim?", "a": "Uygulamamız App Store ve Google Play Store üzerinden ücretsiz olarak indirilebilir." },
+      { "q": "Uygulamada neler var?", "a": "Duyurular, öğrenci takibi, devam durumu, mesajlaşma, rapor görüntüleme ve etkinlik takvimi." },
+      { "q": "Veli ve öğretmen girişi ayrı mı?", "a": "Evet, veli ve öğretmen rolleri ayrı panellerle yönetilir. Her rol kendi özelleştirilmiş görünümüne sahiptir." }
+    ]
+  },
+  {
+    "category": "Gönüllülük",
+    "questions": [
+      { "q": "Gönüllü öğretmen olmak için ne gerekiyor?", "a": "18 yaşından büyük, alanında bilgili ve çocuklarla iletişime açık herkes başvurabilir. Oryantasyon programımız zorunludur." },
+      { "q": "Haftalık ne kadar zaman ayırmam gerekiyor?", "a": "Gönüllü öğretmenlerimiz haftada ortalama 2-4 saat zaman ayırmaktadır." },
+      { "q": "Gönüllülük süreci nasıl işliyor?", "a": "Başvuru → ön değerlendirme → görüşme → oryantasyon eğitimi → öğrenci eşleşmesi → eğitime başlama." }
+    ]
+  },
+  {
+    "category": "Destek",
+    "questions": [
+      { "q": "Bağış yapabilir miyim?", "a": "Yasal altyapı tamamlandığında bağış modülümüz aktif olacaktır. Şimdilik gönüllülük ile destek olabilirsiniz." },
+      { "q": "Kurumsal iş birliği nasıl oluyor?", "a": "Kurumunuzla iş birliği olanakları için iletişim sayfamızdan bize ulaşabilirsiniz." }
+    ]
+  }
+]

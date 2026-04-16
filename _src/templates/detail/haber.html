@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% set crumbs = [{"label": "Haberler", "url": "/haberler"}, {"label": item.title, "url": "/haberler/" + item.slug}] %}
+{% block title %}{{ item.title }} | {{ site.title }}{% endblock %}
+{% block description %}{{ item.excerpt }}{% endblock %}
+{% block breadcrumb %}{% include 'partials/breadcrumb.html' %}{% endblock %}
+
+{% block schema %}
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"NewsArticle","headline":"{{ item.title }}","datePublished":"{{ item.date }}","description":"{{ item.excerpt }}","publisher":{"@type":"EducationalOrganization","name":"Birlikte İyilik Akademi","url":"{{ site_url }}","logo":{"@type":"ImageObject","url":"{{ site_url }}/images/logo.png"}}}
+</script>
+{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container container-narrow">
+    <span class="badge badge-primary mb-4">{{ item.category }}</span>
+    <h1>{{ item.title }}</h1>
+    <p class="text-muted mb-8">{{ item.date | tr_date }}</p>
+
+    <div class="content-body">
+      {{ item.content | safe }}
+    </div>
+
+    <div class="mt-12" style="border-top:1px solid var(--color-border);padding-top:var(--s-8);">
+      <h3 style="font-family:var(--font-sans);">Diğer Haberler</h3>
+      <div class="grid grid-3 mt-6">
+        {% for other in news[:3] if other.slug != item.slug %}
+        <div class="card news-card">
+          <div class="card-image">📰</div>
+          <div class="card-body">
+            <span class="card-category">{{ other.category }}</span>
+            <h3 style="font-size:14px;"><a href="#" onclick="openArticle('{{ other.slug }}');return false;">{{ other.title }}</a></h3>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="text-center mt-8">
+      <a href="/haberler" class="btn btn-secondary">Tüm Haberler</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

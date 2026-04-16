@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>BİA Yönetim — Giriş</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; color: #222; min-height: 100vh; }
+.topbar { background: #E20439; color: #fff; padding: 0 20px; height: 56px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,.2); }
+.topbar-title { font-weight: 700; font-size: 1rem; }
+.container { max-width: 860px; margin: 28px auto; padding: 0 16px; }
+.card { background: #fff; border-radius: 10px; box-shadow: 0 1px 6px rgba(0,0,0,.08); padding: 28px; }
+.field { margin-bottom: 18px; }
+.field label { display: block; font-size: .83rem; font-weight: 600; color: #555; margin-bottom: 6px; }
+.field input {
+  width: 100%; padding: 10px 14px; border: 1.5px solid #d1d5db; border-radius: 8px;
+  font-size: .95rem; font-family: inherit; transition: border-color .15s;
+}
+.field input:focus { outline: none; border-color: #E20439; box-shadow: 0 0 0 3px rgba(226,4,57,.08); }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px; border-radius: 8px; font-size: .9rem; font-weight: 600; cursor: pointer; border: none; transition: background .15s; }
+.btn-red { background: #E20439; color: #fff; }
+.btn-red:hover { background: #B00030; }
+.btn-block { width: 100%; justify-content: center; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.notice { padding: 12px 16px; border-radius: 8px; font-size: .88rem; margin-bottom: 16px; }
+.err { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; }
+.spin { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin .6s linear infinite; vertical-align: middle; }
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="topbar-title">BİA Yönetim</span>
+</div>
+
+<div class="container">
+  <div style="max-width:380px;margin:70px auto;">
+    <div class="card">
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="width:60px;height:60px;background:#E20439;border-radius:14px;display:inline-flex;align-items:center;justify-content:center;font-size:1.6rem;color:#fff;font-weight:800;">B</div>
+      </div>
+      <h1 style="text-align:center;margin-bottom:6px;font-size:1.5rem;">Birlikte İyilik</h1>
+      <p style="text-align:center;color:#888;font-size:.9rem;margin-bottom:24px;">Yönetim Paneli</p>
+      <div class="field">
+        <label>Kullanıcı Adı <span style="color:#aaa;font-weight:400">(isteğe bağlı)</span></label>
+        <input type="text" id="unInput" placeholder="admin" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <div class="field">
+        <label>Şifre</label>
+        <input type="password" id="pwInput" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <div id="loginErr" style="margin-bottom:12px;"></div>
+      <button class="btn btn-red btn-block" onclick="doLogin()" id="loginBtn">Giriş Yap</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = '/api/bia-news';
+
+async function doLogin() {
+  const pw = document.getElementById('pwInput').value;
+  const username = (document.getElementById('unInput').value.trim()) || 'admin';
+  if (!pw) return;
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Giriş yapılıyor...';
+  document.getElementById('loginErr').innerHTML = '';
+  try {
+    // JWT login
+    const r = await fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'login', username, password: pw })
+    });
+    const d = await r.json();
+    if (!r.ok || !d.token) throw new Error(d.error || 'Yanlış şifre');
+
+    const token = d.token;
+    sessionStorage.setItem('biaToken', token);
+    sessionStorage.setItem('biaName', d.user?.name || username);
+
+    // Middleware için JWT token'ı cookie'de sakla (8 saat, Secure)
+    document.cookie = `bia_auth=${token}; path=/yonetim; SameSite=Lax; Secure; max-age=28800`;
+
+    window.location.href = '/yonetim/panel.html';
+  } catch(e) {
+    document.getElementById('loginErr').innerHTML = `<div class="notice err">${e.message}</div>`;
+  }
+  btn.disabled = false; btn.innerHTML = 'Giriş Yap';
+}
+
+// Zaten giriş yapılmışsa panele yönlendir
+window.onload = () => {
+  if (sessionStorage.getItem('biaToken')) {
+    window.location.href = '/yonetim/panel.html';
+  }
+};
+</script>
+</body>
+</html>

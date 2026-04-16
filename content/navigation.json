@@ -1,0 +1,81 @@
+{
+  "main": [
+    {
+      "label": "Hakkımızda",
+      "url": "/hakkimizda",
+      "children": [
+        { "label": "Misyon & Vizyon", "url": "/hakkimizda/misyon-vizyon" },
+        { "label": "Eğitim Yaklaşımımız", "url": "/hakkimizda/egitim-yaklasimimiz" },
+        { "label": "Ekibimiz", "url": "/hakkimizda/ekibimiz" },
+        { "label": "Şeffaflık & Belgeler", "url": "/hakkimizda/seffaflik-belgeler" }
+      ]
+    },
+    {
+      "label": "Eğitimler",
+      "url": "/egitimler",
+      "children": [
+        { "label": "Online Eğitim", "url": "/egitimler/online-egitim" },
+        { "label": "Yüz Yüze Eğitim", "url": "/egitimler/yuz-yuze-egitim" },
+        { "label": "Kur'an-ı Kerim Eğitimi", "url": "/egitimler/kuran-i-kerim" },
+        { "label": "Güzel Ahlak Programı", "url": "/egitimler/guzel-ahlak" },
+        { "label": "Öğrenci Koçluğu & Takip", "url": "/egitimler/ogrenci-koclugu-ve-takip" }
+      ]
+    },
+    {
+      "label": "Başvurular",
+      "url": "/basvurular",
+      "children": [
+        { "label": "Online Eğitim Başvurusu", "url": "/basvurular/online-egitim" },
+        { "label": "Yüz Yüze Eğitim Başvurusu", "url": "/basvurular/yuz-yuze-egitim" },
+        { "label": "Gönüllü Öğretmen Başvurusu", "url": "/basvurular/gonullu-ogretmen" },
+        { "label": "Veli Bilgilendirme", "url": "/basvurular/veli-bilgilendirme" }
+      ]
+    },
+    { "label": "Haberler", "url": "/haberler" },
+    { "label": "Yazılar", "url": "/yazilar" },
+    { "label": "Uygulama", "url": "/uygulama" },
+    { "label": "İletişim", "url": "/iletisim" }
+  ],
+  "cta": [
+    { "label": "Online Başvuru", "url": "https://forms.gle/5a9TSS7XAUxJUCt59", "style": "primary" },
+    { "label": "Gönüllü Ol", "url": "https://forms.gle/YgeEqBwNRAKZWrpH6", "style": "secondary" }
+  ],
+  "footer": [
+    {
+      "title": "Kurumsal",
+      "links": [
+        { "label": "Hakkımızda", "url": "/hakkimizda" },
+        { "label": "Misyon & Vizyon", "url": "/hakkimizda/misyon-vizyon" },
+        { "label": "Ekibimiz", "url": "/hakkimizda/ekibimiz" },
+        { "label": "Şeffaflık & Belgeler", "url": "/hakkimizda/seffaflik-belgeler" }
+      ]
+    },
+    {
+      "title": "Eğitimler",
+      "links": [
+        { "label": "Online Eğitim", "url": "/egitimler/online-egitim" },
+        { "label": "Yüz Yüze Eğitim", "url": "/egitimler/yuz-yuze-egitim" },
+        { "label": "Kur'an-ı Kerim Eğitimi", "url": "/egitimler/kuran-i-kerim" },
+        { "label": "Güzel Ahlak Programı", "url": "/egitimler/guzel-ahlak" }
+      ]
+    },
+    {
+      "title": "Başvuru & Destek",
+      "links": [
+        { "label": "Online Başvuru", "url": "/basvurular/online-egitim" },
+        { "label": "Yüz Yüze Başvuru", "url": "/basvurular/yuz-yuze-egitim" },
+        { "label": "Gönüllü Öğretmen Ol", "url": "/basvurular/gonullu-ogretmen" },
+        { "label": "Destek Ol", "url": "/destek-ol" }
+      ]
+    },
+    {
+      "title": "İçerik",
+      "links": [
+        { "label": "Haberler & Duyurular", "url": "/haberler" },
+        { "label": "Değer Odaklı Yazılar", "url": "/yazilar" },
+        { "label": "Videolar", "url": "/videolar" },
+        { "label": "SSS", "url": "/sss" }
+      ]
+    }
+  ]
+}

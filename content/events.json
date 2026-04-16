@@ -1,0 +1,35 @@
+[
+  {
+    "title": "Bahar Dönemi Tanışma Toplantısı",
+    "slug": "bahar-donemi-tanisma-toplantisi",
+    "date": "2026-04-05",
+    "time": "14:00",
+    "location": "Online (Zoom)",
+    "type": "online",
+    "description": "Yeni dönem öğrenci ve velileriyle tanışma toplantısı. Program akışı, beklentiler ve uygulama kullanımı hakkında bilgilendirme.",
+    "registration_url": "",
+    "past": false
+  },
+  {
+    "title": "Çocuklarla Değerler Atölyesi",
+    "slug": "cocuklarla-degerler-atolyesi",
+    "date": "2026-04-12",
+    "time": "10:00",
+    "location": "Online",
+    "type": "online",
+    "description": "7-12 yaş grubu çocuklarımız için interaktif değerler eğitimi atölyesi. Sabır, şükür ve yardımseverlik temaları.",
+    "registration_url": "",
+    "past": false
+  },
+  {
+    "title": "Gönüllü Öğretmen Buluşması",
+    "slug": "gonullu-ogretmen-bulusmasi",
+    "date": "2026-04-19",
+    "time": "19:00",
+    "location": "Online (Zoom)",
+    "type": "online",
+    "description": "Gönüllü öğretmenlerimizin deneyim paylaşımı, motivasyon ve eğitim tekniklerinin konuşulacağı aylık buluşma.",
+    "registration_url": "",
+    "past": false
+  }
+]

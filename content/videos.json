@@ -1,0 +1,26 @@
+[
+  {
+    "title": "Birlikte İyilik Akademi Tanıtım",
+    "slug": "birlikte-iyilik-tanitim",
+    "youtube_id": "",
+    "description": "Birlikte İyilik Akademi'nin değer odaklı eğitim yaklaşımı ve programları hakkında kısa tanıtım videosu.",
+    "date": "2026-01-01",
+    "tags": ["tanıtım", "akademi"]
+  },
+  {
+    "title": "Gönüllü Öğretmenlerimizden Paylaşımlar",
+    "slug": "gonullu-ogretmenlerden-paylasimlar",
+    "youtube_id": "",
+    "description": "Gönüllü öğretmenlerimizin eğitim sürecindeki deneyimleri ve öğrencileriyle yaşadıkları anlar.",
+    "date": "2025-12-15",
+    "tags": ["gönüllü", "deneyim"]
+  },
+  {
+    "title": "Değerler Eğitiminde Aile Katılımı",
+    "slug": "degerler-egitiminde-aile-katilimi",
+    "youtube_id": "",
+    "description": "Velilerin eğitim sürecine nasıl dahil olduğunu ve çocuklarının gelişimini nasıl takip edebildiğini anlatan video.",
+    "date": "2025-11-20",
+    "tags": ["veli", "aile", "takip"]
+  }
+]

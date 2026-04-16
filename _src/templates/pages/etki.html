@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% set crumbs = [{"label": "Etki", "url": "/etki"}] %}
+{% block title %}Etki | {{ site.title }}{% endblock %}
+{% block description %}Birlikte İyilik Akademi'nin etkisi — rakamlar, başarı hikâyeleri ve raporlar.{% endblock %}
+{% block breadcrumb %}{% include 'partials/breadcrumb.html' %}{% endblock %}
+
+{% block content %}
+<section class="page-hero"><div class="container"><h1>Etkimiz</h1><p>Rakamlarla görünen, hikayelerle hissedilen etki.</p></div></section>
+
+<section class="section bg-soft"><div class="container">
+  <div class="counter-grid">
+    {% for c in homepage.impact.counters %}
+    <div class="counter-item">
+      <div class="counter-value" data-counter="{{ c.value }}" data-suffix="{{ c.suffix }}">0</div>
+      <div class="counter-label">{{ c.label }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div></section>
+
+<section class="section"><div class="container">
+  <div class="section-header"><h2>Başarı Hikâyeleri</h2></div>
+  <div class="grid grid-2">
+    {% for story in stories %}
+    <div class="card story-card">
+      <span class="card-type">{{ story.type }}</span>
+      <h3>{{ story.title }}</h3>
+      <p>{{ story.content }}</p>
+      <span class="badge badge-muted mt-4">{{ story.program }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</div></section>
+{% endblock %}

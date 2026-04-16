@@ -1,0 +1,43 @@
+<nav class="site-nav" role="navigation" aria-label="Ana navigasyon">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo" aria-label="Birlikte Iyilik Akademi Ana Sayfa">
+      <img src="/images/logo_icon.png" alt="Birlikte Iyilik Akademi">
+    </a>
+
+    <button class="hamburger" aria-label="Menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+
+    <div class="nav-menu">
+      {% for item in nav.main %}
+      <div class="nav-item">
+        <a href="{{ base }}{{ item.url }}" class="nav-link"
+           {% if current_path == item.url %}aria-current="page"{% endif %}
+           {% if item.children %}aria-haspopup="true"{% endif %}>
+          {{ item.label }}
+        </a>
+        {% if item.children %}
+        <div class="nav-dropdown" role="menu">
+          {% for child in item.children %}
+          <a href="{{ base }}{{ child.url }}" role="menuitem"
+             {% if current_path == child.url %}aria-current="page"{% endif %}>
+            {{ child.label }}
+          </a>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+
+      <div class="nav-cta d-none-mobile">
+        {% for cta in nav.cta %}
+        <a href="{{ cta.url }}" class="btn btn-{{ cta.style }} btn-sm"
+           {% if cta.url.startswith('http') %}target="_blank" rel="noopener"{% endif %}
+           data-track="click_apply_online">
+          {{ cta.label }}
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</nav>

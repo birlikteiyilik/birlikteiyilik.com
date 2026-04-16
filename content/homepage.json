@@ -1,0 +1,179 @@
+{
+  "hero": {
+    "title": "Değerlerle Büyüyen Nesiller İçin Eğitim",
+    "subtitle": "Birlikte İyilik Akademi; güzel ahlak, Kur'an-ı Kerim eğitimi, öğrenci takibi ve aile iş birliğiyle çocuklarımızın gelişimini destekleyen değer odaklı bir eğitim yapısı sunar.",
+    "cta1": {
+      "label": "Online Eğitim Başvurusu",
+      "url": "https://forms.gle/5a9TSS7XAUxJUCt59"
+    },
+    "cta2": {
+      "label": "Yüz Yüze Eğitim Başvurusu",
+      "url": "https://forms.gle/5a9TSS7XAUxJUCt59"
+    }
+  },
+  "quick_cards": {
+    "title": "İhtiyacınız Olan Yere Tek Tıkla Ulaşın",
+    "cards": [
+      {
+        "icon": "📚",
+        "label": "Online Eğitim Başvurusu",
+        "url": "https://forms.gle/5a9TSS7XAUxJUCt59",
+        "desc": "Çevrim içi eğitim programımıza hemen başvurun"
+      },
+      {
+        "icon": "🏫",
+        "label": "Yüz Yüze Eğitim Başvurusu",
+        "url": "https://forms.gle/5a9TSS7XAUxJUCt59",
+        "desc": "Merkez eğitimlerimize katılmak için başvurun"
+      },
+      {
+        "icon": "🤝",
+        "label": "Gönüllü Öğretmen Başvurusu",
+        "url": "https://forms.gle/YgeEqBwNRAKZWrpH6",
+        "desc": "Gönüllü öğretmen olarak aramıza katılın"
+      },
+      {
+        "icon": "✍️",
+        "label": "Değer Odaklı Yazılar",
+        "url": "/yazilar",
+        "desc": "Değerler eğitimi üzerine yazılarımızı okuyun"
+      }
+    ]
+  },
+  "about": {
+    "title": "Sadece Eğitim Değil; Takip, İletişim ve Rehberlik",
+    "text": "Kurum; veli, öğrenci ve eğitmeni aynı sistem içinde buluşturarak düzenli, ölçülebilir ve güven veren bir süreç kurar. Birlikte İyilik Akademi, değer odaklı eğitimi yalnızca ders olarak değil, yaşam pratiği olarak ele alır.",
+    "cta1": {
+      "label": "Eğitim Yaklaşımımız",
+      "url": "/hakkimizda/egitim-yaklasimimiz"
+    },
+    "cta2": {
+      "label": "Uygulamayı İncele",
+      "url": "/uygulama"
+    }
+  },
+  "programs": {
+    "title": "Her Aile İçin Uygun Bir Yol Var",
+    "subtitle": "Online ve yüz yüze seçenekler; program detayları, yaş grupları ve başvuru adımlarıyla birlikte açık biçimde anlatılır."
+  },
+  "process": {
+    "title": "Başvurudan Takibe Sistemli Yolculuk",
+    "subtitle": "Başvuru alınır, uygun yönlendirme yapılır, eğitim başlar, veli bilgilendirilir ve süreç uygulama üzerinden takip edilir.",
+    "steps": [
+      {
+        "step": 1,
+        "title": "Başvuru",
+        "desc": "Online veya yüz yüze program için form doldurulur."
+      },
+      {
+        "step": 2,
+        "title": "Değerlendirme",
+        "desc": "Başvuru incelenir, yaş grubu ve programa uygunluk belirlenir."
+      },
+      {
+        "step": 3,
+        "title": "Eşleşme",
+        "desc": "Öğrenci uygun öğretmen ve grupla eşleştirilir."
+      },
+      {
+        "step": 4,
+        "title": "Eğitim Başlar",
+        "desc": "Düzenli dersler, Kur'an-ı Kerim ve güzel ahlak müfredatıyla."
+      },
+      {
+        "step": 5,
+        "title": "Takip & Raporlama",
+        "desc": "Uygulama üzerinden devam, performans ve gelişim izlenir."
+      },
+      {
+        "step": 6,
+        "title": "Geri Bildirim",
+        "desc": "Veli ve öğretmen düzenli olarak bilgilendirilir."
+      }
+    ]
+  },
+  "impact": {
+    "title": "Rakamlarla Görünen, Hikâyelerle Hissedilen Etki",
+    "subtitle": "Kurumsal güven için sadece anlatmak değil, veri ve örnekle göstermek gerekir.",
+    "counters": [
+      {
+        "value": 1500,
+        "suffix": "+",
+        "label": "Öğrenci"
+      },
+      {
+        "value": 350,
+        "suffix": "+",
+        "label": "Gönüllü Öğretmen"
+      },
+      {
+        "value": 50,
+        "suffix": "+",
+        "label": "Etkinlik"
+      },
+      {
+        "value": 300,
+        "suffix": "+",
+        "label": "Yayınlanan İçerik"
+      }
+    ]
+  },
+  "news_section": {
+    "title": "Akademiden Haberler ve Duyurular",
+    "subtitle": "Önemli gelişmeler, etkinlikler, yeni dönem başvuruları ve kısa bilgilendirmeler."
+  },
+  "events_section": {
+    "title": "Takvimde Neler Var?",
+    "subtitle": "Yüz yüze buluşmalar, çevrim içi programlar ve özel gün etkinlikleri."
+  },
+  "articles_section": {
+    "title": "Değer Odaklı Yazılar",
+    "subtitle": "Güzel ahlak, tarih bilinci ve eğitim üzerine derinlikli içerikler."
+  },
+  "video_section": {
+    "title": "Videolarla Daha Yakın Bir Pencere",
+    "subtitle": "Etkinlik, eğitim ve kurum kültürü videoları."
+  },
+  "app": {
+    "title": "Cebinizde Takip, Erişim ve İletişim",
+    "subtitle": "Veli ve öğretmen girişleri, duyurular, öğrenci takibi ve mesajlaşma — hepsi tek uygulamada.",
+    "features": [
+      "Öğrenci devam ve performans takibi",
+      "Anlık duyuru ve bildirimler",
+      "Veli-öğretmen mesajlaşma",
+      "Ders ve etkinlik takvimi",
+      "Rapor ve gelişim izleme"
+    ]
+  },
+  "support": {
+    "title": "İyiliğin Bir Parçası Olun",
+    "subtitle": "Gönüllü olmak, iş birliği kurmak veya bağışla destek vermek isteyenler için.",
+    "cards": [
+      {
+        "icon": "🤝",
+        "title": "Gönüllü Ol",
+        "desc": "Gönüllü öğretmen veya destekçi olarak aramıza katılın.",
+        "url": "/destek-ol/gonullu-ol",
+        "cta": "Gönüllü Başvurusu"
+      },
+      {
+        "icon": "💝",
+        "title": "Bağış Yap",
+        "desc": "Eğitim faaliyetlerine maddi destek verin.",
+        "url": "/destek-ol/bagis-yap",
+        "cta": "Bağış Yap"
+      },
+      {
+        "icon": "🏢",
+        "title": "Kurumsal İş Birliği",
+        "desc": "Kurumunuzla iş birliği olanakları için iletişime geçin.",
+        "url": "/destek-ol/kurumsal-is-birligi",
+        "cta": "İş Birliği Formu"
+      }
+    ]
+  },
+  "transparency": {
+    "title": "Güven Şeffaflıkla Güçlenir",
+    "subtitle": "Belgeler, raporlar, politika metinleri ve açık iletişim kanalları."
+  }
+}

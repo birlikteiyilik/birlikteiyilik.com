@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% set crumbs = [{"label": "Haberler & Duyurular", "url": "/haberler"}] %}
+{% block title %}Haberler & Duyurular | {{ site.title }}{% endblock %}
+{% block description %}Birlikte İyilik Akademi haberleri, duyuruları ve etkinlik özetleri.{% endblock %}
+{% block breadcrumb %}{% include 'partials/breadcrumb.html' %}{% endblock %}
+
+{% block content %}
+<section class="page-hero"><div class="container"><h1>Haberler & Duyurular</h1><p>Akademimizden son gelişmeler, duyurular ve etkinlik özetleri.</p></div></section>
+<section class="section"><div class="container">
+  <div class="filters mb-8" id="newsFilters">
+    <button class="filter on" onclick="filterNews('')">Tümü</button>
+    <button class="filter" onclick="filterNews('haber')">Haberler</button>
+    <button class="filter" onclick="filterNews('duyuru')">Duyurular</button>
+    <button class="filter" onclick="filterNews('etkinlik')">Etkinlikler</button>
+  </div>
+  <div class="grid grid-3" id="haberlerGrid">
+    {% for item in news if item.category != 'icerik' %}
+    <div class="card news-card" data-cat="{{ item.category }}">
+      {% if item.image %}
+      <img src="{{ item.image }}" alt="{{ item.title }}" class="news-card-img" loading="lazy">
+      {% else %}
+      <div class="card-image-placeholder cat-{{ item.category or 'haber' }}"></div>
+      {% endif %}
+      <div class="card-body">
+        <div class="card-meta-row">
+          <span class="card-category cat-badge-{{ item.category or 'haber' }}">{{ item.category | upper if item.category else 'HABER' }}</span>
+          <p class="card-date">{{ item.date | tr_date }}</p>
+        </div>
+        <h3><a href="#" onclick="openArticle('{{ item.slug }}');return false;">{{ item.title }}</a></h3>
+        <p>{{ item.excerpt | truncate_words(20) }}</p>
+        <a href="#" onclick="openArticle('{{ item.slug }}');return false;" class="btn btn-secondary btn-sm mt-4">Devamını Oku</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div></section>
+
+<script>
+var currentFilter='';
+function filterNews(cat){
+  currentFilter=cat;
+  document.querySelectorAll('#newsFilters .filter').forEach(function(b){b.classList.remove('on');});
+  event.target.classList.add('on');
+  document.querySelectorAll('#haberlerGrid .news-card').forEach(function(c){
+    if(!cat||c.getAttribute('data-cat')===cat) c.style.display='';
+    else c.style.display='none';
+  });
+}
+
+(function(){
+  var API='/api/bia-news', base='{{ base }}';
+  var TR_MONTHS=['','Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+  var CATS={haber:'HABER',duyuru:'DUYURU',etkinlik:'ETKİNLİK'};
+  function trDate(d){if(!d)return'';var p=d.split('-');return parseInt(p[2])+' '+TR_MONTHS[parseInt(p[1])]+' '+p[0];}
+  function trunc(t,n){var w=t.split(' ');return w.length<=n?t:w.slice(0,n).join(' ')+'...';}
+  function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+  fetch(API+'?type=news&public=1').then(function(r){return r.json();}).then(function(d){
+    var items=(d.data||[]).filter(function(i){return i.category!=='icerik';});
+    var el=document.getElementById('haberlerGrid');
+    if(!el||!items.length)return;
+    el.innerHTML=items.map(function(item){
+      var cat=item.category||'haber';
+      var img=item.image?'<img src="'+esc(item.image)+'" alt="'+esc(item.title)+'" class="news-card-img" loading="lazy">':'<div class="card-image-placeholder cat-'+cat+'"></div>';
+      return '<div class="card news-card" data-cat="'+cat+'">'+img+'<div class="card-body"><div class="card-meta-row"><span class="card-category cat-badge-'+cat+'">'+(CATS[cat]||cat)+'</span><p class="card-date">'+trDate(item.date)+'</p></div><h3><a href="#" onclick="openArticle(\''+item.slug+'\');return false;">'+esc(item.title)+'</a></h3><p>'+esc(trunc(item.excerpt||'',20))+'</p><a href="#" onclick="openArticle(\''+item.slug+'\');return false;" class="btn btn-secondary btn-sm mt-4">Devamını Oku</a></div></div>';
+    }).join('');
+  })['catch'](function(){});
+})();
+</script>
+{% endblock %}
