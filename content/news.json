@@ -1,13 +1,13 @@
 [
   {
-    "title": "Yeni Sitemiz Yayinda",
+    "title": "Yeni Sitemiz Yayında",
     "slug": "yeni-sitemiz-yayinda",
     "date": "2026-04-16",
     "category": "haber",
-    "excerpt": "birlikteiyilik.com yeni adresiyle yayinda!",
-    "content": "",
-    "image": "",
-    "featured": false,
+    "excerpt": "birlikteiyilik.com yeni adresiyle yayında!",
+    "content": "birlikteiyilik.com yeni adresiyle yayında!",
+    "image": "https://raw.githubusercontent.com/birlikteiyilik/birlikteiyilik.com/main/images/uploads/1776347445065_Ekran_g_r_nt_s__2026-04-16_161228.png",
+    "featured": true,
     "source_url": ""
   },
   {
