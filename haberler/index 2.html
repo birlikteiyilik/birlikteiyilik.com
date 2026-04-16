@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Değer Odaklı Yazılar | Birlikte İyilik Akademi</title>
-  <meta name="description" content="Güzel ahlak, tarih bilinci ve eğitim üzerine değer odaklı yazılar.">
-  <link rel="canonical" href="https://birlikteiyilik.com/yazilar">
+  <title>Haberler & Duyurular | Birlikte İyilik Akademi</title>
+  <meta name="description" content="Birlikte İyilik Akademi haberleri, duyuruları ve etkinlik özetleri.">
+  <link rel="canonical" href="https://birlikteiyilik.com/haberler">
 
   <!-- Open Graph -->
-  <meta property="og:title" content="Değer Odaklı Yazılar | Birlikte İyilik Akademi">
+  <meta property="og:title" content="Haberler & Duyurular | Birlikte İyilik Akademi">
   <meta property="og:description" content="Değer odaklı eğitim, online ve yüz yüze başvuru, gönüllü öğretmen çağrıları, duyurular ve mobil uygulama tek merkezde.">
   <meta property="og:image" content="https://birlikteiyilik.com/images/og-image.png">
-  <meta property="og:url" content="https://birlikteiyilik.com/yazilar">
+  <meta property="og:url" content="https://birlikteiyilik.com/haberler">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="tr_TR">
 
@@ -191,236 +191,171 @@ target="_blank" rel="noopener"           data-track="click_apply_online">
       <ol>
         <li><a href="/">Ana Sayfa</a></li>
         <li>
-          <span aria-current="page">Değer Odaklı Yazılar</span>
+          <span aria-current="page">Haberler &amp; Duyurular</span>
         </li>
       </ol>
     </nav>
   </div>
 </div>
-<section class="page-hero"><div class="container"><h1>Değer Odaklı Yazılar</h1><p>Güzel ahlak, tarih bilinci ve eğitim üzerine derinlikli içerikler.</p></div></section>
+<section class="page-hero"><div class="container"><h1>Haberler & Duyurular</h1><p>Akademimizden son gelişmeler, duyurular ve etkinlik özetleri.</p></div></section>
 <section class="section"><div class="container">
-  <div class="grid grid-3" id="yazilarGrid">
-    <div class="card news-card">
-      <img src="https://raw.githubusercontent.com/raufenc/raufenc.com/main/birlikteiyilik-site/static/images/1775127919051___EVVAL_AYINDA_ORU_.png" alt="Şevval Ayında Oruç" class="news-card-img" loading="lazy">
+  <div class="filters mb-8" id="newsFilters">
+    <button class="filter on" onclick="filterNews('')">Tümü</button>
+    <button class="filter" onclick="filterNews('haber')">Haberler</button>
+    <button class="filter" onclick="filterNews('duyuru')">Duyurular</button>
+    <button class="filter" onclick="filterNews('etkinlik')">Etkinlikler</button>
+  </div>
+  <div class="grid grid-3" id="haberlerGrid">
+    <div class="card news-card" data-cat="haber">
+      <img src="https://raw.githubusercontent.com/birlikteiyilik/birlikteiyilik.com/main/images/uploads/1776347445065_Ekran_g_r_nt_s__2026-04-16_161228.png" alt="Yeni Sitemiz Yayında" class="news-card-img" loading="lazy">
       <div class="card-body">
         <div class="card-meta-row">
-          <span class="card-category cat-badge-icerik">İÇERİK</span>
-          <p class="card-date">23 Mart 2026</p>
+          <span class="card-category cat-badge-haber">HABER</span>
+          <p class="card-date">16 Nisan 2026</p>
         </div>
-        <h3><a href="#" onclick="openArticle('sevval-ayinda-oruc');return false;">Şevval Ayında Oruç</a></h3>
-        <p>Şevval ayında tutulan orucun, çok sevâbı vardır.</p>
-        <a href="#" onclick="openArticle('sevval-ayinda-oruc');return false;" class="btn btn-secondary btn-sm mt-4">Devamını Oku</a>
+        <h3><a href="#" onclick="openArticle('yeni-sitemiz-yayinda');return false;">Yeni Sitemiz Yayında</a></h3>
+        <p>birlikteiyilik.com yeni adresiyle yayında!</p>
+        <a href="#" onclick="openArticle('yeni-sitemiz-yayinda');return false;" class="btn btn-secondary btn-sm mt-4">Devamını Oku</a>
       </div>
     </div>
-    <div class="card news-card">
-      <img src="https://blogger.googleusercontent.com/img/a/AVvXsEhvhemj-XhH80vFEc5qfi6osfuc1G1x8uuQci7eKggsua7rYRWJcwUH3aBytZaxXNijBxGbBxOuh40VNCEq3eGwfkiPVGxA6UJuA3TBj51HGBxV7IKqGCRICL-ain2TvsEfp-aibViqK6ispC2u5W1_A8PDmCHvE1EUhKMkHjoZMIhqwC8c38iQs9NuStU" alt="Gecelerin en kıymetlisi..." class="news-card-img" loading="lazy">
+    <div class="card news-card" data-cat="duyuru">
+      <div class="card-image-placeholder cat-duyuru"></div>
       <div class="card-body">
         <div class="card-meta-row">
-          <span class="card-category cat-badge-icerik">İÇERİK</span>
-          <p class="card-date">16 Mart 2026</p>
+          <span class="card-category cat-badge-duyuru">DUYURU</span>
+          <p class="card-date">30 Mart 2026</p>
         </div>
-        <h3><a href="#" onclick="openArticle('gecelerin-en-kiymetlisi');return false;">Gecelerin en kıymetlisi...</a></h3>
-        <p>Gecelerin en kıymetlisi...Nasıl ki altın madeni; bakır, demir, kömür gibi madenlerden çok üstün ise; yine yâkût taşı, diğer normal taşlardan...</p>
-        <a href="#" onclick="openArticle('gecelerin-en-kiymetlisi');return false;" class="btn btn-secondary btn-sm mt-4">Devamını Oku</a>
+        <h3><a href="#" onclick="openArticle('bahar-donemi-kayitlari-acildi');return false;">Bahar Dönemi Kayıtları Açıldı</a></h3>
+        <p>2026 Bahar donemi icin online ve yuz yuze egitim programlarimiza kayitlar basladi. Kontenjanlar sinirli, yerinizi simdi ayirtin.</p>
+        <a href="#" onclick="openArticle('bahar-donemi-kayitlari-acildi');return false;" class="btn btn-secondary btn-sm mt-4">Devamını Oku</a>
       </div>
     </div>
-    <div class="card news-card">
-      <img src="https://blogger.googleusercontent.com/img/a/AVvXsEiC19Avb7ETH4J8E6PhqiL4ZHbr0_7z7UlnxGY4TmaY86EzVQvhZGzNCAx7qlVyhXkTj7vez73DMNX4m7bkviaKoTFP6xYFt_dKIPRw5oq0xI8_MeMnvHm3NfkLlDvfmyV35aeWq4lGqoCWAZqwALYlExfIYCyFj-SV2MqqA3z-g7KkmH5Ls30PGYE60ao" alt="Emîr Sultan Rahmetullahi aleyh" class="news-card-img" loading="lazy">
+    <div class="card news-card" data-cat="haber">
+      <img src="https://raw.githubusercontent.com/raufenc/raufenc.com/main/birlikteiyilik-site/static/images/1774942208832_1.png" alt="Milli İrade Buluşmaları“Türkiye Yüzyılı’nda Sanayi”" class="news-card-img" loading="lazy">
       <div class="card-body">
         <div class="card-meta-row">
-          <span class="card-category cat-badge-icerik">İÇERİK</span>
-          <p class="card-date">2 Mart 2026</p>
+          <span class="card-category cat-badge-haber">HABER</span>
+          <p class="card-date">27 Mart 2026</p>
         </div>
-        <h3><a href="#" onclick="openArticle('emr-sultan-rahmetullahi-aleyh');return false;">Emîr Sultan Rahmetullahi aleyh</a></h3>
-        <p>Emîr Sultan Rahmetullahi aleyhEmîr Sultan Rahmetullahi aleyh HayatıOsmanlıların kuruluş devrinde Bursa&#39;da yaşayan büyük velî. İsmi Muhammed, lakabı Şemsüddîn&#39;dir. Babasının adı...</p>
-        <a href="#" onclick="openArticle('emr-sultan-rahmetullahi-aleyh');return false;" class="btn btn-secondary btn-sm mt-4">Devamını Oku</a>
+        <h3><a href="#" onclick="openArticle('milli-irade-bulusmalariturkiye-yuzyilinda-sanayi');return false;">Milli İrade Buluşmaları“Türkiye Yüzyılı’nda Sanayi”</a></h3>
+        <p>Birlikte İyilik Akademi olarak, “Türkiye Yüzyılı’nda Sanayi” başlığıyla gerçekleştirilen Millî İrade Buluşmaları programına katılım sağladık. Sanayi ve Teknoloji Bakanımız Sayın...</p>
+        <a href="#" onclick="openArticle('milli-irade-bulusmalariturkiye-yuzyilinda-sanayi');return false;" class="btn btn-secondary btn-sm mt-4">Devamını Oku</a>
       </div>
     </div>
-    <div class="card news-card">
-      <img src="https://blogger.googleusercontent.com/img/a/AVvXsEgKrTnoyamp1pa4TdIvm8nw6foYlWVWP__U9JorMeMXa5suhlA8Ctyw-8NroWU_HGm2hGgxcqnTCUXQyNtnrxcReFUzUa_2zOC-ExvtokCDYMXRhtJ419FgnoHgEHgviCONcNH2S5MS22uVbd_-qyi_zSLg-22KwlRFRjSbATjcak07dc2mpxQtZ9eCMjU" alt="Oruç tutunuz sıhhat bulursunuz.Hadis-i Şerif" class="news-card-img" loading="lazy">
+    <div class="card news-card" data-cat="duyuru">
+      <div class="card-image-placeholder cat-duyuru"></div>
       <div class="card-body">
         <div class="card-meta-row">
-          <span class="card-category cat-badge-icerik">İÇERİK</span>
-          <p class="card-date">26 Şubat 2026</p>
+          <span class="card-category cat-badge-duyuru">DUYURU</span>
+          <p class="card-date">15 Mart 2026</p>
         </div>
-        <h3><a href="#" onclick="openArticle('oruc-tutunuz-sihhat-bulursunuzhadis-i-serif');return false;">Oruç tutunuz sıhhat bulursunuz.Hadis-i Şerif</a></h3>
-        <p>Oruç tutunuz sıhhat bulursunuz.Hadis-i Şerif Rabbimiz, bize neyi emretmişse, neyi yapmamızı buyurduysa mutlaka onda bizim maddi ve manevi faydalarımız vardır....</p>
-        <a href="#" onclick="openArticle('oruc-tutunuz-sihhat-bulursunuzhadis-i-serif');return false;" class="btn btn-secondary btn-sm mt-4">Devamını Oku</a>
+        <h3><a href="#" onclick="openArticle('2025-2026-online-basvurulari-basladi');return false;">2025-2026 Eğitim Dönemi Online Başvuruları Başladı</a></h3>
+        <p>Yeni eğitim dönemi için online eğitim programımıza başvurular açıldı. Değer odaklı eğitimde yerinizi şimdiden alın.</p>
+        <a href="#" onclick="openArticle('2025-2026-online-basvurulari-basladi');return false;" class="btn btn-secondary btn-sm mt-4">Devamını Oku</a>
       </div>
     </div>
-    <div class="card news-card">
-      <img src="https://blogger.googleusercontent.com/img/a/AVvXsEhQxI7A32y5fxifh1PmZjEWEVHLYIKnxZP1S4h6S1hmvRbONX8-enStFQZ3A_HYyy3D0tRXBHG6sPmRRg0bfFRN9o9pr--TEF5dPLotBGrBt4bUBPZDGk1Ldt6WTdYe6ahaIJGfnrSwzHlgcVNCaPfAA3MEqGUV_UZGjJXAf4mX3Wpyj6A8rE0r7Klpg3k" alt="Muhabbetin kaynağı, herkesle iyi geçinmektir" class="news-card-img" loading="lazy">
+    <div class="card news-card" data-cat="haber">
+      <div class="card-image-placeholder cat-haber"></div>
       <div class="card-body">
         <div class="card-meta-row">
-          <span class="card-category cat-badge-icerik">İÇERİK</span>
-          <p class="card-date">25 Şubat 2026</p>
+          <span class="card-category cat-badge-haber">HABER</span>
+          <p class="card-date">1 Mart 2026</p>
         </div>
-        <h3><a href="#" onclick="openArticle('muhabbetin-kaynagi-herkesle-iyi-gecinmektir');return false;">Muhabbetin kaynağı, herkesle iyi geçinmektir</a></h3>
-        <p>Muhabbetin kaynağı, herkesle iyi geçinmektir.İnsanların birbirini sevmesi için, önce herkes birbiriyle selamlaşmalı, birbirine hayır dua etmeli, kimse kimseye beddua etmemelidir.Allahü...</p>
-        <a href="#" onclick="openArticle('muhabbetin-kaynagi-herkesle-iyi-gecinmektir');return false;" class="btn btn-secondary btn-sm mt-4">Devamını Oku</a>
+        <h3><a href="#" onclick="openArticle('gonullu-ogretmen-oryantasyon-programi');return false;">Gönüllü Öğretmen Oryantasyon Programı Tamamlandı</a></h3>
+        <p>Yeni dönem öncesinde 45 gönüllü öğretmenimiz kapsamlı oryantasyon programını başarıyla tamamladı.</p>
+        <a href="#" onclick="openArticle('gonullu-ogretmen-oryantasyon-programi');return false;" class="btn btn-secondary btn-sm mt-4">Devamını Oku</a>
       </div>
     </div>
-    <div class="card news-card">
-      <div class="card-image-placeholder cat-icerik"></div>
+    <div class="card news-card" data-cat="etkinlik">
+      <div class="card-image-placeholder cat-etkinlik"></div>
       <div class="card-body">
         <div class="card-meta-row">
-          <span class="card-category cat-badge-icerik">İÇERİK</span>
-          <p class="card-date">15 Şubat 2026</p>
+          <span class="card-category cat-badge-etkinlik">ETKINLIK</span>
+          <p class="card-date">20 Şubat 2026</p>
         </div>
-        <h3><a href="#" onclick="openArticle('sabir-hayatin-her-aninda');return false;">Sabır: Hayatın Her Anında Bize Eşlik Eden Değer</a></h3>
-        <p>Sabır, İslam ahlakının temel taşlarından biridir. Çocuklarımıza sabrı öğretmek, onların hayat boyu güçlü kalmalarını sağlar.</p>
-        <a href="#" onclick="openArticle('sabir-hayatin-her-aninda');return false;" class="btn btn-secondary btn-sm mt-4">Devamını Oku</a>
+        <h3><a href="#" onclick="openArticle('ramazan-ayi-ozel-programi');return false;">Ramazan Ayı Özel Programı Takvimi Açıklandı</a></h3>
+        <p>Ramazan ayına özel Kur&#39;an-ı Kerim hatim programı, iftar buluşmaları ve çocuk etkinlikleri takvimi belli oldu.</p>
+        <a href="#" onclick="openArticle('ramazan-ayi-ozel-programi');return false;" class="btn btn-secondary btn-sm mt-4">Devamını Oku</a>
       </div>
     </div>
-    <div class="card news-card">
-      <img src="https://blogger.googleusercontent.com/img/a/AVvXsEj4H6nFyvaeu1uIn1yST5534nATJv4sIQfmvC3d2JJEtY19wkvH6cqMOhfNvM1Wi4HYDXUwb6RNxWw6K5UbJ6B2tuVv_RF1Ry4iM7T6uz_YbyZJpFIjaKvnA70FftMinKRxtHZcD4FYvcTSYmqp3IbcYz9IVd4ApvZCbqbTb3F7OfhSuCT7Ud4_Tk0y95U" alt="Hamza Efendi&#39;nin &#34;Bey ve Şirâ Risâlesi" class="news-card-img" loading="lazy">
+    <div class="card news-card" data-cat="duyuru">
+      <div class="card-image-placeholder cat-duyuru"></div>
       <div class="card-body">
         <div class="card-meta-row">
-          <span class="card-category cat-badge-icerik">İÇERİK</span>
-          <p class="card-date">7 Şubat 2026</p>
+          <span class="card-category cat-badge-duyuru">DUYURU</span>
+          <p class="card-date">10 Şubat 2026</p>
         </div>
-        <h3><a href="#" onclick="openArticle('hamza-efendinin-bey-ve-sir-rislesi');return false;">Hamza Efendi&#39;nin &#34;Bey ve Şirâ Risâlesi</a></h3>
-        <p>Hamza Efendi&#39;nin &#34;Bey ve Şirâ Risâlesi&#34;nin şerhinden, buyuruluyor ki:“On şey, son nefeste imansız gitmeye sebep olur:1-Allahü teâlânın emirlerini ve yasaklarını...</p>
-        <a href="#" onclick="openArticle('hamza-efendinin-bey-ve-sir-rislesi');return false;" class="btn btn-secondary btn-sm mt-4">Devamını Oku</a>
+        <h3><a href="#" onclick="openArticle('mobil-uygulama-guncellendi');return false;">Mobil Uygulamamız Güncellendi</a></h3>
+        <p>Birlikte İyilik Akademi mobil uygulaması yeni özelliklerle güncellendi. Veli ve öğretmen deneyimi iyileştirildi.</p>
+        <a href="#" onclick="openArticle('mobil-uygulama-guncellendi');return false;" class="btn btn-secondary btn-sm mt-4">Devamını Oku</a>
       </div>
     </div>
-    <div class="card news-card">
-      <img src="https://blogger.googleusercontent.com/img/a/AVvXsEjDcwfPQIMeyLKIsSCCHuXEb2uYWIsOB6EOrfVV0_zDSy66I_DhB8exBc7Bwpi_TfLwmTwzuC1QouL25M1bTf_cka3p0J-n2d2SS8cr6K53Arvtf6Qaw7dYqgvuNcfb76fLTqzYz2kCbOLlpo0Krf8kS_uprBp39FaqkAKDwJj85iYh85yB6TrZWxN2Hqo" alt="Osmanlılar Vakitlerini Nasıl Geçirirlerdi?" class="news-card-img" loading="lazy">
+    <div class="card news-card" data-cat="haber">
+      <div class="card-image-placeholder cat-haber"></div>
       <div class="card-body">
         <div class="card-meta-row">
-          <span class="card-category cat-badge-icerik">İÇERİK</span>
-          <p class="card-date">6 Şubat 2026</p>
+          <span class="card-category cat-badge-haber">HABER</span>
+          <p class="card-date">25 Ocak 2026</p>
         </div>
-        <h3><a href="#" onclick="openArticle('osmanlilar-vakitlerini-nasil-gecirirlerdi');return false;">Osmanlılar Vakitlerini Nasıl Geçirirlerdi?</a></h3>
-        <p>Osmanlılar Vakitlerini Nasıl Geçirirlerdi?Kanuni Sultan Süleyman Han devrinde, 1552-1556 yılları arasında İstanbul’da dört yıl boyunca doktorluk yapan bir İspanyol’un, o...</p>
-        <a href="#" onclick="openArticle('osmanlilar-vakitlerini-nasil-gecirirlerdi');return false;" class="btn btn-secondary btn-sm mt-4">Devamını Oku</a>
+        <h3><a href="#" onclick="openArticle('degerler-egitimi-konferansi');return false;">Değerler Eğitimi Konferansı Düzenlendi</a></h3>
+        <p>Akademimizin ev sahipliğinde düzenlenen konferansta eğitimciler ve veliler bir araya geldi.</p>
+        <a href="#" onclick="openArticle('degerler-egitimi-konferansi');return false;" class="btn btn-secondary btn-sm mt-4">Devamını Oku</a>
       </div>
     </div>
-    <div class="card news-card">
-      <img src="https://blogger.googleusercontent.com/img/a/AVvXsEgkZtdnFXDlF8uAm9pe_IG0Exk2fZ5rgyMq1Ort5WiGcEyoRExniGLbDif1KQgLaOZqwgO5_faVCUAAm8iKnZpUTHck_L5qZ8VBiA2u2DLnh6FXzVo5Z0PWvyoD9vxGEuJYtKpvRytmbtQEeNIpbMcqxu2TpvSSvPQ07TDkxloprOn9oz4HCDIE65Xq5so" alt="Dünyayı gaye edinen!.." class="news-card-img" loading="lazy">
+    <div class="card news-card" data-cat="haber">
+      <div class="card-image-placeholder cat-haber"></div>
       <div class="card-body">
         <div class="card-meta-row">
-          <span class="card-category cat-badge-icerik">İÇERİK</span>
-          <p class="card-date">5 Şubat 2026</p>
+          <span class="card-category cat-badge-haber">HABER</span>
+          <p class="card-date">15 Ocak 2026</p>
         </div>
-        <h3><a href="#" onclick="openArticle('dunyayi-gaye-edinen');return false;">Dünyayı gaye edinen!..</a></h3>
-        <p>Dünyayı gaye edinen!..Dünya sevgisi en büyük tehlikedir. Kulun imansız gitmesine de sebep olabilir. İnsan sevdiğinden ayrılmak istemez, hep onunla birlikte...</p>
-        <a href="#" onclick="openArticle('dunyayi-gaye-edinen');return false;" class="btn btn-secondary btn-sm mt-4">Devamını Oku</a>
+        <h3><a href="#" onclick="openArticle('kis-donemi-kuran-kursu-tamamlandi');return false;">Kış Dönemi Kur&#39;an-ı Kerim Kursu Başarıyla Tamamlandı</a></h3>
+        <p>Kış döneminde 120 öğrencimiz Kur&#39;an-ı Kerim okuma programını başarıyla tamamladı.</p>
+        <a href="#" onclick="openArticle('kis-donemi-kuran-kursu-tamamlandi');return false;" class="btn btn-secondary btn-sm mt-4">Devamını Oku</a>
       </div>
     </div>
-    <div class="card news-card">
-      <img src="https://blogger.googleusercontent.com/img/a/AVvXsEj55qQwaKVSf1POKttAIWRV_W-71-z27bKfo8FsdltYlpxdwxWbWlE3iwi77O3uTqRii3bZheZrVeb6YkoXMMu0K53ntMOLyK3rCIJY7El9aV_qapkRfig5k2qzLIfVCITAauix-nWZf_s022zHvXUu_kVDYHZNgSoChiMRCmFo_Q_rpWA66hUv7xNDtmo" alt="Berat gecesi, şaban ayının onbeşinci gecesidir. Yani ondördüncü günü ile onbeşin" class="news-card-img" loading="lazy">
+    <div class="card news-card" data-cat="etkinlik">
+      <img src="https://raw.githubusercontent.com/birlikteiyilik/birlikteiyilik.com/main/images/uploads/1776353781192_SERT_F_KA_T_REN_.png" alt="Birlikte İyilik Akademi Yaz Okulu Sertifika Töreni" class="news-card-img" loading="lazy">
       <div class="card-body">
         <div class="card-meta-row">
-          <span class="card-category cat-badge-icerik">İÇERİK</span>
-          <p class="card-date">2 Şubat 2026</p>
+          <span class="card-category cat-badge-etkinlik">ETKINLIK</span>
+          <p class="card-date">9 Ağustos 2025</p>
         </div>
-        <h3><a href="#" onclick="openArticle('berat-gecesi-saban-ayinin-onbesinci-gecesidir-yani-ondorduncu-gunu-ile-onbesin');return false;">Berat gecesi, şaban ayının onbeşinci gecesidir. Yani ondördüncü günü ile onbeşin</a></h3>
-        <p>Berat gecesi, şaban ayının onbeşinci gecesidir. Yani ondördüncü günü ile onbeşinci günü arasındaki gecedir. Allahü teâlâ, ezelde, hiçbir şey yaratmadan...</p>
-        <a href="#" onclick="openArticle('berat-gecesi-saban-ayinin-onbesinci-gecesidir-yani-ondorduncu-gunu-ile-onbesin');return false;" class="btn btn-secondary btn-sm mt-4">Devamını Oku</a>
-      </div>
-    </div>
-    <div class="card news-card">
-      <img src="https://blogger.googleusercontent.com/img/a/AVvXsEhiD141Ov0kI_EhfNmBxaHMRtj_riGI_DDmwZAce9cUtHXR64j5z9DsVSekCImkZQxGGxrnVDnzpGa0MJzqVqhkmf_FNxHgVBPsQwIiW4YTozcMHie0sGwu4UcBdhSX2O_J64RTg_0rafbGslhT5VyV_yDK1ICfaKw_s4oUjAgBoxYZlZTWbuCyNOzljjc" alt="Müslüman, Allahü teâlânın emri olduğu için namaz kılar. Rabbimizin emirlerinde birçok hikmetler, faydalar vardır. Yasaklarında da birçok zararların ol" class="news-card-img" loading="lazy">
-      <div class="card-body">
-        <div class="card-meta-row">
-          <span class="card-category cat-badge-icerik">İÇERİK</span>
-          <p class="card-date">30 Ocak 2026</p>
-        </div>
-        <h3><a href="#" onclick="openArticle('musluman-allahu-telnin-emri-oldugu-icin-namaz-kilar-rabbimizin-emirlerinde-bircok-hikmetler-faydalar-vardir-yasaklarinda-da-bircok-zararlarin-ol');return false;">Müslüman, Allahü teâlânın emri olduğu için namaz kılar. Rabbimizin emirlerinde birçok hikmetler, faydalar vardır. Yasaklarında da birçok zararların ol</a></h3>
-        <p>Müslüman, Allahü teâlânın emri olduğu için namaz kılar. Rabbimizin emirlerinde birçok hikmetler, faydalar vardır. Yasaklarında da birçok zararların olduğu muhakkaktır....</p>
-        <a href="#" onclick="openArticle('musluman-allahu-telnin-emri-oldugu-icin-namaz-kilar-rabbimizin-emirlerinde-bircok-hikmetler-faydalar-vardir-yasaklarinda-da-bircok-zararlarin-ol');return false;" class="btn btn-secondary btn-sm mt-4">Devamını Oku</a>
-      </div>
-    </div>
-    <div class="card news-card">
-      <img src="https://blogger.googleusercontent.com/img/a/AVvXsEgmlFH3gENvkyLTGeQKfWliPxGwI4OvWjdge1IMpwMEuK0pmtAqPK2tugN6at-jB9K2HN2dhH9aAiUjr1a_3uOLjeV5zMirhqd4bsjykCW9KkBmQevSI56Tt9oMuA6Na7BL5lSde7Dx86iZWA_j_855wfi-7KtcoXVduqKRRtr6gFvCDQPgVpidONpYOAU" alt="En akıllı insan kimdir?" class="news-card-img" loading="lazy">
-      <div class="card-body">
-        <div class="card-meta-row">
-          <span class="card-category cat-badge-icerik">İÇERİK</span>
-          <p class="card-date">29 Ocak 2026</p>
-        </div>
-        <h3><a href="#" onclick="openArticle('en-akilli-insan-kimdir');return false;">En akıllı insan kimdir?</a></h3>
-        <p>En akıllı insan kimdir?İnsanlar kendi akıllarını çok beğenir ve bununla yetinirler. Artırılmasını pek isteyen çıkmaz. &#34;Ya Rabbi aklımı artır!&#34; diyen...</p>
-        <a href="#" onclick="openArticle('en-akilli-insan-kimdir');return false;" class="btn btn-secondary btn-sm mt-4">Devamını Oku</a>
-      </div>
-    </div>
-    <div class="card news-card">
-      <img src="https://blogger.googleusercontent.com/img/a/AVvXsEgW7PH0lX82g6YfA75ueuzc8I10suHSsNXkbBT0buyJMeGuPihk_Rslo73T_CT41hKUFDzAEsJXwIfV5FDjYWqQ74r_wwi2C-y6Ou8LP4SPGq05MVVZgxNqpV3vwOAJtDdwmsTirkDkz1vGB6tcwAm49NPU-bJrhNYUB34R1I-BQtGMHHn5w2gqsVcxHhM" alt="Mal ile, evlat ile, mevki ile ve rütbe ile tekebbür etmek, kibirlenmek insana hiç yakışmaz. Çünkü bunlar, kendinde bulunan üstünlükler değildir.Bazı k" class="news-card-img" loading="lazy">
-      <div class="card-body">
-        <div class="card-meta-row">
-          <span class="card-category cat-badge-icerik">İÇERİK</span>
-          <p class="card-date">29 Ocak 2026</p>
-        </div>
-        <h3><a href="#" onclick="openArticle('mal-ile-evlat-ile-mevki-ile-ve-rutbe-ile-tekebbur-etmek-kibirlenmek-insana-hic-yakismaz-cunku-bunlar-kendinde-bulunan-ustunlukler-degildirbazi-k');return false;">Mal ile, evlat ile, mevki ile ve rütbe ile tekebbür etmek, kibirlenmek insana hiç yakışmaz. Çünkü bunlar, kendinde bulunan üstünlükler değildir.Bazı k</a></h3>
-        <p>Mal ile, evlat ile, mevki ile ve rütbe ile tekebbür etmek, kibirlenmek insana hiç yakışmaz. Çünkü bunlar, kendinde bulunan üstünlükler...</p>
-        <a href="#" onclick="openArticle('mal-ile-evlat-ile-mevki-ile-ve-rutbe-ile-tekebbur-etmek-kibirlenmek-insana-hic-yakismaz-cunku-bunlar-kendinde-bulunan-ustunlukler-degildirbazi-k');return false;" class="btn btn-secondary btn-sm mt-4">Devamını Oku</a>
-      </div>
-    </div>
-    <div class="card news-card">
-      <img src="https://blogger.googleusercontent.com/img/a/AVvXsEgOTl0Ap5W4fkYRVqetl7UtTB1rQYwUMtYm3cJXSmlBHM7cCNUxFUJjoeDJJddst1GGiLgjZjapJG5iKICq1B6dsQK0zbUQ9tzx1DeXS-X3YXZUpBoO295GeOBgFkMvedL95E-CgHYY8km2MKjwDCjHIcGOVczKXzU6Ikjc7svNaNey8qwySXpf7YyEJQk" alt="🌹Müslüman, sabah yatağından kalkıp akşam yatıncaya kadar vaktini çok iyi değerlendirmeli, gününü Allahü teâlânın rızasına uygun geçirmelidir." class="news-card-img" loading="lazy">
-      <div class="card-body">
-        <div class="card-meta-row">
-          <span class="card-category cat-badge-icerik">İÇERİK</span>
-          <p class="card-date">29 Ocak 2026</p>
-        </div>
-        <h3><a href="#" onclick="openArticle('musluman-sabah-yatagindan-kalkip-aksam-yatincaya-kadar-vaktini-cok-iyi-degerlendirmeli-gununu-allahu-telnin-rizasina-uygun-gecirmelidir');return false;">🌹Müslüman, sabah yatağından kalkıp akşam yatıncaya kadar vaktini çok iyi değerlendirmeli, gününü Allahü teâlânın rızasına uygun geçirmelidir.</a></h3>
-        <p>🌹Müslüman, sabah yatağından kalkıp akşam yatıncaya kadar vaktini çok iyi değerlendirmeli, gününü Allahü teâlânın rızasına uygun geçirmelidir.Bir insanın günleri nasıl...</p>
-        <a href="#" onclick="openArticle('musluman-sabah-yatagindan-kalkip-aksam-yatincaya-kadar-vaktini-cok-iyi-degerlendirmeli-gununu-allahu-telnin-rizasina-uygun-gecirmelidir');return false;" class="btn btn-secondary btn-sm mt-4">Devamını Oku</a>
-      </div>
-    </div>
-    <div class="card news-card">
-      <img src="https://blogger.googleusercontent.com/img/a/AVvXsEiiRSrw98xylXKht7cd_FpNTvUe2Dda1n-Rw4iA2AAfTvKDljK7LAzOBNXR-aYbKKh3ixRpJDixbliyGHV1c9bDRGYy3jk-Mll8KOvZJPP44bDMOsbXrPGUQUnlctAEwUFTzTWXlDmBkhoht27Z_UBv6zNtYs3ErpusXaEvOn8dK_oGT6Kw2pSGh4nLuww" alt="Türkler Latin alfabesini Harf İnkılabı ile mi öğrendi?Osmanlılar zamanında Arap alfabesi yerine Latin alfabesini koymak hususunda bazı teşebbüslerden " class="news-card-img" loading="lazy">
-      <div class="card-body">
-        <div class="card-meta-row">
-          <span class="card-category cat-badge-icerik">İÇERİK</span>
-          <p class="card-date">29 Ocak 2026</p>
-        </div>
-        <h3><a href="#" onclick="openArticle('turkler-latin-alfabesini-harf-inkilabi-ile-mi-ogrendiosmanlilar-zamaninda-arap-alfabesi-yerine-latin-alfabesini-koymak-hususunda-bazi-tesebbuslerden');return false;">Türkler Latin alfabesini Harf İnkılabı ile mi öğrendi?Osmanlılar zamanında Arap alfabesi yerine Latin alfabesini koymak hususunda bazı teşebbüslerden </a></h3>
-        <p>Türkler Latin alfabesini Harf İnkılabı ile mi öğrendi?Osmanlılar zamanında Arap alfabesi yerine Latin alfabesini koymak hususunda bazı teşebbüslerden bahsedilirse de...</p>
-        <a href="#" onclick="openArticle('turkler-latin-alfabesini-harf-inkilabi-ile-mi-ogrendiosmanlilar-zamaninda-arap-alfabesi-yerine-latin-alfabesini-koymak-hususunda-bazi-tesebbuslerden');return false;" class="btn btn-secondary btn-sm mt-4">Devamını Oku</a>
-      </div>
-    </div>
-    <div class="card news-card">
-      <div class="card-image-placeholder cat-icerik"></div>
-      <div class="card-body">
-        <div class="card-meta-row">
-          <span class="card-category cat-badge-icerik">İÇERİK</span>
-          <p class="card-date">20 Ocak 2026</p>
-        </div>
-        <h3><a href="#" onclick="openArticle('sukur-sahip-olduklarimizin-farkina-varmak');return false;">Şükür: Sahip Olduklarımızın Farkına Varmak</a></h3>
-        <p>Şükür, kalbin huzur bulmasının anahtarıdır. Çocuklarımıza şükretmeyi öğretmek, onları mutlu bireyler olarak yetiştirmenin temelidir.</p>
-        <a href="#" onclick="openArticle('sukur-sahip-olduklarimizin-farkina-varmak');return false;" class="btn btn-secondary btn-sm mt-4">Devamını Oku</a>
-      </div>
-    </div>
-    <div class="card news-card">
-      <div class="card-image-placeholder cat-icerik"></div>
-      <div class="card-body">
-        <div class="card-meta-row">
-          <span class="card-category cat-badge-icerik">İÇERİK</span>
-          <p class="card-date">10 Aralık 2025</p>
-        </div>
-        <h3><a href="#" onclick="openArticle('yardimseverlik-kucuk-ellerin-buyuk-kalpleri');return false;">Yardımseverlik: Küçük Ellerin Büyük Kalpleri</a></h3>
-        <p>Yardımseverlik, toplumun temel yapı taşıdır. Çocuklarımıza yardım etmenin güzelliğini yaşayarak öğretiyoruz.</p>
-        <a href="#" onclick="openArticle('yardimseverlik-kucuk-ellerin-buyuk-kalpleri');return false;" class="btn btn-secondary btn-sm mt-4">Devamını Oku</a>
+        <h3><a href="#" onclick="openArticle('birlikte-iyilik-akademi-yaz-okulu-sertifika-toreni');return false;">Birlikte İyilik Akademi Yaz Okulu Sertifika Töreni</a></h3>
+        <p>🎓 Birlikte İyilik Akademi Yaz Okulu Sertifika Töreni 🎓</p>
+        <a href="#" onclick="openArticle('birlikte-iyilik-akademi-yaz-okulu-sertifika-toreni');return false;" class="btn btn-secondary btn-sm mt-4">Devamını Oku</a>
       </div>
     </div>
   </div>
 </div></section>
 
 <script>
+var currentFilter='';
+function filterNews(cat){
+  currentFilter=cat;
+  document.querySelectorAll('#newsFilters .filter').forEach(function(b){b.classList.remove('on');});
+  event.target.classList.add('on');
+  document.querySelectorAll('#haberlerGrid .news-card').forEach(function(c){
+    if(!cat||c.getAttribute('data-cat')===cat) c.style.display='';
+    else c.style.display='none';
+  });
+}
+
 (function(){
   var API='/api/bia-news', base='';
   var TR_MONTHS=['','Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+  var CATS={haber:'HABER',duyuru:'DUYURU',etkinlik:'ETKİNLİK'};
   function trDate(d){if(!d)return'';var p=d.split('-');return parseInt(p[2])+' '+TR_MONTHS[parseInt(p[1])]+' '+p[0];}
   function trunc(t,n){var w=t.split(' ');return w.length<=n?t:w.slice(0,n).join(' ')+'...';}
   function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
   fetch(API+'?type=news&public=1').then(function(r){return r.json();}).then(function(d){
-    var items=(d.data||[]).filter(function(i){return i.category==='icerik';});
-    var el=document.getElementById('yazilarGrid');
+    var items=(d.data||[]).filter(function(i){return i.category!=='icerik';});
+    var el=document.getElementById('haberlerGrid');
     if(!el||!items.length)return;
     el.innerHTML=items.map(function(item){
-      var img=item.image?'<img src="'+esc(item.image)+'" alt="'+esc(item.title)+'" class="news-card-img" loading="lazy">':'<div class="card-image-placeholder cat-icerik"></div>';
-      return '<div class="card news-card">'+img+'<div class="card-body"><div class="card-meta-row"><span class="card-category cat-badge-icerik">İÇERİK</span><p class="card-date">'+trDate(item.date)+'</p></div><h3><a href="#" onclick="openArticle(\''+item.slug+'\');return false;">'+esc(item.title)+'</a></h3><p>'+esc(trunc(item.excerpt||'',20))+'</p><a href="#" onclick="openArticle(\''+item.slug+'\');return false;" class="btn btn-secondary btn-sm mt-4">Devamını Oku</a></div></div>';
+      var cat=item.category||'haber';
+      var img=item.image?'<img src="'+esc(item.image)+'" alt="'+esc(item.title)+'" class="news-card-img" loading="lazy">':'<div class="card-image-placeholder cat-'+cat+'"></div>';
+      return '<div class="card news-card" data-cat="'+cat+'">'+img+'<div class="card-body"><div class="card-meta-row"><span class="card-category cat-badge-'+cat+'">'+(CATS[cat]||cat)+'</span><p class="card-date">'+trDate(item.date)+'</p></div><h3><a href="#" onclick="openArticle(\''+item.slug+'\');return false;">'+esc(item.title)+'</a></h3><p>'+esc(trunc(item.excerpt||'',20))+'</p><a href="#" onclick="openArticle(\''+item.slug+'\');return false;" class="btn btn-secondary btn-sm mt-4">Devamını Oku</a></div></div>';
     }).join('');
   })['catch'](function(){});
 })();

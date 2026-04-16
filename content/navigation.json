@@ -43,7 +43,7 @@
       "title": "İçerik",
       "links": [
         { "label": "Haberler & Duyurular", "url": "/haberler" },
-        { "label": "Değer Odaklı Yazılar", "url": "/yazilar" },
+        { "label": "Değer Odaklı Yazılar", "url": "/#icerik" },
         { "label": "Videolar", "url": "/videolar" },
         { "label": "SSS", "url": "/sss" }
       ]

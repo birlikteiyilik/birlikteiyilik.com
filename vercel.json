@@ -9,6 +9,10 @@
     { "source": "/images/(.*)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }] }
   ],
   "redirects": [
-    { "source": "/:path*", "has": [{ "type": "host", "value": "www.birlikteiyilik.com" }], "destination": "https://birlikteiyilik.com/:path*", "permanent": true }
+    { "source": "/:path*", "has": [{ "type": "host", "value": "www.birlikteiyilik.com" }], "destination": "https://birlikteiyilik.com/:path*", "permanent": true },
+    { "source": "/iletisim", "destination": "/#iletisim", "permanent": true },
+    { "source": "/uygulama", "destination": "/#uygulama", "permanent": true },
+    { "source": "/yazilar", "destination": "/#icerik", "permanent": true },
+    { "source": "/etki", "destination": "/#etki", "permanent": true }
   ]
 }
