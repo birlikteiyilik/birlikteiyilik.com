@@ -218,6 +218,18 @@ def build_site(base_path=''):
     print(f"✅ {page_count} sayfa üretildi → dist/")
     print(f"✅ sitemap.xml ve robots.txt oluşturuldu")
 
+    # ── 7) Üretilen HTML'leri repo root'a kopyala (Vercel root'tan serve eder) ──
+    if not base_path:
+        copy_count = 0
+        for src_file in DIST_DIR.rglob('*'):
+            if src_file.is_file():
+                rel = src_file.relative_to(DIST_DIR)
+                dest = REPO_DIR / rel
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(src_file, dest)
+                copy_count += 1
+        print(f"✅ {copy_count} dosya repo root'a kopyalandı")
+
 
 if __name__ == '__main__':
     import sys
