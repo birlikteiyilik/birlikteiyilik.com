@@ -16,8 +16,9 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 # ── Paths ──
 BASE_DIR = Path(__file__).parent
+REPO_DIR = BASE_DIR.parent
 TEMPLATES_DIR = BASE_DIR / "templates"
-CONTENT_DIR = BASE_DIR / "content"
+CONTENT_DIR = REPO_DIR / "content"
 STATIC_DIR = BASE_DIR / "static"
 DIST_DIR = BASE_DIR / "dist"
 SITE_URL = "https://birlikteiyilik.com"
