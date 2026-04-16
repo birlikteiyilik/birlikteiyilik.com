@@ -178,8 +178,12 @@ def build_site(base_path=''):
             page_count += 1
 
     # ── 4) sitemap.xml ──
-    SITEMAP_EXCLUDE = {'yonetim', '404'}
-    sitemap_entries = []
+    # Jinja2'den üretilen + repo root'taki statik HTML sayfalar
+    SITEMAP_EXCLUDE = {'yonetim', '404', '_src', 'node_modules', '.git'}
+    STATIC_SCAN_DIRS = ['hakkimizda', 'egitimler', 'basvurular', 'destek-ol']
+    sitemap_entries = set()
+
+    # 4a) dist/ içinden Jinja2-üretilen sayfaları ekle
     for html_file in DIST_DIR.rglob('*.html'):
         rel = html_file.relative_to(DIST_DIR)
         rel_str = str(rel)
@@ -188,7 +192,24 @@ def build_site(base_path=''):
         url_path = rel_str.replace('index.html', '').rstrip('/')
         if not url_path:
             url_path = ''
-        sitemap_entries.append(f"{SITE_URL}/{url_path}")
+        sitemap_entries.add(f"{SITE_URL}/{url_path}")
+
+    # 4b) Repo root'taki statik klasörlerden index.html'leri ekle
+    for sub in STATIC_SCAN_DIRS:
+        sub_path = REPO_DIR / sub
+        if not sub_path.exists():
+            continue
+        for html_file in sub_path.rglob('index.html'):
+            rel = html_file.relative_to(REPO_DIR)
+            rel_str = str(rel)
+            if any(ex in rel_str for ex in SITEMAP_EXCLUDE):
+                continue
+            if ' 2/' in rel_str or ' 2.' in rel_str:
+                continue
+            url_path = rel_str.replace('index.html', '').rstrip('/')
+            if not url_path:
+                url_path = ''
+            sitemap_entries.add(f"{SITE_URL}/{url_path}")
 
     sitemap_xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
     sitemap_xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
@@ -196,6 +217,7 @@ def build_site(base_path=''):
         sitemap_xml += f'  <url>\n    <loc>{url}</loc>\n    <lastmod>{ctx["now"]}</lastmod>\n  </url>\n'
     sitemap_xml += '</urlset>\n'
     (DIST_DIR / 'sitemap.xml').write_text(sitemap_xml, encoding='utf-8')
+    print(f"✅ sitemap.xml: {len(sitemap_entries)} URL")
 
     # ── 5) robots.txt ──
     if base_path:
