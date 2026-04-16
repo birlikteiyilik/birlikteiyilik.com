@@ -210,14 +210,28 @@
 
   {% block scripts %}{% endblock %}
 
+  <!-- Vercel Web Analytics (Vercel Dashboard → Analytics sekmesinden aktif et) -->
+  <script defer src="/_vercel/insights/script.js"></script>
+  <!-- Vercel Speed Insights (Vercel Dashboard → Speed Insights sekmesinden aktif et) -->
+  <script defer src="/_vercel/speed-insights/script.js"></script>
+
   {% if site.ga_id %}
-  <!-- GA4 -->
+  <!-- Google Analytics 4 -->
   <script async src="https://www.googletagmanager.com/gtag/js?id={{ site.ga_id }}"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-    gtag('config', '{{ site.ga_id }}');
+    gtag('config', '{{ site.ga_id }}', {anonymize_ip: true});
+
+    // data-track attribute'larını otomatik event olarak gönder
+    document.addEventListener('click', function(e){
+      var el = e.target.closest('[data-track]');
+      if (el) gtag('event', el.getAttribute('data-track'), {
+        event_category: 'engagement',
+        event_label: el.textContent.trim().slice(0, 50) || el.getAttribute('aria-label') || ''
+      });
+    });
   </script>
   {% endif %}
 </body>
