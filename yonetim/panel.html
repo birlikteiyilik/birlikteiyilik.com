@@ -84,6 +84,25 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
 /* SESSION TIMEOUT BAR */
 #sessionBar { position: fixed; bottom: 0; left: 0; right: 0; background: #fef3c7; color: #92400e; text-align: center; padding: 6px; font-size: .8rem; display: none; z-index: 200; }
+
+/* CONFIRM MODAL */
+.confirm-modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9999; padding: 20px;
+}
+.confirm-modal {
+  background: #fff; border-radius: 12px; padding: 24px 28px;
+  max-width: 420px; width: 100%; box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  animation: confirmModalIn .15s ease-out;
+}
+.confirm-modal h3 { margin: 0 0 8px; font-size: 1.15rem; }
+.confirm-modal p { margin: 0 0 20px; color: #555; font-size: .95rem; }
+.confirm-modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+.confirm-modal-actions .btn { padding: 8px 18px; font-size: .9rem; }
+.btn-secondary { background: #f1f5f9; color: #334155; }
+.btn-secondary:hover { background: #e2e8f0; }
+@keyframes confirmModalIn { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: scale(1); } }
 </style>
 </head>
 <body>
@@ -323,6 +342,46 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 <!-- SESSION TIMEOUT BAR -->
 <div id="sessionBar"></div>
 
+<!-- CONFIRM MODAL -->
+<div id="confirmModal" class="confirm-modal-overlay" style="display:none;">
+  <div class="confirm-modal">
+    <h3 id="confirmModalTitle">Onay</h3>
+    <p id="confirmModalMessage">Emin misiniz?</p>
+    <div class="confirm-modal-actions">
+      <button type="button" class="btn btn-secondary" id="confirmModalCancel">İptal</button>
+      <button type="button" class="btn btn-del" id="confirmModalOk">Sil</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Promise-tabanlı modal confirm — native confirm()'un drop-in replacement'ı
+function confirmModal(message, title, okText) {
+  if (title === undefined) title = 'Onay';
+  if (okText === undefined) okText = 'Sil';
+  return new Promise(function(resolve){
+    var ov = document.getElementById('confirmModal');
+    document.getElementById('confirmModalMessage').textContent = message;
+    document.getElementById('confirmModalTitle').textContent = title;
+    document.getElementById('confirmModalOk').textContent = okText;
+    ov.style.display = 'flex';
+    function cleanup(result){
+      ov.style.display = 'none';
+      document.getElementById('confirmModalOk').onclick = null;
+      document.getElementById('confirmModalCancel').onclick = null;
+      ov.onclick = null;
+      document.removeEventListener('keydown', esc);
+      resolve(result);
+    }
+    document.getElementById('confirmModalOk').onclick = function(){ cleanup(true); };
+    document.getElementById('confirmModalCancel').onclick = function(){ cleanup(false); };
+    ov.onclick = function(e){ if (e.target === ov) cleanup(false); };
+    function esc(e){ if (e.key === 'Escape') cleanup(false); }
+    document.addEventListener('keydown', esc);
+  });
+}
+</script>
+
 <script>
 // ── GÜVENLİK: Oturum kontrolü ──
 if (!sessionStorage.getItem('biaToken')) {
@@ -551,7 +610,8 @@ async function saveItem() {
 }
 
 async function deleteItem() {
-  if (!confirm('Bu kaydi silmek istediginize emin misiniz?')) return;
+  const ok = await confirmModal('Bu kaydı silmek istediğinize emin misiniz?', 'Kaydı Sil', 'Sil');
+  if (!ok) return;
   const title = news[editIdx]?.title || '';
   const newData = news.filter((_, i) => i !== editIdx);
   try {
@@ -787,7 +847,8 @@ async function saveEvent() {
 }
 
 async function deleteEvent() {
-  if (!confirm('Bu etkinligi silmek istediginize emin misiniz?')) return;
+  const ok = await confirmModal('Bu etkinliği silmek istediğinize emin misiniz?', 'Etkinliği Sil', 'Sil');
+  if (!ok) return;
   const title = events[eventEditIdx]?.title || '';
   const newData = events.filter((_, i) => i !== eventEditIdx);
   try {
@@ -942,9 +1003,17 @@ function renderFaq() {
 }
 
 function addFaqCategory() { faqData.push({ category: 'Yeni Kategori', questions: [] }); renderFaq(); }
-function removeFaqCategory(ci) { if (!confirm('Bu kategoriyi silmek istiyor musunuz?')) return; faqData.splice(ci, 1); renderFaq(); }
+async function removeFaqCategory(ci) {
+  const ok = await confirmModal('Bu kategoriyi ve içindeki tüm soruları silmek istediğinize emin misiniz?', 'Kategoriyi Sil', 'Sil');
+  if (!ok) return;
+  faqData.splice(ci, 1); renderFaq();
+}
 function addFaqQ(ci) { faqData[ci].questions.push({ q: '', a: '' }); renderFaq(); }
-function removeFaqQ(ci, qi) { faqData[ci].questions.splice(qi, 1); renderFaq(); }
+async function removeFaqQ(ci, qi) {
+  const ok = await confirmModal('Bu soruyu silmek istediğinize emin misiniz?', 'Soruyu Sil', 'Sil');
+  if (!ok) return;
+  faqData[ci].questions.splice(qi, 1); renderFaq();
+}
 
 async function saveFaq() {
   const btn = document.getElementById('saveFaqBtn');
