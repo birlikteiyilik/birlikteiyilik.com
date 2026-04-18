@@ -147,7 +147,7 @@
   },
   "support": {
     "title": "İyiliğin Bir Parçası Olun",
-    "subtitle": "Gönüllü olmak, iş birliği kurmak veya bağışla destek vermek isteyenler için.",
+    "subtitle": "Gönüllü olmak veya iş birliği kurmak isteyenler için.",
     "cards": [
       {
         "icon": "🤝",
@@ -155,13 +155,6 @@
         "desc": "Gönüllü öğretmen veya destekçi olarak aramıza katılın.",
         "url": "/destek-ol/gonullu-ol",
         "cta": "Gönüllü Başvurusu"
-      },
-      {
-        "icon": "💝",
-        "title": "Bağış Yap",
-        "desc": "Eğitim faaliyetlerine maddi destek verin.",
-        "url": "/destek-ol/bagis-yap",
-        "cta": "Bağış Yap"
       },
       {
         "icon": "🏢",
