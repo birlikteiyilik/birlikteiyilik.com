@@ -196,7 +196,7 @@
   margin-bottom: var(--s-12);
 }
 
-.footer-brand img { height: 48px; margin-bottom: var(--s-4); filter: brightness(0) invert(1); }
+.footer-brand img { height: 48px; margin-bottom: var(--s-4); }
 .footer-brand p { font-size: 14px; line-height: 1.6; color: rgba(255,255,255,0.5); }
 
 .footer-col h4 {
