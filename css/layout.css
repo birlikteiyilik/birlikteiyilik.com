@@ -67,10 +67,8 @@
   text-decoration: none;
 }
 .nav-logo img, .nav-logo-img {
-  height: 36px; width: 36px;
-  background: #fff; border-radius: 50%;
-  padding: 3px; object-fit: contain;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  height: 36px; width: 28px;
+  object-fit: contain;
 }
 .nav-logo-name {
   font-family: var(--font-sans); font-weight: 700;
@@ -196,7 +194,9 @@
   margin-bottom: var(--s-12);
 }
 
-.footer-brand img { height: 48px; margin-bottom: var(--s-4); }
+.footer-brand-lockup { display: flex; align-items: center; gap: 12px; margin-bottom: var(--s-4); }
+.footer-brand-lockup img { height: 48px; width: auto; }
+.footer-brand-name { font-family: var(--font-sans); font-weight: 700; color: #fff; font-size: 15px; letter-spacing: .06em; text-transform: uppercase; line-height: 1.15; }
 .footer-brand p { font-size: 14px; line-height: 1.6; color: rgba(255,255,255,0.5); }
 
 .footer-col h4 {
