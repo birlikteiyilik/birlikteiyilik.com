@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Osmanlı Padişahları — İnteraktif Kart Seti</title>
+<meta name="description" content="36 Osmanlı padişahı, interaktif kartlar, quizler ve oyunlarla tarih öğren!">
+<link rel="canonical" href="https://birlikteiyilik.com/osmanli-kartlari/" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Osmanlı Padişahları — İnteraktif Kart Seti" />
+<meta property="og:description" content="36 Osmanlı padişahı, interaktif kartlar, quizler ve oyunlarla tarih öğren!" />
+<meta property="og:url" content="https://birlikteiyilik.com/osmanli-kartlari/" />
+<meta property="og:image" content="https://birlikteiyilik.com/images/og-image.png" />
+<meta property="og:locale" content="tr_TR" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Osmanlı Padişahları — İnteraktif Kart Seti" />
+<meta name="twitter:description" content="36 Osmanlı padişahı, interaktif kartlar, quizler ve oyunlarla tarih öğren!" />
+<style>
+/* ── RESET & ROOT ──────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;--bg2:#12121c;--bg3:#1a1a2e;--bg4:#222240;
+  --border:#222230;--border2:rgba(255,255,255,.14);
+  --text:#e8e8f0;--text2:#a09882;--text3:#605848;
+  --nav-bg:rgba(10,10,15,.85);
+  --gold:#d4a24e;--gold2:#b8860b;--gold-dim:rgba(212,162,78,.12);
+  --red:#c0392b;--green:#27ae60;--blue:#2980b9;--purple:#8e44ad;
+  --radius:16px;--radius-sm:10px;
+  --shadow:0 8px 32px rgba(0,0,0,.6);
+  --card-w:min(280px,42vw);
+  --font:'Segoe UI',system-ui,-apple-system,sans-serif;
+}
+html.light{
+  --bg:#f5f5fa;--bg2:#f0f0f5;--bg3:#e8e8f0;--bg4:#dddde5;
+  --border:#dddde5;--border2:rgba(0,0,0,.12);
+  --text:#1a1a2e;--text2:#555570;--text3:#888898;
+  --nav-bg:rgba(255,255,255,.9);
+  --gold-dim:rgba(212,162,78,.08);
+  --shadow:0 8px 32px rgba(0,0,0,.08);
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100dvh;overflow-x:hidden}
+a{color:var(--gold);text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none}
+
+/* ── OSMANLI PATTERN ───────────────────────────────────────── */
+.pattern-bg{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.03;
+  background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 30L30 60L0 30Z' fill='none' stroke='%23d4a24e' stroke-width='.5'/%3E%3C/svg%3E");
+  background-size:60px 60px}
+
+/* ── HEADER ────────────────────────────────────────────────── */
+#header{position:sticky;top:0;z-index:200;background:var(--nav-bg);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);height:54px;
+  display:flex;align-items:center;padding:0 16px;gap:12px}
+.logo{font-size:1rem;font-weight:800;letter-spacing:.03em;cursor:pointer;
+  background:linear-gradient(135deg,var(--gold),#f0d080);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap}
+.logo span{font-weight:400;opacity:.6}
+#nav-back{display:none;background:var(--bg3);border:1px solid var(--border2);
+  color:var(--text2);padding:5px 10px;border-radius:8px;font-size:.78rem}
+#nav-back:hover{background:var(--bg4);color:var(--text)}
+#hdr-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.hdr-xp{font-size:.75rem;color:var(--gold);display:flex;align-items:center;gap:4px}
+.hdr-lvl{font-size:.8rem;padding:3px 8px;background:var(--gold-dim);border-radius:6px;
+  color:var(--gold);font-weight:600}
+
+/* ── EKRANLAR ──────────────────────────────────────────────── */
+.screen{display:none;position:relative;z-index:1}
+.screen.active{display:block}
+.screen-pad{padding:20px 16px 100px}
+
+/* ── ANA SAYFA ─────────────────────────────────────────────── */
+.hero{text-align:center;padding:40px 16px 32px}
+.hero h1{font-size:clamp(1.6rem,5vw,2.4rem);font-weight:800;
+  background:linear-gradient(135deg,var(--gold),#f5deb3,var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.2}
+.hero p{color:var(--text2);font-size:.9rem;margin-top:8px;max-width:500px;margin-inline:auto}
+.hero-stats{display:flex;justify-content:center;gap:24px;margin-top:20px;flex-wrap:wrap}
+.hero-stat{text-align:center}
+.hero-stat .num{font-size:1.5rem;font-weight:800;color:var(--gold)}
+.hero-stat .lbl{font-size:.7rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em}
+
+/* Module Grid */
+.mod-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;padding:0 16px 24px}
+.mod-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);
+  padding:18px 14px;cursor:pointer;transition:all .2s;text-align:center;position:relative;overflow:hidden}
+.mod-card:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 8px 24px rgba(212,162,78,.1)}
+.mod-card .mod-icon{font-size:2rem;margin-bottom:8px}
+.mod-card .mod-name{font-size:.85rem;font-weight:700;color:var(--text)}
+.mod-card .mod-desc{font-size:.7rem;color:var(--text2);margin-top:4px}
+.mod-card.locked{opacity:.4;pointer-events:none}
+.mod-card.locked::after{content:'🔒';position:absolute;top:8px;right:8px;font-size:.8rem}
+
+/* Section headers */
+.sec-title{font-size:1.1rem;font-weight:700;color:var(--text);padding:16px 16px 10px;
+  display:flex;align-items:center;gap:8px}
+.sec-title::before{content:'';width:3px;height:18px;background:var(--gold);border-radius:2px}
+
+/* ── KART GALERİSİ (dikey scroll feed) ─────────────── */
+.galeri-filters{display:flex;gap:6px;padding:12px 16px;flex-wrap:wrap}
+.filter-btn{padding:6px 14px;border-radius:20px;font-size:.75rem;font-weight:600;
+  background:var(--bg3);border:1px solid var(--border);color:var(--text2);transition:all .15s}
+.filter-btn:hover,.filter-btn.active{background:var(--gold-dim);border-color:var(--gold);color:var(--gold)}
+
+.kart-feed{display:flex;flex-direction:column;align-items:center;gap:28px;padding:12px 0 40px}
+.kart-wrap{width:min(340px,85vw);aspect-ratio:2/3;perspective:1200px;cursor:pointer}
+.kart-inner{position:relative;width:100%;height:100%;transition:transform .6s cubic-bezier(.4,0,.2,1);
+  transform-style:preserve-3d;border-radius:var(--radius);overflow:visible}
+.kart-wrap.flipped .kart-inner{transform:rotateY(180deg)}
+.kart-on,.kart-arka{position:absolute;inset:0;backface-visibility:hidden;border-radius:var(--radius);
+  overflow:hidden;box-shadow:0 12px 48px rgba(0,0,0,.7)}
+.kart-arka{transform:rotateY(180deg)}
+.kart-on img,.kart-arka img{width:100%;height:100%;object-fit:cover}
+.kart-overlay{position:absolute;bottom:0;left:0;right:0;padding:14px;
+  background:linear-gradient(transparent,rgba(0,0,0,.88));pointer-events:none}
+.kart-overlay .kart-ad{font-size:1rem;font-weight:700;color:#fff}
+.kart-overlay .kart-yil{font-size:.78rem;color:rgba(255,255,255,.7)}
+
+/* Koleksiyon grid (farklı ekran) */
+.kol-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;padding:16px}
+.kol-grid .kart-wrap{position:relative;aspect-ratio:2/3;perspective:1000px;cursor:pointer}
+.kol-grid .kart-wrap .kart-on img,.kol-grid .kart-wrap .kart-arka img{width:100%;height:100%;object-fit:cover}
+.kart-wrap.locked .kart-overlay{display:none}
+
+/* ── SULTAN PROFİL ─────────────────────────────────────────── */
+.profil-header{text-align:center;padding:24px 16px 16px}
+.profil-img-wrap{display:flex;gap:12px;justify-content:center;align-items:center}
+.profil-img{width:140px;border-radius:var(--radius);box-shadow:var(--shadow);border:2px solid var(--gold-dim)}
+.profil-ad{font-size:1.4rem;font-weight:800;margin-top:12px;
+  background:linear-gradient(135deg,var(--gold),#f5deb3);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.profil-lakap{font-size:.85rem;color:var(--text2);font-style:italic;margin-top:4px}
+.profil-meta{display:flex;gap:10px;justify-content:center;margin-top:10px;flex-wrap:wrap}
+.profil-badge{padding:4px 12px;border-radius:20px;font-size:.72rem;font-weight:600}
+.profil-body{padding:16px;max-width:600px;margin:0 auto}
+.profil-section{margin-bottom:20px}
+.profil-section h3{font-size:.9rem;font-weight:700;color:var(--gold);margin-bottom:8px;
+  display:flex;align-items:center;gap:6px}
+.profil-section p,.profil-section li{font-size:.84rem;color:var(--text2);line-height:1.6}
+.profil-section ul{list-style:none;padding:0}
+.profil-section li{padding:4px 0 4px 16px;position:relative}
+.profil-section li::before{content:'◆';position:absolute;left:0;color:var(--gold);font-size:.5rem;top:8px}
+.profil-fun{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px;margin-top:12px}
+.profil-fun .fun-label{font-size:.72rem;color:var(--gold);font-weight:700;text-transform:uppercase;
+  letter-spacing:.08em;margin-bottom:6px}
+.profil-fun p{font-size:.82rem;color:var(--text);line-height:1.5}
+.profil-nav{display:flex;gap:8px;justify-content:center;padding:16px}
+.profil-nav button{padding:8px 20px;border-radius:8px;font-size:.82rem;font-weight:600;
+  background:var(--bg3);border:1px solid var(--border2);color:var(--text2);transition:all .15s}
+.profil-nav button:hover{border-color:var(--gold);color:var(--gold)}
+
+/* ── TIMELINE ──────────────────────────────────────────────── */
+.timeline-wrap{padding:16px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.timeline{position:relative;min-height:500px;padding-bottom:40px}
+.tl-line{position:absolute;left:20px;top:0;bottom:0;width:2px;background:var(--border2)}
+.tl-item{position:relative;margin-left:44px;margin-bottom:20px;padding:12px 14px;
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);
+  cursor:pointer;transition:all .2s}
+.tl-item:hover{border-color:var(--gold);transform:translateX(4px)}
+.tl-item::before{content:'';position:absolute;left:-28px;top:16px;width:10px;height:10px;
+  border-radius:50%;border:2px solid var(--gold);background:var(--bg)}
+.tl-item.active::before{background:var(--gold)}
+.tl-item .tl-yil{font-size:.72rem;color:var(--gold);font-weight:700}
+.tl-item .tl-ad{font-size:.88rem;font-weight:700;margin-top:2px}
+.tl-item .tl-lakap{font-size:.72rem;color:var(--text2)}
+.tl-donem-label{position:relative;margin-left:44px;margin-bottom:8px;margin-top:20px;
+  font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;
+  display:flex;align-items:center;gap:6px}
+.tl-donem-label::before{content:'';position:absolute;left:-28px;top:4px;width:10px;height:10px;
+  border-radius:2px}
+
+/* ── SOY AĞACI ─────────────────────────────────────────────── */
+.soyagaci-wrap{padding:8px 0;overflow:auto;-webkit-overflow-scrolling:touch}
+.soy-tree-container{position:relative;display:block;min-width:max-content;padding:8px 40px 40px}
+#soy-svg{position:absolute;top:0;left:0;pointer-events:none;overflow:visible}
+.soy-branch{display:flex;flex-direction:column;align-items:center}
+.soy-children{display:flex;gap:12px;align-items:flex-start;padding-top:32px}
+.soy-card{width:88px;padding:6px 4px 5px;border-radius:6px;background:var(--bg2);
+  border:1px solid var(--border2);cursor:pointer;text-align:center;
+  transition:background .15s;user-select:none;-webkit-user-select:none}
+.soy-card:hover,.soy-card:active{background:var(--bg3)}
+.soy-rel{font-size:.44rem;color:var(--gold);font-weight:700;letter-spacing:.05em;margin-bottom:1px}
+.soy-num{font-size:.52rem;color:var(--text3)}
+.soy-name{font-size:.58rem;font-weight:700;color:var(--text);line-height:1.25;margin:2px 0;word-break:break-word}
+.soy-yr{font-size:.49rem;color:var(--text2)}
+
+/* ── QUIZ ──────────────────────────────────────────────────── */
+.quiz-setup{padding:24px;max-width:500px;margin:0 auto;text-align:center}
+.quiz-setup h2{font-size:1.2rem;font-weight:800;color:var(--gold);margin-bottom:16px}
+.quiz-opt-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.quiz-opt{padding:14px;border-radius:var(--radius-sm);background:var(--bg2);
+  border:2px solid var(--border);cursor:pointer;transition:all .15s;text-align:center}
+.quiz-opt:hover,.quiz-opt.selected{border-color:var(--gold);background:var(--gold-dim)}
+.quiz-opt .opt-icon{font-size:1.5rem;margin-bottom:4px}
+.quiz-opt .opt-label{font-size:.82rem;font-weight:600}
+.quiz-opt .opt-desc{font-size:.68rem;color:var(--text2)}
+.quiz-start-btn{padding:12px 40px;border-radius:var(--radius-sm);background:linear-gradient(135deg,var(--gold),var(--gold2));
+  color:#000;font-size:.9rem;font-weight:700;margin-top:12px;transition:transform .15s}
+.quiz-start-btn:hover{transform:scale(1.05)}
+.quiz-start-btn:disabled{opacity:.5;pointer-events:none}
+
+/* Quiz Game */
+.quiz-game{padding:16px;max-width:600px;margin:0 auto}
+.quiz-progress{display:flex;align-items:center;gap:8px;margin-bottom:16px}
+.quiz-bar{flex:1;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.quiz-bar-fill{height:100%;background:var(--gold);transition:width .3s;border-radius:3px}
+.quiz-count{font-size:.75rem;color:var(--text2);white-space:nowrap}
+.quiz-question{font-size:1.05rem;font-weight:700;margin-bottom:20px;line-height:1.4}
+.quiz-answers{display:flex;flex-direction:column;gap:10px}
+.quiz-ans{padding:14px 16px;border-radius:var(--radius-sm);background:var(--bg2);
+  border:2px solid var(--border);font-size:.88rem;text-align:left;color:var(--text);
+  transition:all .15s;position:relative}
+.quiz-ans:hover:not(.answered){border-color:var(--gold)}
+.quiz-ans.correct{border-color:var(--green);background:rgba(39,174,96,.12);color:var(--green)}
+.quiz-ans.wrong{border-color:var(--red);background:rgba(192,57,43,.12);color:var(--red)}
+.quiz-ans.answered{pointer-events:none}
+.quiz-explain{margin-top:12px;padding:12px;background:var(--bg3);border-radius:8px;
+  font-size:.8rem;color:var(--text2);line-height:1.5;display:none}
+.quiz-explain.show{display:block}
+.quiz-next{margin-top:16px;padding:10px 24px;border-radius:8px;
+  background:var(--gold);color:#000;font-weight:700;font-size:.85rem;display:none}
+.quiz-next.show{display:inline-block}
+
+/* Quiz Results */
+.quiz-results{text-align:center;padding:32px 16px}
+.quiz-score-circle{width:120px;height:120px;border-radius:50%;
+  border:4px solid var(--gold);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;margin:0 auto 16px}
+.quiz-score-num{font-size:2rem;font-weight:800;color:var(--gold)}
+.quiz-score-label{font-size:.7rem;color:var(--text2)}
+.quiz-xp-gain{font-size:1rem;color:var(--green);font-weight:700;margin-bottom:16px}
+
+/* ── SIRALAMA OYUNU ────────────────────────────────────────── */
+.siralama-game{padding:16px;max-width:500px;margin:0 auto}
+.siralama-timer{text-align:center;font-size:1.5rem;font-weight:800;color:var(--gold);margin-bottom:12px}
+.siralama-list{display:flex;flex-direction:column;gap:8px}
+.siralama-item{padding:12px 16px;background:var(--bg2);border:2px solid var(--border);
+  border-radius:var(--radius-sm);font-size:.88rem;font-weight:600;cursor:grab;
+  transition:all .15s;display:flex;align-items:center;gap:10px;user-select:none;
+  touch-action:none}
+.siralama-item:active{cursor:grabbing;border-color:var(--gold);transform:scale(1.02)}
+.siralama-item .drag-handle{color:var(--text3);font-size:.8rem}
+.siralama-item.correct-pos{border-color:var(--green);background:rgba(39,174,96,.08)}
+.siralama-item.wrong-pos{border-color:var(--red);background:rgba(192,57,43,.08)}
+.siralama-check{margin-top:16px;padding:12px 32px;border-radius:8px;
+  background:var(--gold);color:#000;font-weight:700;font-size:.88rem;display:block;margin:16px auto 0}
+
+/* ── EŞLEŞME OYUNU ─────────────────────────────────────────── */
+.eslestirme-game{padding:16px}
+.eslestirme-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-width:500px;margin:0 auto}
+.eslestirme-card{aspect-ratio:3/4;border-radius:var(--radius-sm);background:var(--bg3);
+  border:2px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:.72rem;font-weight:600;text-align:center;padding:6px;transition:all .2s;
+  color:transparent;position:relative}
+.eslestirme-card::before{content:'☪';font-size:1.5rem;color:var(--gold);position:absolute}
+.eslestirme-card.revealed{color:var(--text);border-color:var(--gold);background:var(--gold-dim)}
+.eslestirme-card.revealed::before{display:none}
+.eslestirme-card.matched{border-color:var(--green);background:rgba(39,174,96,.12);color:var(--green);pointer-events:none}
+.eslestirme-card.matched::before{display:none}
+.eslestirme-info{text-align:center;margin-bottom:12px;display:flex;justify-content:center;gap:20px}
+.eslestirme-info span{font-size:.82rem;color:var(--text2)}
+.eslestirme-info strong{color:var(--gold)}
+
+/* ── KİM BU SULTAN ─────────────────────────────────────────── */
+.kimbu-game{padding:16px;max-width:500px;margin:0 auto;text-align:center}
+.kimbu-clue{padding:16px;background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--radius);margin-bottom:12px;min-height:100px;
+  display:flex;flex-direction:column;gap:8px}
+.kimbu-clue-item{font-size:.88rem;color:var(--text);line-height:1.4;padding:4px 0;
+  border-bottom:1px solid var(--border);animation:fadeIn .4s}
+.kimbu-clue-num{font-size:.7rem;color:var(--gold);font-weight:700}
+.kimbu-input-wrap{display:flex;gap:8px;margin-bottom:12px}
+.kimbu-input{flex:1;padding:10px 14px;border-radius:8px;background:var(--bg3);
+  border:1px solid var(--border2);color:var(--text);font-size:.88rem;font-family:inherit}
+.kimbu-input:focus{outline:none;border-color:var(--gold)}
+.kimbu-submit{padding:10px 20px;border-radius:8px;background:var(--gold);color:#000;font-weight:700}
+.kimbu-hint-btn{padding:8px 16px;border-radius:8px;background:var(--bg3);
+  border:1px solid var(--border);color:var(--text2);font-size:.8rem;margin-bottom:12px}
+.kimbu-suggestions{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.kimbu-sug{padding:8px 12px;background:var(--bg2);border:1px solid var(--border);
+  border-radius:6px;font-size:.82rem;text-align:left;color:var(--text);transition:all .1s}
+.kimbu-sug:hover{border-color:var(--gold);color:var(--gold)}
+
+/* ── JEOPARDY ──────────────────────────────────────────────── */
+.jeopardy-board{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:16px;max-width:700px;margin:0 auto}
+.jp-header{padding:8px;background:var(--gold);color:#000;font-weight:700;font-size:.7rem;
+  text-align:center;border-radius:6px}
+.jp-cell{padding:16px 8px;background:var(--bg2);border:2px solid var(--border);border-radius:8px;
+  text-align:center;cursor:pointer;transition:all .15s;font-size:1rem;font-weight:800;color:var(--gold)}
+.jp-cell:hover{border-color:var(--gold);transform:scale(1.05)}
+.jp-cell.used{opacity:.2;pointer-events:none}
+.jp-score{text-align:center;padding:12px;font-size:1.2rem;font-weight:800;color:var(--gold)}
+.jp-modal{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.8);display:none;
+  align-items:center;justify-content:center;padding:20px}
+.jp-modal.show{display:flex}
+.jp-modal-inner{background:var(--bg2);border:2px solid var(--gold);border-radius:var(--radius);
+  padding:24px;max-width:500px;width:100%;text-align:center}
+.jp-modal-q{font-size:1.1rem;font-weight:700;margin-bottom:16px;line-height:1.4}
+.jp-modal-input{width:100%;padding:12px;border-radius:8px;background:var(--bg3);
+  border:1px solid var(--border2);color:var(--text);font-size:1rem;font-family:inherit;margin-bottom:12px}
+.jp-modal-btns{display:flex;gap:8px;justify-content:center}
+.jp-modal-btns button{padding:10px 24px;border-radius:8px;font-weight:700;font-size:.88rem}
+
+/* ── HIZLI TUR ─────────────────────────────────────────────── */
+.hizli-game{padding:16px;max-width:500px;margin:0 auto;text-align:center}
+.hizli-timer{font-size:2rem;font-weight:800;color:var(--gold);margin-bottom:8px}
+.hizli-score{font-size:1rem;color:var(--text2);margin-bottom:16px}
+.hizli-question{font-size:1.05rem;font-weight:700;margin-bottom:20px;min-height:60px;line-height:1.4}
+.hizli-btns{display:flex;gap:12px;justify-content:center}
+.hizli-btn{padding:16px 32px;border-radius:var(--radius);font-size:1.1rem;font-weight:800;
+  transition:all .15s}
+.hizli-btn.dogru{background:rgba(39,174,96,.15);border:2px solid var(--green);color:var(--green)}
+.hizli-btn.yanlis{background:rgba(192,57,43,.15);border:2px solid var(--red);color:var(--red)}
+.hizli-btn:hover{transform:scale(1.05)}
+.hizli-combo{font-size:.82rem;color:var(--gold);margin-top:8px}
+.hizli-feedback{font-size:1.5rem;margin-top:8px;min-height:40px}
+
+/* ── ARENA ─────────────────────────────────────────────────── */
+.arena-game{padding:16px;max-width:600px;margin:0 auto}
+.arena-vs{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:start;margin-bottom:16px}
+.arena-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px;text-align:center}
+.arena-card img{width:80px;border-radius:8px;margin-bottom:8px}
+.arena-card .arena-name{font-size:.88rem;font-weight:700}
+.arena-card .arena-yil{font-size:.72rem;color:var(--text2)}
+.arena-divider{font-size:1.5rem;color:var(--gold);font-weight:800;align-self:center;text-align:center}
+.arena-question{text-align:center;font-size:1rem;font-weight:700;margin-bottom:16px;
+  background:var(--bg3);padding:14px;border-radius:var(--radius);border:1px solid var(--border)}
+.arena-choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.arena-choice{padding:14px;border-radius:var(--radius-sm);background:var(--bg2);
+  border:2px solid var(--border);font-size:.88rem;font-weight:600;color:var(--text);transition:all .15s}
+.arena-choice:hover{border-color:var(--gold)}
+.arena-choice.correct{border-color:var(--green);background:rgba(39,174,96,.12)}
+.arena-choice.wrong{border-color:var(--red);background:rgba(192,57,43,.12)}
+.arena-score{text-align:center;margin-bottom:12px}
+.arena-score span{font-size:1.2rem;font-weight:800;color:var(--gold)}
+
+/* ── KOLEKSİYON & PROFİL ──────────────────────────────────── */
+.koleksiyon-stats{display:flex;gap:16px;justify-content:center;padding:16px;flex-wrap:wrap}
+.kol-stat{text-align:center;padding:12px 20px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.kol-stat .kol-num{font-size:1.5rem;font-weight:800;color:var(--gold)}
+.kol-stat .kol-label{font-size:.7rem;color:var(--text2);text-transform:uppercase;letter-spacing:.06em}
+
+.profil-screen{padding:24px 16px;max-width:500px;margin:0 auto}
+.xp-bar-wrap{margin:16px 0}
+.xp-bar{height:12px;background:var(--bg3);border-radius:6px;overflow:hidden}
+.xp-bar-fill{height:100%;background:linear-gradient(90deg,var(--gold2),var(--gold));border-radius:6px;transition:width .5s}
+.xp-info{display:flex;justify-content:space-between;font-size:.72rem;color:var(--text2);margin-top:4px}
+
+.rozet-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-top:16px}
+.rozet-item{text-align:center;padding:12px 6px;background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--radius-sm);transition:all .15s}
+.rozet-item.earned{border-color:var(--gold);background:var(--gold-dim)}
+.rozet-item:not(.earned){opacity:.35;filter:grayscale(1)}
+.rozet-item .rozet-icon{font-size:1.5rem}
+.rozet-item .rozet-ad{font-size:.65rem;font-weight:600;margin-top:4px;color:var(--text)}
+
+/* ── GENEL BUTON ───────────────────────────────────────────── */
+.btn-gold{padding:10px 24px;border-radius:8px;background:linear-gradient(135deg,var(--gold),var(--gold2));
+  color:#000;font-weight:700;font-size:.88rem;transition:all .15s}
+.btn-gold:hover{transform:scale(1.03);box-shadow:0 4px 16px rgba(212,162,78,.3)}
+.btn-outline{padding:10px 24px;border-radius:8px;background:transparent;
+  border:1px solid var(--gold);color:var(--gold);font-weight:600;font-size:.85rem;transition:all .15s}
+.btn-outline:hover{background:var(--gold-dim)}
+
+/* ── ANİMASYONLAR ──────────────────────────────────────────── */
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes popIn{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+@keyframes confetti{0%{transform:translateY(0) rotate(0)}100%{transform:translateY(100vh) rotate(720deg)}}
+@keyframes shimmer{0%{background-position:-200%}100%{background-position:200%}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.anim-fadeIn{animation:fadeIn .4s ease-out}
+.anim-popIn{animation:popIn .3s ease-out}
+
+/* Confetti */
+.confetti-piece{position:fixed;top:-10px;width:10px;height:10px;z-index:999;
+  animation:confetti 2s ease-in forwards;pointer-events:none;border-radius:2px}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  padding:12px 24px;background:var(--bg2);border:1px solid var(--gold);
+  border-radius:var(--radius-sm);color:var(--text);font-size:.85rem;font-weight:600;
+  z-index:400;animation:fadeIn .3s;box-shadow:var(--shadow);white-space:nowrap}
+.toast.hide{opacity:0;transition:opacity .3s}
+
+/* ── RESPONSIVE ────────────────────────────────────────────── */
+@media(max-width:480px){
+  :root{--card-w:42vw}
+  .kart-wrap{width:min(320px,90vw)}
+  .eslestirme-grid{grid-template-columns:repeat(3,1fr)}
+  .jeopardy-board{grid-template-columns:repeat(3,1fr)}
+  .arena-vs{grid-template-columns:1fr;gap:8px}
+  .arena-divider{display:none}
+  .mod-grid{grid-template-columns:repeat(2,1fr)}
+  .profil-img{width:110px}
+}
+</style>
+  <!-- Vercel Analytics + Speed Insights -->
+  <script defer src="/_vercel/insights/script.js"></script>
+  <script defer src="/_vercel/speed-insights/script.js"></script>
+</head>
+<body>
+<div class="pattern-bg"></div>
+
+<!-- HEADER -->
+<div id="header">
+  <button id="nav-back" onclick="goBack()">← Geri</button>
+  <div class="logo" onclick="showScreen('home')">OSMANLI <span>KARTLARl</span></div>
+  <div id="hdr-right">
+    <div class="hdr-xp" id="hdr-xp-display">⚡ <span id="hdr-xp">0</span> XP</div>
+    <div class="hdr-lvl" id="hdr-lvl">🏹 Yeniçeri</div>
+  </div>
+</div>
+
+<!-- ANA SAYFA -->
+<div class="screen active" id="screen-home">
+  <div class="hero">
+    <h1>Osmanlı Padişahları</h1>
+    <p>36 padişah, 623 yıllık tarih. Kartları keşfet, quizlerle öğren, oyunlarla pekiştir!</p>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="num">36</div><div class="lbl">Padişah</div></div>
+      <div class="hero-stat"><div class="num">623</div><div class="lbl">Yıl</div></div>
+      <div class="hero-stat"><div class="num" id="home-collected">0</div><div class="lbl">Toplanan</div></div>
+      <div class="hero-stat"><div class="num" id="home-xp">0</div><div class="lbl">XP</div></div>
+    </div>
+  </div>
+
+  <div class="sec-title">Keşfet</div>
+  <div class="mod-grid">
+    <div class="mod-card" onclick="showScreen('galeri')"><div class="mod-icon">🃏</div><div class="mod-name">Kart Galerisi</div><div class="mod-desc">36 padişah kartı</div></div>
+    <div class="mod-card" onclick="showScreen('timeline')"><div class="mod-icon">⏳</div><div class="mod-name">Zaman Çizgisi</div><div class="mod-desc">1299'dan 1922'ye</div></div>
+    <div class="mod-card" onclick="showScreen('soyagaci')"><div class="mod-icon">🌳</div><div class="mod-name">Soy Ağacı</div><div class="mod-desc">Hanedan ağacı</div></div>
+  </div>
+
+  <div class="sec-title">Oyna & Öğren</div>
+  <div class="mod-grid">
+    <div class="mod-card" onclick="showScreen('quiz')"><div class="mod-icon">🎯</div><div class="mod-name">Quiz</div><div class="mod-desc">Bilgini test et</div></div>
+    <div class="mod-card" onclick="showScreen('siralama')"><div class="mod-icon">📊</div><div class="mod-name">Sıralama</div><div class="mod-desc">Kronoloji challenge</div></div>
+    <div class="mod-card" onclick="showScreen('eslestirme')"><div class="mod-icon">🧩</div><div class="mod-name">Eşleştirme</div><div class="mod-desc">Hafıza oyunu</div></div>
+    <div class="mod-card" onclick="showScreen('kimbu')"><div class="mod-icon">🔍</div><div class="mod-name">Kim Bu Sultan?</div><div class="mod-desc">İpuçlarından bul</div></div>
+    <div class="mod-card" onclick="showScreen('jeopardy')"><div class="mod-icon">⭐</div><div class="mod-name">Jeopardy</div><div class="mod-desc">Bilgi yarışması</div></div>
+    <div class="mod-card" onclick="showScreen('hizli')"><div class="mod-icon">⚡</div><div class="mod-name">Hızlı Tur</div><div class="mod-desc">60 sn doğru/yanlış</div></div>
+    <div class="mod-card" onclick="showScreen('arena')"><div class="mod-icon">🏆</div><div class="mod-name">Sultan Arenası</div><div class="mod-desc">Karşılaştırma</div></div>
+  </div>
+
+  <div class="sec-title">İlerleme</div>
+  <div class="mod-grid">
+    <div class="mod-card" onclick="showScreen('koleksiyon')"><div class="mod-icon">📚</div><div class="mod-name">Koleksiyon</div><div class="mod-desc" id="home-kol-desc">0/36 kart</div></div>
+    <div class="mod-card" onclick="showScreen('profil')"><div class="mod-icon">👤</div><div class="mod-name">Profil</div><div class="mod-desc">XP, Seviye, Rozetler</div></div>
+  </div>
+</div>
+
+<!-- KART GALERİSİ -->
+<div class="screen" id="screen-galeri">
+  <div class="screen-pad">
+    <div class="galeri-filters" id="galeri-filters"></div>
+    <div class="kart-feed" id="kart-feed"></div>
+  </div>
+</div>
+
+<!-- SULTAN PROFİL -->
+<div class="screen" id="screen-sultan-profil">
+  <div class="screen-pad" id="sultan-profil-content"></div>
+</div>
+
+<!-- TIMELINE -->
+<div class="screen" id="screen-timeline">
+  <div class="screen-pad">
+    <div class="timeline-wrap"><div class="timeline" id="timeline-content"></div></div>
+  </div>
+</div>
+
+<!-- SOY AĞACI -->
+<div class="screen" id="screen-soyagaci">
+  <div class="screen-pad">
+    <div class="soyagaci-wrap" id="soyagaci-content"></div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="screen" id="screen-quiz">
+  <div class="screen-pad" id="quiz-content"></div>
+</div>
+
+<!-- SIRALAMA -->
+<div class="screen" id="screen-siralama">
+  <div class="screen-pad" id="siralama-content"></div>
+</div>
+
+<!-- EŞLEŞTİRME -->
+<div class="screen" id="screen-eslestirme">
+  <div class="screen-pad" id="eslestirme-content"></div>
+</div>
+
+<!-- KİM BU SULTAN -->
+<div class="screen" id="screen-kimbu">
+  <div class="screen-pad" id="kimbu-content"></div>
+</div>
+
+<!-- JEOPARDY -->
+<div class="screen" id="screen-jeopardy">
+  <div class="screen-pad" id="jeopardy-content"></div>
+</div>
+
+<!-- HIZLI TUR -->
+<div class="screen" id="screen-hizli">
+  <div class="screen-pad" id="hizli-content"></div>
+</div>
+
+<!-- ARENA -->
+<div class="screen" id="screen-arena">
+  <div class="screen-pad" id="arena-content"></div>
+</div>
+
+<!-- KOLEKSİYON -->
+<div class="screen" id="screen-koleksiyon">
+  <div class="screen-pad" id="koleksiyon-content"></div>
+</div>
+
+<!-- PROFİL -->
+<div class="screen" id="screen-profil">
+  <div class="screen-pad" id="profil-content"></div>
+</div>
+
+<script src="data.js"></script>
+<script>
+// ── STATE ─────────────────────────────────────────────────────
+const STORE_KEY = 'osmanli-kartlari-v1';
+let state = loadState();
+let screenHistory = ['home'];
+let currentScreen = 'home';
+
+function defaultState() {
+  return { xp: 0, collected: [], badges: [], quizStats: { correct: 0, total: 0 }, arenaWins: 0, hizliRecord: 0, lastVisit: null, streak: 0 };
+}
+function loadState() {
+  try { const s = JSON.parse(localStorage.getItem(STORE_KEY)); return s ? { ...defaultState(), ...s } : defaultState(); }
+  catch { return defaultState(); }
+}
+function saveState() { localStorage.setItem(STORE_KEY, JSON.stringify(state)); updateUI(); }
+function addXP(n) {
+  state.xp += n;
+  saveState();
+  showToast(`+${n} XP kazandın!`);
+}
+function collectCard(id) {
+  if (!state.collected.includes(id)) {
+    state.collected.push(id);
+    saveState();
+    showToast(`🃏 ${SULTANLAR.find(s=>s.id===id).ad} kartı toplandı!`);
+  }
+}
+function earnBadge(id) {
+  if (!state.badges.includes(id)) {
+    state.badges.push(id);
+    saveState();
+    const r = ROZETLER.find(r=>r.id===id);
+    if (r) { showToast(`${r.ikon} Rozet: ${r.ad}!`); spawnConfetti(); addXP(r.puan); }
+  }
+}
+function getSeviye() {
+  let lvl = SEVIYELER[0];
+  for (const s of SEVIYELER) { if (state.xp >= s.minXP) lvl = s; }
+  return lvl;
+}
+
+// ── UI UPDATES ────────────────────────────────────────────────
+function updateUI() {
+  const lvl = getSeviye();
+  document.getElementById('hdr-xp').textContent = state.xp;
+  document.getElementById('hdr-lvl').textContent = `${lvl.ikon} ${lvl.ad}`;
+  document.getElementById('home-xp').textContent = state.xp;
+  document.getElementById('home-collected').textContent = state.collected.length;
+  document.getElementById('home-kol-desc').textContent = `${state.collected.length}/36 kart`;
+  // Check streak
+  const today = new Date().toDateString();
+  if (state.lastVisit !== today) {
+    const yesterday = new Date(Date.now() - 86400000).toDateString();
+    state.streak = (state.lastVisit === yesterday) ? state.streak + 1 : 1;
+    state.lastVisit = today;
+    saveState();
+    if (state.streak >= 3) earnBadge('gunluk-calisan');
+  }
+  // Check sultan level badge
+  if (state.xp >= 5000) earnBadge('sultan-seviye');
+  if (state.collected.length >= 36) earnBadge('koleksiyoncu');
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────
+function showScreen(id, pushHistory = true) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById('screen-' + id);
+  if (el) el.classList.add('active');
+  if (pushHistory && id !== currentScreen) screenHistory.push(id);
+  currentScreen = id;
+  document.getElementById('nav-back').style.display = id === 'home' ? 'none' : 'block';
+  window.scrollTo(0, 0);
+  // Init screens
+  if (id === 'galeri') initGaleri();
+  if (id === 'timeline') initTimeline();
+  if (id === 'soyagaci') initSoyAgaci();
+  if (id === 'quiz') initQuizSetup();
+  if (id === 'siralama') initSiralama();
+  if (id === 'eslestirme') initEslestirme();
+  if (id === 'kimbu') initKimBu();
+  if (id === 'jeopardy') initJeopardy();
+  if (id === 'hizli') initHizli();
+  if (id === 'arena') initArena();
+  if (id === 'koleksiyon') initKoleksiyon();
+  if (id === 'profil') initProfil();
+}
+function goBack() {
+  screenHistory.pop();
+  const prev = screenHistory[screenHistory.length - 1] || 'home';
+  showScreen(prev, false);
+}
+
+// ── TOAST & CONFETTI ──────────────────────────────────────────
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.classList.add('hide'), 2000);
+  setTimeout(() => t.remove(), 2500);
+}
+function spawnConfetti() {
+  const colors = ['#d4a24e','#c0392b','#27ae60','#2980b9','#8e44ad','#f39c12'];
+  for (let i = 0; i < 30; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti-piece';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = colors[Math.floor(Math.random() * colors.length)];
+    c.style.animationDuration = (1.5 + Math.random()) + 's';
+    c.style.animationDelay = Math.random() * 0.5 + 's';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 3000);
+  }
+}
+function shuffle(arr) { const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+// ── KART GALERİSİ (dikey scroll feed) ─────────────────
+let galeriFiltered = [];
+
+function initGaleri() {
+  const filtersEl = document.getElementById('galeri-filters');
+  filtersEl.innerHTML = `<button class="filter-btn active" data-d="all">Tümü</button>` +
+    Object.entries(DONEMLER).map(([k,v]) =>
+      `<button class="filter-btn" data-d="${k}" style="--fc:${v.renk}">${v.ikon} ${v.ad}</button>`
+    ).join('');
+  filtersEl.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.onclick = () => {
+      filtersEl.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderCards(btn.dataset.d);
+    };
+  });
+  renderCards('all');
+}
+
+function renderCards(donem) {
+  galeriFiltered = donem === 'all' ? [...SULTANLAR] : SULTANLAR.filter(s => s.donem === donem);
+  const feed = document.getElementById('kart-feed');
+  feed.innerHTML = galeriFiltered.map(s => {
+    return `<div class="kart-wrap" onclick="this.classList.toggle('flipped')">
+      <div class="kart-inner">
+        <div class="kart-on"><img src="images/${s.id}.webp" alt="${s.ad}" loading="lazy"></div>
+        <div class="kart-arka"><img src="images/${s.id}-arka.webp" alt="${s.ad} arka" loading="lazy"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── SULTAN PROFİL ─────────────────────────────────────────────
+function showSultanProfil(id) {
+  const s = SULTANLAR.find(x => x.id === id);
+  if (!s) return;
+  const donem = DONEMLER[s.donem];
+  const idx = SULTANLAR.indexOf(s);
+  const prev = idx > 0 ? SULTANLAR[idx-1] : null;
+  const next = idx < SULTANLAR.length-1 ? SULTANLAR[idx+1] : null;
+  document.getElementById('sultan-profil-content').innerHTML = `
+    <div class="profil-header">
+      <div class="profil-img-wrap">
+        <img class="profil-img" src="images/${s.id}.webp" alt="${s.ad}">
+        <img class="profil-img" src="images/${s.id}-arka.webp" alt="${s.ad} arka">
+      </div>
+      <div class="profil-ad">${s.ad}</div>
+      <div class="profil-lakap">${s.lakap}</div>
+      <div class="profil-meta">
+        <span class="profil-badge" style="background:${donem.renk}22;color:${donem.renk};border:1px solid ${donem.renk}44">${donem.ikon} ${donem.ad}</span>
+        <span class="profil-badge" style="background:var(--gold-dim);color:var(--gold);border:1px solid var(--gold)44">👑 ${s.sira}. Padişah</span>
+        <span class="profil-badge" style="background:var(--bg3);color:var(--text2);border:1px solid var(--border)">${s.saltanat}</span>
+      </div>
+    </div>
+    <div class="profil-body">
+      <div class="profil-section"><h3>📜 Biyografi</h3><p>${s.biyografi}</p></div>
+      ${s.olaylar.length ? `<div class="profil-section"><h3>⚔️ Önemli Olaylar</h3><ul>${s.olaylar.map(o=>`<li>${o}</li>`).join('')}</ul></div>` : ''}
+      ${s.eserler.length ? `<div class="profil-section"><h3>🕌 Eserleri</h3><ul>${s.eserler.map(e=>`<li>${e}</li>`).join('')}</ul></div>` : ''}
+      ${s.ilkler.length ? `<div class="profil-section"><h3>🌟 İlkler & Özellikler</h3><ul>${s.ilkler.map(i=>`<li>${i}</li>`).join('')}</ul></div>` : ''}
+      <div class="profil-section"><h3>📊 İstatistikler</h3>
+        <p>Saltanat süresi: <strong>${s.istatistik.saltanatYil} yıl</strong> · Fetihler: <strong>${s.istatistik.fetihler}</strong></p>
+      </div>
+    </div>
+    <div class="profil-nav">
+      ${prev ? `<button onclick="showSultanProfil('${prev.id}')">← ${prev.ad}</button>` : '<div></div>'}
+      ${next ? `<button onclick="showSultanProfil('${next.id}')">${next.ad} →</button>` : '<div></div>'}
+    </div>`;
+  showScreen('sultan-profil');
+}
+
+// ── TIMELINE ──────────────────────────────────────────────────
+function initTimeline() {
+  const el = document.getElementById('timeline-content');
+  let html = '<div class="tl-line"></div>';
+  let lastDonem = '';
+
+  SULTANLAR.forEach(s => {
+    const d = DONEMLER[s.donem];
+    if (s.donem !== lastDonem) {
+      html += `<div class="tl-donem-label" style="color:${d.renk}"><span style="display:inline-block;width:10px;height:10px;background:${d.renk};border-radius:2px"></span> ${d.ad} (${d.yillar})</div>`;
+      lastDonem = s.donem;
+    }
+    html += `<div class="tl-item" onclick="showSultanProfil('${s.id}')" style="border-left:3px solid ${d.renk}">
+      <div class="tl-yil">${s.saltanat}</div>
+      <div class="tl-ad">${s.sira}. ${s.ad}</div>
+      <div class="tl-lakap">${s.lakap}</div>
+    </div>`;
+  });
+  el.innerHTML = html;
+}
+
+// ── SOY AĞACI ─────────────────────────────────────────────────
+function initSoyAgaci() {
+  const el = document.getElementById('soyagaci-content');
+
+  const childMap = {};
+  SULTANLAR.forEach(s => {
+    const p = s.baba;
+    if (!childMap[p]) childMap[p] = [];
+    childMap[p].push(s.id);
+  });
+
+  // Succession relationship labels
+  const relMap = {};
+  for (let i = 1; i < SULTANLAR.length; i++) {
+    const s = SULTANLAR[i], prev = SULTANLAR[i - 1];
+    if (s.baba === prev.id) { relMap[s.id] = 'OĞLU'; continue; }
+    if (s.baba && s.baba === prev.baba) { relMap[s.id] = 'KARDEŞİ'; continue; }
+    const sf = SULTANLAR.find(x => x.id === s.baba);
+    if (sf && prev.baba === sf.baba && prev.baba) { relMap[s.id] = 'YEĞENİ'; continue; }
+    const pf = SULTANLAR.find(x => x.id === prev.baba);
+    if (pf && s.baba === pf.baba && s.baba) { relMap[s.id] = 'AMCASI'; }
+  }
+
+  function shortAd(ad) { return ad.replace('Sultan ', '').replace(' Sultan', ''); }
+
+  function renderBranch(id) {
+    const s = SULTANLAR.find(x => x.id === id);
+    const d = DONEMLER[s.donem];
+    const kids = childMap[id] || [];
+    const rel = relMap[id];
+    return `<div class="soy-branch">
+      <div class="soy-card" data-id="${id}" onclick="showSultanProfil('${id}')"
+           style="border-bottom:2px solid ${d.renk}">
+        ${rel ? `<div class="soy-rel">${rel}</div>` : ''}
+        <div class="soy-num">${s.sira}.</div>
+        <div class="soy-name">${shortAd(s.ad)}</div>
+        <div class="soy-yr">${s.saltanat}</div>
+      </div>
+      ${kids.length ? `<div class="soy-children">${kids.map(k => renderBranch(k)).join('')}</div>` : ''}
+    </div>`;
+  }
+
+  const root = SULTANLAR.find(s => !s.baba);
+  el.innerHTML = `
+    <div style="text-align:center;padding:12px 0 4px">
+      <h2 style="color:var(--gold);font-size:1rem;margin-bottom:4px">🌳 Osmanlı Soy Ağacı</h2>
+      <p style="color:var(--text2);font-size:.7rem">Karta dokun → detay &nbsp;·&nbsp; Yatay kaydır</p>
+    </div>
+    <div class="soy-tree-container" id="soy-tree-container">
+      <svg id="soy-svg"></svg>
+      ${renderBranch(root.id)}
+    </div>`;
+
+  setTimeout(() => {
+    drawSoyLines();
+    setTimeout(() => { drawSoyLines(); centerSoyRoot(); }, 300);
+  }, 50);
+}
+
+function centerSoyRoot() {
+  const wrap = document.getElementById('soyagaci-content');
+  const container = document.getElementById('soy-tree-container');
+  if (!wrap || !container) return;
+  const rootCard = container.querySelector('.soy-card[data-id]');
+  if (!rootCard) return;
+  let left = 0, el = rootCard;
+  while (el && el !== container) { left += el.offsetLeft; el = el.offsetParent; }
+  wrap.scrollLeft = Math.max(0, left + rootCard.offsetWidth / 2 - wrap.clientWidth / 2);
+}
+
+function drawSoyLines() {
+  const svg = document.getElementById('soy-svg');
+  const container = document.getElementById('soy-tree-container');
+  if (!svg || !container) return;
+
+  const cr = container.getBoundingClientRect();
+  if (!cr.width) return; // screen not visible yet
+
+  const pos = {};
+  container.querySelectorAll('.soy-card[data-id]').forEach(c => {
+    const r = c.getBoundingClientRect();
+    pos[c.dataset.id] = {
+      cx: r.left - cr.left + r.width / 2,
+      top: r.top - cr.top,
+      bottom: r.bottom - cr.top,
+    };
+  });
+
+  const W = container.scrollWidth, H = container.scrollHeight;
+  svg.setAttribute('width', W); svg.setAttribute('height', H);
+  svg.style.width = W + 'px'; svg.style.height = H + 'px';
+
+  const childMap = {};
+  SULTANLAR.forEach(s => {
+    if (!s.baba) return;
+    if (!childMap[s.baba]) childMap[s.baba] = [];
+    childMap[s.baba].push(s.id);
+  });
+
+  let lines = '';
+  const col = 'rgba(212,175,55,.45)';
+  const sw = 1.5;
+
+  Object.entries(childMap).forEach(([pid, kids]) => {
+    if (!pos[pid]) return;
+    const valid = kids.filter(k => pos[k]);
+    if (!valid.length) return;
+
+    const px = pos[pid].cx, py = pos[pid].bottom;
+    const childTopY = Math.min(...valid.map(k => pos[k].top));
+    const midY = py + (childTopY - py) * 0.5;
+
+    lines += `<line x1="${px}" y1="${py}" x2="${px}" y2="${midY}" stroke="${col}" stroke-width="${sw}"/>`;
+
+    const xs = valid.map(k => pos[k].cx);
+    const minX = Math.min(...xs), maxX = Math.max(...xs);
+    if (minX < maxX)
+      lines += `<line x1="${minX}" y1="${midY}" x2="${maxX}" y2="${midY}" stroke="${col}" stroke-width="${sw}"/>`;
+
+    valid.forEach(k =>
+      lines += `<line x1="${pos[k].cx}" y1="${midY}" x2="${pos[k].cx}" y2="${pos[k].top}" stroke="${col}" stroke-width="${sw}"/>`
+    );
+  });
+
+  svg.innerHTML = lines;
+}
+
+// ── QUIZ ──────────────────────────────────────────────────────
+let quizState = {};
+function initQuizSetup() {
+  document.getElementById('quiz-content').innerHTML = `
+    <div class="quiz-setup">
+      <h2>🎯 Quiz Modu</h2>
+      <p style="color:var(--text2);font-size:.85rem;margin-bottom:20px">Osmanlı tarihini ne kadar biliyorsun?</p>
+      <div class="sec-title" style="padding-left:0">Zorluk Seviyesi</div>
+      <div class="quiz-opt-grid" id="quiz-diff-grid">
+        <div class="quiz-opt selected" data-val="1" onclick="selectQuizOpt(this,'quiz-diff-grid')"><div class="opt-icon">🟢</div><div class="opt-label">Kolay</div><div class="opt-desc">Temel bilgiler</div></div>
+        <div class="quiz-opt" data-val="2" onclick="selectQuizOpt(this,'quiz-diff-grid')"><div class="opt-icon">🟡</div><div class="opt-label">Orta</div><div class="opt-desc">Detaylı sorular</div></div>
+        <div class="quiz-opt" data-val="3" onclick="selectQuizOpt(this,'quiz-diff-grid')"><div class="opt-icon">🔴</div><div class="opt-label">Zor</div><div class="opt-desc">Uzman seviyesi</div></div>
+        <div class="quiz-opt" data-val="0" onclick="selectQuizOpt(this,'quiz-diff-grid')"><div class="opt-icon">🎲</div><div class="opt-label">Karışık</div><div class="opt-desc">Her seviyeden</div></div>
+      </div>
+      <button class="quiz-start-btn" onclick="startQuiz()">Quiz'e Başla</button>
+    </div>`;
+}
+function selectQuizOpt(el, gridId) {
+  document.querySelectorAll(`#${gridId} .quiz-opt`).forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function startQuiz() {
+  const diff = parseInt(document.querySelector('#quiz-diff-grid .quiz-opt.selected')?.dataset.val || '0');
+  let pool = diff === 0 ? [...SORULAR] : SORULAR.filter(s => s.zorluk === diff);
+  pool = shuffle(pool).slice(0, 10);
+  quizState = { questions: pool, current: 0, correct: 0, total: pool.length };
+  renderQuizQuestion();
+}
+function renderQuizQuestion() {
+  const el = document.getElementById('quiz-content');
+  const q = quizState.questions[quizState.current];
+  if (!q) { renderQuizResults(); return; }
+  const allAnswers = shuffle([q.cevap, ...q.siklar]);
+  const pct = (quizState.current / quizState.total * 100).toFixed(0);
+  el.innerHTML = `
+    <div class="quiz-game anim-fadeIn">
+      <div class="quiz-progress"><div class="quiz-bar"><div class="quiz-bar-fill" style="width:${pct}%"></div></div>
+        <div class="quiz-count">${quizState.current + 1}/${quizState.total}</div></div>
+      <div class="quiz-question">${q.soru}</div>
+      <div class="quiz-answers">${allAnswers.map(a =>
+        `<button class="quiz-ans" onclick="answerQuiz(this,'${a.replace(/'/g,"\\'")}','${q.cevap.replace(/'/g,"\\'")}')">${a}</button>`
+      ).join('')}</div>
+      <div class="quiz-explain" id="quiz-explain"></div>
+      <button class="quiz-next" id="quiz-next" onclick="nextQuizQ()">Sonraki →</button>
+    </div>`;
+}
+function answerQuiz(btn, answer, correct) {
+  const buttons = btn.parentElement.querySelectorAll('.quiz-ans');
+  buttons.forEach(b => {
+    b.classList.add('answered');
+    if (b.textContent === correct) b.classList.add('correct');
+  });
+  if (answer !== correct) btn.classList.add('wrong');
+  else {
+    quizState.correct++;
+    addXP(10);
+    // Collect random card
+    const uncollected = SULTANLAR.filter(s => !state.collected.includes(s.id));
+    if (uncollected.length) collectCard(uncollected[Math.floor(Math.random() * uncollected.length)].id);
+  }
+  state.quizStats.total++;
+  if (answer === correct) state.quizStats.correct++;
+  saveState();
+  // Show explanation
+  const q = quizState.questions[quizState.current];
+  if (q.sultanId) {
+    const s = SULTANLAR.find(x => x.id === q.sultanId);
+    if (s) {
+      document.getElementById('quiz-explain').innerHTML = `<strong>${s.ad}</strong>: ${s.biyografi.substring(0, 150)}...`;
+      document.getElementById('quiz-explain').classList.add('show');
+    }
+  }
+  document.getElementById('quiz-next').classList.add('show');
+  // Check badge
+  if (state.quizStats.correct >= 50) earnBadge('quiz-ustasi');
+}
+function nextQuizQ() { quizState.current++; renderQuizQuestion(); }
+function renderQuizResults() {
+  const pct = Math.round(quizState.correct / quizState.total * 100);
+  const xpGain = quizState.correct * 10;
+  if (quizState.correct === quizState.total) earnBadge('tam-isabet');
+  if (pct >= 90 && quizState.questions[0]?.zorluk === 3) earnBadge('tarih-gurusu');
+  if (!state.badges.includes('ilk-adim')) earnBadge('ilk-adim');
+  document.getElementById('quiz-content').innerHTML = `
+    <div class="quiz-results anim-popIn">
+      <div class="quiz-score-circle"><div class="quiz-score-num">${pct}%</div><div class="quiz-score-label">${quizState.correct}/${quizState.total}</div></div>
+      <div class="quiz-xp-gain">+${xpGain} XP</div>
+      <p style="color:var(--text2);margin-bottom:20px">${pct >= 80 ? 'Harika! Tarih bilgin çok iyi!' : pct >= 50 ? 'İyi gidiyorsun, çalışmaya devam!' : 'Daha fazla çalışman lazım!'}</p>
+      <button class="btn-gold" onclick="initQuizSetup()" style="margin-right:8px">Tekrar Oyna</button>
+      <button class="btn-outline" onclick="showScreen('home')">Ana Sayfa</button>
+    </div>`;
+  if (pct >= 80) spawnConfetti();
+}
+
+// ── SIRALAMA ──────────────────────────────────────────────────
+let siralamaState = {};
+function initSiralama() {
+  const count = 8;
+  const selected = shuffle([...SULTANLAR]).slice(0, count);
+  const correctOrder = [...selected].sort((a,b) => a.sira - b.sira);
+  const shuffled = shuffle(selected);
+  siralamaState = { items: shuffled.map(s => s.id), correct: correctOrder.map(s => s.id), startTime: Date.now() };
+  renderSiralama();
+}
+function renderSiralama() {
+  const el = document.getElementById('siralama-content');
+  const elapsed = Math.floor((Date.now() - siralamaState.startTime) / 1000);
+  el.innerHTML = `
+    <div class="siralama-game">
+      <h2 style="text-align:center;color:var(--gold);margin-bottom:8px">📊 Kronoloji Challenge</h2>
+      <p style="text-align:center;color:var(--text2);font-size:.82rem;margin-bottom:16px">Sultanları kronolojik sıraya dizin!</p>
+      <div class="siralama-timer">⏱ ${elapsed}s</div>
+      <div class="siralama-list" id="siralama-list">
+        ${siralamaState.items.map((id, i) => {
+          const s = SULTANLAR.find(x => x.id === id);
+          return `<div class="siralama-item" draggable="true" data-id="${id}" data-idx="${i}">
+            <span class="drag-handle">≡</span> ${s.ad}
+          </div>`;
+        }).join('')}
+      </div>
+      <button class="siralama-check" onclick="checkSiralama()">Kontrol Et</button>
+    </div>`;
+  // Drag and drop
+  setupDragDrop();
+}
+function setupDragDrop() {
+  const list = document.getElementById('siralama-list');
+  if (!list) return;
+  let dragEl = null;
+  list.querySelectorAll('.siralama-item').forEach(item => {
+    item.addEventListener('dragstart', e => { dragEl = item; item.style.opacity = '.4'; });
+    item.addEventListener('dragend', e => { item.style.opacity = '1'; dragEl = null; });
+    item.addEventListener('dragover', e => e.preventDefault());
+    item.addEventListener('drop', e => {
+      e.preventDefault();
+      if (dragEl && dragEl !== item) {
+        const items = [...list.children];
+        const fromIdx = items.indexOf(dragEl);
+        const toIdx = items.indexOf(item);
+        if (fromIdx < toIdx) item.after(dragEl); else item.before(dragEl);
+        // Update state
+        siralamaState.items = [...list.children].map(c => c.dataset.id);
+      }
+    });
+    // Touch support
+    let touchY;
+    item.addEventListener('touchstart', e => { dragEl = item; touchY = e.touches[0].clientY; item.style.opacity = '.7'; });
+    item.addEventListener('touchmove', e => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      const target = document.elementFromPoint(touch.clientX, touch.clientY);
+      if (target && target.classList.contains('siralama-item') && target !== dragEl) {
+        const items = [...list.children];
+        const fromIdx = items.indexOf(dragEl);
+        const toIdx = items.indexOf(target);
+        if (fromIdx < toIdx) target.after(dragEl); else target.before(dragEl);
+      }
+    }, { passive: false });
+    item.addEventListener('touchend', e => { if (dragEl) dragEl.style.opacity = '1'; dragEl = null; siralamaState.items = [...list.children].map(c => c.dataset.id); });
+  });
+}
+function checkSiralama() {
+  const items = document.querySelectorAll('#siralama-list .siralama-item');
+  let correct = 0;
+  items.forEach((item, i) => {
+    if (item.dataset.id === siralamaState.correct[i]) {
+      item.classList.add('correct-pos');
+      correct++;
+    } else {
+      item.classList.add('wrong-pos');
+    }
+  });
+  const elapsed = Math.floor((Date.now() - siralamaState.startTime) / 1000);
+  const xp = correct * 15;
+  addXP(xp);
+  if (correct === siralamaState.correct.length) {
+    spawnConfetti();
+    if (elapsed <= 90) earnBadge('kronoloji-ustasi');
+    // Collect a card
+    const uncollected = SULTANLAR.filter(s => !state.collected.includes(s.id));
+    if (uncollected.length) collectCard(uncollected[Math.floor(Math.random() * uncollected.length)].id);
+  }
+  showToast(`${correct}/${siralamaState.correct.length} doğru! +${xp} XP`);
+  setTimeout(() => {
+    document.querySelector('.siralama-check').textContent = 'Tekrar Oyna';
+    document.querySelector('.siralama-check').onclick = initSiralama;
+  }, 500);
+}
+
+// ── EŞLEŞTİRME ───────────────────────────────────────────────
+let eslesState = {};
+function initEslestirme() {
+  const count = 6;
+  const selected = shuffle([...SULTANLAR]).slice(0, count);
+  const pairs = [];
+  selected.forEach(s => {
+    pairs.push({ id: s.id + '-ad', text: s.ad, pairId: s.id, type: 'ad' });
+    pairs.push({ id: s.id + '-lakap', text: s.lakap.split('—')[0].split(',')[0].trim(), pairId: s.id, type: 'lakap' });
+  });
+  const shuffledPairs = shuffle(pairs);
+  eslesState = { cards: shuffledPairs, revealed: [], matched: [], moves: 0, startTime: Date.now() };
+  renderEslestirme();
+}
+function renderEslestirme() {
+  const el = document.getElementById('eslestirme-content');
+  const elapsed = Math.floor((Date.now() - eslesState.startTime) / 1000);
+  el.innerHTML = `
+    <h2 style="text-align:center;color:var(--gold);margin-bottom:12px">🧩 Eşleştirme</h2>
+    <p style="text-align:center;color:var(--text2);font-size:.82rem;margin-bottom:12px">Sultan adlarını lakaplarıyla eşleştir!</p>
+    <div class="eslestirme-info"><span>Hamle: <strong>${eslesState.moves}</strong></span><span>Eşleşen: <strong>${eslesState.matched.length/2}/${eslesState.cards.length/2}</strong></span></div>
+    <div class="eslestirme-grid">
+      ${eslesState.cards.map((c, i) => {
+        const isRevealed = eslesState.revealed.includes(i);
+        const isMatched = eslesState.matched.includes(i);
+        return `<div class="eslestirme-card ${isRevealed ? 'revealed' : ''} ${isMatched ? 'matched' : ''}" onclick="flipEsles(${i})">${c.text}</div>`;
+      }).join('')}
+    </div>`;
+}
+function flipEsles(idx) {
+  if (eslesState.revealed.length >= 2) return;
+  if (eslesState.revealed.includes(idx) || eslesState.matched.includes(idx)) return;
+  eslesState.revealed.push(idx);
+  eslesState.moves++;
+  renderEslestirme();
+  if (eslesState.revealed.length === 2) {
+    const [a, b] = eslesState.revealed;
+    const cardA = eslesState.cards[a], cardB = eslesState.cards[b];
+    if (cardA.pairId === cardB.pairId && cardA.type !== cardB.type) {
+      eslesState.matched.push(a, b);
+      eslesState.revealed = [];
+      renderEslestirme();
+      if (eslesState.matched.length === eslesState.cards.length) {
+        const elapsed = Math.floor((Date.now() - eslesState.startTime) / 1000);
+        addXP(50);
+        spawnConfetti();
+        if (elapsed <= 60) earnBadge('hafiza-sampiyon');
+        const uncollected = SULTANLAR.filter(s => !state.collected.includes(s.id));
+        if (uncollected.length) collectCard(uncollected[Math.floor(Math.random() * uncollected.length)].id);
+      }
+    } else {
+      setTimeout(() => { eslesState.revealed = []; renderEslestirme(); }, 800);
+    }
+  }
+}
+
+// ── KİM BU SULTAN ─────────────────────────────────────────────
+let kimbuState = {};
+function initKimBu() {
+  const sultan = SULTANLAR[Math.floor(Math.random() * SULTANLAR.length)];
+  const clues = [
+    `${DONEMLER[sultan.donem].ad} padişahıdır.`,
+    `Saltanat yılları: ${sultan.saltanat}`,
+    sultan.olaylar[0] || 'Osmanlı tarihinde önemli bir yeri vardır.',
+    `Lakabı: ${sultan.lakap}`,
+    `${sultan.sira}. Osmanlı padişahıdır.`
+  ];
+  kimbuState = { sultan, clues, revealed: 1, guessed: false };
+  renderKimBu();
+}
+function renderKimBu() {
+  const el = document.getElementById('kimbu-content');
+  const s = kimbuState;
+  el.innerHTML = `
+    <div class="kimbu-game">
+      <h2 style="color:var(--gold);margin-bottom:12px">🔍 Kim Bu Sultan?</h2>
+      <p style="color:var(--text2);font-size:.82rem;margin-bottom:16px">İpuçlarından sultanı bul! Az ipucuyla bilirsen çok puan!</p>
+      <div class="kimbu-clue">
+        ${s.clues.slice(0, s.revealed).map((c, i) => `<div class="kimbu-clue-item"><span class="kimbu-clue-num">İpucu ${i+1}:</span> ${c}</div>`).join('')}
+      </div>
+      ${!s.guessed ? `
+        <button class="kimbu-hint-btn" onclick="kimbuHint()" ${s.revealed >= 5 ? 'disabled style="opacity:.3"' : ''}>💡 İpucu Al (${5 - s.revealed} kaldı)</button>
+        <div class="kimbu-input-wrap">
+          <input class="kimbu-input" id="kimbu-input" placeholder="Sultan adını yaz..." oninput="kimbuSuggest(this.value)">
+          <button class="kimbu-submit" onclick="kimbuGuess()">Cevapla</button>
+        </div>
+        <div class="kimbu-suggestions" id="kimbu-suggestions"></div>
+      ` : `
+        <div class="anim-popIn" style="margin-top:16px">
+          <p style="font-size:1.2rem;font-weight:800;color:${s.correct ? 'var(--green)' : 'var(--red)'}">
+            ${s.correct ? '✅ Doğru!' : '❌ Yanlış!'}</p>
+          <p style="color:var(--text);margin:8px 0">Cevap: <strong>${s.sultan.ad}</strong></p>
+          <p style="color:var(--text2);font-size:.82rem">${s.sultan.biyografi.substring(0, 150)}...</p>
+          <div style="margin-top:16px">
+            <button class="btn-gold" onclick="initKimBu()" style="margin-right:8px">Yeni Sultan</button>
+            <button class="btn-outline" onclick="showSultanProfil('${s.sultan.id}')">Profili Gör</button>
+          </div>
+        </div>
+      `}
+    </div>`;
+}
+function kimbuHint() {
+  if (kimbuState.revealed < 5) { kimbuState.revealed++; renderKimBu(); }
+}
+function kimbuSuggest(val) {
+  const sugEl = document.getElementById('kimbu-suggestions');
+  if (val.length < 2) { sugEl.innerHTML = ''; return; }
+  const matches = SULTANLAR.filter(s => s.ad.toLowerCase().includes(val.toLowerCase())).slice(0, 4);
+  sugEl.innerHTML = matches.map(s => `<button class="kimbu-sug" onclick="document.getElementById('kimbu-input').value='${s.ad}';document.getElementById('kimbu-suggestions').innerHTML=''">${s.ad}</button>`).join('');
+}
+function kimbuGuess() {
+  const input = document.getElementById('kimbu-input').value.trim().toLowerCase();
+  const correct = kimbuState.sultan.ad.toLowerCase().includes(input) || input.includes(kimbuState.sultan.ad.toLowerCase().split(' ').pop());
+  kimbuState.guessed = true;
+  kimbuState.correct = correct;
+  if (correct) {
+    const xp = (6 - kimbuState.revealed) * 20;
+    addXP(xp);
+    if (kimbuState.revealed === 1) earnBadge('dedektif');
+    const uncollected = SULTANLAR.filter(s => !state.collected.includes(s.id));
+    if (uncollected.length) collectCard(uncollected[Math.floor(Math.random() * uncollected.length)].id);
+    spawnConfetti();
+  }
+  renderKimBu();
+}
+
+// ── JEOPARDY ──────────────────────────────────────────────────
+let jpState = {};
+function initJeopardy() {
+  jpState = { score: 0, used: new Set() };
+  renderJeopardy();
+}
+function renderJeopardy() {
+  const el = document.getElementById('jeopardy-content');
+  el.innerHTML = `
+    <h2 style="text-align:center;color:var(--gold);margin-bottom:4px">⭐ Osmanlı Jeopardy</h2>
+    <div class="jp-score">Puan: ${jpState.score}</div>
+    <div class="jeopardy-board">
+      ${JEOPARDY_KATEGORILER.map(k => `<div class="jp-header">${k.ad}</div>`).join('')}
+      ${[0,1,2,3,4].map(row => JEOPARDY_KATEGORILER.map((k, col) => {
+        const key = `${col}-${row}`;
+        const q = k.sorular[row];
+        return `<div class="jp-cell ${jpState.used.has(key)?'used':''}" onclick="openJpQ(${col},${row})">${q.puan}</div>`;
+      }).join('')).join('')}
+    </div>
+    <div class="jp-modal" id="jp-modal" onclick="if(event.target===this)closeJpModal()">
+      <div class="jp-modal-inner" id="jp-modal-inner"></div>
+    </div>`;
+}
+function openJpQ(col, row) {
+  const key = `${col}-${row}`;
+  if (jpState.used.has(key)) return;
+  const k = JEOPARDY_KATEGORILER[col];
+  const q = k.sorular[row];
+  const modal = document.getElementById('jp-modal');
+  modal.classList.add('show');
+  document.getElementById('jp-modal-inner').innerHTML = `
+    <div style="font-size:.75rem;color:var(--gold);margin-bottom:8px">${k.ad} — ${q.puan} Puan</div>
+    <div class="jp-modal-q">${q.soru}</div>
+    <input class="jp-modal-input" id="jp-answer" placeholder="Cevabını yaz..." onkeydown="if(event.key==='Enter')checkJpAnswer(${col},${row})">
+    <div class="jp-modal-btns">
+      <button class="btn-gold" onclick="checkJpAnswer(${col},${row})">Cevapla</button>
+      <button class="btn-outline" onclick="skipJpQ(${col},${row})">Pas</button>
+    </div>`;
+  document.getElementById('jp-answer').focus();
+}
+function checkJpAnswer(col, row) {
+  const key = `${col}-${row}`;
+  const q = JEOPARDY_KATEGORILER[col].sorular[row];
+  const answer = document.getElementById('jp-answer').value.trim().toLowerCase();
+  const correct = q.cevap.toLowerCase();
+  const isCorrect = correct.includes(answer) || answer.includes(correct.split('(')[0].trim().toLowerCase().split(' ').pop());
+  jpState.used.add(key);
+  if (isCorrect) {
+    jpState.score += q.puan;
+    addXP(q.puan / 10);
+    document.getElementById('jp-modal-inner').innerHTML = `<div style="font-size:2rem;margin-bottom:12px">✅</div><p style="color:var(--green);font-size:1.1rem;font-weight:700">Doğru! +${q.puan} puan</p><p style="color:var(--text2);margin-top:8px">${q.cevap}</p><button class="btn-gold" onclick="closeJpModal()" style="margin-top:16px">Devam</button>`;
+  } else {
+    document.getElementById('jp-modal-inner').innerHTML = `<div style="font-size:2rem;margin-bottom:12px">❌</div><p style="color:var(--red);font-size:1.1rem;font-weight:700">Yanlış!</p><p style="color:var(--text2);margin-top:8px">Doğru cevap: <strong>${q.cevap}</strong></p><button class="btn-gold" onclick="closeJpModal()" style="margin-top:16px">Devam</button>`;
+  }
+  if (jpState.score >= 2000) earnBadge('jeopardy-yildizi');
+}
+function skipJpQ(col, row) { jpState.used.add(`${col}-${row}`); closeJpModal(); }
+function closeJpModal() { document.getElementById('jp-modal').classList.remove('show'); renderJeopardy(); }
+
+// ── HIZLI TUR ─────────────────────────────────────────────────
+let hizliState = {};
+function initHizli() {
+  const el = document.getElementById('hizli-content');
+  el.innerHTML = `
+    <div class="hizli-game">
+      <h2 style="color:var(--gold);margin-bottom:8px">⚡ Hızlı Tur</h2>
+      <p style="color:var(--text2);font-size:.82rem;margin-bottom:20px">60 saniyede kaç soru bilebilirsin?</p>
+      <button class="btn-gold" onclick="startHizli()" style="font-size:1.1rem;padding:14px 40px">BAŞLA!</button>
+    </div>`;
+}
+function startHizli() {
+  const dyQuestions = SORULAR.filter(s => s.tip === 'dogruYanlis');
+  // Also generate some from regular questions
+  const extra = SORULAR.filter(s => !s.tip).slice(0, 20).map(q => ({
+    soru: q.soru.replace('?', '') + ': ' + q.cevap + '?',
+    cevap: 'Doğru',
+    siklar: ['Yanlış'],
+    zorluk: q.zorluk,
+    tip: 'dogruYanlis'
+  }));
+  // Mix some wrong answers
+  const wrongExtra = SORULAR.filter(s => !s.tip).slice(0, 10).map(q => ({
+    soru: q.soru.replace('?', '') + ': ' + q.siklar[0] + '?',
+    cevap: 'Yanlış',
+    siklar: ['Doğru'],
+    zorluk: q.zorluk,
+    tip: 'dogruYanlis'
+  }));
+  const pool = shuffle([...dyQuestions, ...extra, ...wrongExtra]);
+  hizliState = { questions: pool, idx: 0, score: 0, combo: 0, maxCombo: 0, timeLeft: 60, timer: null };
+  hizliState.timer = setInterval(() => {
+    hizliState.timeLeft--;
+    if (hizliState.timeLeft <= 0) { endHizli(); return; }
+    const te = document.getElementById('hizli-timer');
+    if (te) te.textContent = hizliState.timeLeft + 's';
+  }, 1000);
+  renderHizliQ();
+}
+function renderHizliQ() {
+  const el = document.getElementById('hizli-content');
+  const q = hizliState.questions[hizliState.idx % hizliState.questions.length];
+  el.innerHTML = `
+    <div class="hizli-game anim-fadeIn">
+      <div class="hizli-timer" id="hizli-timer">${hizliState.timeLeft}s</div>
+      <div class="hizli-score">Skor: ${hizliState.score}</div>
+      <div class="hizli-question">${q.soru}</div>
+      <div class="hizli-btns">
+        <button class="hizli-btn dogru" onclick="hizliAnswer('Doğru')">✓ Doğru</button>
+        <button class="hizli-btn yanlis" onclick="hizliAnswer('Yanlış')">✗ Yanlış</button>
+      </div>
+      ${hizliState.combo > 1 ? `<div class="hizli-combo">🔥 ${hizliState.combo}x Kombo!</div>` : ''}
+      <div class="hizli-feedback" id="hizli-fb"></div>
+    </div>`;
+}
+function hizliAnswer(ans) {
+  const q = hizliState.questions[hizliState.idx % hizliState.questions.length];
+  const correct = ans === q.cevap;
+  if (correct) {
+    hizliState.score++;
+    hizliState.combo++;
+    hizliState.maxCombo = Math.max(hizliState.maxCombo, hizliState.combo);
+  } else {
+    hizliState.combo = 0;
+  }
+  hizliState.idx++;
+  renderHizliQ();
+}
+function endHizli() {
+  clearInterval(hizliState.timer);
+  const s = hizliState.score;
+  addXP(s * 5);
+  if (s > state.hizliRecord) state.hizliRecord = s;
+  saveState();
+  if (s >= 20) earnBadge('bilgi-makinesi');
+  const uncollected = SULTANLAR.filter(x => !state.collected.includes(x.id));
+  if (uncollected.length && s >= 5) collectCard(uncollected[Math.floor(Math.random() * uncollected.length)].id);
+  if (s >= 10) spawnConfetti();
+  document.getElementById('hizli-content').innerHTML = `
+    <div class="hizli-game anim-popIn">
+      <h2 style="color:var(--gold)">⚡ Süre Doldu!</h2>
+      <div class="quiz-score-circle" style="margin:20px auto"><div class="quiz-score-num">${s}</div><div class="quiz-score-label">Doğru</div></div>
+      <p style="color:var(--text2);margin-bottom:4px">Max Kombo: 🔥 ${hizliState.maxCombo}x</p>
+      <p style="color:var(--text2);margin-bottom:16px">Rekor: ${state.hizliRecord}</p>
+      <button class="btn-gold" onclick="initHizli()" style="margin-right:8px">Tekrar</button>
+      <button class="btn-outline" onclick="showScreen('home')">Ana Sayfa</button>
+    </div>`;
+}
+
+// ── ARENA ─────────────────────────────────────────────────────
+let arenaState = {};
+function initArena() {
+  const [a, b] = shuffle([...SULTANLAR]).slice(0, 2);
+  const questions = [
+    { q: 'Hangisinin saltanatı daha uzun?', answer: a.istatistik.saltanatYil >= b.istatistik.saltanatYil ? a.id : b.id, stat: 'saltanatYil' },
+    { q: 'Hangisi daha önce tahta çıktı?', answer: a.sira < b.sira ? a.id : b.id },
+    { q: 'Hangisinin daha fazla fethi var?', answer: a.istatistik.fetihler >= b.istatistik.fetihler ? a.id : b.id, stat: 'fetihler' },
+  ];
+  const q = questions[Math.floor(Math.random() * questions.length)];
+  arenaState = { a, b, question: q, answered: false, score: 0, round: (arenaState.round || 0) + 1 };
+  renderArena();
+}
+function renderArena() {
+  const { a, b, question } = arenaState;
+  const el = document.getElementById('arena-content');
+  el.innerHTML = `
+    <div class="arena-game">
+      <h2 style="text-align:center;color:var(--gold);margin-bottom:4px">🏆 Sultan Arenası</h2>
+      <div class="arena-score"><span>Tur ${arenaState.round}</span></div>
+      <div class="arena-vs">
+        <div class="arena-card"><img src="images/${a.id}.webp" alt="${a.ad}"><div class="arena-name">${a.ad}</div></div>
+        <div class="arena-divider">VS</div>
+        <div class="arena-card"><img src="images/${b.id}.webp" alt="${b.ad}"><div class="arena-name">${b.ad}</div></div>
+      </div>
+      <div class="arena-question">${question.q}</div>
+      <div class="arena-choices" id="arena-choices">
+        <button class="arena-choice" onclick="arenaAnswer('${a.id}')">${a.ad}</button>
+        <button class="arena-choice" onclick="arenaAnswer('${b.id}')">${b.ad}</button>
+      </div>
+    </div>`;
+}
+function arenaAnswer(chosenId) {
+  if (arenaState.answered) return;
+  arenaState.answered = true;
+  const correct = chosenId === arenaState.question.answer;
+  const btns = document.querySelectorAll('#arena-choices .arena-choice');
+  btns.forEach(btn => {
+    const isCorrectBtn = btn.textContent === SULTANLAR.find(s => s.id === arenaState.question.answer).ad;
+    if (isCorrectBtn) btn.classList.add('correct');
+    else if (btn.textContent === SULTANLAR.find(s => s.id === chosenId)?.ad && !correct) btn.classList.add('wrong');
+  });
+  if (correct) {
+    addXP(15);
+    state.arenaWins++;
+    saveState();
+    if (state.arenaWins >= 10) earnBadge('arena-sampiyon');
+  }
+  setTimeout(() => initArena(), 1500);
+}
+
+// ── KOLEKSİYON ───────────────────────────────────────────────
+function initKoleksiyon() {
+  const el = document.getElementById('koleksiyon-content');
+  el.innerHTML = `
+    <h2 style="text-align:center;color:var(--gold);margin-bottom:8px">📚 Koleksiyon</h2>
+    <div class="koleksiyon-stats">
+      <div class="kol-stat"><div class="kol-num">${state.collected.length}</div><div class="kol-label">Toplanan</div></div>
+      <div class="kol-stat"><div class="kol-num">${36 - state.collected.length}</div><div class="kol-label">Kalan</div></div>
+      <div class="kol-stat"><div class="kol-num">${Math.round(state.collected.length/36*100)}%</div><div class="kol-label">Tamamlanan</div></div>
+    </div>
+    <div class="kol-grid">${SULTANLAR.map(s => {
+      const d = DONEMLER[s.donem];
+      const collected = state.collected.includes(s.id);
+      return `<div class="kart-wrap" onclick="this.classList.toggle('flipped')">
+        <div class="kart-inner">
+          <div class="kart-on"><img src="images/${s.id}.webp" alt="${s.ad}" loading="lazy">
+            <div class="kart-overlay"><div class="kart-ad">${s.ad}</div><div class="kart-yil">${s.saltanat}</div>
+              ${collected ? '<span style="color:var(--green);font-size:.6rem">✓ Toplandı</span>' : ''}</div>
+          </div>
+          <div class="kart-arka"><img src="images/${s.id}-arka.webp" alt="${s.ad}" loading="lazy"></div>
+        </div>
+      </div>`;
+    }).join('')}</div>`;
+}
+
+// Koleksiyon kartlarına tıklama
+function handleKolClick(id, el) {
+  if (el.classList.contains('flipped')) {
+    el.classList.remove('flipped');
+    setTimeout(() => showSultanProfil(id), 300);
+  } else {
+    el.classList.toggle('flipped');
+  }
+}
+
+// ── PROFİL ────────────────────────────────────────────────────
+function initProfil() {
+  const lvl = getSeviye();
+  const nextLvl = SEVIYELER[SEVIYELER.indexOf(lvl) + 1];
+  const pct = nextLvl ? Math.min(100, (state.xp - lvl.minXP) / (nextLvl.minXP - lvl.minXP) * 100) : 100;
+  const el = document.getElementById('profil-content');
+  el.innerHTML = `
+    <div class="profil-screen">
+      <div style="text-align:center">
+        <div style="font-size:3rem">${lvl.ikon}</div>
+        <h2 style="color:var(--gold);margin:8px 0">${lvl.ad}</h2>
+        <p style="color:var(--text2);font-size:.85rem">${state.xp} XP</p>
+      </div>
+      <div class="xp-bar-wrap">
+        <div class="xp-bar"><div class="xp-bar-fill" style="width:${pct}%"></div></div>
+        <div class="xp-info"><span>${lvl.ad} (${lvl.minXP} XP)</span><span>${nextLvl ? nextLvl.ad + ' (' + nextLvl.minXP + ' XP)' : 'MAX'}</span></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:16px 0">
+        <div class="kol-stat"><div class="kol-num">${state.collected.length}/36</div><div class="kol-label">Kartlar</div></div>
+        <div class="kol-stat"><div class="kol-num">${state.quizStats.correct}/${state.quizStats.total}</div><div class="kol-label">Quiz</div></div>
+        <div class="kol-stat"><div class="kol-num">${state.badges.length}/${ROZETLER.length}</div><div class="kol-label">Rozetler</div></div>
+      </div>
+      <div class="sec-title" style="padding-left:0">Rozetler</div>
+      <div class="rozet-grid">
+        ${ROZETLER.map(r => `<div class="rozet-item ${state.badges.includes(r.id) ? 'earned' : ''}" title="${r.kosul}">
+          <div class="rozet-icon">${r.ikon}</div><div class="rozet-ad">${r.ad}</div>
+        </div>`).join('')}
+      </div>
+      <div style="text-align:center;margin-top:24px">
+        <button class="btn-outline" onclick="if(confirm('Tüm ilerleme sıfırlansın mı?')){localStorage.removeItem('${STORE_KEY}');state=defaultState();saveState();showScreen('home')}">İlerlemeyi Sıfırla</button>
+      </div>
+    </div>`;
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+updateUI();
+</script>
+</body>
+</html>
