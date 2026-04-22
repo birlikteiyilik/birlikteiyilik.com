@@ -524,7 +524,7 @@ button{font-family:inherit;cursor:pointer;border:none}
   <div class="screen-pad" id="profil-content"></div>
 </div>
 
-<script src="data.js"></script>
+<script src="/osmanli-kartlari/data.js"></script>
 <script>
 // ── STATE ─────────────────────────────────────────────────────
 const STORE_KEY = 'osmanli-kartlari-v1';
@@ -666,8 +666,8 @@ function renderCards(donem) {
   feed.innerHTML = galeriFiltered.map(s => {
     return `<div class="kart-wrap" onclick="this.classList.toggle('flipped')">
       <div class="kart-inner">
-        <div class="kart-on"><img src="images/${s.id}.webp" alt="${s.ad}" loading="lazy"></div>
-        <div class="kart-arka"><img src="images/${s.id}-arka.webp" alt="${s.ad} arka" loading="lazy"></div>
+        <div class="kart-on"><img src="/osmanli-kartlari/images/${s.id}.webp" alt="${s.ad}" loading="lazy"></div>
+        <div class="kart-arka"><img src="/osmanli-kartlari/images/${s.id}-arka.webp" alt="${s.ad} arka" loading="lazy"></div>
       </div>
     </div>`;
   }).join('');
@@ -684,8 +684,8 @@ function showSultanProfil(id) {
   document.getElementById('sultan-profil-content').innerHTML = `
     <div class="profil-header">
       <div class="profil-img-wrap">
-        <img class="profil-img" src="images/${s.id}.webp" alt="${s.ad}">
-        <img class="profil-img" src="images/${s.id}-arka.webp" alt="${s.ad} arka">
+        <img class="profil-img" src="/osmanli-kartlari/images/${s.id}.webp" alt="${s.ad}">
+        <img class="profil-img" src="/osmanli-kartlari/images/${s.id}-arka.webp" alt="${s.ad} arka">
       </div>
       <div class="profil-ad">${s.ad}</div>
       <div class="profil-lakap">${s.lakap}</div>
@@ -1343,9 +1343,9 @@ function renderArena() {
       <h2 style="text-align:center;color:var(--gold);margin-bottom:4px">🏆 Sultan Arenası</h2>
       <div class="arena-score"><span>Tur ${arenaState.round}</span></div>
       <div class="arena-vs">
-        <div class="arena-card"><img src="images/${a.id}.webp" alt="${a.ad}"><div class="arena-name">${a.ad}</div></div>
+        <div class="arena-card"><img src="/osmanli-kartlari/images/${a.id}.webp" alt="${a.ad}"><div class="arena-name">${a.ad}</div></div>
         <div class="arena-divider">VS</div>
-        <div class="arena-card"><img src="images/${b.id}.webp" alt="${b.ad}"><div class="arena-name">${b.ad}</div></div>
+        <div class="arena-card"><img src="/osmanli-kartlari/images/${b.id}.webp" alt="${b.ad}"><div class="arena-name">${b.ad}</div></div>
       </div>
       <div class="arena-question">${question.q}</div>
       <div class="arena-choices" id="arena-choices">
@@ -1388,11 +1388,11 @@ function initKoleksiyon() {
       const collected = state.collected.includes(s.id);
       return `<div class="kart-wrap" onclick="this.classList.toggle('flipped')">
         <div class="kart-inner">
-          <div class="kart-on"><img src="images/${s.id}.webp" alt="${s.ad}" loading="lazy">
+          <div class="kart-on"><img src="/osmanli-kartlari/images/${s.id}.webp" alt="${s.ad}" loading="lazy">
             <div class="kart-overlay"><div class="kart-ad">${s.ad}</div><div class="kart-yil">${s.saltanat}</div>
               ${collected ? '<span style="color:var(--green);font-size:.6rem">✓ Toplandı</span>' : ''}</div>
           </div>
-          <div class="kart-arka"><img src="images/${s.id}-arka.webp" alt="${s.ad}" loading="lazy"></div>
+          <div class="kart-arka"><img src="/osmanli-kartlari/images/${s.id}-arka.webp" alt="${s.ad}" loading="lazy"></div>
         </div>
       </div>`;
     }).join('')}</div>`;
