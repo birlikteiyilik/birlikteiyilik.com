@@ -27,7 +27,8 @@
         { "label": "Online Eğitim", "url": "/egitimler/online-egitim" },
         { "label": "Yüz Yüze Eğitim", "url": "/egitimler/yuz-yuze-egitim" },
         { "label": "Kur'an-ı Kerim Eğitimi", "url": "/egitimler/kuran-i-kerim" },
-        { "label": "Güzel Ahlak Programı", "url": "/egitimler/guzel-ahlak" }
+        { "label": "Güzel Ahlak Programı", "url": "/egitimler/guzel-ahlak" },
+        { "label": "Yaz Programlarımız", "url": "/egitimler/yaz-programlarimiz" }
       ]
     },
     {
