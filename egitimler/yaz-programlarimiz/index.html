@@ -49,8 +49,13 @@
   .summer-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: var(--s-4); }
   .summer-tag { padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,0.7); font-size: 13px; font-weight: 500; color: #333; border: 1px solid rgba(0,0,0,0.06); }
   .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .photo-grid .photo-cell { aspect-ratio: 1/1; background: rgba(255,255,255,0.6); border: 2px dashed rgba(0,0,0,0.18); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #888; font-size: 13px; text-align: center; padding: 8px; }
-  .photo-grid .photo-cell img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
+  .photo-grid .photo-cell { aspect-ratio: 4/3; overflow: hidden; border-radius: 12px; background: rgba(0,0,0,0.04); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .photo-grid .photo-cell img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .4s ease; }
+  .photo-grid .photo-cell:hover img { transform: scale(1.04); }
+  .photo-grid.kamp-grid { grid-template-columns: 2fr 1fr; }
+  .photo-grid.kamp-grid .photo-cell { aspect-ratio: auto; }
+  .photo-grid.kamp-grid .photo-cell:first-child { aspect-ratio: 16/9; }
+  .photo-grid.kamp-grid .photo-cell:last-child { aspect-ratio: 3/5; }
   @media (max-width: 760px) {
     .summer-grid, .summer-grid.reverse { grid-template-columns: 1fr; direction: ltr; }
   }
@@ -209,12 +214,12 @@ target="_blank" rel="noopener"           data-track="click_apply_online">
         </div>
       </div>
       <div class="photo-grid" aria-label="Yaz Okulu fotoğrafları">
-        <div class="photo-cell">Foto 1</div>
-        <div class="photo-cell">Foto 2</div>
-        <div class="photo-cell">Foto 3</div>
-        <div class="photo-cell">Foto 4</div>
-        <div class="photo-cell">Foto 5</div>
-        <div class="photo-cell">Foto 6</div>
+        <div class="photo-cell"><img src="/images/yaz-programlari/okul-1-acilis.jpg" alt="Yaz Okulu açılış grubu" loading="lazy"></div>
+        <div class="photo-cell"><img src="/images/yaz-programlari/okul-2-sinif.jpg" alt="Yaz Okulu sınıf grubu" loading="lazy"></div>
+        <div class="photo-cell"><img src="/images/yaz-programlari/okul-3-futbol-takim.jpg" alt="Yaz Okulu futbol takımı" loading="lazy"></div>
+        <div class="photo-cell"><img src="/images/yaz-programlari/okul-4-futbol-kupa.jpg" alt="Yaz Okulu futbol kupa kutlaması" loading="lazy"></div>
+        <div class="photo-cell"><img src="/images/yaz-programlari/okul-5-at-gezisi.jpg" alt="Yaz Okulu at çiftliği gezisi" loading="lazy"></div>
+        <div class="photo-cell"><img src="/images/yaz-programlari/okul-6-grup-gezi.jpg" alt="Yaz Okulu grup gezisi" loading="lazy"></div>
       </div>
     </div>
   </div>
@@ -238,13 +243,9 @@ target="_blank" rel="noopener"           data-track="click_apply_online">
           <span class="summer-tag">Tevazu</span>
         </div>
       </div>
-      <div class="photo-grid" aria-label="Yaz Kampı fotoğrafları">
-        <div class="photo-cell">Foto 1</div>
-        <div class="photo-cell">Foto 2</div>
-        <div class="photo-cell">Foto 3</div>
-        <div class="photo-cell">Foto 4</div>
-        <div class="photo-cell">Foto 5</div>
-        <div class="photo-cell">Foto 6</div>
+      <div class="photo-grid kamp-grid" aria-label="Yaz Kampı fotoğrafları">
+        <div class="photo-cell"><img src="/images/yaz-programlari/kamp-1-tabela-genis.jpg" alt="2025 Yaz Kampı açılış" loading="lazy"></div>
+        <div class="photo-cell"><img src="/images/yaz-programlari/kamp-2-tabela-dikey.jpg" alt="2025 Yaz Kampı katılımcıları" loading="lazy"></div>
       </div>
     </div>
   </div>
