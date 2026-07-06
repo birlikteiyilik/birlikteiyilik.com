@@ -154,5 +154,20 @@
     "cta_label": "Uygulamayı İncele",
     "cta_url": "/uygulama",
     "faq": []
+  },
+  {
+    "id": "yaz-programlarimiz",
+    "title": "Yaz Programlarımız",
+    "short": "Yaz Okulu (ders, seminer, spor) ve doğada Yaz Kampı.",
+    "icon": "☀️",
+    "description": "Temmuz ve Ağustos aylarında çocuklarımıza özel Yaz Okulu ve Yaz Kampı programları. Kur'an-ı Kerim, Fıkıh, Siyer, Yapay Zeka, Osmanlı Türkçesi ve İngilizce eğitimleri; spor, geziler, seminerler ve doğada güzel ahlâk eğitimi.",
+    "target": "Temmuz – Ağustos",
+    "model": "Sezonluk",
+    "duration": "Yaz dönemi",
+    "features": [],
+    "process": [],
+    "cta_label": "Yaz Programı Başvurusu",
+    "cta_url": "https://forms.gle/eG7j8PAKpcn7iDat9",
+    "faq": []
   }
 ]

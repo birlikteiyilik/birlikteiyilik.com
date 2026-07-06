@@ -196,38 +196,6 @@ target="_blank" rel="noopener"           data-track="click_apply_online">
 </nav>
   <main id="main-content">
 
-<!-- Duyuru bandı: Yaz Okulu kaydı -->
-<a href="/egitimler/yaz-programlarimiz" class="announce-marquee" aria-label="Yaz Okulu başvuruları başladı. Detaylar için tıklayın." data-track="click_announce_yaz_okulu">
-  <div class="announce-track" aria-hidden="false">
-    <span>☀️ Yaz Okulu başvuruları başladı!</span><span class="announce-sep" aria-hidden="true">•</span>
-    <span>☀️ Yaz Okulu başvuruları başladı!</span><span class="announce-sep" aria-hidden="true">•</span>
-    <span>☀️ Yaz Okulu başvuruları başladı!</span><span class="announce-sep" aria-hidden="true">•</span>
-    <span>☀️ Yaz Okulu başvuruları başladı!</span><span class="announce-sep" aria-hidden="true">•</span>
-    <span>☀️ Yaz Okulu başvuruları başladı!</span><span class="announce-sep" aria-hidden="true">•</span>
-    <span>☀️ Yaz Okulu başvuruları başladı!</span><span class="announce-sep" aria-hidden="true">•</span>
-    <span>☀️ Yaz Okulu başvuruları başladı!</span><span class="announce-sep" aria-hidden="true">•</span>
-    <span>☀️ Yaz Okulu başvuruları başladı!</span><span class="announce-sep" aria-hidden="true">•</span>
-    <span>☀️ Yaz Okulu başvuruları başladı!</span><span class="announce-sep" aria-hidden="true">•</span>
-    <span>☀️ Yaz Okulu başvuruları başladı!</span><span class="announce-sep" aria-hidden="true">•</span>
-    <span>☀️ Yaz Okulu başvuruları başladı!</span><span class="announce-sep" aria-hidden="true">•</span>
-    <span>☀️ Yaz Okulu başvuruları başladı!</span><span class="announce-sep" aria-hidden="true">•</span>
-    <span>☀️ Yaz Okulu başvuruları başladı!</span><span class="announce-sep" aria-hidden="true">•</span>
-    <span>☀️ Yaz Okulu başvuruları başladı!</span><span class="announce-sep" aria-hidden="true">•</span>
-    <span>☀️ Yaz Okulu başvuruları başladı!</span><span class="announce-sep" aria-hidden="true">•</span>
-    <span>☀️ Yaz Okulu başvuruları başladı!</span><span class="announce-sep" aria-hidden="true">•</span>
-  </div>
-</a>
-<style>
-  .announce-marquee { display: block; background: #E20439; color: #fff; padding: 11px 0; overflow: hidden; text-decoration: none; font-family: 'Inter', sans-serif; font-weight: 600; font-size: .95rem; letter-spacing: .02em; border-bottom: 1px solid rgba(0,0,0,0.08); }
-  .announce-track { display: inline-flex; align-items: center; gap: 22px; white-space: nowrap; padding-left: 22px; animation: announce-scroll 45s linear infinite; will-change: transform; }
-  .announce-marquee:hover .announce-track { animation-play-state: paused; }
-  .announce-sep { opacity: .55; }
-  @keyframes announce-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-  @media (prefers-reduced-motion: reduce) {
-    .announce-track { animation: none; justify-content: center; width: 100%; padding-left: 0; }
-  }
-</style>
-
 <!-- 1. HERO -->
 <section class="hero" id="hero">
   <div class="hero-content">
@@ -347,6 +315,15 @@ target="_blank" rel="noopener"         data-track="">
         <p>Bireysel takip, veli iletişimi ve gelişim raporlama sistemi.</p>
         <div class="card-footer">
           <a href="/egitimler/ogrenci-koclugu-ve-takip" class="btn btn-secondary btn-sm">Detaylar</a>
+        </div>
+      </div>
+      <div class="card program-card">
+        <span class="card-icon" aria-hidden="true">☀️</span>
+        <h3>Yaz Programlarımız</h3>
+        <p class="card-meta">Sezonluk &middot; Temmuz – Ağustos</p>
+        <p>Yaz Okulu (ders, seminer, spor) ve doğada Yaz Kampı.</p>
+        <div class="card-footer">
+          <a href="/egitimler/yaz-programlarimiz" class="btn btn-secondary btn-sm">Detaylar</a>
         </div>
       </div>
     </div>
@@ -684,7 +661,7 @@ target="_blank" rel="noopener"         data-track="">
   pub('programs').then(function(progs){
     var el=document.getElementById('programsGrid');
     if(!el||!progs||!progs.length)return;
-    el.innerHTML=progs.slice(0,5).map(function(p){return '<div class="card program-card"><span class="card-icon" aria-hidden="true">'+esc(p.icon||'📚')+'</span><h3>'+esc(p.title)+'</h3><p class="card-meta">'+esc(p.model||'')+' &middot; '+esc(p.target||'')+'</p><p>'+esc(p.short||'')+'</p><div class="card-footer"><a href="'+base+'/egitimler/'+(p.id||'')+'" class="btn btn-secondary btn-sm">Detaylar</a></div></div>';}).join('');
+    el.innerHTML=progs.slice(0,6).map(function(p){return '<div class="card program-card"><span class="card-icon" aria-hidden="true">'+esc(p.icon||'📚')+'</span><h3>'+esc(p.title)+'</h3><p class="card-meta">'+esc(p.model||'')+' &middot; '+esc(p.target||'')+'</p><p>'+esc(p.short||'')+'</p><div class="card-footer"><a href="'+base+'/egitimler/'+(p.id||'')+'" class="btn btn-secondary btn-sm">Detaylar</a></div></div>';}).join('');
   })['catch'](function(){});
 
   // Counters
