@@ -8,7 +8,6 @@
     { "label": "İletişim", "url": "/#iletisim" }
   ],
   "cta": [
-    { "label": "Online Başvuru", "url": "https://forms.gle/5a9TSS7XAUxJUCt59", "style": "primary" },
     { "label": "Gönüllü Ol", "url": "https://forms.gle/YgeEqBwNRAKZWrpH6", "style": "secondary" }
   ],
   "footer": [
