@@ -1,0 +1,2187 @@
+/* =========================================================
+   Birlikte İyilik Akademi — scoped donation microsite styles
+   ========================================================= */
+
+.bia-donation-body {
+  margin: 0;
+  min-width: 280px;
+  overflow-x: hidden;
+  background: #fff8eb;
+}
+
+.bia-donation-body.bia-donation-intro-active {
+  overflow: hidden;
+}
+
+#bia-donation-page {
+  --cream: #fff8eb;
+  --cream-light: #fffdf7;
+  --sand: #eedfc3;
+  --soft-green: #8d9b72;
+  --deep-green: #556348;
+  --brand-red: #e9003f;
+  --brand-red-dark: #bc0034;
+  --text-main: #312d29;
+  --text-muted: #6f675f;
+  --white: #ffffff;
+  --bia-donation-border: rgba(85, 99, 72, 0.16);
+  --bia-donation-paper-shadow: 0 26px 70px rgba(76, 61, 42, 0.12);
+  --bia-donation-font-heading: "Manrope", "Avenir Next", "Segoe UI", sans-serif;
+  --bia-donation-font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --bia-donation-max-width: 1240px;
+
+  position: relative;
+  width: 100%;
+  overflow: clip;
+  color: var(--text-main);
+  background: var(--cream);
+  font-family: var(--bia-donation-font-body);
+  font-size: 16px;
+  line-height: 1.65;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+#bia-donation-page,
+#bia-donation-page *,
+#bia-donation-page *::before,
+#bia-donation-page *::after {
+  box-sizing: border-box;
+}
+
+#bia-donation-page img,
+#bia-donation-page video,
+#bia-donation-page svg {
+  display: block;
+}
+
+#bia-donation-page a {
+  color: inherit;
+  text-decoration: none;
+}
+
+#bia-donation-page button,
+#bia-donation-page a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+#bia-donation-page button {
+  font: inherit;
+}
+
+#bia-donation-page h1,
+#bia-donation-page h2,
+#bia-donation-page h3,
+#bia-donation-page p {
+  margin-top: 0;
+}
+
+#bia-donation-page h1,
+#bia-donation-page h2,
+#bia-donation-page h3 {
+  color: var(--text-main);
+  font-family: var(--bia-donation-font-heading);
+  letter-spacing: -0.035em;
+}
+
+#bia-donation-page :focus-visible {
+  outline: 3px solid rgba(233, 0, 63, 0.48);
+  outline-offset: 4px;
+}
+
+.bia-donation-skip-link {
+  position: fixed;
+  z-index: 1000;
+  top: 12px;
+  left: 12px;
+  padding: 10px 15px;
+  border-radius: 10px;
+  color: #fff;
+  background: #312d29;
+  font: 600 14px/1.2 "Inter", sans-serif;
+  transform: translateY(-150%);
+  transition: transform 180ms ease;
+}
+
+.bia-donation-skip-link:focus {
+  transform: translateY(0);
+}
+
+/* Full-screen welcome video */
+
+#bia-donation-page .bia-donation-welcome {
+  position: fixed;
+  z-index: 900;
+  inset: 0;
+  display: grid;
+  min-width: 280px;
+  overflow: hidden;
+  background: var(--cream-light);
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 850ms cubic-bezier(0.22, 1, 0.36, 1), visibility 850ms ease;
+  isolation: isolate;
+}
+
+#bia-donation-page .bia-donation-welcome[hidden] {
+  display: none;
+}
+
+#bia-donation-page .bia-donation-welcome.bia-donation-is-leaving {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+#bia-donation-page .bia-donation-welcome-video {
+  position: absolute;
+  z-index: -2;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+}
+
+#bia-donation-page .bia-donation-welcome-wash {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(49, 45, 41, 0.1), transparent 16%, transparent 78%, rgba(49, 45, 41, 0.09)),
+    radial-gradient(circle at 50% 46%, transparent 45%, rgba(255, 248, 235, 0.12) 100%);
+  pointer-events: none;
+}
+
+#bia-donation-page .bia-donation-welcome-skip {
+  position: absolute;
+  top: max(20px, env(safe-area-inset-top));
+  right: max(20px, env(safe-area-inset-right));
+  display: inline-flex;
+  min-width: 82px;
+  min-height: 46px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px 15px;
+  border: 1px solid rgba(255, 255, 255, 0.68);
+  border-radius: 999px;
+  color: var(--text-main);
+  background: rgba(255, 253, 247, 0.78);
+  box-shadow: 0 10px 30px rgba(65, 52, 38, 0.11);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(12px) saturate(120%);
+  backdrop-filter: blur(12px) saturate(120%);
+  transition: background-color 180ms ease, transform 180ms ease;
+}
+
+#bia-donation-page .bia-donation-welcome-skip:hover {
+  background: rgba(255, 253, 247, 0.95);
+  transform: translateY(-1px);
+}
+
+#bia-donation-page .bia-donation-welcome-skip svg {
+  width: 18px;
+  height: 18px;
+}
+
+#bia-donation-page .bia-donation-welcome-progress {
+  position: absolute;
+  right: max(24px, env(safe-area-inset-right));
+  bottom: max(22px, calc(env(safe-area-inset-bottom) + 12px));
+  left: max(24px, env(safe-area-inset-left));
+  height: 3px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.38);
+}
+
+#bia-donation-page .bia-donation-welcome-progress span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--brand-red);
+  transform: scaleX(0);
+  transform-origin: left center;
+  animation: bia-donation-welcome-progress var(--bia-donation-welcome-duration, 8.08s) linear forwards;
+}
+
+#bia-donation-page .bia-donation-content-width {
+  width: min(calc(100% - 48px), var(--bia-donation-max-width));
+  margin-inline: auto;
+}
+
+#bia-donation-page .bia-donation-section {
+  position: relative;
+  padding-block: clamp(80px, 9vw, 128px);
+  scroll-margin-top: 88px;
+}
+
+#bia-donation-page .bia-donation-section-heading {
+  width: min(100%, 720px);
+  margin: 0 auto clamp(42px, 5vw, 66px);
+  text-align: center;
+}
+
+#bia-donation-page .bia-donation-section-kicker,
+#bia-donation-page .bia-donation-eyebrow {
+  margin-bottom: 14px;
+  color: var(--brand-red-dark);
+  font-family: var(--bia-donation-font-heading);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+#bia-donation-page .bia-donation-section-heading h2,
+#bia-donation-page .bia-donation-results-copy h2,
+#bia-donation-page .bia-donation-final-copy h2 {
+  margin-bottom: 18px;
+  font-size: clamp(2.1rem, 4.4vw, 3.65rem);
+  line-height: 1.08;
+}
+
+#bia-donation-page .bia-donation-section-heading > p:last-child,
+#bia-donation-page .bia-donation-results-copy > p,
+#bia-donation-page .bia-donation-final-copy > p {
+  margin-bottom: 0;
+  color: var(--text-muted);
+  font-size: clamp(1rem, 1.4vw, 1.125rem);
+  line-height: 1.75;
+}
+
+/* Header and navigation */
+
+#bia-donation-page .bia-donation-site-header {
+  position: fixed;
+  z-index: 80;
+  top: 0;
+  right: 0;
+  left: 0;
+  border-bottom: 1px solid transparent;
+  transition: background-color 260ms ease, border-color 260ms ease, box-shadow 260ms ease;
+}
+
+#bia-donation-page .bia-donation-site-header::before {
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  left: 0;
+  width: min(370px, 33vw);
+  height: 270px;
+  background: radial-gradient(ellipse at 28% 35%, rgba(255, 253, 247, 0.99) 0 46%, rgba(255, 248, 235, 0.88) 59%, rgba(255, 248, 235, 0) 80%);
+  content: "";
+  pointer-events: none;
+  transition: opacity 260ms ease;
+}
+
+#bia-donation-page .bia-donation-site-header.bia-donation-is-scrolled {
+  border-bottom-color: rgba(85, 99, 72, 0.13);
+  background: rgba(255, 253, 247, 0.88);
+  box-shadow: 0 7px 25px rgba(63, 52, 40, 0.055);
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
+  backdrop-filter: blur(16px) saturate(120%);
+}
+
+#bia-donation-page .bia-donation-site-header.bia-donation-is-scrolled::before {
+  opacity: 0;
+}
+
+#bia-donation-page .bia-donation-nav {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: min(calc(100% - 48px), var(--bia-donation-max-width));
+  min-height: 92px;
+  margin-inline: auto;
+  padding-block: 10px;
+}
+
+#bia-donation-page .bia-donation-site-header.bia-donation-is-scrolled .bia-donation-nav {
+  min-height: 72px;
+  padding-block: 4px;
+}
+
+#bia-donation-page .bia-donation-logo-link {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  border-radius: 18px;
+}
+
+#bia-donation-page .bia-donation-logo-lockup {
+  position: relative;
+  display: flex;
+  min-width: 286px;
+  height: 70px;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+  padding: 7px 16px 7px 8px;
+  border: 1px solid rgba(238, 223, 195, 0.72);
+  border-radius: 19px;
+  background: var(--cream-light);
+  box-shadow: 0 10px 30px rgba(83, 64, 44, 0.08);
+  isolation: isolate;
+  transition: transform 260ms ease;
+}
+
+#bia-donation-page .bia-donation-logo-symbol {
+  position: relative;
+  display: block;
+  flex: 0 0 auto;
+  width: 56px;
+  height: 56px;
+  overflow: hidden;
+  background: transparent;
+}
+
+#bia-donation-page .bia-donation-logo-image {
+  position: absolute;
+  top: -10px;
+  left: -16px;
+  width: 84px;
+  max-width: none;
+  height: 84px;
+  object-fit: contain;
+}
+
+#bia-donation-page .bia-donation-logo-type {
+  display: block;
+  color: var(--brand-red);
+  font-family: var(--bia-donation-font-heading);
+  font-size: 0.94rem;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+#bia-donation-page .bia-donation-is-scrolled .bia-donation-logo-lockup {
+  transform: scale(0.88);
+  transform-origin: left center;
+}
+
+#bia-donation-page .bia-donation-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  border-radius: 999px;
+  background: rgba(255, 253, 247, 0.68);
+  box-shadow: 0 8px 30px rgba(57, 49, 38, 0.055);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+#bia-donation-page .bia-donation-nav-links > a {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 17px;
+  border-radius: 999px;
+  color: var(--text-main);
+  font-size: 0.9rem;
+  font-weight: 650;
+  transition: color 180ms ease, background-color 180ms ease, transform 180ms ease;
+}
+
+#bia-donation-page .bia-donation-nav-links > a:hover {
+  color: var(--deep-green);
+  background: rgba(255, 255, 255, 0.6);
+}
+
+#bia-donation-page .bia-donation-nav-links > .bia-donation-nav-cta {
+  color: var(--white);
+  background: var(--brand-red);
+  box-shadow: 0 7px 18px rgba(188, 0, 52, 0.19);
+}
+
+#bia-donation-page .bia-donation-nav-links > .bia-donation-nav-cta:hover {
+  color: var(--white);
+  background: var(--brand-red-dark);
+  transform: translateY(-1px);
+}
+
+#bia-donation-page .bia-donation-menu-toggle,
+#bia-donation-page .bia-donation-mobile-menu {
+  display: none;
+}
+
+#bia-donation-page .bia-donation-nav-sentinel {
+  position: absolute;
+  z-index: -1;
+  top: 108px;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+/* Hero */
+
+#bia-donation-page .bia-donation-hero {
+  position: relative;
+  display: flex;
+  min-height: max(100svh, 760px);
+  overflow: hidden;
+  align-items: stretch;
+  background: var(--cream);
+  isolation: isolate;
+}
+
+#bia-donation-page .bia-donation-hero-poster,
+#bia-donation-page .bia-donation-hero-video {
+  position: absolute;
+  z-index: -6;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  pointer-events: none;
+}
+
+#bia-donation-page .bia-donation-hero-poster {
+  opacity: 1;
+}
+
+#bia-donation-page .bia-donation-hero-video {
+  opacity: 0;
+  transition: opacity 1100ms ease;
+}
+
+#bia-donation-page .bia-donation-hero.bia-donation-video-ready .bia-donation-hero-video {
+  opacity: 1;
+}
+
+#bia-donation-page .bia-donation-hero-wash,
+#bia-donation-page .bia-donation-hero-reading-layer,
+#bia-donation-page .bia-donation-hero-texture,
+#bia-donation-page .bia-donation-hero-fade {
+  position: absolute;
+  pointer-events: none;
+  inset: 0;
+}
+
+#bia-donation-page .bia-donation-hero-wash {
+  z-index: -5;
+  background: rgba(255, 248, 235, 0.11);
+}
+
+#bia-donation-page .bia-donation-hero-reading-layer {
+  z-index: -4;
+  background: linear-gradient(90deg, rgba(255, 248, 235, 0.88) 0%, rgba(255, 248, 235, 0.72) 31%, rgba(255, 248, 235, 0.15) 58%, rgba(255, 248, 235, 0) 73%);
+}
+
+#bia-donation-page .bia-donation-hero-texture {
+  z-index: -3;
+  opacity: 0.26;
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(72, 54, 35, 0.09) 0 0.6px, transparent 0.8px),
+    radial-gradient(circle at 70% 65%, rgba(255, 255, 255, 0.25) 0 0.7px, transparent 0.9px);
+  background-size: 7px 7px, 11px 11px;
+  mix-blend-mode: soft-light;
+}
+
+#bia-donation-page .bia-donation-hero-fade {
+  z-index: -2;
+  top: auto;
+  height: 24%;
+  background: linear-gradient(to bottom, rgba(255, 248, 235, 0), var(--cream));
+}
+
+#bia-donation-page .bia-donation-hero-inner {
+  display: flex;
+  width: min(calc(100% - 48px), var(--bia-donation-max-width));
+  min-height: inherit;
+  margin-inline: auto;
+  padding: 128px 0 100px;
+  align-items: center;
+}
+
+#bia-donation-page .bia-donation-hero-card-shell {
+  width: min(560px, 51vw);
+  transform: translate3d(var(--bia-donation-parallax-x, 0), var(--bia-donation-parallax-y, 0), 0);
+  transition: transform 220ms ease-out;
+  will-change: transform;
+}
+
+#bia-donation-page .bia-donation-hero-card {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(30px, 3.6vw, 48px);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 16% 12%, rgba(255, 255, 255, 0.58), transparent 32%),
+    rgba(255, 248, 235, 0.83);
+  box-shadow: 0 22px 66px rgba(77, 60, 40, 0.13);
+  -webkit-backdrop-filter: blur(15px) saturate(112%);
+  backdrop-filter: blur(15px) saturate(112%);
+}
+
+#bia-donation-page .bia-donation-hero-card::after {
+  position: absolute;
+  right: -42px;
+  bottom: -46px;
+  width: 160px;
+  height: 160px;
+  border: 1px solid rgba(188, 0, 52, 0.09);
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 18px rgba(238, 223, 195, 0.13);
+  content: "";
+  pointer-events: none;
+}
+
+#bia-donation-page .bia-donation-hero-card h1 {
+  max-width: 10ch;
+  margin-bottom: 19px;
+  font-size: clamp(2.9rem, 5.2vw, 4.65rem);
+  font-weight: 750;
+  line-height: 0.98;
+}
+
+#bia-donation-page .bia-donation-hero-lead {
+  max-width: 58ch;
+  margin-bottom: 13px;
+  color: var(--text-main);
+  font-size: clamp(1rem, 1.35vw, 1.1rem);
+  line-height: 1.72;
+}
+
+#bia-donation-page .bia-donation-hero-note {
+  max-width: 59ch;
+  margin-bottom: 27px;
+  color: var(--text-muted);
+  font-size: 0.94rem;
+  line-height: 1.7;
+}
+
+#bia-donation-page .bia-donation-hero-actions,
+#bia-donation-page .bia-donation-final-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+#bia-donation-page .bia-donation-primary-cta,
+#bia-donation-page .bia-donation-secondary-cta,
+#bia-donation-page .bia-donation-share-button {
+  position: relative;
+  display: inline-flex;
+  min-height: 52px;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  overflow: hidden;
+  padding: 13px 21px;
+  border-radius: 999px;
+  font-size: 0.94rem;
+  font-weight: 700;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: color 180ms ease, background-color 180ms ease, border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+}
+
+#bia-donation-page .bia-donation-primary-cta {
+  border: 1px solid var(--brand-red);
+  color: var(--white);
+  background: var(--brand-red);
+  box-shadow: 0 12px 28px rgba(188, 0, 52, 0.2);
+}
+
+#bia-donation-page .bia-donation-primary-cta::after {
+  position: absolute;
+  top: -70%;
+  left: -38%;
+  width: 28px;
+  height: 240%;
+  background: rgba(255, 255, 255, 0.28);
+  content: "";
+  filter: blur(2px);
+  transform: rotate(18deg) translateX(-140px);
+  animation: bia-donation-button-shine 5.6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+#bia-donation-page .bia-donation-primary-cta > span,
+#bia-donation-page .bia-donation-primary-cta > svg {
+  position: relative;
+  z-index: 1;
+}
+
+#bia-donation-page .bia-donation-primary-cta svg {
+  width: 20px;
+  height: 20px;
+}
+
+#bia-donation-page .bia-donation-primary-cta:hover {
+  border-color: var(--brand-red-dark);
+  background: var(--brand-red-dark);
+  box-shadow: 0 15px 32px rgba(188, 0, 52, 0.24);
+  transform: translateY(-2px);
+}
+
+#bia-donation-page .bia-donation-secondary-cta {
+  border: 1px solid rgba(85, 99, 72, 0.31);
+  color: var(--deep-green);
+  background: rgba(255, 253, 247, 0.56);
+}
+
+#bia-donation-page .bia-donation-secondary-cta:hover {
+  border-color: rgba(85, 99, 72, 0.52);
+  background: rgba(255, 255, 255, 0.82);
+  transform: translateY(-2px);
+}
+
+#bia-donation-page .bia-donation-scroll-cue {
+  position: absolute;
+  z-index: 2;
+  bottom: 25px;
+  left: 50%;
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 13px;
+  border-radius: 999px;
+  color: rgba(49, 45, 41, 0.76);
+  background: rgba(255, 253, 247, 0.55);
+  font-size: 0.73rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transform: translateX(-50%);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+#bia-donation-page .bia-donation-scroll-cue svg {
+  width: 18px;
+  height: 18px;
+  animation: bia-donation-scroll-hint 2.2s ease-in-out infinite;
+}
+
+/* Impact cards */
+
+#bia-donation-page .bia-donation-reach {
+  background: var(--cream);
+}
+
+#bia-donation-page .bia-donation-impact-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 17px;
+}
+
+#bia-donation-page .bia-donation-impact-card {
+  min-height: 300px;
+  padding: 30px 25px;
+  border: 1px solid var(--bia-donation-border);
+  border-radius: 24px;
+  background: linear-gradient(155deg, rgba(255, 253, 247, 0.96), rgba(238, 223, 195, 0.28));
+  box-shadow: 0 10px 30px rgba(67, 59, 48, 0.045);
+  transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+}
+
+#bia-donation-page .bia-donation-impact-card:hover {
+  border-color: rgba(85, 99, 72, 0.27);
+  box-shadow: 0 16px 38px rgba(67, 59, 48, 0.075);
+  transform: translateY(-4px);
+}
+
+#bia-donation-page .bia-donation-impact-icon {
+  display: grid;
+  width: 58px;
+  height: 58px;
+  margin-bottom: 26px;
+  border-radius: 20px 20px 20px 8px;
+  color: var(--deep-green);
+  background: rgba(141, 155, 114, 0.17);
+  place-items: center;
+}
+
+#bia-donation-page .bia-donation-impact-icon svg {
+  width: 42px;
+  height: 42px;
+}
+
+#bia-donation-page .bia-donation-impact-card h3 {
+  margin-bottom: 13px;
+  font-size: 1.18rem;
+  line-height: 1.3;
+}
+
+#bia-donation-page .bia-donation-impact-card p {
+  margin-bottom: 0;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  line-height: 1.72;
+}
+
+/* Results and CSS invitation card */
+
+#bia-donation-page .bia-donation-results {
+  background: var(--cream-light);
+}
+
+#bia-donation-page .bia-donation-results::before {
+  position: absolute;
+  inset: 8% 0 auto;
+  height: 52%;
+  background: radial-gradient(circle at 78% 52%, rgba(141, 155, 114, 0.11), transparent 33%);
+  content: "";
+  pointer-events: none;
+}
+
+#bia-donation-page .bia-donation-results-layout {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 0.93fr) minmax(440px, 1.07fr);
+  align-items: center;
+  gap: clamp(52px, 7vw, 96px);
+}
+
+#bia-donation-page .bia-donation-results-copy > p {
+  max-width: 59ch;
+}
+
+#bia-donation-page .bia-donation-check-list {
+  display: grid;
+  margin: 30px 0 0;
+  padding: 0;
+  gap: 14px;
+  list-style: none;
+}
+
+#bia-donation-page .bia-donation-check-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  color: var(--text-main);
+  font-weight: 550;
+}
+
+#bia-donation-page .bia-donation-check-list span {
+  display: grid;
+  flex: 0 0 auto;
+  width: 25px;
+  height: 25px;
+  margin-top: 1px;
+  border-radius: 50%;
+  color: var(--white);
+  background: var(--brand-red);
+  font-size: 0.76rem;
+  line-height: 1;
+  place-items: center;
+}
+
+#bia-donation-page .bia-donation-ecard-wrap {
+  transform: translate3d(var(--bia-donation-ecard-x, 0), var(--bia-donation-ecard-y, 0), 0);
+  transition: transform 260ms ease-out;
+  will-change: transform;
+}
+
+#bia-donation-page .bia-donation-ecard-stage {
+  position: relative;
+  width: min(100%, 555px);
+  min-height: 455px;
+  margin-inline: auto;
+  filter: drop-shadow(0 28px 32px rgba(76, 61, 42, 0.1));
+  animation: bia-donation-card-float 7s ease-in-out infinite;
+}
+
+#bia-donation-page .bia-donation-ecard-stage::before {
+  position: absolute;
+  inset: 52px 6px 34px 46px;
+  border-radius: 49% 51% 53% 47% / 56% 42% 58% 44%;
+  background: linear-gradient(140deg, rgba(141, 155, 114, 0.22), rgba(238, 223, 195, 0.38));
+  content: "";
+  transform: rotate(-4deg);
+}
+
+#bia-donation-page .bia-donation-ecard-paper {
+  position: absolute;
+  z-index: 3;
+  top: 82px;
+  right: 52px;
+  bottom: 70px;
+  left: 66px;
+  display: flex;
+  overflow: hidden;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 40px;
+  border: 1px solid rgba(152, 123, 84, 0.19);
+  border-radius: 10px;
+  background:
+    radial-gradient(circle at 15% 12%, rgba(255, 255, 255, 0.95), transparent 32%),
+    linear-gradient(145deg, #fffdf7, #fff4df);
+  box-shadow: var(--bia-donation-paper-shadow);
+  text-align: center;
+  transform: rotate(-2.4deg);
+}
+
+#bia-donation-page .bia-donation-ecard-paper::before {
+  position: absolute;
+  inset: 0;
+  opacity: 0.28;
+  background-image: radial-gradient(circle, rgba(103, 81, 55, 0.13) 0 0.55px, transparent 0.7px);
+  background-size: 7px 7px;
+  content: "";
+  pointer-events: none;
+}
+
+#bia-donation-page .bia-donation-ecard-border {
+  position: absolute;
+  inset: 13px;
+  border: 1px solid rgba(141, 155, 114, 0.23);
+  border-radius: 5px;
+  box-shadow: inset 0 0 0 5px rgba(255, 255, 255, 0.32);
+}
+
+#bia-donation-page .bia-donation-ecard-brand {
+  position: relative;
+  margin-bottom: 18px;
+  color: var(--brand-red-dark);
+  font-family: var(--bia-donation-font-heading);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.19em;
+}
+
+#bia-donation-page .bia-donation-ecard-paper strong {
+  position: relative;
+  color: var(--deep-green);
+  font: 700 clamp(1.7rem, 3.2vw, 2.35rem)/1.1 var(--bia-donation-font-heading);
+  letter-spacing: -0.04em;
+}
+
+#bia-donation-page .bia-donation-ecard-line {
+  position: relative;
+  width: 44px;
+  height: 2px;
+  margin-block: 18px 14px;
+  background: var(--brand-red);
+}
+
+#bia-donation-page .bia-donation-ecard-paper small {
+  position: relative;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+
+#bia-donation-page .bia-donation-ecard-ribbon-horizontal {
+  position: absolute;
+  z-index: 5;
+  top: 211px;
+  right: 19px;
+  left: 28px;
+  height: 54px;
+  border-radius: 7px;
+  background: linear-gradient(180deg, #f1134e, #c90037);
+  box-shadow: inset 0 7px 10px rgba(255, 255, 255, 0.17), 0 8px 18px rgba(151, 0, 40, 0.18);
+  transform: rotate(-5deg);
+}
+
+#bia-donation-page .bia-donation-ecard-ribbon-tail {
+  position: absolute;
+  z-index: 2;
+  right: 52px;
+  bottom: 50px;
+  width: 76px;
+  height: 162px;
+  background: linear-gradient(90deg, #c90037, #ef174f);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 81%, 0 100%);
+  transform: rotate(-11deg);
+}
+
+#bia-donation-page .bia-donation-ecard-seal {
+  position: absolute;
+  z-index: 7;
+  top: 207px;
+  left: 50%;
+  display: grid;
+  width: 64px;
+  height: 64px;
+  border: 5px solid rgba(255, 255, 255, 0.42);
+  border-radius: 50%;
+  background: var(--brand-red);
+  box-shadow: 0 8px 20px rgba(139, 0, 38, 0.26);
+  transform: translateX(-50%) rotate(-4deg);
+  place-items: center;
+}
+
+#bia-donation-page .bia-donation-ecard-seal i,
+#bia-donation-page .bia-donation-final-heart i {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  background: var(--white);
+  transform: rotate(45deg) translate(1px, 1px);
+}
+
+#bia-donation-page .bia-donation-ecard-seal i::before,
+#bia-donation-page .bia-donation-ecard-seal i::after,
+#bia-donation-page .bia-donation-final-heart i::before,
+#bia-donation-page .bia-donation-final-heart i::after {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: inherit;
+  content: "";
+}
+
+#bia-donation-page .bia-donation-ecard-seal i::before,
+#bia-donation-page .bia-donation-final-heart i::before {
+  left: -11px;
+}
+
+#bia-donation-page .bia-donation-ecard-seal i::after,
+#bia-donation-page .bia-donation-final-heart i::after {
+  top: -11px;
+}
+
+#bia-donation-page .bia-donation-ecard-leaf {
+  position: absolute;
+  z-index: 6;
+  width: 45px;
+  height: 88px;
+  border-radius: 100% 0 100% 0;
+  background: linear-gradient(150deg, #a6b28e, var(--deep-green));
+  opacity: 0.76;
+}
+
+#bia-donation-page .bia-donation-ecard-leaf::after {
+  position: absolute;
+  top: 48%;
+  left: -18px;
+  width: 72px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.58);
+  content: "";
+  transform: rotate(-43deg);
+}
+
+#bia-donation-page .bia-donation-ecard-leaf-one {
+  top: 44px;
+  right: 22px;
+  transform: rotate(28deg);
+}
+
+#bia-donation-page .bia-donation-ecard-leaf-two {
+  bottom: 26px;
+  left: 28px;
+  transform: rotate(208deg) scale(0.86);
+}
+
+/* Quote band */
+
+#bia-donation-page .bia-donation-quote {
+  position: relative;
+  overflow: hidden;
+  padding-block: clamp(100px, 12vw, 166px);
+  background:
+    radial-gradient(circle at 12% 15%, rgba(255, 255, 255, 0.62), transparent 30%),
+    linear-gradient(125deg, #eff1e5, #f9f0dc 66%, #fff8eb);
+  isolation: isolate;
+}
+
+#bia-donation-page .bia-donation-quote-copy {
+  position: relative;
+  z-index: 2;
+  width: min(calc(100% - 48px), 940px);
+  text-align: center;
+}
+
+#bia-donation-page .bia-donation-quote-copy h2 {
+  margin-bottom: 22px;
+  font-size: clamp(2.4rem, 5.5vw, 4.65rem);
+  line-height: 1.08;
+}
+
+#bia-donation-page .bia-donation-quote-copy > p:last-child {
+  width: min(100%, 660px);
+  margin: 0 auto;
+  color: var(--text-muted);
+  font-size: clamp(1rem, 1.5vw, 1.15rem);
+}
+
+#bia-donation-page .bia-donation-float-shape {
+  position: absolute;
+  z-index: 1;
+  opacity: 0.12;
+  animation: bia-donation-soft-float 9s ease-in-out infinite;
+  pointer-events: none;
+}
+
+#bia-donation-page .bia-donation-float-leaf {
+  top: 17%;
+  left: 7%;
+  width: 48px;
+  height: 86px;
+  border-radius: 100% 0 100% 0;
+  background: var(--deep-green);
+  transform: rotate(32deg);
+}
+
+#bia-donation-page .bia-donation-float-heart {
+  right: 11%;
+  bottom: 19%;
+  width: 35px;
+  height: 35px;
+  background: var(--brand-red);
+  transform: rotate(45deg);
+  animation-delay: -3s;
+}
+
+#bia-donation-page .bia-donation-float-heart::before,
+#bia-donation-page .bia-donation-float-heart::after {
+  position: absolute;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  background: inherit;
+  content: "";
+}
+
+#bia-donation-page .bia-donation-float-heart::before {
+  left: -18px;
+}
+
+#bia-donation-page .bia-donation-float-heart::after {
+  top: -18px;
+}
+
+#bia-donation-page .bia-donation-float-crescent {
+  top: 18%;
+  right: 18%;
+  width: 78px;
+  height: 78px;
+  border-radius: 50%;
+  background: rgba(184, 137, 63, 0.72);
+  animation-delay: -5s;
+}
+
+#bia-donation-page .bia-donation-float-crescent::after {
+  position: absolute;
+  top: -7px;
+  left: 21px;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #f4eedf;
+  content: "";
+}
+
+#bia-donation-page .bia-donation-float-star {
+  bottom: 21%;
+  left: 17%;
+  color: #b8893f;
+  font-size: 2.7rem;
+  animation-delay: -6s;
+}
+
+/* Bank details */
+
+#bia-donation-page .bia-donation-banks {
+  background: var(--cream);
+}
+
+#bia-donation-page .bia-donation-bank-sheet {
+  padding: clamp(22px, 4vw, 50px);
+  border: 1px solid rgba(85, 99, 72, 0.16);
+  border-radius: 32px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.72), transparent 55%),
+    #f6edda;
+  box-shadow: 0 24px 65px rgba(69, 56, 40, 0.09);
+}
+
+#bia-donation-page .bia-donation-bank-group {
+  padding: clamp(24px, 3vw, 36px);
+  border: 1px solid rgba(85, 99, 72, 0.13);
+  border-radius: 24px;
+  background: rgba(255, 253, 247, 0.84);
+}
+
+#bia-donation-page .bia-donation-bank-group-featured {
+  margin-bottom: 18px;
+}
+
+#bia-donation-page .bia-donation-bank-brand {
+  display: flex;
+  min-height: 46px;
+  align-items: center;
+  gap: 13px;
+  margin-bottom: 14px;
+}
+
+#bia-donation-page .bia-donation-bank-brand strong {
+  color: #111820;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: clamp(1.45rem, 2.5vw, 2rem);
+  font-weight: 650;
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+
+#bia-donation-page .bia-donation-bank-brand strong em {
+  color: #173e78;
+  font-style: normal;
+  font-weight: 550;
+}
+
+#bia-donation-page .bia-donation-garanti-mark {
+  position: relative;
+  width: 35px;
+  height: 38px;
+}
+
+#bia-donation-page .bia-donation-garanti-mark i {
+  position: absolute;
+  top: 12px;
+  left: 13px;
+  width: 10px;
+  height: 22px;
+  border-radius: 100% 10% 100% 10%;
+  background: linear-gradient(135deg, #159447, #006a34);
+  transform-origin: 5px 7px;
+}
+
+#bia-donation-page .bia-donation-garanti-mark i:nth-child(1) { transform: rotate(0deg); }
+#bia-donation-page .bia-donation-garanti-mark i:nth-child(2) { transform: rotate(90deg); }
+#bia-donation-page .bia-donation-garanti-mark i:nth-child(3) { transform: rotate(180deg); }
+#bia-donation-page .bia-donation-garanti-mark i:nth-child(4) { transform: rotate(270deg); }
+
+#bia-donation-page .bia-donation-account-owner {
+  margin-bottom: 20px;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#bia-donation-page .bia-donation-account-list {
+  border-top: 1px solid rgba(85, 99, 72, 0.14);
+}
+
+#bia-donation-page .bia-donation-account-row {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 22px;
+  min-height: 90px;
+  border-bottom: 1px solid rgba(85, 99, 72, 0.13);
+}
+
+#bia-donation-page .bia-donation-account-row:last-child {
+  border-bottom: 0;
+}
+
+#bia-donation-page .bia-donation-currency {
+  justify-self: start;
+  padding: 7px 11px;
+  border-radius: 999px;
+  color: var(--deep-green);
+  background: rgba(141, 155, 114, 0.14);
+  font-size: 0.76rem;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+#bia-donation-page .bia-donation-iban {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+
+#bia-donation-page .bia-donation-iban small {
+  color: var(--text-muted);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+}
+
+#bia-donation-page .bia-donation-iban strong {
+  color: var(--text-main);
+  font-family: var(--bia-donation-font-heading);
+  font-size: clamp(0.9rem, 1.5vw, 1.05rem);
+  font-weight: 700;
+  letter-spacing: 0.025em;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+#bia-donation-page .bia-donation-copy-button {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 13px;
+  border: 1px solid rgba(85, 99, 72, 0.22);
+  border-radius: 12px;
+  color: var(--deep-green);
+  background: rgba(255, 255, 255, 0.7);
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+
+#bia-donation-page .bia-donation-copy-button:hover {
+  border-color: rgba(85, 99, 72, 0.42);
+  background: var(--white);
+  transform: translateY(-1px);
+}
+
+#bia-donation-page .bia-donation-copy-button svg {
+  width: 18px;
+  height: 18px;
+}
+
+#bia-donation-page .bia-donation-secondary-bank-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+#bia-donation-page .bia-donation-turkiye-finans-brand strong {
+  font-size: 1.35rem;
+  font-style: italic;
+  line-height: 0.82;
+}
+
+#bia-donation-page .bia-donation-turkiye-finans-brand strong em {
+  color: #111820;
+  font-weight: 750;
+}
+
+#bia-donation-page .bia-donation-turkiye-finans-mark {
+  position: relative;
+  display: grid;
+  width: 45px;
+  height: 45px;
+  place-items: center;
+}
+
+#bia-donation-page .bia-donation-turkiye-finans-mark i {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px 10px 4px 10px;
+  background: #00bfb3;
+  transform: rotate(45deg);
+}
+
+#bia-donation-page .bia-donation-turkiye-finans-mark i:nth-child(1) { top: 2px; }
+#bia-donation-page .bia-donation-turkiye-finans-mark i:nth-child(2) { bottom: 5px; left: 3px; }
+#bia-donation-page .bia-donation-turkiye-finans-mark i:nth-child(3) { right: 3px; bottom: 5px; }
+
+#bia-donation-page .bia-donation-vakif-brand strong {
+  font-size: 1.85rem;
+  font-style: italic;
+  font-weight: 700;
+}
+
+#bia-donation-page .bia-donation-vakif-mark {
+  display: grid;
+  width: 42px;
+  height: 34px;
+  border-radius: 7px 15px 7px 15px;
+  color: #fff;
+  background: #fdbb08;
+  font: italic 800 1.25rem/1 Arial, sans-serif;
+  place-items: center;
+}
+
+#bia-donation-page .bia-donation-branch-name {
+  min-height: 27px;
+  margin-top: -10px;
+  margin-bottom: 18px;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+}
+
+#bia-donation-page .bia-donation-secondary-iban {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(85, 99, 72, 0.13);
+}
+
+#bia-donation-page .bia-donation-bank-footnote {
+  margin: 18px 4px 0;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  text-align: center;
+}
+
+/* Final CTA */
+
+#bia-donation-page .bia-donation-final-cta {
+  position: relative;
+  overflow: hidden;
+  padding-block: clamp(84px, 9vw, 126px);
+  color: var(--white);
+  background:
+    radial-gradient(circle at 86% 16%, rgba(255, 255, 255, 0.18), transparent 25%),
+    linear-gradient(125deg, var(--brand-red-dark), var(--brand-red) 56%, #f01850);
+  scroll-margin-top: 88px;
+  isolation: isolate;
+}
+
+#bia-donation-page .bia-donation-final-glow {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  opacity: 0.25;
+  background-image:
+    radial-gradient(circle at 16% 20%, #fff 0 1px, transparent 1.5px),
+    radial-gradient(circle at 76% 72%, #fff 0 1px, transparent 1.5px);
+  background-size: 54px 54px, 71px 71px;
+}
+
+#bia-donation-page .bia-donation-final-inner {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(26px, 4vw, 55px);
+}
+
+#bia-donation-page .bia-donation-final-heart {
+  display: grid;
+  width: 78px;
+  height: 78px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 28px 28px 28px 8px;
+  background: rgba(255, 255, 255, 0.13);
+  transform: rotate(-5deg);
+  place-items: center;
+}
+
+#bia-donation-page .bia-donation-final-heart i {
+  width: 24px;
+  height: 24px;
+}
+
+#bia-donation-page .bia-donation-final-heart i::before,
+#bia-donation-page .bia-donation-final-heart i::after {
+  width: 24px;
+  height: 24px;
+}
+
+#bia-donation-page .bia-donation-final-heart i::before { left: -12px; }
+#bia-donation-page .bia-donation-final-heart i::after { top: -12px; }
+
+#bia-donation-page .bia-donation-final-copy .bia-donation-section-kicker,
+#bia-donation-page .bia-donation-final-copy h2,
+#bia-donation-page .bia-donation-final-copy > p {
+  color: var(--white);
+}
+
+#bia-donation-page .bia-donation-final-copy .bia-donation-section-kicker {
+  opacity: 0.78;
+}
+
+#bia-donation-page .bia-donation-final-copy h2 {
+  font-size: clamp(2.2rem, 4.5vw, 3.8rem);
+}
+
+#bia-donation-page .bia-donation-final-copy > p {
+  max-width: 64ch;
+  opacity: 0.86;
+}
+
+#bia-donation-page .bia-donation-primary-cta-light {
+  border-color: var(--white);
+  color: var(--brand-red-dark);
+  background: var(--white);
+  box-shadow: 0 13px 30px rgba(106, 0, 30, 0.19);
+}
+
+#bia-donation-page .bia-donation-primary-cta-light:hover {
+  border-color: var(--cream-light);
+  color: var(--brand-red-dark);
+  background: var(--cream-light);
+}
+
+#bia-donation-page .bia-donation-share-button {
+  border: 1px solid rgba(255, 255, 255, 0.54);
+  color: var(--white);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+#bia-donation-page .bia-donation-share-button:hover {
+  border-color: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.17);
+  transform: translateY(-2px);
+}
+
+#bia-donation-page .bia-donation-share-button svg {
+  width: 21px;
+  height: 21px;
+}
+
+/* Footer, sticky action and toast */
+
+#bia-donation-page .bia-donation-footer {
+  position: relative;
+  padding: 62px 0 24px;
+  background: #f4ead7;
+}
+
+#bia-donation-page .bia-donation-footer-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(240px, 0.85fr);
+  align-items: end;
+  gap: 60px;
+}
+
+#bia-donation-page .bia-donation-footer-brand {
+  max-width: 650px;
+}
+
+#bia-donation-page .bia-donation-footer-logo .bia-donation-logo-lockup {
+  margin-bottom: 22px;
+  border-color: rgba(238, 223, 195, 0.9);
+  box-shadow: none;
+}
+
+#bia-donation-page .bia-donation-footer-brand > p {
+  max-width: 64ch;
+  margin-bottom: 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+#bia-donation-page .bia-donation-footer-links {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px 24px;
+}
+
+#bia-donation-page .bia-donation-footer-links a {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  color: var(--text-main);
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+#bia-donation-page .bia-donation-footer-links a:hover {
+  color: var(--brand-red-dark);
+}
+
+#bia-donation-page .bia-donation-footer-bottom {
+  margin-top: 44px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(85, 99, 72, 0.13);
+}
+
+#bia-donation-page .bia-donation-footer-bottom p {
+  margin-bottom: 0;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+#bia-donation-page .bia-donation-mobile-sticky {
+  position: fixed;
+  z-index: 75;
+  right: 10px;
+  bottom: calc(10px + env(safe-area-inset-bottom));
+  left: 10px;
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 62px;
+  padding: 8px 9px 8px 15px;
+  border: 1px solid rgba(85, 99, 72, 0.16);
+  border-radius: 20px;
+  background: rgba(255, 253, 247, 0.94);
+  box-shadow: 0 15px 40px rgba(54, 44, 33, 0.18);
+  opacity: 0;
+  transform: translateY(calc(100% + 30px));
+  transition: opacity 230ms ease, transform 230ms ease, visibility 230ms ease;
+  visibility: hidden;
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+
+#bia-donation-page .bia-donation-mobile-sticky.bia-donation-is-visible {
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
+}
+
+#bia-donation-page .bia-donation-mobile-sticky-label {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+}
+
+#bia-donation-page .bia-donation-mobile-sticky-label strong {
+  overflow: hidden;
+  font-size: 0.84rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#bia-donation-page .bia-donation-mini-heart {
+  position: relative;
+  flex: 0 0 auto;
+  width: 15px;
+  height: 15px;
+  margin: 2px 4px 0 3px;
+  background: var(--brand-red);
+  transform: rotate(45deg);
+}
+
+#bia-donation-page .bia-donation-mini-heart::before,
+#bia-donation-page .bia-donation-mini-heart::after {
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: inherit;
+  content: "";
+}
+
+#bia-donation-page .bia-donation-mini-heart::before { left: -8px; }
+#bia-donation-page .bia-donation-mini-heart::after { top: -8px; }
+
+#bia-donation-page .bia-donation-mobile-sticky > a {
+  display: inline-flex;
+  min-height: 46px;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 18px;
+  border-radius: 14px;
+  color: var(--white);
+  background: var(--brand-red);
+  font-size: 0.82rem;
+  font-weight: 750;
+}
+
+#bia-donation-page .bia-donation-toast {
+  position: fixed;
+  z-index: 110;
+  right: 20px;
+  bottom: calc(20px + env(safe-area-inset-bottom));
+  max-width: min(360px, calc(100vw - 40px));
+  padding: 12px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 14px;
+  color: var(--white);
+  background: rgba(49, 45, 41, 0.94);
+  box-shadow: 0 14px 34px rgba(30, 25, 20, 0.2);
+  font-size: 0.84rem;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 200ms ease, transform 200ms ease, visibility 200ms ease;
+  visibility: hidden;
+}
+
+#bia-donation-page .bia-donation-toast.bia-donation-is-visible {
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
+}
+
+/* Motion and reveal */
+
+#bia-donation-page.bia-donation-js .bia-donation-site-header,
+#bia-donation-page.bia-donation-js .bia-donation-hero-card {
+  opacity: 0;
+  transform: translateY(18px);
+}
+
+#bia-donation-page.bia-donation-js.bia-donation-is-loaded .bia-donation-site-header,
+#bia-donation-page.bia-donation-js.bia-donation-is-loaded .bia-donation-hero-card {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 700ms ease, transform 700ms ease;
+}
+
+#bia-donation-page.bia-donation-js.bia-donation-is-loaded .bia-donation-site-header {
+  transition: opacity 600ms ease, transform 600ms ease, background-color 260ms ease, border-color 260ms ease, box-shadow 260ms ease;
+}
+
+#bia-donation-page.bia-donation-js .bia-donation-reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 680ms ease var(--bia-donation-delay, 0ms), transform 680ms ease var(--bia-donation-delay, 0ms);
+}
+
+#bia-donation-page.bia-donation-js .bia-donation-reveal.bia-donation-is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@keyframes bia-donation-button-shine {
+  0%, 62% { transform: rotate(18deg) translateX(-145px); opacity: 0; }
+  72% { opacity: 1; }
+  88%, 100% { transform: rotate(18deg) translateX(285px); opacity: 0; }
+}
+
+@keyframes bia-donation-welcome-progress {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes bia-donation-scroll-hint {
+  0%, 100% { transform: translateY(0); opacity: 0.75; }
+  50% { transform: translateY(4px); opacity: 1; }
+}
+
+@keyframes bia-donation-card-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-5px) rotate(0.3deg); }
+}
+
+@keyframes bia-donation-soft-float {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -8px; }
+}
+
+/* Tablet */
+
+@media (max-width: 1040px) {
+  #bia-donation-page .bia-donation-impact-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #bia-donation-page .bia-donation-impact-card {
+    min-height: 250px;
+  }
+
+  #bia-donation-page .bia-donation-results-layout {
+    grid-template-columns: minmax(0, 0.9fr) minmax(390px, 1.1fr);
+    gap: 42px;
+  }
+
+  #bia-donation-page .bia-donation-final-inner {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  #bia-donation-page .bia-donation-final-actions {
+    grid-column: 2;
+  }
+
+  #bia-donation-page .bia-donation-secondary-iban {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  #bia-donation-page .bia-donation-secondary-iban .bia-donation-copy-button {
+    align-self: flex-start;
+  }
+}
+
+@media (max-width: 880px) {
+  #bia-donation-page .bia-donation-results-layout {
+    grid-template-columns: 1fr;
+    gap: 38px;
+  }
+
+  #bia-donation-page .bia-donation-results-copy {
+    width: min(100%, 680px);
+  }
+
+  #bia-donation-page .bia-donation-ecard-wrap {
+    width: min(100%, 600px);
+    margin-inline: auto;
+  }
+
+  #bia-donation-page .bia-donation-account-row {
+    grid-template-columns: 105px minmax(0, 1fr);
+    gap: 15px 20px;
+    padding-block: 16px;
+  }
+
+  #bia-donation-page .bia-donation-account-row .bia-donation-copy-button {
+    grid-column: 2;
+    justify-self: start;
+    margin-top: -5px;
+  }
+}
+
+/* Mobile navigation and layout */
+
+@media (max-width: 767px) {
+  #bia-donation-page .bia-donation-welcome-video {
+    object-position: center center;
+  }
+
+  #bia-donation-page .bia-donation-welcome-skip {
+    top: max(14px, env(safe-area-inset-top));
+    right: max(14px, env(safe-area-inset-right));
+    min-width: 76px;
+    min-height: 44px;
+  }
+
+  #bia-donation-page .bia-donation-welcome-progress {
+    right: max(16px, env(safe-area-inset-right));
+    bottom: max(16px, calc(env(safe-area-inset-bottom) + 10px));
+    left: max(16px, env(safe-area-inset-left));
+  }
+
+  #bia-donation-page .bia-donation-content-width,
+  #bia-donation-page .bia-donation-nav,
+  #bia-donation-page .bia-donation-hero-inner,
+  #bia-donation-page .bia-donation-quote-copy {
+    width: min(calc(100% - 32px), var(--bia-donation-max-width));
+  }
+
+  #bia-donation-page .bia-donation-section {
+    padding-block: 72px;
+  }
+
+  #bia-donation-page .bia-donation-site-header::before {
+    width: 210px;
+    height: 145px;
+  }
+
+  #bia-donation-page .bia-donation-nav {
+    min-height: 78px;
+    padding-block: 6px;
+  }
+
+  #bia-donation-page .bia-donation-site-header.bia-donation-is-scrolled .bia-donation-nav {
+    min-height: 66px;
+  }
+
+  #bia-donation-page .bia-donation-logo-lockup {
+    min-width: 232px;
+    height: 60px;
+    gap: 6px;
+    padding: 6px 11px 6px 7px;
+    border-radius: 17px;
+  }
+
+  #bia-donation-page .bia-donation-logo-symbol {
+    width: 48px;
+    height: 48px;
+  }
+
+  #bia-donation-page .bia-donation-logo-image {
+    top: -9px;
+    left: -14px;
+    width: 72px;
+    height: 72px;
+  }
+
+  #bia-donation-page .bia-donation-logo-type {
+    font-size: 0.78rem;
+  }
+
+  #bia-donation-page .bia-donation-nav-links {
+    display: none;
+  }
+
+  #bia-donation-page .bia-donation-menu-toggle {
+    position: relative;
+    z-index: 4;
+    display: inline-flex;
+    width: 46px;
+    height: 46px;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 5px;
+    padding: 0;
+    border: 1px solid rgba(85, 99, 72, 0.19);
+    border-radius: 15px;
+    color: var(--text-main);
+    background: rgba(255, 253, 247, 0.86);
+    cursor: pointer;
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
+
+  #bia-donation-page .bia-donation-menu-toggle span {
+    display: block;
+    width: 19px;
+    height: 1.5px;
+    border-radius: 99px;
+    background: currentColor;
+    transition: transform 180ms ease, opacity 180ms ease;
+  }
+
+  #bia-donation-page .bia-donation-menu-toggle[aria-expanded="true"] span:nth-child(1) {
+    transform: translateY(6.5px) rotate(45deg);
+  }
+
+  #bia-donation-page .bia-donation-menu-toggle[aria-expanded="true"] span:nth-child(2) {
+    opacity: 0;
+  }
+
+  #bia-donation-page .bia-donation-menu-toggle[aria-expanded="true"] span:nth-child(3) {
+    transform: translateY(-6.5px) rotate(-45deg);
+  }
+
+  #bia-donation-page .bia-donation-mobile-menu {
+    position: absolute;
+    z-index: 3;
+    top: calc(100% + 7px);
+    right: 0;
+    display: grid;
+    width: min(290px, calc(100vw - 32px));
+    padding: 10px;
+    border: 1px solid rgba(85, 99, 72, 0.16);
+    border-radius: 21px;
+    background: rgba(255, 253, 247, 0.98);
+    box-shadow: 0 20px 50px rgba(49, 40, 31, 0.17);
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+    transform-origin: top right;
+    transition: opacity 180ms ease, transform 180ms ease;
+  }
+
+  #bia-donation-page .bia-donation-mobile-menu[hidden] {
+    display: none;
+  }
+
+  #bia-donation-page .bia-donation-mobile-menu.bia-donation-is-open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  #bia-donation-page .bia-donation-mobile-menu a {
+    display: flex;
+    min-height: 48px;
+    align-items: center;
+    padding: 10px 13px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 650;
+  }
+
+  #bia-donation-page .bia-donation-mobile-menu a:hover {
+    background: rgba(238, 223, 195, 0.38);
+  }
+
+  #bia-donation-page .bia-donation-mobile-menu .bia-donation-mobile-menu-cta {
+    justify-content: center;
+    margin-top: 5px;
+    color: var(--white);
+    background: var(--brand-red);
+  }
+
+  #bia-donation-page .bia-donation-hero {
+    min-height: max(100svh, 790px);
+  }
+
+  #bia-donation-page .bia-donation-hero-poster,
+  #bia-donation-page .bia-donation-hero-video {
+    object-position: 72% center;
+  }
+
+  #bia-donation-page .bia-donation-hero-reading-layer {
+    background:
+      linear-gradient(180deg, rgba(255, 248, 235, 0.62) 0%, rgba(255, 248, 235, 0.2) 24%, rgba(255, 248, 235, 0.12) 55%, rgba(255, 248, 235, 0.54) 100%),
+      linear-gradient(90deg, rgba(255, 248, 235, 0.54), rgba(255, 248, 235, 0.12));
+  }
+
+  #bia-donation-page .bia-donation-hero-inner {
+    padding: 108px 0 82px;
+    align-items: flex-start;
+  }
+
+  #bia-donation-page .bia-donation-hero-card-shell {
+    width: 100%;
+  }
+
+  #bia-donation-page .bia-donation-hero-card {
+    margin-top: 38px;
+    padding: 28px;
+    border-radius: 24px;
+    background:
+      radial-gradient(circle at 12% 10%, rgba(255, 255, 255, 0.62), transparent 31%),
+      rgba(255, 248, 235, 0.88);
+  }
+
+  #bia-donation-page .bia-donation-hero-card h1 {
+    font-size: clamp(2.35rem, 10vw, 3.35rem);
+    line-height: 1.02;
+  }
+
+  #bia-donation-page .bia-donation-hero-lead {
+    font-size: 0.98rem;
+    line-height: 1.66;
+  }
+
+  #bia-donation-page .bia-donation-scroll-cue {
+    bottom: 17px;
+  }
+
+  #bia-donation-page .bia-donation-impact-grid {
+    grid-template-columns: 1fr;
+  }
+
+  #bia-donation-page .bia-donation-impact-card {
+    min-height: auto;
+    padding: 27px;
+  }
+
+  #bia-donation-page .bia-donation-impact-icon {
+    margin-bottom: 20px;
+  }
+
+  #bia-donation-page .bia-donation-quote {
+    padding-block: 92px;
+  }
+
+  #bia-donation-page .bia-donation-float-crescent {
+    right: 5%;
+    transform: scale(0.72);
+  }
+
+  #bia-donation-page .bia-donation-secondary-bank-grid {
+    grid-template-columns: 1fr;
+  }
+
+  #bia-donation-page .bia-donation-final-inner {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  #bia-donation-page .bia-donation-final-heart {
+    margin-inline: auto;
+  }
+
+  #bia-donation-page .bia-donation-final-copy > p {
+    margin-inline: auto;
+  }
+
+  #bia-donation-page .bia-donation-final-actions {
+    grid-column: auto;
+    justify-content: center;
+  }
+
+  #bia-donation-page .bia-donation-footer {
+    padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  }
+
+  #bia-donation-page .bia-donation-footer-grid {
+    grid-template-columns: 1fr;
+    gap: 38px;
+  }
+
+  #bia-donation-page .bia-donation-mobile-sticky {
+    display: flex;
+  }
+
+  #bia-donation-page .bia-donation-toast {
+    right: 12px;
+    bottom: calc(84px + env(safe-area-inset-bottom));
+    left: 12px;
+    max-width: none;
+    text-align: center;
+  }
+}
+
+@media (max-width: 560px) {
+  #bia-donation-page .bia-donation-section-heading {
+    margin-bottom: 38px;
+  }
+
+  #bia-donation-page .bia-donation-section-heading h2,
+  #bia-donation-page .bia-donation-results-copy h2,
+  #bia-donation-page .bia-donation-final-copy h2 {
+    font-size: clamp(2rem, 10vw, 2.75rem);
+  }
+
+  #bia-donation-page .bia-donation-hero {
+    min-height: max(100svh, 815px);
+  }
+
+  #bia-donation-page .bia-donation-hero-poster,
+  #bia-donation-page .bia-donation-hero-video {
+    object-position: 75% center;
+  }
+
+  #bia-donation-page .bia-donation-hero-card {
+    margin-top: 24px;
+    padding: 25px 22px;
+  }
+
+  #bia-donation-page .bia-donation-hero-card h1 {
+    max-width: 11ch;
+    margin-bottom: 16px;
+  }
+
+  #bia-donation-page .bia-donation-hero-note {
+    margin-bottom: 22px;
+    font-size: 0.89rem;
+  }
+
+  #bia-donation-page .bia-donation-hero-actions,
+  #bia-donation-page .bia-donation-final-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  #bia-donation-page .bia-donation-primary-cta,
+  #bia-donation-page .bia-donation-secondary-cta,
+  #bia-donation-page .bia-donation-share-button {
+    width: 100%;
+  }
+
+  #bia-donation-page .bia-donation-ecard-stage {
+    min-height: 365px;
+    transform: scale(0.87);
+    transform-origin: center;
+  }
+
+  #bia-donation-page .bia-donation-ecard-paper {
+    top: 60px;
+    right: 24px;
+    bottom: 48px;
+    left: 28px;
+  }
+
+  #bia-donation-page .bia-donation-ecard-ribbon-horizontal {
+    top: 168px;
+    right: 5px;
+    left: 6px;
+  }
+
+  #bia-donation-page .bia-donation-ecard-seal {
+    top: 164px;
+  }
+
+  #bia-donation-page .bia-donation-ecard-ribbon-tail {
+    right: 25px;
+    bottom: 27px;
+  }
+
+  #bia-donation-page .bia-donation-bank-sheet {
+    padding: 14px;
+    border-radius: 24px;
+  }
+
+  #bia-donation-page .bia-donation-bank-group {
+    padding: 22px 18px;
+    border-radius: 19px;
+  }
+
+  #bia-donation-page .bia-donation-account-row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding-block: 18px;
+  }
+
+  #bia-donation-page .bia-donation-account-row .bia-donation-copy-button {
+    grid-column: 1;
+    margin-top: 2px;
+  }
+
+  #bia-donation-page .bia-donation-iban strong {
+    font-size: 0.88rem;
+  }
+
+  #bia-donation-page .bia-donation-secondary-iban .bia-donation-copy-button,
+  #bia-donation-page .bia-donation-account-row .bia-donation-copy-button {
+    width: 100%;
+  }
+
+  #bia-donation-page .bia-donation-footer-links {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  #bia-donation-page .bia-donation-footer-bottom {
+    margin-top: 34px;
+  }
+}
+
+@media (max-width: 360px) {
+  #bia-donation-page .bia-donation-content-width,
+  #bia-donation-page .bia-donation-nav,
+  #bia-donation-page .bia-donation-hero-inner,
+  #bia-donation-page .bia-donation-quote-copy {
+    width: min(calc(100% - 24px), var(--bia-donation-max-width));
+  }
+
+  #bia-donation-page .bia-donation-logo-lockup {
+    min-width: 218px;
+  }
+
+  #bia-donation-page .bia-donation-logo-type {
+    font-size: 0.72rem;
+  }
+
+  #bia-donation-page .bia-donation-hero {
+    min-height: 840px;
+  }
+
+  #bia-donation-page .bia-donation-hero-card {
+    padding-inline: 19px;
+  }
+
+  #bia-donation-page .bia-donation-hero-card h1 {
+    font-size: 2.22rem;
+  }
+
+  #bia-donation-page .bia-donation-mobile-sticky-label strong {
+    max-width: 108px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #bia-donation-page .bia-donation-welcome {
+    display: none !important;
+  }
+
+  #bia-donation-page .bia-donation-hero-video {
+    display: none;
+  }
+
+  #bia-donation-page *,
+  #bia-donation-page *::before,
+  #bia-donation-page *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  #bia-donation-page.bia-donation-js .bia-donation-reveal,
+  #bia-donation-page.bia-donation-js .bia-donation-reveal.bia-donation-is-visible {
+    transform: none;
+    transition-duration: 100ms;
+  }
+
+  #bia-donation-page .bia-donation-hero-card-shell,
+  #bia-donation-page .bia-donation-ecard-wrap,
+  #bia-donation-page .bia-donation-ecard-stage,
+  #bia-donation-page .bia-donation-float-shape {
+    animation: none !important;
+    transform: none !important;
+  }
+}
