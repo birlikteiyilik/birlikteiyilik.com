@@ -10,17 +10,17 @@ Bu klasör, build sistemi veya harici JavaScript paketi gerektirmeyen bağımsı
 4. **Hero videosu:** `assets/hero-desktop.mp4`
 5. **Poster:** `assets/poster-desktop.jpg`
 
-Asset klasörü taşınırsa `index.html` içindeki `data-bia-donation-assets-root="assets"` değerini ve statik poster/video yollarını aynı yeni klasörle güncelleyin.
+Canlı Vercel sürümünde asset ve CSS/JS yolları `/bagis/` köküne sabitlenmiştir. Böylece mevcut `trailingSlash: false` ayarı `/bagis/` adresini `/bagis` biçimine yönlendirse bile tüm dosyalar doğru konumdan yüklenir.
 
 ## Yerelde açma
 
-En kolay yöntem `index.html` dosyasını çift tıklayarak tarayıcıda açmaktır. Paylaşım ve pano izinlerini gerçek site koşullarında test etmek için klasör içinde basit bir yerel sunucu da çalıştırabilirsiniz:
+Canlı entegrasyondaki `/bagis/` kök yollarını doğru test etmek için depo kökünde basit bir yerel sunucu çalıştırın:
 
 ```bash
 python3 -m http.server 8000
 ```
 
-Ardından `http://localhost:8000` adresini açın.
+Ardından `http://localhost:8000/bagis/` adresini açın. Doğrudan açılabilen bağımsız teslim paketi ayrıca proje çıktılarında korunur.
 
 ## GitHub Pages
 
