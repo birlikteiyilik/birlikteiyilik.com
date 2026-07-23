@@ -653,9 +653,40 @@ main.bia-support-journey-main {
     min-height: 520px;
   }
 
+  /*
+   * Kaynak video 16:9. Portre telefonda cover kullanmak görüntünün yaklaşık
+   * üçte ikisini keser; bu nedenle ana kareyi eksiksiz gösterip kalan alanı
+   * aynı posterin yumuşak, bulanık bir uzantısıyla dolduruyoruz.
+   */
+  .bia-support-journey-visual {
+    background: #b4976d;
+  }
+
+  .bia-support-journey-visual::before {
+    position: absolute;
+    z-index: 0;
+    inset: -28px;
+    content: "";
+    background:
+      linear-gradient(rgba(59, 36, 24, .18), rgba(59, 36, 24, .18)),
+      url("/assets/support-journey/support-journey-poster.jpg") center / cover no-repeat;
+    filter: blur(22px) saturate(.78);
+    transform: scale(1.08);
+  }
+
   .bia-support-journey-poster,
   .bia-support-journey-video {
-    object-position: var(--bia-support-video-position-mobile, var(--bia-support-video-position, 54% center));
+    top: 47%;
+    right: 0;
+    bottom: auto;
+    left: 0;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    object-fit: contain;
+    object-position: center;
+    transform: translate3d(0, -50%, 0);
+    box-shadow: 0 22px 54px rgba(54, 32, 20, .2);
   }
 
   .bia-support-journey-wash {

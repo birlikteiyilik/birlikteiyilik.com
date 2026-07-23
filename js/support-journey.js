@@ -63,6 +63,8 @@
   let currentScene = 1;
   let isPrimed = false;
   let isPriming = false;
+  let isInteractionUnlocked = false;
+  let isUnlocking = false;
   let loadRetryCount = 0;
   let primeFallbackTimer = 0;
 
@@ -169,7 +171,11 @@
       const playAttempt = video.play();
       if (playAttempt && typeof playAttempt.then === 'function') {
         playAttempt
-          .then(() => window.requestAnimationFrame(finishPrime))
+          .then(() => {
+            isInteractionUnlocked = true;
+            removeUnlockListeners();
+            window.requestAnimationFrame(finishPrime);
+          })
           .catch(finishPrime);
       } else {
         finishPrime();
@@ -178,6 +184,58 @@
       finishPrime();
     }
   };
+
+  function removeUnlockListeners() {
+    window.removeEventListener('wheel', unlockVideoFromGesture);
+    window.removeEventListener('touchstart', unlockVideoFromGesture);
+    window.removeEventListener('pointerdown', unlockVideoFromGesture);
+    window.removeEventListener('keydown', unlockVideoFromGesture);
+  }
+
+  function unlockVideoFromGesture() {
+    if (
+      !video
+      || reducedMotion.matches
+      || isInteractionUnlocked
+      || isUnlocking
+      || video.readyState < 2
+    ) return;
+
+    isUnlocking = true;
+    video.muted = true;
+    video.defaultMuted = true;
+
+    try {
+      const playAttempt = video.play();
+      if (playAttempt && typeof playAttempt.then === 'function') {
+        playAttempt
+          .then(() => {
+            isInteractionUnlocked = true;
+            isUnlocking = false;
+            video.pause();
+            isPrimed = true;
+            isPriming = false;
+            window.clearTimeout(primeFallbackTimer);
+            seekToTarget();
+            root.classList.remove('bia-support-journey-video-failed');
+            root.classList.add('bia-support-journey-video-ready');
+            removeUnlockListeners();
+          })
+          .catch(() => {
+            isUnlocking = false;
+            isPrimed = false;
+          });
+      } else {
+        isInteractionUnlocked = true;
+        isUnlocking = false;
+        finishPrime();
+        removeUnlockListeners();
+      }
+    } catch (_) {
+      isUnlocking = false;
+      isPrimed = false;
+    }
+  }
 
   const updateFromScroll = () => {
     scrollFrame = 0;
@@ -250,10 +308,15 @@
       root.classList.add('bia-support-journey-video-failed');
     });
 
-    window.addEventListener('wheel', primeVideo, { passive: true, once: true });
-    window.addEventListener('touchstart', primeVideo, { passive: true, once: true });
-    window.addEventListener('pointerdown', primeVideo, { passive: true, once: true });
-    window.addEventListener('keydown', primeVideo, { once: true });
+    /*
+     * iOS, autoplay reddedilmiş olsa bile ilk gerçek dokunuş sırasında play()
+     * çağrısına izin verir. Dinleyicileri başarıya kadar korumak mobil seek
+     * kilidinin poster karesinde kalmasını önler.
+     */
+    window.addEventListener('wheel', unlockVideoFromGesture, { passive: true });
+    window.addEventListener('touchstart', unlockVideoFromGesture, { passive: true });
+    window.addEventListener('pointerdown', unlockVideoFromGesture, { passive: true });
+    window.addEventListener('keydown', unlockVideoFromGesture);
   };
 
   const fallbackCopy = (text) => {
@@ -325,6 +388,7 @@
     video?.pause();
   } else {
     window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('touchmove', onScroll, { passive: true });
   }
 
   window.addEventListener('resize', measure, { passive: true });
