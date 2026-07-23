@@ -621,6 +621,17 @@
   border-color: rgba(216, 33, 62, 0.35);
 }
 
+.route-programs .program-card .card-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.route-programs .program-card .card-footer .btn {
+  min-height: 42px;
+}
+
 .route-program-details summary {
   display: inline-flex;
   list-style: none;

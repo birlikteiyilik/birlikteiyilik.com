@@ -190,6 +190,11 @@
             <p>{{ prog.duration }}</p>
             {% endif %}
           </details>
+          {% if prog.id == 'online-egitim' %}
+          <a href="{{ site.forms.online }}" class="btn btn-primary btn-sm" data-track="click_apply_online" target="_blank" rel="noopener">Online Eğitime Başvur</a>
+          {% elif prog.id == 'yuz-yuze-egitim' %}
+          <a href="{{ site.forms.yuz_yuze }}" class="btn btn-primary btn-sm" data-track="click_apply_face_to_face" target="_blank" rel="noopener">Yüz Yüze Eğitime Başvur</a>
+          {% endif %}
         </div>
       </div>
       {% endfor %}
