@@ -1,37 +1,38 @@
-# Birlikte İyilik Akademi — Bağış Daveti
+# Birlikte İyilik Akademi — Desteğin Yolculuğu
 
-Bu klasör, build sistemi veya harici JavaScript paketi gerektirmeyen bağımsız bir `/bagis/` microsite paketidir.
+`/bagis/` rotası, aynı alan adı altında çalışan ancak ana sitenin navbar, uygulama bandı ve footer bileşenlerinden bağımsız tam ekran bir video anlatısıdır.
 
-## Hızlı düzenleme
+## Ana dosyalar
 
-1. **Bağış bağlantısı:** `script.js` dosyasının başındaki `const DONATION_URL = "#";` satırından değiştirilir. Şu an `#` olduğu için bütün “Bağış Yap” kontrolleri banka bilgileri bölümüne gider.
-2. **Logo:** `assets/logo.png` şeffaf “b” sembolüdür. Yanındaki tek satır “Birlikte İyilik Akademi” yazısı `index.html` içinde metin olarak yer alır.
-3. **Karşılama videosu:** `assets/welcome-intro.mp4` — ilk açılışta tam ekran, sessiz oynar; bittiğinde ana sayfaya geçer.
-4. **Hero videosu:** `assets/hero-desktop.mp4`
-5. **Poster:** `assets/poster-desktop.jpg`
+- Kaynak şablon: `_src/templates/pages/bagis.html`
+- Kaynak stil: `_src/static/css/support-journey.css`
+- Kaynak JavaScript: `_src/static/js/support-journey.js`
+- Master video: `_src/static/assets/support-journey/support-journey-master.mp4`
+- İlk kare posteri: `_src/static/assets/support-journey/support-journey-poster.jpg`
+- Son kare görseli: `_src/static/assets/support-journey/support-journey-final.jpg`
 
-Canlı Vercel sürümünde asset ve CSS/JS yolları `/bagis/` köküne sabitlenmiştir. Böylece mevcut `trailingSlash: false` ayarı `/bagis/` adresini `/bagis` biçimine yönlendirse bile tüm dosyalar doğru konumdan yüklenir.
+Yayınlanan karşılıkları repo kökündeki `bagis/`, `css/`, `js/` ve `assets/support-journey/` klasörlerindedir.
 
-## Yerelde açma
+## İçerik ve zamanlama
 
-Canlı entegrasyondaki `/bagis/` kök yollarını doğru test etmek için depo kökünde basit bir yerel sunucu çalıştırın:
+Video-sahne zamanları, scroll yoğunlukları ve mobil kadraj konumları `support-journey.js` içindeki `timeline` dizisinden düzenlenir. Dokuzuncu sahne master videoda 2× hızlandırılmıştır; son geniş kare bağış panelinden önce bekletilir.
+
+Banka ve IBAN bilgileri `_src/templates/pages/bagis.html` içindeki banka panelindedir. Kopyalama işlemi erişilebilir bir canlı bildirimle doğrulanır.
+
+## Yerel kontrol
+
+Repo kökünde:
 
 ```bash
-python3 -m http.server 8000
+python3 -m http.server 8080
 ```
 
-Ardından `http://localhost:8000/bagis/` adresini açın. Doğrudan açılabilen bağımsız teslim paketi ayrıca proje çıktılarında korunur.
+Ardından `http://localhost:8080/bagis/` adresini açın.
 
-## GitHub Pages
+Şablonu yeniden üretmek için:
 
-- `bagis` klasörünü deponuza ekleyin.
-- GitHub’da **Settings → Pages** bölümünden yayınlanacak branch ve klasörü seçin.
-- Klasör korunursa sayfa `https://kullanici.github.io/depo/bagis/` altında çalışır.
+```bash
+python3 _src/build.py
+```
 
-## Vercel
-
-- Klasörü bir Git deposuna gönderip Vercel’e bağlayın veya Vercel panelinden klasörü içe aktarın.
-- Framework seçimini **Other** bırakın; build komutu gerekmez.
-- Projenin kökü bu klasörse yayın çıktısı `.` olarak kalabilir. Mevcut sitenin parçasıysa klasörü `/bagis/` altında koruyun.
-
-> Canlı yayına geçmeden önce bağış URL’sini, banka hesaplarını, iletişim ve gizlilik bağlantılarını kurumun güncel bilgileriyle doğrulayın.
+Vercel bu statik yapıyı build sistemi olmadan yayınlayabilir. GitHub Pages için repo kökü yayın kaynağı olarak seçilebilir.

@@ -1,0 +1,917 @@
+/* ============================================================
+   Birlikte İyilik Akademi — Desteğin Yolculuğu
+   Yalnızca /bagis/ deneyimine ait, çakışmasız stiller
+   ============================================================ */
+
+.bia-support-journey-body {
+  --bia-support-cream: #fff8eb;
+  --bia-support-cream-light: #fffdf7;
+  --bia-support-sand: #eedfc3;
+  --bia-support-green: #8d9b72;
+  --bia-support-deep-green: #556348;
+  --bia-support-red: #e20439;
+  --bia-support-red-dark: #b00030;
+  --bia-support-ink: #312d29;
+  --bia-support-muted: #6f675f;
+  width: 100%;
+  margin: 0;
+  overflow-x: hidden;
+  background: #211711;
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+main.bia-support-journey-main {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding-top: 0 !important;
+  overflow: clip;
+}
+
+.bia-support-journey-skip {
+  position: fixed;
+  z-index: 3000;
+  top: 12px;
+  left: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  color: #fff;
+  background: var(--bia-support-red);
+  font-size: .85rem;
+  font-weight: 700;
+  text-decoration: none;
+  transform: translateY(-160%);
+  transition: transform .15s ease;
+}
+
+.bia-support-journey-skip:focus {
+  transform: translateY(0);
+}
+
+.bia-support-journey-page,
+.bia-support-journey-page *,
+.bia-support-journey-page *::before,
+.bia-support-journey-page *::after {
+  box-sizing: border-box;
+}
+
+.bia-support-journey-page {
+  --bia-support-story-vh: 1458;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: calc((var(--bia-support-story-vh) * 1vh) + 100svh);
+  min-height: 100svh;
+  color: var(--bia-support-cream-light);
+  background: #211711;
+}
+
+.bia-support-journey-stage {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  height: 100svh;
+  min-height: 560px;
+  overflow: hidden;
+  isolation: isolate;
+  background: #d9bb8a;
+}
+
+.bia-support-journey-visual,
+.bia-support-journey-poster,
+.bia-support-journey-video,
+.bia-support-journey-wash,
+.bia-support-journey-vignette {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.bia-support-journey-poster,
+.bia-support-journey-video {
+  display: block;
+  object-fit: cover;
+  object-position: var(--bia-support-video-position, center center);
+}
+
+.bia-support-journey-poster {
+  z-index: 0;
+}
+
+.bia-support-journey-video {
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .55s ease;
+}
+
+.bia-support-journey-page.bia-support-journey-video-ready .bia-support-journey-video {
+  opacity: 1;
+}
+
+.bia-support-journey-wash {
+  z-index: 2;
+  background:
+    linear-gradient(180deg, rgba(42, 21, 15, .22) 0%, transparent 25%, transparent 66%, rgba(36, 19, 13, .42) 100%),
+    linear-gradient(90deg, rgba(43, 24, 17, .42) 0%, rgba(43, 24, 17, .08) 48%, rgba(43, 24, 17, .18) 100%);
+  transition: background .5s ease;
+}
+
+.bia-support-journey-vignette {
+  z-index: 3;
+  opacity: calc(.15 + (var(--bia-support-bank-progress, 0) * .65));
+  background:
+    radial-gradient(circle at 50% 42%, transparent 35%, rgba(27, 14, 10, .42) 100%),
+    linear-gradient(180deg, transparent 45%, rgba(34, 18, 13, .56) 100%);
+  transition: opacity .2s linear;
+}
+
+.bia-support-journey-intro {
+  position: absolute;
+  z-index: 6;
+  top: 50%;
+  left: clamp(24px, 8vw, 132px);
+  width: min(610px, calc(100% - 48px));
+  padding: clamp(24px, 4vw, 46px);
+  border: 1px solid rgba(255, 255, 255, .3);
+  border-radius: 30px;
+  color: var(--bia-support-cream-light);
+  background: linear-gradient(135deg, rgba(56, 34, 24, .66), rgba(56, 34, 24, .33));
+  box-shadow: 0 26px 70px rgba(43, 23, 16, .2);
+  backdrop-filter: blur(18px) saturate(115%);
+  -webkit-backdrop-filter: blur(18px) saturate(115%);
+  transform: translate3d(0, calc(-50% + var(--bia-support-intro-y, 0px)), 0);
+  opacity: var(--bia-support-intro-opacity, 1);
+  will-change: opacity, transform;
+}
+
+.bia-support-journey-intro::before,
+.bia-support-journey-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: .2;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.72' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.22'/%3E%3C/svg%3E");
+  mix-blend-mode: soft-light;
+}
+
+.bia-support-journey-eyebrow,
+.bia-support-journey-card-step,
+.bia-support-journey-bank-kicker {
+  margin: 0 0 12px;
+  color: #ffd7aa;
+  font-size: .72rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+.bia-support-journey-intro h1 {
+  max-width: 12ch;
+  margin: 0;
+  color: #fff;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: clamp(2.75rem, 6vw, 5.6rem);
+  font-weight: 700;
+  line-height: .98;
+  letter-spacing: -.035em;
+  text-wrap: balance;
+}
+
+.bia-support-journey-intro > p:not(.bia-support-journey-eyebrow) {
+  max-width: 58ch;
+  margin: 22px 0 0;
+  color: rgba(255, 253, 247, .9);
+  font-size: clamp(.98rem, 1.45vw, 1.15rem);
+  line-height: 1.7;
+}
+
+.bia-support-journey-scroll-cue {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 24px;
+  color: rgba(255, 255, 255, .82);
+  font-size: .78rem;
+  font-weight: 600;
+  letter-spacing: .06em;
+}
+
+.bia-support-journey-scroll-cue i {
+  position: relative;
+  width: 22px;
+  height: 34px;
+  border: 1px solid rgba(255, 255, 255, .62);
+  border-radius: 20px;
+}
+
+.bia-support-journey-scroll-cue i::after {
+  content: "";
+  position: absolute;
+  top: 7px;
+  left: 9px;
+  width: 3px;
+  height: 7px;
+  border-radius: 3px;
+  background: #fff;
+  animation: bia-support-journey-scroll 2s ease-in-out infinite;
+}
+
+.bia-support-journey-story {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  pointer-events: none;
+}
+
+.bia-support-journey-card {
+  position: absolute;
+  top: 49%;
+  width: min(430px, calc(100% - 48px));
+  padding: clamp(22px, 3vw, 34px);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, .46);
+  border-radius: 24px;
+  color: var(--bia-support-ink);
+  background: linear-gradient(140deg, rgba(255, 253, 247, .91), rgba(255, 248, 235, .78));
+  box-shadow: 0 24px 70px rgba(39, 24, 16, .17);
+  backdrop-filter: blur(16px) saturate(108%);
+  -webkit-backdrop-filter: blur(16px) saturate(108%);
+  opacity: var(--bia-support-card-opacity, 0);
+  transform: translate3d(var(--bia-support-card-x, 0), calc(-50% + var(--bia-support-card-y, 24px)), 0);
+  will-change: opacity, transform;
+}
+
+.bia-support-journey-card-left {
+  left: clamp(24px, 8vw, 132px);
+}
+
+.bia-support-journey-card-right {
+  right: clamp(24px, 8vw, 132px);
+}
+
+.bia-support-journey-card-low {
+  top: 62%;
+}
+
+.bia-support-journey-card-center {
+  top: auto;
+  bottom: clamp(72px, 10vh, 122px);
+  left: 50%;
+  width: min(630px, calc(100% - 48px));
+  text-align: center;
+  transform: translate3d(calc(-50% + var(--bia-support-card-x, 0px)), var(--bia-support-card-y, 24px), 0);
+}
+
+.bia-support-journey-card-step {
+  color: var(--bia-support-red);
+}
+
+.bia-support-journey-card h2 {
+  margin: 0;
+  color: var(--bia-support-ink);
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: clamp(1.7rem, 3vw, 2.65rem);
+  line-height: 1.08;
+  letter-spacing: -.025em;
+  text-wrap: balance;
+}
+
+.bia-support-journey-card > p:last-child {
+  max-width: 56ch;
+  margin: 14px 0 0;
+  color: var(--bia-support-muted);
+  font-size: clamp(.92rem, 1.3vw, 1.04rem);
+  line-height: 1.65;
+}
+
+.bia-support-journey-card-center > p:last-child {
+  margin-inline: auto;
+}
+
+.bia-support-journey-progress {
+  position: absolute;
+  z-index: 8;
+  right: clamp(18px, 3vw, 40px);
+  bottom: clamp(18px, 3vw, 34px);
+  display: grid;
+  grid-template-columns: auto minmax(90px, 14vw) auto;
+  align-items: center;
+  gap: 10px;
+  color: rgba(255, 255, 255, .76);
+  font-size: .67rem;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  opacity: calc(1 - var(--bia-support-bank-progress, 0));
+  transition: opacity .2s linear;
+}
+
+.bia-support-journey-progress-track {
+  position: relative;
+  display: block;
+  height: 2px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, .3);
+}
+
+.bia-support-journey-progress-track i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 100%;
+  background: #fff;
+  transform: scaleX(var(--bia-support-progress, 0));
+  transform-origin: left center;
+  will-change: transform;
+}
+
+.bia-support-journey-bank-panel {
+  position: absolute;
+  z-index: 10;
+  inset: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: clamp(28px, 4vh, 48px) 24px 28px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  color: var(--bia-support-ink);
+  background:
+    linear-gradient(180deg, rgba(255, 248, 235, .93), rgba(255, 253, 247, .98)),
+    url("/assets/support-journey/support-journey-final.jpg") center / cover no-repeat;
+  box-shadow: 0 -28px 90px rgba(42, 22, 15, .22);
+  opacity: var(--bia-support-bank-progress, 0);
+  pointer-events: none;
+  transform: translate3d(0, calc((1 - var(--bia-support-bank-progress, 0)) * 105%), 0);
+  will-change: opacity, transform;
+}
+
+.bia-support-journey-page.bia-support-journey-bank-active .bia-support-journey-bank-panel {
+  pointer-events: auto;
+}
+
+.bia-support-journey-bank-inner {
+  width: min(1180px, 100%);
+  margin: auto 0;
+}
+
+.bia-support-journey-bank-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(260px, .8fr);
+  column-gap: 44px;
+  align-items: end;
+  margin-bottom: clamp(20px, 3vh, 34px);
+}
+
+.bia-support-journey-bank-kicker {
+  grid-column: 1 / -1;
+  margin-bottom: 8px;
+  color: var(--bia-support-red);
+}
+
+.bia-support-journey-bank-header h2 {
+  margin: 0;
+  color: var(--bia-support-ink);
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: clamp(2rem, 4.5vw, 4.35rem);
+  line-height: 1;
+  letter-spacing: -.035em;
+}
+
+.bia-support-journey-bank-header > p:last-child {
+  max-width: 45ch;
+  margin: 0 0 4px;
+  color: var(--bia-support-muted);
+  font-size: .98rem;
+  line-height: 1.6;
+}
+
+.bia-support-journey-bank-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(270px, .75fr) minmax(270px, .75fr);
+  gap: 14px;
+}
+
+.bia-support-journey-bank-card {
+  min-width: 0;
+  padding: clamp(18px, 2.2vw, 28px);
+  border: 1px solid rgba(85, 99, 72, .18);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, .72);
+  box-shadow: 0 12px 34px rgba(87, 66, 43, .08);
+}
+
+.bia-support-journey-bank-card-featured {
+  grid-row: span 1;
+}
+
+.bia-support-journey-bank-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 32px;
+  color: #151515;
+}
+
+.bia-support-journey-bank-brand strong {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: clamp(1.15rem, 1.7vw, 1.48rem);
+  font-weight: 700;
+  letter-spacing: -.045em;
+  white-space: nowrap;
+}
+
+.bia-support-journey-bank-brand em {
+  color: #193f77;
+  font-style: normal;
+}
+
+.bia-support-journey-garanti-mark {
+  position: relative;
+  width: 29px;
+  height: 29px;
+  flex: 0 0 29px;
+}
+
+.bia-support-journey-garanti-mark i {
+  position: absolute;
+  left: 11px;
+  top: 2px;
+  width: 8px;
+  height: 13px;
+  border-radius: 90% 10% 90% 10%;
+  background: #178447;
+  transform-origin: 4px 12px;
+}
+
+.bia-support-journey-garanti-mark i:nth-child(2) { transform: rotate(90deg); }
+.bia-support-journey-garanti-mark i:nth-child(3) { transform: rotate(180deg); }
+.bia-support-journey-garanti-mark i:nth-child(4) { transform: rotate(270deg); }
+
+.bia-support-journey-finans-mark {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+}
+
+.bia-support-journey-finans-mark i {
+  position: absolute;
+  width: 12px;
+  height: 18px;
+  border-radius: 3px 10px 3px 10px;
+  background: #00a995;
+}
+
+.bia-support-journey-finans-mark i:nth-child(1) { left: 8px; top: 0; }
+.bia-support-journey-finans-mark i:nth-child(2) { left: 0; bottom: 0; transform: rotate(-50deg); }
+.bia-support-journey-finans-mark i:nth-child(3) { right: 0; bottom: 0; transform: rotate(50deg); }
+
+.bia-support-journey-vakif-mark {
+  display: grid;
+  width: 30px;
+  height: 24px;
+  place-items: center;
+  border-radius: 4px 12px 4px 12px;
+  color: #fff;
+  background: #f5ad00;
+  font-size: .8rem;
+  font-weight: 800;
+  transform: skewX(-12deg);
+}
+
+.bia-support-journey-vakif-brand strong {
+  font-style: italic;
+}
+
+.bia-support-journey-account-owner {
+  margin: 13px 0 3px;
+  color: var(--bia-support-ink);
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+}
+
+.bia-support-journey-branch {
+  min-height: 2.4em;
+  margin: 3px 0 12px;
+  color: var(--bia-support-muted);
+  font-size: .72rem;
+  line-height: 1.4;
+}
+
+.bia-support-journey-account-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 13px;
+}
+
+.bia-support-journey-account {
+  display: grid;
+  grid-template-columns: 78px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+  padding: 8px 0;
+  border-top: 1px solid rgba(85, 99, 72, .14);
+}
+
+.bia-support-journey-account-single {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.bia-support-journey-currency {
+  color: var(--bia-support-deep-green);
+  font-size: .68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.bia-support-journey-iban {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.bia-support-journey-iban small {
+  color: var(--bia-support-muted);
+  font-size: .58rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+}
+
+.bia-support-journey-iban strong {
+  overflow-wrap: anywhere;
+  color: var(--bia-support-ink);
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: clamp(.72rem, .9vw, .84rem);
+  font-weight: 650;
+  letter-spacing: .015em;
+}
+
+.bia-support-journey-copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 7px 10px;
+  border: 1px solid rgba(226, 4, 57, .24);
+  border-radius: 999px;
+  color: var(--bia-support-red-dark);
+  background: #fff;
+  font: inherit;
+  font-size: .68rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color .2s ease, background-color .2s ease, transform .2s ease;
+}
+
+.bia-support-journey-copy:hover {
+  color: #fff;
+  background: var(--bia-support-red);
+  transform: translateY(-1px);
+}
+
+.bia-support-journey-copy:focus-visible {
+  outline: 3px solid rgba(226, 4, 57, .3);
+  outline-offset: 3px;
+}
+
+.bia-support-journey-copy svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+}
+
+.bia-support-journey-bank-note {
+  margin: 14px 2px 0;
+  color: var(--bia-support-muted);
+  font-size: .68rem;
+  line-height: 1.5;
+}
+
+.bia-support-journey-toast {
+  position: fixed;
+  z-index: 2200;
+  left: 50%;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  padding: 11px 17px;
+  border-radius: 999px;
+  color: #fff;
+  background: var(--bia-support-deep-green);
+  box-shadow: 0 10px 34px rgba(28, 33, 24, .25);
+  font-size: .8rem;
+  font-weight: 700;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate3d(-50%, 12px, 0);
+  transition: opacity .22s ease, transform .22s ease;
+}
+
+.bia-support-journey-toast.bia-support-journey-toast-visible {
+  opacity: 1;
+  transform: translate3d(-50%, 0, 0);
+}
+
+@keyframes bia-support-journey-scroll {
+  0%, 100% { opacity: .25; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(9px); }
+}
+
+@media (max-width: 1080px) {
+  .bia-support-journey-intro,
+  .bia-support-journey-card-left {
+    left: clamp(22px, 5vw, 58px);
+  }
+
+  .bia-support-journey-card-right {
+    right: clamp(22px, 5vw, 58px);
+  }
+
+  .bia-support-journey-bank-grid {
+    grid-template-columns: minmax(0, 1.2fr) minmax(240px, .8fr);
+  }
+
+  .bia-support-journey-bank-card-featured {
+    grid-row: span 2;
+  }
+}
+
+@media (max-width: 760px) {
+  .bia-support-journey-stage {
+    min-height: 520px;
+  }
+
+  .bia-support-journey-poster,
+  .bia-support-journey-video {
+    object-position: var(--bia-support-video-position-mobile, var(--bia-support-video-position, 54% center));
+  }
+
+  .bia-support-journey-wash {
+    background:
+      linear-gradient(180deg, rgba(37, 19, 13, .4) 0%, rgba(37, 19, 13, .05) 35%, rgba(37, 19, 13, .16) 62%, rgba(34, 18, 13, .58) 100%);
+  }
+
+  .bia-support-journey-intro {
+    top: auto;
+    bottom: max(74px, calc(env(safe-area-inset-bottom) + 56px));
+    left: 5%;
+    width: 90%;
+    padding: 24px 22px;
+    border-radius: 24px;
+    transform: translate3d(0, var(--bia-support-intro-y, 0px), 0);
+  }
+
+  .bia-support-journey-intro h1 {
+    max-width: 10ch;
+    font-size: clamp(2.45rem, 12vw, 4.15rem);
+  }
+
+  .bia-support-journey-intro > p:not(.bia-support-journey-eyebrow) {
+    margin-top: 15px;
+    font-size: .92rem;
+    line-height: 1.55;
+  }
+
+  .bia-support-journey-scroll-cue {
+    margin-top: 16px;
+  }
+
+  .bia-support-journey-card,
+  .bia-support-journey-card-left,
+  .bia-support-journey-card-right,
+  .bia-support-journey-card-low,
+  .bia-support-journey-card-center {
+    top: auto;
+    right: auto;
+    bottom: max(72px, calc(env(safe-area-inset-bottom) + 58px));
+    left: 5%;
+    width: 90%;
+    padding: 22px;
+    border-radius: 22px;
+    text-align: left;
+    transform: translate3d(var(--bia-support-card-x, 0), var(--bia-support-card-y, 24px), 0);
+  }
+
+  .bia-support-journey-card h2 {
+    font-size: clamp(1.6rem, 8vw, 2.3rem);
+  }
+
+  .bia-support-journey-card > p:last-child,
+  .bia-support-journey-card-center > p:last-child {
+    margin: 11px 0 0;
+    font-size: .9rem;
+    line-height: 1.55;
+  }
+
+  .bia-support-journey-progress {
+    right: 5%;
+    bottom: max(22px, env(safe-area-inset-bottom));
+    grid-template-columns: minmax(82px, 23vw) auto;
+  }
+
+  .bia-support-journey-progress-label {
+    display: none;
+  }
+
+  .bia-support-journey-bank-panel {
+    padding: max(24px, env(safe-area-inset-top)) 14px max(22px, env(safe-area-inset-bottom));
+  }
+
+  .bia-support-journey-bank-inner {
+    margin: 0;
+  }
+
+  .bia-support-journey-bank-header {
+    display: block;
+    margin-bottom: 20px;
+  }
+
+  .bia-support-journey-bank-header h2 {
+    font-size: clamp(2.15rem, 11vw, 3.2rem);
+  }
+
+  .bia-support-journey-bank-header > p:last-child {
+    margin-top: 12px;
+    font-size: .88rem;
+  }
+
+  .bia-support-journey-bank-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .bia-support-journey-bank-card-featured {
+    grid-row: auto;
+  }
+
+  .bia-support-journey-account {
+    grid-template-columns: 66px minmax(0, 1fr) 38px;
+    gap: 7px;
+  }
+
+  .bia-support-journey-account-single {
+    grid-template-columns: minmax(0, 1fr) 38px;
+  }
+
+  .bia-support-journey-copy {
+    width: 38px;
+    min-height: 38px;
+    padding: 0;
+  }
+
+  .bia-support-journey-copy span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 420px) {
+  .bia-support-journey-eyebrow {
+    margin-bottom: 8px;
+  }
+
+  .bia-support-journey-intro {
+    padding: 20px;
+  }
+
+  .bia-support-journey-scroll-cue i {
+    width: 20px;
+    height: 30px;
+  }
+
+  .bia-support-journey-bank-card {
+    padding: 17px 15px;
+  }
+
+  .bia-support-journey-currency {
+    font-size: .61rem;
+  }
+
+  .bia-support-journey-iban strong {
+    font-size: .67rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bia-support-journey-page {
+    height: auto !important;
+    min-height: 0;
+    color: var(--bia-support-ink);
+    background: var(--bia-support-cream-light);
+  }
+
+  .bia-support-journey-stage {
+    position: relative;
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+    background: var(--bia-support-cream-light);
+  }
+
+  .bia-support-journey-visual {
+    position: relative;
+    height: min(78svh, 720px);
+    min-height: 520px;
+  }
+
+  .bia-support-journey-video {
+    display: none;
+  }
+
+  .bia-support-journey-wash,
+  .bia-support-journey-vignette {
+    position: absolute;
+  }
+
+  .bia-support-journey-intro {
+    opacity: 1 !important;
+    transform: translate3d(0, -50%, 0) !important;
+  }
+
+  .bia-support-journey-story {
+    position: relative;
+    display: grid;
+    gap: 16px;
+    padding: 54px max(5%, 20px);
+    color: var(--bia-support-ink);
+    background: var(--bia-support-cream-light);
+    pointer-events: auto;
+  }
+
+  .bia-support-journey-card,
+  .bia-support-journey-card-left,
+  .bia-support-journey-card-right,
+  .bia-support-journey-card-low,
+  .bia-support-journey-card-center {
+    position: relative;
+    inset: auto;
+    width: min(720px, 100%);
+    margin: 0 auto;
+    text-align: left;
+    opacity: 1 !important;
+    transform: none !important;
+    box-shadow: 0 12px 36px rgba(70, 55, 38, .08);
+  }
+
+  .bia-support-journey-card-center > p:last-child {
+    margin-inline: 0;
+  }
+
+  .bia-support-journey-progress {
+    display: none;
+  }
+
+  .bia-support-journey-bank-panel {
+    position: relative;
+    inset: auto;
+    min-height: 0;
+    overflow: visible;
+    opacity: 1 !important;
+    pointer-events: auto;
+    transform: none !important;
+  }
+
+  .bia-support-journey-scroll-cue {
+    display: none;
+  }
+
+  .bia-support-journey-scroll-cue i::after {
+    animation: none;
+  }
+
+  .bia-support-journey-video,
+  .bia-support-journey-toast,
+  .bia-support-journey-copy {
+    transition-duration: .01ms !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) and (max-width: 760px) {
+  .bia-support-journey-visual {
+    height: 78svh;
+    min-height: 560px;
+  }
+
+  .bia-support-journey-intro {
+    transform: none !important;
+  }
+
+  .bia-support-journey-bank-panel {
+    padding-top: 48px;
+  }
+}
