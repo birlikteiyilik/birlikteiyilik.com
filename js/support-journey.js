@@ -58,10 +58,13 @@
   let pageTop = 0;
   let vhPx = window.innerHeight / 100;
   let targetTime = 0.01;
-  let animationFrame = 0;
   let scrollFrame = 0;
   let toastTimer = 0;
   let currentScene = 1;
+  let isPrimed = false;
+  let isPriming = false;
+  let loadRetryCount = 0;
+  let primeFallbackTimer = 0;
 
   const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
   const easeOutCubic = (value) => 1 - Math.pow(1 - value, 3);
@@ -125,27 +128,55 @@
     }
   };
 
-  const scrub = () => {
-    animationFrame = 0;
-    if (!video || reducedMotion.matches || video.readyState < 1) return;
-
+  const seekToTarget = () => {
+    if (!video || reducedMotion.matches || video.readyState < 1) return false;
     const durationLimit = Number.isFinite(video.duration) ? Math.max(video.duration - 0.04, 0.01) : 54.04;
     const safeTarget = clamp(targetTime, 0.01, durationLimit);
-    const difference = safeTarget - video.currentTime;
+    if (Math.abs(safeTarget - video.currentTime) < 0.008) return true;
 
-    if (Math.abs(difference) < 0.018) {
-      if (Math.abs(difference) > 0.002) video.currentTime = safeTarget;
-      return;
+    try {
+      /*
+       * Scroll konumu doğrudan video zamanına yazılır. Aynı hesap negatif
+       * scroll yönünde de çalıştığı için video doğal biçimde geriye akar.
+       */
+      video.currentTime = safeTarget;
+      return true;
+    } catch (_) {
+      return false;
     }
-
-    const gain = Math.abs(difference) > 1.2 ? 0.28 : 0.16;
-    video.currentTime += difference * gain;
-    animationFrame = window.requestAnimationFrame(scrub);
   };
 
-  const requestScrub = () => {
-    if (animationFrame) window.cancelAnimationFrame(animationFrame);
-    animationFrame = window.requestAnimationFrame(scrub);
+  const finishPrime = () => {
+    if (!video) return;
+    if (isPrimed && !isPriming) return;
+    window.clearTimeout(primeFallbackTimer);
+    video.pause();
+    isPrimed = true;
+    isPriming = false;
+    seekToTarget();
+    root.classList.remove('bia-support-journey-video-failed');
+    root.classList.add('bia-support-journey-video-ready');
+  };
+
+  const primeVideo = () => {
+    if (!video || reducedMotion.matches || isPrimed || isPriming || video.readyState < 2) return;
+    isPriming = true;
+    video.muted = true;
+    video.defaultMuted = true;
+    primeFallbackTimer = window.setTimeout(finishPrime, 350);
+
+    try {
+      const playAttempt = video.play();
+      if (playAttempt && typeof playAttempt.then === 'function') {
+        playAttempt
+          .then(() => window.requestAnimationFrame(finishPrime))
+          .catch(finishPrime);
+      } else {
+        finishPrime();
+      }
+    } catch (_) {
+      finishPrime();
+    }
   };
 
   const updateFromScroll = () => {
@@ -166,19 +197,8 @@
       progressBar.style.setProperty('--bia-support-progress', progress.toFixed(4));
     }
 
-    if (video && video.readyState >= 1) {
-      const durationLimit = Number.isFinite(video.duration) ? Math.max(video.duration - 0.04, 0.01) : 54.04;
-      const safeTarget = clamp(targetTime, 0.01, durationLimit);
-      /*
-       * Büyük scroll sıçramalarında doğrudan seek, küçük farklarda ise
-       * yumuşatılmış rAF takibi kullanılır. Bu yaklaşım ters yönde de çalışır.
-       */
-      if (Math.abs(safeTarget - video.currentTime) > 0.34) {
-        video.currentTime = safeTarget;
-      } else {
-        requestScrub();
-      }
-    }
+    if (!isPrimed) primeVideo();
+    seekToTarget();
   };
 
   const onScroll = () => {
@@ -188,32 +208,52 @@
   const setupVideo = () => {
     if (!video) return;
 
+    video.muted = true;
+    video.defaultMuted = true;
     video.pause();
-    video.addEventListener('play', () => video.pause());
 
     const initializeVideoTime = () => {
-      try {
-        video.currentTime = clamp(targetTime, 0.01, Math.max(video.duration - 0.04, 0.01));
-      } catch (_) {
-        // Bazı mobil tarayıcılar ilk kullanıcı etkileşimine kadar seek işlemini erteler.
-      }
       updateFromScroll();
+      primeVideo();
     };
 
     const markVideoReady = () => {
+      root.classList.remove('bia-support-journey-video-failed');
       root.classList.add('bia-support-journey-video-ready');
     };
 
     if (video.readyState >= 1) initializeVideoTime();
     else video.addEventListener('loadedmetadata', initializeVideoTime, { once: true });
 
-    if (video.readyState >= 2) markVideoReady();
-    else video.addEventListener('loadeddata', markVideoReady, { once: true });
+    if (video.readyState >= 2) {
+      primeVideo();
+    } else {
+      video.addEventListener('loadeddata', () => {
+        primeVideo();
+        seekToTarget();
+      }, { once: true });
+    }
+
+    video.addEventListener('seeked', markVideoReady);
 
     video.addEventListener('error', () => {
+      if (loadRetryCount < 1 && video.error?.code !== 4) {
+        loadRetryCount += 1;
+        isPrimed = false;
+        isPriming = false;
+        window.setTimeout(() => {
+          video.load();
+        }, 250);
+        return;
+      }
+
       root.classList.add('bia-support-journey-video-failed');
-      root.classList.remove('bia-support-journey-video-ready');
-    }, { once: true });
+    });
+
+    window.addEventListener('wheel', primeVideo, { passive: true, once: true });
+    window.addEventListener('touchstart', primeVideo, { passive: true, once: true });
+    window.addEventListener('pointerdown', primeVideo, { passive: true, once: true });
+    window.addEventListener('keydown', primeVideo, { once: true });
   };
 
   const fallbackCopy = (text) => {
@@ -263,8 +303,6 @@
 
   reducedMotion.addEventListener?.('change', () => {
     if (reducedMotion.matches) {
-      window.cancelAnimationFrame(animationFrame);
-      animationFrame = 0;
       video?.pause();
       root.classList.add('bia-support-journey-reduced');
     } else {
@@ -275,10 +313,9 @@
 
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
-      window.cancelAnimationFrame(animationFrame);
-      animationFrame = 0;
       video?.pause();
     } else {
+      isPrimed = false;
       updateFromScroll();
     }
   });
