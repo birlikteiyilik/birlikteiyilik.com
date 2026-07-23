@@ -18,6 +18,8 @@
   const toast = root.querySelector('[data-bia-support-toast]');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const mobilePlayback = window.matchMedia('(max-width: 760px)');
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
   /*
    * İlk sekiz sahne %15 hızlandırıldı. Dokuzuncu sahne, talep edilen
@@ -85,6 +87,7 @@
   let isUnlocking = false;
   let loadRetryCount = 0;
   let primeFallbackTimer = 0;
+  let iosPauseTimer = 0;
 
   const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
   const easeOutCubic = (value) => 1 - Math.pow(1 - value, 3);
@@ -158,13 +161,36 @@
       /*
        * Scroll konumu doğrudan video zamanına yazılır. Aynı hesap negatif
        * scroll yönünde de çalıştığı için video doğal biçimde geriye akar.
-       */
+      */
       video.currentTime = safeTarget;
+      pumpIOSFrame();
       return true;
     } catch (_) {
       return false;
     }
   };
+
+  function pumpIOSFrame() {
+    if (!isIOS || !isInteractionUnlocked || reducedMotion.matches || !video) return;
+
+    window.clearTimeout(iosPauseTimer);
+
+    try {
+      const playAttempt = video.play();
+      playAttempt?.catch?.(() => {});
+    } catch (_) {
+      return;
+    }
+
+    /*
+     * iOS Safari duraklatılmış videoda seek edilen kareyi her zaman boyamaz.
+     * Çok kısa oynatma aralığı kareyi compositor'a taşır; scroll durunca video
+     * tekrar durur ve hedef zamanda kalır.
+     */
+    iosPauseTimer = window.setTimeout(() => {
+      video.pause();
+    }, 140);
+  }
 
   const finishPrime = () => {
     if (!video) return;
@@ -216,12 +242,19 @@
       || reducedMotion.matches
       || isInteractionUnlocked
       || isUnlocking
-      || video.readyState < 2
     ) return;
 
     isUnlocking = true;
     video.muted = true;
     video.defaultMuted = true;
+
+    if (video.readyState === 0) {
+      try {
+        video.load();
+      } catch (_) {
+        // play() çağrısı yüklemeyi yeniden deneyecek.
+      }
+    }
 
     try {
       const playAttempt = video.play();
@@ -230,11 +263,11 @@
           .then(() => {
             isInteractionUnlocked = true;
             isUnlocking = false;
-            video.pause();
             isPrimed = true;
             isPriming = false;
             window.clearTimeout(primeFallbackTimer);
             seekToTarget();
+            if (!isIOS) video.pause();
             root.classList.remove('bia-support-journey-video-failed');
             root.classList.add('bia-support-journey-video-ready');
             removeUnlockListeners();
