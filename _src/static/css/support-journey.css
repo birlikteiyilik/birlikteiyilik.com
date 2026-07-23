@@ -89,6 +89,15 @@ main.bia-support-journey-main {
   height: 100%;
 }
 
+.bia-support-journey-poster-shell {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 .bia-support-journey-poster,
 .bia-support-journey-video {
   display: block;
@@ -653,40 +662,10 @@ main.bia-support-journey-main {
     min-height: 520px;
   }
 
-  /*
-   * Kaynak video 16:9. Portre telefonda cover kullanmak görüntünün yaklaşık
-   * üçte ikisini keser; bu nedenle ana kareyi eksiksiz gösterip kalan alanı
-   * aynı posterin yumuşak, bulanık bir uzantısıyla dolduruyoruz.
-   */
-  .bia-support-journey-visual {
-    background: #b4976d;
-  }
-
-  .bia-support-journey-visual::before {
-    position: absolute;
-    z-index: 0;
-    inset: -28px;
-    content: "";
-    background:
-      linear-gradient(rgba(59, 36, 24, .18), rgba(59, 36, 24, .18)),
-      url("/assets/support-journey/support-journey-poster.jpg") center / cover no-repeat;
-    filter: blur(22px) saturate(.78);
-    transform: scale(1.08);
-  }
-
   .bia-support-journey-poster,
   .bia-support-journey-video {
-    top: 47%;
-    right: 0;
-    bottom: auto;
-    left: 0;
-    width: 100%;
-    height: auto;
-    aspect-ratio: 16 / 9;
-    object-fit: contain;
+    object-fit: cover;
     object-position: center;
-    transform: translate3d(0, -50%, 0);
-    box-shadow: 0 22px 54px rgba(54, 32, 20, .2);
   }
 
   .bia-support-journey-wash {
@@ -736,7 +715,7 @@ main.bia-support-journey-main {
   }
 
   .bia-support-journey-card h2 {
-    font-size: clamp(1.6rem, 8vw, 2.3rem);
+    font-size: clamp(1.5rem, 6.8vw, 2rem);
   }
 
   .bia-support-journey-card > p:last-child,
@@ -744,6 +723,13 @@ main.bia-support-journey-main {
     margin: 11px 0 0;
     font-size: .9rem;
     line-height: 1.55;
+  }
+
+  .bia-support-journey-card[data-bia-support-card="3"],
+  .bia-support-journey-card[data-bia-support-card="4"],
+  .bia-support-journey-card[data-bia-support-card="5"] {
+    top: max(68px, calc(env(safe-area-inset-top) + 44px));
+    bottom: auto;
   }
 
   .bia-support-journey-progress {
@@ -758,6 +744,9 @@ main.bia-support-journey-main {
 
   .bia-support-journey-bank-panel {
     padding: max(24px, env(safe-area-inset-top)) 14px max(22px, env(safe-area-inset-bottom));
+    background:
+      linear-gradient(180deg, rgba(255, 248, 235, .93), rgba(255, 253, 247, .98)),
+      url("/assets/support-journey/support-journey-mobile-final.jpg") center / cover no-repeat;
   }
 
   .bia-support-journey-bank-inner {

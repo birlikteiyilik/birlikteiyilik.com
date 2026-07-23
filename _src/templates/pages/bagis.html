@@ -18,8 +18,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="preload" href="/assets/support-journey/support-journey-poster.jpg" as="image" fetchpriority="high">
-  <link rel="stylesheet" href="/css/support-journey.css?v=20260723c">
+  <link rel="preload" href="/assets/support-journey/support-journey-mobile-poster.jpg" as="image" media="(max-width: 760px)" fetchpriority="high">
+  <link rel="preload" href="/assets/support-journey/support-journey-poster.jpg" as="image" media="(min-width: 761px)" fetchpriority="high">
+  <link rel="stylesheet" href="/css/support-journey.css?v=20260723d">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -45,14 +46,17 @@
 >
   <div class="bia-support-journey-stage">
     <div class="bia-support-journey-visual" aria-hidden="true">
-      <img
-        class="bia-support-journey-poster"
-        src="/assets/support-journey/support-journey-poster.jpg"
-        alt=""
-        width="1280"
-        height="720"
-        fetchpriority="high"
-      >
+      <picture class="bia-support-journey-poster-shell">
+        <source media="(max-width: 760px)" srcset="/assets/support-journey/support-journey-mobile-poster.jpg">
+        <img
+          class="bia-support-journey-poster"
+          src="/assets/support-journey/support-journey-poster.jpg"
+          alt=""
+          width="1280"
+          height="720"
+          fetchpriority="high"
+        >
+      </picture>
       <video
         class="bia-support-journey-video"
         muted
@@ -64,6 +68,7 @@
         poster="/assets/support-journey/support-journey-poster.jpg"
         tabindex="-1"
       >
+        <source media="(max-width: 760px)" src="/assets/support-journey/support-journey-mobile.mp4" type="video/mp4">
         <source src="/assets/support-journey/support-journey-master.mp4" type="video/mp4">
       </video>
       <div class="bia-support-journey-wash"></div>
@@ -209,6 +214,6 @@
   </div>
 </section>
 </main>
-<script src="/js/support-journey.js?v=20260723c" defer></script>
+<script src="/js/support-journey.js?v=20260723d" defer></script>
 </body>
 </html>

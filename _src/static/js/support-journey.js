@@ -17,12 +17,13 @@
   const copyButtons = [...root.querySelectorAll('[data-bia-support-copy]')];
   const toast = root.querySelector('[data-bia-support-toast]');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const mobilePlayback = window.matchMedia('(max-width: 760px)');
 
   /*
    * İlk sekiz sahne %15 hızlandırıldı. Dokuzuncu sahne, talep edilen
-   * hızlı topluluk açılımı için master videoda 2× hızlandırıldı.
+   * hızlı topluluk açılımı için her iki master videoda 2× hızlandırıldı.
    */
-  const timeline = [
+  const desktopTimeline = [
     { from: 0.00, to: 6.58, scrollVh: 150, scene: 1, desktop: '50% center', mobile: '50% center' },
     { from: 6.58, to: 13.06, scrollVh: 155, scene: 2, desktop: '50% center', mobile: '50% center' },
     { from: 13.06, to: 19.54, scrollVh: 155, scene: 3, desktop: '50% center', mobile: '52% center' },
@@ -35,6 +36,23 @@
     { from: 54.04, to: 54.04, scrollVh: 70, scene: 9, desktop: '50% center', mobile: '50% center', phase: 'final-hold' },
     { from: 54.04, to: 54.04, scrollVh: 140, scene: 9, desktop: '50% center', mobile: '50% center', phase: 'bank' }
   ];
+
+  const mobileTimeline = [
+    { from: 0.00, to: 6.96, scrollVh: 150, scene: 1, desktop: '50% center', mobile: '50% center' },
+    { from: 6.96, to: 13.91, scrollVh: 155, scene: 2, desktop: '50% center', mobile: '50% center' },
+    { from: 13.91, to: 20.87, scrollVh: 155, scene: 3, desktop: '50% center', mobile: '50% center' },
+    { from: 20.87, to: 27.83, scrollVh: 155, scene: 4, desktop: '50% center', mobile: '50% center' },
+    { from: 27.83, to: 34.78, scrollVh: 135, scene: 5, desktop: '50% center', mobile: '50% center' },
+    { from: 34.78, to: 41.74, scrollVh: 145, scene: 6, desktop: '50% center', mobile: '50% center' },
+    { from: 41.74, to: 48.70, scrollVh: 145, scene: 7, desktop: '50% center', mobile: '50% center' },
+    { from: 48.70, to: 55.65, scrollVh: 160, scene: 8, desktop: '50% center', mobile: '50% center' },
+    { from: 55.65, to: 59.62, scrollVh: 48, scene: 9, desktop: '50% center', mobile: '50% center', phase: 'fast-final' },
+    { from: 59.62, to: 59.62, scrollVh: 70, scene: 9, desktop: '50% center', mobile: '50% center', phase: 'final-hold' },
+    { from: 59.62, to: 59.62, scrollVh: 140, scene: 9, desktop: '50% center', mobile: '50% center', phase: 'bank' }
+  ];
+
+  const timeline = mobilePlayback.matches ? mobileTimeline : desktopTimeline;
+  const timelineDuration = timeline[8].to;
 
   const cardWindows = [
     { start: 92, end: 280 },
@@ -132,7 +150,7 @@
 
   const seekToTarget = () => {
     if (!video || reducedMotion.matches || video.readyState < 1) return false;
-    const durationLimit = Number.isFinite(video.duration) ? Math.max(video.duration - 0.04, 0.01) : 54.04;
+    const durationLimit = Number.isFinite(video.duration) ? Math.max(video.duration - 0.04, 0.01) : timelineDuration;
     const safeTarget = clamp(targetTime, 0.01, durationLimit);
     if (Math.abs(safeTarget - video.currentTime) < 0.008) return true;
 
