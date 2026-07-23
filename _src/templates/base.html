@@ -58,7 +58,7 @@
   <div id="appBanner" class="app-banner" role="banner" aria-label="Uygulama indirme bandı">
     <div class="app-banner-inner">
       <div class="app-banner-logo">
-        <img src="/images/logo_icon_white.png" alt="" class="app-banner-logo-icon" aria-hidden="true">
+        <img src="/images/logo_icon.png" alt="" class="app-banner-logo-icon" aria-hidden="true">
         <span class="app-banner-logo-text">BİRLİKTE İYİLİK AKADEMİ</span>
       </div>
       <span class="app-banner-sep" aria-hidden="true"></span>
@@ -77,25 +77,27 @@
     </div>
   </div>
   <style>
-  .app-banner{background:#E20439;color:#fff;padding:9px 0;position:fixed;top:0;left:0;right:0;z-index:2000;border-bottom:1px solid rgba(0,0,0,0.12);}
+  .app-banner{background:linear-gradient(110deg,#fff9ed 0%,#f5e3bd 46%,#fff9ed 58%,#f8ecd4 100%);background-size:220% 100%;color:#102f4f;padding:9px 0;position:fixed;top:0;left:0;right:0;z-index:2000;border-bottom:1px solid rgba(171,23,48,.16);box-shadow:0 4px 18px rgba(68,48,22,.08);animation:appBannerGlow 8s ease-in-out infinite;}
   .app-banner-inner{max-width:1200px;margin:0 auto;padding:0 20px;display:flex;align-items:center;gap:16px;flex-wrap:nowrap;}
   .app-banner-logo{display:flex;align-items:center;gap:10px;flex-shrink:0;}
   .app-banner-logo-icon{width:34px;height:34px;object-fit:contain;}
-  .app-banner-logo-text{font-family:'Inter',sans-serif;font-size:.82rem;font-weight:700;letter-spacing:.06em;color:#fff;white-space:nowrap;text-transform:uppercase;}
-  .app-banner-sep{width:1px;height:22px;background:rgba(255,255,255,0.35);flex-shrink:0;}
+  .app-banner-logo-text{font-family:'Inter',sans-serif;font-size:.82rem;font-weight:700;letter-spacing:.06em;color:#102f4f;white-space:nowrap;text-transform:uppercase;}
+  .app-banner-sep{width:1px;height:22px;background:rgba(171,23,48,.25);flex-shrink:0;}
   .app-banner-tagline{font-size:.8rem;opacity:.9;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .app-banner-btns{display:flex;gap:8px;flex-shrink:0;margin-left:auto;}
   .app-banner-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:20px;font-size:.78rem;font-weight:600;text-decoration:none;transition:opacity .2s,transform .1s;white-space:nowrap;}
   .app-banner-btn:hover{opacity:.9;transform:translateY(-1px);}
-  .app-banner-btn-gp{background:#fff;color:#E20439;}
-  .app-banner-btn-as{background:rgba(255,255,255,0.15);color:#fff;border:1.5px solid rgba(255,255,255,0.55);}
-  .app-banner-close{background:none;border:none;color:rgba(255,255,255,0.65);font-size:1.4rem;cursor:pointer;padding:0 2px;margin-left:8px;flex-shrink:0;line-height:1;transition:color .2s;}
-  .app-banner-close:hover{color:#fff;}
+  .app-banner-btn-gp{background:#c91f3a;color:#fff;box-shadow:0 5px 15px rgba(171,23,48,.16);}
+  .app-banner-btn-as{background:#fff;color:#102f4f;border:1.5px solid rgba(16,47,79,.22);}
+  .app-banner-close{background:none;border:none;color:rgba(16,47,79,.55);font-size:1.4rem;cursor:pointer;padding:0 2px;margin-left:8px;flex-shrink:0;line-height:1;transition:color .2s;}
+  .app-banner-close:hover{color:#ab1730;}
+  @keyframes appBannerGlow{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
   @media(max-width:700px){
     .app-banner-sep,.app-banner-tagline{display:none;}
     .app-banner-logo-text{font-size:.72rem;}
     .app-banner-btn{padding:5px 10px;font-size:.72rem;}
   }
+  @media(prefers-reduced-motion:reduce){.app-banner{animation:none;}}
   </style>
   <script>
   (function(){
