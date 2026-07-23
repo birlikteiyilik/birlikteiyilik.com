@@ -970,6 +970,28 @@
     margin-top: 0;
   }
 
+  .route-model-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .route-model-card:last-child {
+    grid-column: auto;
+    display: block;
+  }
+
+  .route-model-card:last-child .route-model-art {
+    height: auto;
+    aspect-ratio: 4 / 3;
+  }
+
+  .route-model-card:last-child .route-model-body {
+    display: block;
+  }
+
+  .route-model-card p {
+    min-height: 0;
+  }
+
   .values-journey {
     padding-bottom: 76px;
   }

@@ -50,7 +50,6 @@
       <p>{{ homepage.hero.subtitle }}</p>
       <div class="values-hero-cta">
         <a href="#degerler-rotasi" class="btn route-btn route-btn-primary">Rotayı Keşfet <span aria-hidden="true">→</span></a>
-        <a href="{{ homepage.hero.cta1.url }}" class="btn route-btn route-btn-secondary" data-track="click_apply_online" target="_blank" rel="noopener">Başvuru Yap</a>
       </div>
       <ul class="hero-trust-list" aria-label="Eğitim yaklaşımımız">
         <li>Güzel Ahlak</li>
@@ -83,7 +82,7 @@
           <span class="route-model-kicker">Esnek ve erişilebilir</span>
           <h3>Online Eğitim</h3>
           <p>Canlı dersler, düzenli takip ve evden güvenli katılımla değerler eğitimi.</p>
-          <a href="#programlar" class="route-card-link">Programı incele <span aria-hidden="true">→</span></a>
+          <a href="{{ site.forms.online }}" class="btn btn-primary btn-sm" data-track="click_apply_online" target="_blank" rel="noopener">Online Eğitime Başvur</a>
         </div>
       </article>
 
@@ -96,7 +95,7 @@
           <span class="route-model-kicker">Birlikte ve yaşayarak</span>
           <h3>Yüz Yüze Eğitim</h3>
           <p>Yaş grubuna uygun sınıflarda etkinlik, sohbet ve örneklerle kalıcı öğrenme.</p>
-          <a href="#programlar" class="route-card-link">Programı incele <span aria-hidden="true">→</span></a>
+          <a href="{{ site.forms.yuz_yuze }}" class="btn btn-primary btn-sm" data-track="click_apply_face_to_face" target="_blank" rel="noopener">Yüz Yüze Eğitime Başvur</a>
         </div>
       </article>
 
