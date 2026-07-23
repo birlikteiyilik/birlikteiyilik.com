@@ -2,6 +2,12 @@
 
 {% block title %}{{ site.title }} | {{ site.tagline }}{% endblock %}
 {% block description %}{{ site.description }}{% endblock %}
+{% block body_attrs %} class="route-home"{% endblock %}
+
+{% block head_extra %}
+<link rel="preload" as="image" href="/images/degerler-rotasi/v1/hero-values-route-students-v1.webp" fetchpriority="high">
+<link rel="stylesheet" href="/css/degerler-rotasi.css?v=2">
+{% endblock %}
 
 {% block schema %}
 <script type="application/ld+json">
@@ -30,89 +36,173 @@
 
 {% block content %}
 
-<!-- 1. HERO -->
-<section class="hero" id="hero">
-  <div class="hero-content">
-    <img src="/images/logo_hero.png" alt="" class="hero-logo" aria-hidden="true">
-    <img src="/images/slogan.png" alt="Degerler Egitimi" class="hero-slogan">
-    <h1>{{ homepage.hero.title }}</h1>
-    <p>{{ homepage.hero.subtitle }}</p>
-    <div class="hero-cta">
-      <a href="{{ homepage.hero.cta1.url }}" class="btn btn-white btn-lg" data-track="click_apply_online" target="_blank" rel="noopener">{{ homepage.hero.cta1.label }}</a>
-      <a href="{{ homepage.hero.cta2.url }}" class="btn btn-ghost btn-lg" data-track="click_apply_inperson" target="_blank" rel="noopener">{{ homepage.hero.cta2.label }}</a>
+<!-- 1. DEĞERLER ROTASI HERO -->
+<section class="values-hero" id="hero">
+  <picture class="values-hero-art" aria-hidden="true">
+    <source srcset="/images/degerler-rotasi/v1/hero-values-route-students-v1.webp" type="image/webp">
+    <img src="/images/degerler-rotasi/v1/hero-values-route-students-v1.png" alt="" width="1672" height="941" fetchpriority="high">
+  </picture>
+  <div class="values-hero-wash" aria-hidden="true"></div>
+  <div class="container values-hero-inner">
+    <div class="values-hero-copy">
+      <span class="route-eyebrow">Birlikte İyilik Akademi</span>
+      <h1>{{ homepage.hero.title }}</h1>
+      <p>{{ homepage.hero.subtitle }}</p>
+      <div class="values-hero-cta">
+        <a href="#degerler-rotasi" class="btn route-btn route-btn-primary">Rotayı Keşfet <span aria-hidden="true">→</span></a>
+        <a href="{{ homepage.hero.cta1.url }}" class="btn route-btn route-btn-secondary" data-track="click_apply_online" target="_blank" rel="noopener">Başvuru Yap</a>
+      </div>
+      <ul class="hero-trust-list" aria-label="Eğitim yaklaşımımız">
+        <li>Güzel Ahlak</li>
+        <li>Kur'an-ı Kerim</li>
+        <li>Aile İş Birliği</li>
+      </ul>
+    </div>
+  </div>
+  <a class="hero-scroll-cue" href="#egitim-modelleri">
+    <span>Yolculuğa başla</span>
+    <i aria-hidden="true"></i>
+  </a>
+</section>
+
+<!-- 2. EĞİTİM MODELİ KARTLARI -->
+<section class="section route-models" id="egitim-modelleri">
+  <div class="container">
+    <div class="route-section-heading">
+      <span class="route-eyebrow">Eğitim Yolunu Seç</span>
+      <h2>Çocuğunuz için doğru başlangıç</h2>
+      <p>Online eğitim, yüz yüze buluşmalar ve aile–öğretmen iş birliği aynı değer odaklı yaklaşımda birleşir.</p>
+    </div>
+    <div class="route-model-grid">
+      <article class="route-model-card route-model-card-online">
+        <picture class="route-model-art">
+          <source srcset="/images/degerler-rotasi/v1/card-online-v2.webp" type="image/webp">
+          <img src="/images/degerler-rotasi/v1/card-online-v2.png" width="1536" height="1152" loading="lazy" alt="Erkek öğretmen eşliğinde çevrim içi derse katılan iki erkek öğrenci">
+        </picture>
+        <div class="route-model-body">
+          <span class="route-model-kicker">Esnek ve erişilebilir</span>
+          <h3>Online Eğitim</h3>
+          <p>Canlı dersler, düzenli takip ve evden güvenli katılımla değerler eğitimi.</p>
+          <a href="#programlar" class="route-card-link">Programı incele <span aria-hidden="true">→</span></a>
+        </div>
+      </article>
+
+      <article class="route-model-card route-model-card-face">
+        <picture class="route-model-art">
+          <source srcset="/images/degerler-rotasi/v1/card-face-to-face-v1.webp" type="image/webp">
+          <img src="/images/degerler-rotasi/v1/card-face-to-face-v1.png" width="1536" height="1152" loading="lazy" alt="Başörtülü kadın öğretmenle sınıfta değerler çalışması yapan öğrenciler">
+        </picture>
+        <div class="route-model-body">
+          <span class="route-model-kicker">Birlikte ve yaşayarak</span>
+          <h3>Yüz Yüze Eğitim</h3>
+          <p>Yaş grubuna uygun sınıflarda etkinlik, sohbet ve örneklerle kalıcı öğrenme.</p>
+          <a href="#programlar" class="route-card-link">Programı incele <span aria-hidden="true">→</span></a>
+        </div>
+      </article>
+
+      <article class="route-model-card route-model-card-family">
+        <picture class="route-model-art">
+          <source srcset="/images/degerler-rotasi/v1/card-family-followup-v1.webp" type="image/webp">
+          <img src="/images/degerler-rotasi/v1/card-family-followup-v1.png" width="1536" height="1152" loading="lazy" alt="Başörtülü öğretmen ve annenin öğrenci gelişimini birlikte değerlendirmesi">
+        </picture>
+        <div class="route-model-body">
+          <span class="route-model-kicker">Şeffaf ve sürdürülebilir</span>
+          <h3>Aile &amp; Öğretmen Takibi</h3>
+          <p>Öğrencinin gelişimi düzenli izlenir; aile ve öğretmen aynı hedefte buluşur.</p>
+          <a href="#nasil-isliyor" class="route-card-link">Takip modelini gör <span aria-hidden="true">→</span></a>
+        </div>
+      </article>
     </div>
   </div>
 </section>
 
-<!-- 2. HIZLI ERISIM KARTLARI -->
-<section class="section" id="hizli-erisim">
+<!-- 3. DEĞERLER ROTASI -->
+<section class="values-journey" id="degerler-rotasi" aria-labelledby="values-journey-title">
+  <div class="container values-journey-heading">
+    <span class="route-eyebrow">{{ homepage.values_route.eyebrow }}</span>
+    <h2 id="values-journey-title">{{ homepage.values_route.title }}</h2>
+    <p>{{ homepage.values_route.subtitle }}</p>
+  </div>
   <div class="container">
-    <div class="section-header">
-      <h2>{{ homepage.quick_cards.title }}</h2>
+    <div class="values-route-static">
+      <picture class="values-journey-art" aria-hidden="true">
+        <source srcset="/images/degerler-rotasi/v1/values-route-labeled-v2.webp" type="image/webp">
+        <img src="/images/degerler-rotasi/v1/values-route-labeled-v2.png" alt="" width="1672" height="941" loading="lazy">
+      </picture>
     </div>
-    <div class="grid grid-4">
-      {% for card in homepage.quick_cards.cards %}
-      <a href="{{ card.url }}" class="card quick-card"
-         {% if card.url.startswith('http') %}target="_blank" rel="noopener"{% endif %}
-         data-track="{% if 'Online' in card.label %}click_apply_online{% elif 'Yuz' in card.label %}click_apply_inperson{% elif 'Gonullu' in card.label %}click_volunteer{% endif %}">
-        <span class="card-icon" aria-hidden="true">{{ card.icon }}</span>
-        <h3>{{ card.label }}</h3>
-        <p>{{ card.desc }}</p>
-      </a>
+    <div class="values-mobile-list" aria-label="Değerler rotası">
+      {% for value in homepage.values_route['values'] %}
+      <article>
+        <span>{{ loop.index }}</span>
+        <div><h3>{{ value.name }}</h3><p>{{ value.desc }}</p></div>
+      </article>
       {% endfor %}
     </div>
   </div>
 </section>
 
-<!-- 3. KURUM TANITIMI -->
-<section class="section bg-white" id="hakkinda">
+<!-- 4. KURUM TANITIMI -->
+<section class="section route-promise" id="hakkinda">
   <div class="container">
-    <div class="grid grid-2" style="align-items:center;">
-      <div>
+    <div class="route-promise-grid">
+      <div class="route-promise-copy">
+        <span class="route-eyebrow">Bütüncül Eğitim</span>
         <h2>{{ homepage.about.title }}</h2>
         <p>{{ homepage.about.text }}</p>
         <div class="d-flex gap-4 flex-wrap mt-6">
-          <a href="{{ homepage.about.cta1.url }}" class="btn btn-primary">{{ homepage.about.cta1.label }}</a>
-          <a href="{{ homepage.about.cta2.url }}" class="btn btn-secondary">{{ homepage.about.cta2.label }}</a>
+          <a href="#degerler-rotasi" class="btn btn-primary">Değerler Rotasını Keşfet</a>
+          <a href="#nasil-isliyor" class="btn btn-secondary">Süreç Nasıl İşliyor?</a>
         </div>
       </div>
-      <div class="text-center">
-        <img src="/images/app_home.png" alt="Birlikte İyilik Akademi mobil uygulama" style="max-width:260px;margin:0 auto;border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);">
+      <div class="route-promise-list">
+        <article><span>01</span><div><h3>Güzel Ahlak</h3><p>Değerleri yalnızca anlatmaz, günlük hayatın içinde davranışa dönüştürürüz.</p></div></article>
+        <article><span>02</span><div><h3>Kur'an-ı Kerim</h3><p>Seviyeye uygun, düzenli ve anlam merkezli bir öğrenme süreci kurarız.</p></div></article>
+        <article><span>03</span><div><h3>Düzenli Takip</h3><p>Öğrenci, öğretmen ve aileyi aynı gelişim hedefinde buluştururuz.</p></div></article>
       </div>
     </div>
   </div>
 </section>
 
-<!-- 4. PROGRAMLAR -->
-<section class="section" id="programlar">
+<!-- 5. PROGRAMLAR -->
+<section class="section route-programs" id="programlar">
   <div class="container">
-    <div class="section-header">
+    <div class="route-section-heading">
+      <span class="route-eyebrow">Programlarımız</span>
       <h2>{{ homepage.programs.title }}</h2>
       <p>{{ homepage.programs.subtitle }}</p>
     </div>
     <div class="grid grid-3" id="programsGrid">
-      {% for prog in programs[:5] %}
+      {% for prog in programs[:6] %}
       <div class="card program-card">
         <span class="card-icon" aria-hidden="true">{{ prog.icon }}</span>
         <h3>{{ prog.title }}</h3>
         <p class="card-meta">{{ prog.model }} &middot; {{ prog.target }}</p>
         <p>{{ prog.short }}</p>
         <div class="card-footer">
-          <a href="/egitimler/{{ prog.id }}" class="btn btn-secondary btn-sm">Detaylar</a>
+          <details class="route-program-details">
+            <summary class="btn btn-secondary btn-sm">Detayları aç</summary>
+            {% if prog.features %}
+            <ul>
+              {% for feature in prog.features[:3] %}
+              <li>{{ feature }}</li>
+              {% endfor %}
+            </ul>
+            {% else %}
+            <p>{{ prog.duration }}</p>
+            {% endif %}
+          </details>
         </div>
       </div>
       {% endfor %}
     </div>
-    <div class="text-center mt-8">
-      <a href="/egitimler" class="btn btn-primary">Tum Programlari Incele</a>
-    </div>
   </div>
 </section>
 
-<!-- 5. NASIL ISLIYOR? -->
-<section class="section bg-white" id="nasil-isliyor">
+<!-- 6. NASIL İŞLİYOR? -->
+<section class="section route-process" id="nasil-isliyor">
   <div class="container container-narrow">
-    <div class="section-header">
+    <div class="route-section-heading">
+      <span class="route-eyebrow">Adım Adım</span>
       <h2>{{ homepage.process.title }}</h2>
       <p>{{ homepage.process.subtitle }}</p>
     </div>
@@ -126,12 +216,12 @@
       {% endfor %}
     </div>
     <div class="text-center mt-8">
-      <a href="{{ site.forms.online }}" class="btn btn-primary" data-track="click_apply_online" target="_blank" rel="noopener">Simdi Basvur</a>
+      <a href="{{ site.forms.online }}" class="btn btn-primary" data-track="click_apply_online" target="_blank" rel="noopener">Şimdi Başvur</a>
     </div>
   </div>
 </section>
 
-<!-- 6. ETKI SAYACLARI -->
+<!-- 7. ETKİ SAYACLARI -->
 <section class="section bg-soft" id="etki">
   <div class="container">
     <div class="section-header">
@@ -146,9 +236,6 @@
       </div>
       {% endfor %}
     </div>
-    <div class="text-center mt-8">
-      <a href="/etki" class="btn btn-secondary">Etki Sayfasi</a>
-    </div>
   </div>
 </section>
 
@@ -160,7 +247,6 @@
         <h2>{{ homepage.news_section.title }}</h2>
         <p>{{ homepage.news_section.subtitle }}</p>
       </div>
-      <a href="/haberler" class="btn btn-secondary btn-sm">Tüm Haberler →</a>
     </div>
     <div class="carousel" id="newsCarousel">
       <div class="carousel-track" id="newsTrack"></div>
@@ -188,7 +274,6 @@
         <h2>{{ homepage.articles_section.title }}</h2>
         <p>{{ homepage.articles_section.subtitle }}</p>
       </div>
-      <a href="/yazilar" class="btn btn-secondary btn-sm">Tüm Yazılar →</a>
     </div>
     <div class="carousel" id="articlesCarousel">
       <div class="carousel-track" id="articlesTrack"></div>
@@ -197,14 +282,16 @@
   </div>
 </section>
 
-<!-- 10. UYGULAMA -->
-<section class="section bg-white" id="uygulama">
+<!-- UYGULAMA VE TAKİP -->
+<section class="section route-followup" id="uygulama">
   <div class="container">
     <div class="app-section">
-      <div class="app-mockup">
-        <img src="/images/app_home.png" alt="Birlikte İyilik Akademi mobil uygulama" style="border-radius:var(--radius-xl);box-shadow:var(--shadow-lg);">
-      </div>
+      <picture class="route-followup-art">
+        <source srcset="/images/degerler-rotasi/v1/card-family-followup-v1.webp" type="image/webp">
+        <img src="/images/degerler-rotasi/v1/card-family-followup-v1.png" alt="Başörtülü öğretmen ve annenin öğrenci gelişimini birlikte değerlendirmesi" width="1536" height="1152" loading="lazy">
+      </picture>
       <div>
+        <span class="route-eyebrow">Aynı Hedefte Buluşun</span>
         <h2>{{ homepage.app.title }}</h2>
         <p>{{ homepage.app.subtitle }}</p>
         <ul class="app-features">
@@ -241,13 +328,17 @@
       <h2>{{ homepage.support.title }}</h2>
       <p>{{ homepage.support.subtitle }}</p>
     </div>
-    <div class="grid grid-3">
+    <div class="grid grid-2">
       {% for s in homepage.support.cards %}
       <div class="card support-card">
         <span class="card-icon" aria-hidden="true">{{ s.icon }}</span>
         <h3>{{ s.title }}</h3>
         <p>{{ s.desc }}</p>
-        <a href="{{ s.url }}" class="btn btn-primary btn-sm mt-4">{{ s.cta }}</a>
+        {% if loop.first %}
+        <a href="{{ site.forms.gonullu }}" class="btn btn-primary btn-sm mt-4" target="_blank" rel="noopener">{{ s.cta }}</a>
+        {% else %}
+        <a href="#iletisim" class="btn btn-primary btn-sm mt-4">{{ s.cta }}</a>
+        {% endif %}
       </div>
       {% endfor %}
     </div>
@@ -403,13 +494,6 @@
     el.innerHTML=upcoming.map(function(ev){return '<div class="card event-card"><div class="event-date-badge"><div class="day">'+(ev.date||'').slice(8,10)+'</div><div class="month">'+trD(ev.date)+'</div></div><div><h4 style="margin-bottom:var(--s-1);">'+esc(ev.title)+'</h4><p class="text-sm text-muted mb-0">'+esc(ev.time||'')+' &middot; '+esc(ev.location||'')+'</p></div></div>';}).join('');
   })['catch'](function(){});
 
-  // Programs
-  pub('programs').then(function(progs){
-    var el=document.getElementById('programsGrid');
-    if(!el||!progs||!progs.length)return;
-    el.innerHTML=progs.slice(0,5).map(function(p){return '<div class="card program-card"><span class="card-icon" aria-hidden="true">'+esc(p.icon||'📚')+'</span><h3>'+esc(p.title)+'</h3><p class="card-meta">'+esc(p.model||'')+' &middot; '+esc(p.target||'')+'</p><p>'+esc(p.short||'')+'</p><div class="card-footer"><a href="'+base+'/egitimler/'+(p.id||'')+'" class="btn btn-secondary btn-sm">Detaylar</a></div></div>';}).join('');
-  })['catch'](function(){});
-
   // Counters
   pub('homepage').then(function(hp){
     if(!hp||!hp.impact||!hp.impact.counters)return;
@@ -434,4 +518,8 @@ function scrollCarousel(trackId,dotsId,page){
   dots.querySelectorAll('.dot').forEach(function(d,i){d.classList.toggle('active',i===page);});
 }
 </script>
+{% endblock %}
+
+{% block scripts %}
+<script src="/js/degerler-rotasi.js?v=2" defer></script>
 {% endblock %}

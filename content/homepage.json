@@ -8,8 +8,69 @@
     },
     "cta2": {
       "label": "Yüz Yüze Eğitim Başvurusu",
-      "url": "https://forms.gle/5a9TSS7XAUxJUCt59"
+      "url": "https://forms.gle/yngrqhghJcdHtntR6"
     }
+  },
+  "values_route": {
+    "eyebrow": "Değerler Rotası",
+    "title": "İyiliği adım adım hayata taşıyan bir yolculuk",
+    "subtitle": "Her durak, çocuğun kendisiyle, ailesiyle ve çevresiyle kurduğu ilişkiyi güçlendiren kalıcı bir değere dönüşür.",
+    "values": [
+      {
+        "name": "Adalet",
+        "desc": "Her durumda hakkı gözetmeyi ve dengeli davranmayı öğrenir.",
+        "x": 13,
+        "y": 63
+      },
+      {
+        "name": "Merhamet",
+        "desc": "İyiliği şefkatle çoğaltır, başkasının hâlini fark eder.",
+        "x": 31,
+        "y": 47
+      },
+      {
+        "name": "Sabır",
+        "desc": "Emek verir, gelişime zaman tanır ve vazgeçmeden ilerler.",
+        "x": 42,
+        "y": 37
+      },
+      {
+        "name": "Edep",
+        "desc": "Sözünde, davranışında ve ilişkilerinde ölçüyü korur.",
+        "x": 51,
+        "y": 30
+      },
+      {
+        "name": "Yardımlaşma",
+        "desc": "Bilgisini, zamanını ve imkânını iyilik için paylaşır.",
+        "x": 80,
+        "y": 54
+      },
+      {
+        "name": "Sorumluluk",
+        "desc": "Görevlerini sahiplenir, seçimlerinin arkasında durur.",
+        "x": 64,
+        "y": 25
+      },
+      {
+        "name": "Dürüstlük",
+        "desc": "Doğruyu açıkça söyler ve güveni davranışlarıyla korur.",
+        "x": 71,
+        "y": 20
+      },
+      {
+        "name": "Saygı",
+        "desc": "Her insanın değerini gözetir, farklılıkları incelikle karşılar.",
+        "x": 84,
+        "y": 36
+      },
+      {
+        "name": "Tevekkül",
+        "desc": "Çabasını gösterir, sonucu güven ve teslimiyetle Allah'a bırakır.",
+        "x": 79,
+        "y": 15
+      }
+    ]
   },
   "quick_cards": {
     "title": "İhtiyacınız Olan Yere Tek Tıkla Ulaşın",
@@ -23,7 +84,7 @@
       {
         "icon": "🏫",
         "label": "Yüz Yüze Eğitim Başvurusu",
-        "url": "https://forms.gle/5a9TSS7XAUxJUCt59",
+        "url": "https://forms.gle/yngrqhghJcdHtntR6",
         "desc": "Merkez eğitimlerimize katılmak için başvurun"
       },
       {

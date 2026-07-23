@@ -31,6 +31,8 @@
   <link rel="stylesheet" href="/css/layout.css?v=2">
   <link rel="stylesheet" href="/css/components.css?v=2">
   <link rel="stylesheet" href="/css/utilities.css?v=2">
+<link rel="preload" as="image" href="/images/degerler-rotasi/v1/hero-values-route-students-v1.webp" fetchpriority="high">
+<link rel="stylesheet" href="/css/degerler-rotasi.css?v=2">
 
   <!-- Schema.org -->
 <script type="application/ld+json">
@@ -56,7 +58,7 @@
 }]
 </script>
 </head>
-<body>
+<body class="route-home">
   <a href="#main-content" class="skip-link">Ana içeriğe geç</a>
 
   <!-- App Download Banner -->
@@ -192,78 +194,168 @@ target="_blank" rel="noopener"           data-track="click_apply_online">
 </nav>
   <main id="main-content">
 
-<!-- 1. HERO -->
-<section class="hero" id="hero">
-  <div class="hero-content">
-    <img src="/images/logo_hero.png" alt="" class="hero-logo" aria-hidden="true">
-    <img src="/images/slogan.png" alt="Degerler Egitimi" class="hero-slogan">
-    <h1>Değerlerle Büyüyen Nesiller İçin Eğitim</h1>
-    <p>Birlikte İyilik Akademi; güzel ahlak, Kur&#39;an-ı Kerim eğitimi, öğrenci takibi ve aile iş birliğiyle çocuklarımızın gelişimini destekleyen değer odaklı bir eğitim yapısı sunar.</p>
-    <div class="hero-cta">
-      <a href="https://forms.gle/5a9TSS7XAUxJUCt59" class="btn btn-white btn-lg" data-track="click_apply_online" target="_blank" rel="noopener">Online Eğitim Başvurusu</a>
-      <a href="https://forms.gle/yngrqhghJcdHtntR6" class="btn btn-ghost btn-lg" data-track="click_apply_inperson" target="_blank" rel="noopener">Yüz Yüze Eğitim Başvurusu</a>
+<!-- 1. DEĞERLER ROTASI HERO -->
+<section class="values-hero" id="hero">
+  <picture class="values-hero-art" aria-hidden="true">
+    <source srcset="/images/degerler-rotasi/v1/hero-values-route-students-v1.webp" type="image/webp">
+    <img src="/images/degerler-rotasi/v1/hero-values-route-students-v1.png" alt="" width="1672" height="941" fetchpriority="high">
+  </picture>
+  <div class="values-hero-wash" aria-hidden="true"></div>
+  <div class="container values-hero-inner">
+    <div class="values-hero-copy">
+      <span class="route-eyebrow">Birlikte İyilik Akademi</span>
+      <h1>Değerlerle Büyüyen Nesiller İçin Eğitim</h1>
+      <p>Birlikte İyilik Akademi; güzel ahlak, Kur&#39;an-ı Kerim eğitimi, öğrenci takibi ve aile iş birliğiyle çocuklarımızın gelişimini destekleyen değer odaklı bir eğitim yapısı sunar.</p>
+      <div class="values-hero-cta">
+        <a href="#degerler-rotasi" class="btn route-btn route-btn-primary">Rotayı Keşfet <span aria-hidden="true">→</span></a>
+        <a href="https://forms.gle/5a9TSS7XAUxJUCt59" class="btn route-btn route-btn-secondary" data-track="click_apply_online" target="_blank" rel="noopener">Başvuru Yap</a>
+      </div>
+      <ul class="hero-trust-list" aria-label="Eğitim yaklaşımımız">
+        <li>Güzel Ahlak</li>
+        <li>Kur'an-ı Kerim</li>
+        <li>Aile İş Birliği</li>
+      </ul>
+    </div>
+  </div>
+  <a class="hero-scroll-cue" href="#egitim-modelleri">
+    <span>Yolculuğa başla</span>
+    <i aria-hidden="true"></i>
+  </a>
+</section>
+
+<!-- 2. EĞİTİM MODELİ KARTLARI -->
+<section class="section route-models" id="egitim-modelleri">
+  <div class="container">
+    <div class="route-section-heading">
+      <span class="route-eyebrow">Eğitim Yolunu Seç</span>
+      <h2>Çocuğunuz için doğru başlangıç</h2>
+      <p>Online eğitim, yüz yüze buluşmalar ve aile–öğretmen iş birliği aynı değer odaklı yaklaşımda birleşir.</p>
+    </div>
+    <div class="route-model-grid">
+      <article class="route-model-card route-model-card-online">
+        <picture class="route-model-art">
+          <source srcset="/images/degerler-rotasi/v1/card-online-v2.webp" type="image/webp">
+          <img src="/images/degerler-rotasi/v1/card-online-v2.png" width="1536" height="1152" loading="lazy" alt="Erkek öğretmen eşliğinde çevrim içi derse katılan iki erkek öğrenci">
+        </picture>
+        <div class="route-model-body">
+          <span class="route-model-kicker">Esnek ve erişilebilir</span>
+          <h3>Online Eğitim</h3>
+          <p>Canlı dersler, düzenli takip ve evden güvenli katılımla değerler eğitimi.</p>
+          <a href="#programlar" class="route-card-link">Programı incele <span aria-hidden="true">→</span></a>
+        </div>
+      </article>
+
+      <article class="route-model-card route-model-card-face">
+        <picture class="route-model-art">
+          <source srcset="/images/degerler-rotasi/v1/card-face-to-face-v1.webp" type="image/webp">
+          <img src="/images/degerler-rotasi/v1/card-face-to-face-v1.png" width="1536" height="1152" loading="lazy" alt="Başörtülü kadın öğretmenle sınıfta değerler çalışması yapan öğrenciler">
+        </picture>
+        <div class="route-model-body">
+          <span class="route-model-kicker">Birlikte ve yaşayarak</span>
+          <h3>Yüz Yüze Eğitim</h3>
+          <p>Yaş grubuna uygun sınıflarda etkinlik, sohbet ve örneklerle kalıcı öğrenme.</p>
+          <a href="#programlar" class="route-card-link">Programı incele <span aria-hidden="true">→</span></a>
+        </div>
+      </article>
+
+      <article class="route-model-card route-model-card-family">
+        <picture class="route-model-art">
+          <source srcset="/images/degerler-rotasi/v1/card-family-followup-v1.webp" type="image/webp">
+          <img src="/images/degerler-rotasi/v1/card-family-followup-v1.png" width="1536" height="1152" loading="lazy" alt="Başörtülü öğretmen ve annenin öğrenci gelişimini birlikte değerlendirmesi">
+        </picture>
+        <div class="route-model-body">
+          <span class="route-model-kicker">Şeffaf ve sürdürülebilir</span>
+          <h3>Aile &amp; Öğretmen Takibi</h3>
+          <p>Öğrencinin gelişimi düzenli izlenir; aile ve öğretmen aynı hedefte buluşur.</p>
+          <a href="#nasil-isliyor" class="route-card-link">Takip modelini gör <span aria-hidden="true">→</span></a>
+        </div>
+      </article>
     </div>
   </div>
 </section>
 
-<!-- 2. HIZLI ERISIM KARTLARI -->
-<section class="section" id="hizli-erisim">
+<!-- 3. DEĞERLER ROTASI -->
+<section class="values-journey" id="degerler-rotasi" aria-labelledby="values-journey-title">
+  <div class="container values-journey-heading">
+    <span class="route-eyebrow">Değerler Rotası</span>
+    <h2 id="values-journey-title">İyiliği adım adım hayata taşıyan bir yolculuk</h2>
+    <p>Her durak, çocuğun kendisiyle, ailesiyle ve çevresiyle kurduğu ilişkiyi güçlendiren kalıcı bir değere dönüşür.</p>
+  </div>
   <div class="container">
-    <div class="section-header">
-      <h2>İhtiyacınız Olan Yere Tek Tıkla Ulaşın</h2>
+    <div class="values-route-static">
+      <picture class="values-journey-art" aria-hidden="true">
+        <source srcset="/images/degerler-rotasi/v1/values-route-labeled-v2.webp" type="image/webp">
+        <img src="/images/degerler-rotasi/v1/values-route-labeled-v2.png" alt="" width="1672" height="941" loading="lazy">
+      </picture>
     </div>
-    <div class="grid grid-4">
-      <a href="https://forms.gle/5a9TSS7XAUxJUCt59" class="card quick-card"
-target="_blank" rel="noopener"         data-track="click_apply_online">
-        <span class="card-icon" aria-hidden="true">📚</span>
-        <h3>Online Eğitim Başvurusu</h3>
-        <p>Çevrim içi eğitim programımıza hemen başvurun</p>
-      </a>
-      <a href="https://forms.gle/yngrqhghJcdHtntR6" class="card quick-card"
-target="_blank" rel="noopener"         data-track="click_apply_inperson">
-        <span class="card-icon" aria-hidden="true">🏫</span>
-        <h3>Yüz Yüze Eğitim Başvurusu</h3>
-        <p>Merkez eğitimlerimize katılmak için başvurun</p>
-      </a>
-      <a href="https://forms.gle/YgeEqBwNRAKZWrpH6" class="card quick-card"
-target="_blank" rel="noopener"         data-track="">
-        <span class="card-icon" aria-hidden="true">🤝</span>
-        <h3>Gönüllü Öğretmen Başvurusu</h3>
-        <p>Gönüllü öğretmen olarak aramıza katılın</p>
-      </a>
-      <a href="/yazilar" class="card quick-card"
-         data-track="">
-        <span class="card-icon" aria-hidden="true">✍️</span>
-        <h3>Değer Odaklı Yazılar</h3>
-        <p>Değerler eğitimi üzerine yazılarımızı okuyun</p>
-      </a>
+    <div class="values-mobile-list" aria-label="Değerler rotası">
+      <article>
+        <span>1</span>
+        <div><h3>Adalet</h3><p>Her durumda hakkı gözetmeyi ve dengeli davranmayı öğrenir.</p></div>
+      </article>
+      <article>
+        <span>2</span>
+        <div><h3>Merhamet</h3><p>İyiliği şefkatle çoğaltır, başkasının hâlini fark eder.</p></div>
+      </article>
+      <article>
+        <span>3</span>
+        <div><h3>Sabır</h3><p>Emek verir, gelişime zaman tanır ve vazgeçmeden ilerler.</p></div>
+      </article>
+      <article>
+        <span>4</span>
+        <div><h3>Edep</h3><p>Sözünde, davranışında ve ilişkilerinde ölçüyü korur.</p></div>
+      </article>
+      <article>
+        <span>5</span>
+        <div><h3>Yardımlaşma</h3><p>Bilgisini, zamanını ve imkânını iyilik için paylaşır.</p></div>
+      </article>
+      <article>
+        <span>6</span>
+        <div><h3>Sorumluluk</h3><p>Görevlerini sahiplenir, seçimlerinin arkasında durur.</p></div>
+      </article>
+      <article>
+        <span>7</span>
+        <div><h3>Dürüstlük</h3><p>Doğruyu açıkça söyler ve güveni davranışlarıyla korur.</p></div>
+      </article>
+      <article>
+        <span>8</span>
+        <div><h3>Saygı</h3><p>Her insanın değerini gözetir, farklılıkları incelikle karşılar.</p></div>
+      </article>
+      <article>
+        <span>9</span>
+        <div><h3>Tevekkül</h3><p>Çabasını gösterir, sonucu güven ve teslimiyetle Allah&#39;a bırakır.</p></div>
+      </article>
     </div>
   </div>
 </section>
 
-<!-- 3. KURUM TANITIMI -->
-<section class="section bg-white" id="hakkinda">
+<!-- 4. KURUM TANITIMI -->
+<section class="section route-promise" id="hakkinda">
   <div class="container">
-    <div class="grid grid-2" style="align-items:center;">
-      <div>
+    <div class="route-promise-grid">
+      <div class="route-promise-copy">
+        <span class="route-eyebrow">Bütüncül Eğitim</span>
         <h2>Sadece Eğitim Değil; Takip, İletişim ve Rehberlik</h2>
         <p>Kurum; veli, öğrenci ve eğitmeni aynı sistem içinde buluşturarak düzenli, ölçülebilir ve güven veren bir süreç kurar. Birlikte İyilik Akademi, değer odaklı eğitimi yalnızca ders olarak değil, yaşam pratiği olarak ele alır.</p>
         <div class="d-flex gap-4 flex-wrap mt-6">
-          <a href="/hakkimizda/egitim-yaklasimimiz" class="btn btn-primary">Eğitim Yaklaşımımız</a>
-          <a href="/uygulama" class="btn btn-secondary">Uygulamayı İncele</a>
+          <a href="#degerler-rotasi" class="btn btn-primary">Değerler Rotasını Keşfet</a>
+          <a href="#nasil-isliyor" class="btn btn-secondary">Süreç Nasıl İşliyor?</a>
         </div>
       </div>
-      <div class="text-center">
-        <img src="/images/app_home.png" alt="Birlikte İyilik Akademi mobil uygulama" style="max-width:260px;margin:0 auto;border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);">
+      <div class="route-promise-list">
+        <article><span>01</span><div><h3>Güzel Ahlak</h3><p>Değerleri yalnızca anlatmaz, günlük hayatın içinde davranışa dönüştürürüz.</p></div></article>
+        <article><span>02</span><div><h3>Kur'an-ı Kerim</h3><p>Seviyeye uygun, düzenli ve anlam merkezli bir öğrenme süreci kurarız.</p></div></article>
+        <article><span>03</span><div><h3>Düzenli Takip</h3><p>Öğrenci, öğretmen ve aileyi aynı gelişim hedefinde buluştururuz.</p></div></article>
       </div>
     </div>
   </div>
 </section>
 
-<!-- 4. PROGRAMLAR -->
-<section class="section" id="programlar">
+<!-- 5. PROGRAMLAR -->
+<section class="section route-programs" id="programlar">
   <div class="container">
-    <div class="section-header">
+    <div class="route-section-heading">
+      <span class="route-eyebrow">Programlarımız</span>
       <h2>Her Aile İçin Uygun Bir Yol Var</h2>
       <p>Online ve yüz yüze seçenekler; program detayları, yaş grupları ve başvuru adımlarıyla birlikte açık biçimde anlatılır.</p>
     </div>
@@ -274,7 +366,14 @@ target="_blank" rel="noopener"         data-track="">
         <p class="card-meta">Çevrim İçi &middot; 8-14 yaş arası öğrenciler</p>
         <p>Çevrim içi ortamda, evden erişilebilir değerler eğitimi programı.</p>
         <div class="card-footer">
-          <a href="/egitimler/online-egitim" class="btn btn-secondary btn-sm">Detaylar</a>
+          <details class="route-program-details">
+            <summary class="btn btn-secondary btn-sm">Detayları aç</summary>
+            <ul>
+              <li>Haftalık düzenli online dersler</li>
+              <li>Birebir öğrenci-öğretmen eşleşmesi</li>
+              <li>Kur&#39;an-ı Kerim okuma ve anlama</li>
+            </ul>
+          </details>
         </div>
       </div>
       <div class="card program-card">
@@ -283,7 +382,14 @@ target="_blank" rel="noopener"         data-track="">
         <p class="card-meta">Yüz Yüze &middot; 8-14 yaş arası öğrenciler</p>
         <p>Merkez ve şubelerde yüz yüze değerler eğitimi programı.</p>
         <div class="card-footer">
-          <a href="/egitimler/yuz-yuze-egitim" class="btn btn-secondary btn-sm">Detaylar</a>
+          <details class="route-program-details">
+            <summary class="btn btn-secondary btn-sm">Detayları aç</summary>
+            <ul>
+              <li>Haftalık yüz yüze dersler</li>
+              <li>Küçük grup yapısı (6-10 öğrenci)</li>
+              <li>Kur&#39;an-ı Kerim ve tecvid eğitimi</li>
+            </ul>
+          </details>
         </div>
       </div>
       <div class="card program-card">
@@ -292,7 +398,14 @@ target="_blank" rel="noopener"         data-track="">
         <p class="card-meta">Online &amp; Yüz Yüze &middot; Tüm yaş grupları</p>
         <p>Doğru okuma, tecvid ve anlama odaklı Kur&#39;an-ı Kerim eğitimi.</p>
         <div class="card-footer">
-          <a href="/egitimler/kuran-i-kerim" class="btn btn-secondary btn-sm">Detaylar</a>
+          <details class="route-program-details">
+            <summary class="btn btn-secondary btn-sm">Detayları aç</summary>
+            <ul>
+              <li>Elif-ba&#39;dan başlayan kademeli ilerleme</li>
+              <li>Tecvid kurallarıyla doğru okuma</li>
+              <li>Kur&#39;an-ı Kerim meali ve tefsiri</li>
+            </ul>
+          </details>
         </div>
       </div>
       <div class="card program-card">
@@ -301,7 +414,14 @@ target="_blank" rel="noopener"         data-track="">
         <p class="card-meta">Online &amp; Yüz Yüze &middot; 8-14 yaş arası öğrenciler</p>
         <p>Değerler eğitimi ve hedef davranışlar üzerine kapsamlı program.</p>
         <div class="card-footer">
-          <a href="/egitimler/guzel-ahlak" class="btn btn-secondary btn-sm">Detaylar</a>
+          <details class="route-program-details">
+            <summary class="btn btn-secondary btn-sm">Detayları aç</summary>
+            <ul>
+              <li>40 temel değer ve davranış hedefi</li>
+              <li>Hikâye ve örnek olay temelli öğrenme</li>
+              <li>Günlük hayat uygulamaları</li>
+            </ul>
+          </details>
         </div>
       </div>
       <div class="card program-card">
@@ -310,7 +430,14 @@ target="_blank" rel="noopener"         data-track="">
         <p class="card-meta">Uygulama Destekli &middot; Tüm kayıtlı öğrenciler ve veliler</p>
         <p>Bireysel takip, veli iletişimi ve gelişim raporlama sistemi.</p>
         <div class="card-footer">
-          <a href="/egitimler/ogrenci-koclugu-ve-takip" class="btn btn-secondary btn-sm">Detaylar</a>
+          <details class="route-program-details">
+            <summary class="btn btn-secondary btn-sm">Detayları aç</summary>
+            <ul>
+              <li>Birebir öğrenci koçluğu</li>
+              <li>Devam ve katılım takibi</li>
+              <li>Dönemsel gelişim raporları</li>
+            </ul>
+          </details>
         </div>
       </div>
       <div class="card program-card">
@@ -319,20 +446,21 @@ target="_blank" rel="noopener"         data-track="">
         <p class="card-meta">Sezonluk &middot; Temmuz – Ağustos</p>
         <p>Yaz Okulu (ders, seminer, spor) ve doğada Yaz Kampı.</p>
         <div class="card-footer">
-          <a href="/egitimler/yaz-programlarimiz" class="btn btn-secondary btn-sm">Detaylar</a>
+          <details class="route-program-details">
+            <summary class="btn btn-secondary btn-sm">Detayları aç</summary>
+            <p>Yaz dönemi</p>
+          </details>
         </div>
       </div>
-    </div>
-    <div class="text-center mt-8">
-      <a href="/egitimler" class="btn btn-primary">Tum Programlari Incele</a>
     </div>
   </div>
 </section>
 
-<!-- 5. NASIL ISLIYOR? -->
-<section class="section bg-white" id="nasil-isliyor">
+<!-- 6. NASIL İŞLİYOR? -->
+<section class="section route-process" id="nasil-isliyor">
   <div class="container container-narrow">
-    <div class="section-header">
+    <div class="route-section-heading">
+      <span class="route-eyebrow">Adım Adım</span>
       <h2>Başvurudan Takibe Sistemli Yolculuk</h2>
       <p>Başvuru alınır, uygun yönlendirme yapılır, eğitim başlar, veli bilgilendirilir ve süreç uygulama üzerinden takip edilir.</p>
     </div>
@@ -369,12 +497,12 @@ target="_blank" rel="noopener"         data-track="">
       </div>
     </div>
     <div class="text-center mt-8">
-      <a href="https://forms.gle/5a9TSS7XAUxJUCt59" class="btn btn-primary" data-track="click_apply_online" target="_blank" rel="noopener">Simdi Basvur</a>
+      <a href="https://forms.gle/5a9TSS7XAUxJUCt59" class="btn btn-primary" data-track="click_apply_online" target="_blank" rel="noopener">Şimdi Başvur</a>
     </div>
   </div>
 </section>
 
-<!-- 6. ETKI SAYACLARI -->
+<!-- 7. ETKİ SAYACLARI -->
 <section class="section bg-soft" id="etki">
   <div class="container">
     <div class="section-header">
@@ -399,9 +527,6 @@ target="_blank" rel="noopener"         data-track="">
         <div class="counter-label">Yayınlanan İçerik</div>
       </div>
     </div>
-    <div class="text-center mt-8">
-      <a href="/etki" class="btn btn-secondary">Etki Sayfasi</a>
-    </div>
   </div>
 </section>
 
@@ -413,7 +538,6 @@ target="_blank" rel="noopener"         data-track="">
         <h2>Akademiden Haberler ve Duyurular</h2>
         <p>Önemli gelişmeler, etkinlikler, yeni dönem başvuruları ve kısa bilgilendirmeler.</p>
       </div>
-      <a href="/haberler" class="btn btn-secondary btn-sm">Tüm Haberler →</a>
     </div>
     <div class="carousel" id="newsCarousel">
       <div class="carousel-track" id="newsTrack"></div>
@@ -441,7 +565,6 @@ target="_blank" rel="noopener"         data-track="">
         <h2>Değer Odaklı Yazılar</h2>
         <p>Güzel ahlak, tarih bilinci ve eğitim üzerine derinlikli içerikler.</p>
       </div>
-      <a href="/yazilar" class="btn btn-secondary btn-sm">Tüm Yazılar →</a>
     </div>
     <div class="carousel" id="articlesCarousel">
       <div class="carousel-track" id="articlesTrack"></div>
@@ -450,14 +573,16 @@ target="_blank" rel="noopener"         data-track="">
   </div>
 </section>
 
-<!-- 10. UYGULAMA -->
-<section class="section bg-white" id="uygulama">
+<!-- UYGULAMA VE TAKİP -->
+<section class="section route-followup" id="uygulama">
   <div class="container">
     <div class="app-section">
-      <div class="app-mockup">
-        <img src="/images/app_home.png" alt="Birlikte İyilik Akademi mobil uygulama" style="border-radius:var(--radius-xl);box-shadow:var(--shadow-lg);">
-      </div>
+      <picture class="route-followup-art">
+        <source srcset="/images/degerler-rotasi/v1/card-family-followup-v1.webp" type="image/webp">
+        <img src="/images/degerler-rotasi/v1/card-family-followup-v1.png" alt="Başörtülü öğretmen ve annenin öğrenci gelişimini birlikte değerlendirmesi" width="1536" height="1152" loading="lazy">
+      </picture>
       <div>
+        <span class="route-eyebrow">Aynı Hedefte Buluşun</span>
         <h2>Cebinizde Takip, Erişim ve İletişim</h2>
         <p>Veli ve öğretmen girişleri, duyurular, öğrenci takibi ve mesajlaşma — hepsi tek uygulamada.</p>
         <ul class="app-features">
@@ -492,13 +617,13 @@ target="_blank" rel="noopener"         data-track="">
         <span class="card-icon" aria-hidden="true">🤝</span>
         <h3>Gönüllü Ol</h3>
         <p>Gönüllü öğretmen veya destekçi olarak aramıza katılın.</p>
-        <a href="/destek-ol/gonullu-ol" class="btn btn-primary btn-sm mt-4">Gönüllü Başvurusu</a>
+        <a href="https://forms.gle/YgeEqBwNRAKZWrpH6" class="btn btn-primary btn-sm mt-4" target="_blank" rel="noopener">Gönüllü Başvurusu</a>
       </div>
       <div class="card support-card">
         <span class="card-icon" aria-hidden="true">🏢</span>
         <h3>Kurumsal İş Birliği</h3>
         <p>Kurumunuzla iş birliği olanakları için iletişime geçin.</p>
-        <a href="/destek-ol/kurumsal-is-birligi" class="btn btn-primary btn-sm mt-4">İş Birliği Formu</a>
+        <a href="#iletisim" class="btn btn-primary btn-sm mt-4">İş Birliği Formu</a>
       </div>
     </div>
   </div>
@@ -651,13 +776,6 @@ target="_blank" rel="noopener"         data-track="">
     var upcoming=evs.filter(function(e){return!e.past;}).slice(0,3);
     if(!upcoming.length)upcoming=evs.slice(0,3);
     el.innerHTML=upcoming.map(function(ev){return '<div class="card event-card"><div class="event-date-badge"><div class="day">'+(ev.date||'').slice(8,10)+'</div><div class="month">'+trD(ev.date)+'</div></div><div><h4 style="margin-bottom:var(--s-1);">'+esc(ev.title)+'</h4><p class="text-sm text-muted mb-0">'+esc(ev.time||'')+' &middot; '+esc(ev.location||'')+'</p></div></div>';}).join('');
-  })['catch'](function(){});
-
-  // Programs
-  pub('programs').then(function(progs){
-    var el=document.getElementById('programsGrid');
-    if(!el||!progs||!progs.length)return;
-    el.innerHTML=progs.slice(0,6).map(function(p){return '<div class="card program-card"><span class="card-icon" aria-hidden="true">'+esc(p.icon||'📚')+'</span><h3>'+esc(p.title)+'</h3><p class="card-meta">'+esc(p.model||'')+' &middot; '+esc(p.target||'')+'</p><p>'+esc(p.short||'')+'</p><div class="card-footer"><a href="'+base+'/egitimler/'+(p.id||'')+'" class="btn btn-secondary btn-sm">Detaylar</a></div></div>';}).join('');
   })['catch'](function(){});
 
   // Counters
@@ -823,6 +941,7 @@ function scrollCarousel(trackId,dotsId,page){
   document.addEventListener('keydown',function(e){if(e.key==='Escape')closeArticle();});
   </script>
 
+<script src="/js/degerler-rotasi.js?v=2" defer></script>
 
   <!-- Vercel Web Analytics (Vercel Dashboard → Analytics sekmesinden aktif et) -->
   <script defer src="/_vercel/insights/script.js"></script>
