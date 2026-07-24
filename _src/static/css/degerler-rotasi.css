@@ -374,12 +374,12 @@
 }
 
 .route-model-action-row {
+  --route-cta-character-size: clamp(104px, 7.8vw, 112px);
+  position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(106px, 8.4vw, 132px);
-  gap: 7px;
-  align-items: end;
-  min-height: 112px;
-  margin-top: -14px;
+  grid-template-columns: minmax(0, 1fr) var(--route-cta-character-size);
+  align-items: center;
+  width: min(100%, calc(228px + var(--route-cta-character-size)));
 }
 
 .route-model-action-row .btn {
@@ -387,24 +387,30 @@
   z-index: 2;
   width: 100%;
   max-width: 228px;
-  margin-bottom: 5px;
+  margin: 0;
   padding-inline: 13px;
   text-align: center;
   white-space: normal;
 }
 
 .route-model-card-face .route-model-action-row .btn {
-  align-self: start;
-  margin-top: 6px;
-  margin-bottom: 0;
+  transform: translateY(-20px);
 }
 
 .route-model-cta-character {
+  position: absolute;
+  right: 3px;
+  bottom: -26px;
   display: block;
-  width: 100%;
+  width: var(--route-cta-character-size);
   aspect-ratio: 1;
-  margin: 0 -6px -19px 0;
   pointer-events: none;
+}
+
+.route-model-card-face .route-model-cta-character {
+  right: 39px;
+  bottom: -25px;
+  width: calc(var(--route-cta-character-size) - 16px);
 }
 
 .route-model-cta-character img {
@@ -1047,7 +1053,7 @@
   }
 
   .route-model-action-row {
-    grid-template-columns: minmax(0, 1fr) clamp(118px, 19vw, 145px);
+    --route-cta-character-size: clamp(106px, 16vw, 118px);
   }
 
   .values-journey {
@@ -1132,12 +1138,7 @@
   }
 
   .route-model-action-row {
-    grid-template-columns: minmax(0, 1fr) clamp(104px, 31vw, 132px);
-    min-height: 110px;
-  }
-
-  .route-model-cta-character {
-    margin-bottom: -16px;
+    --route-cta-character-size: clamp(100px, 27vw, 108px);
   }
 
   .values-journey-heading {
