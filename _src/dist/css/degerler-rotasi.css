@@ -403,7 +403,7 @@
 .route-model-cta-character {
   position: absolute;
   right: -46px;
-  bottom: -48px;
+  bottom: -40px;
   display: block;
   width: var(--route-cta-character-size);
   aspect-ratio: 1;
@@ -411,9 +411,9 @@
 }
 
 .route-model-card-face .route-model-cta-character {
-  right: -5px;
-  bottom: -112px;
-  width: calc(var(--route-cta-character-size) + 5px);
+  right: 44px;
+  bottom: -180px;
+  width: calc(var(--route-cta-character-size) + 28px);
 }
 
 .route-model-cta-character img {
@@ -1127,7 +1127,7 @@
 
   .route-model-grid {
     grid-template-columns: 1fr;
-    row-gap: 88px;
+    row-gap: 140px;
   }
 
   .route-model-card:last-child {
@@ -1150,13 +1150,13 @@
 
   .route-model-cta-character {
     right: -36px;
-    bottom: -37px;
+    bottom: -29px;
   }
 
   .route-model-card-face .route-model-cta-character {
-    right: 0;
-    bottom: -95px;
-    width: calc(var(--route-cta-character-size) + 5px);
+    right: 36px;
+    bottom: -166px;
+    width: calc(var(--route-cta-character-size) + 24px);
   }
 
   .values-journey-heading {
