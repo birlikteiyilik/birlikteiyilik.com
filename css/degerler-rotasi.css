@@ -373,6 +373,49 @@
   line-height: 1.7;
 }
 
+.route-model-action-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(106px, 8.4vw, 132px);
+  gap: 7px;
+  align-items: end;
+  min-height: 112px;
+  margin-top: -14px;
+}
+
+.route-model-action-row .btn {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 228px;
+  margin-bottom: 5px;
+  padding-inline: 13px;
+  text-align: center;
+  white-space: normal;
+}
+
+.route-model-card-face .route-model-action-row .btn {
+  align-self: start;
+  margin-top: 6px;
+  margin-bottom: 0;
+}
+
+.route-model-cta-character {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  margin: 0 -6px -19px 0;
+  pointer-events: none;
+}
+
+.route-model-cta-character img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  filter: drop-shadow(0 12px 10px rgba(30, 54, 75, 0.16));
+  transition: transform 0.45s var(--ease);
+}
+
 .route-card-link {
   display: inline-flex;
   align-items: center;
@@ -1003,6 +1046,10 @@
     min-height: 0;
   }
 
+  .route-model-action-row {
+    grid-template-columns: minmax(0, 1fr) clamp(118px, 19vw, 145px);
+  }
+
   .values-journey {
     padding-bottom: 76px;
   }
@@ -1082,6 +1129,15 @@
 
   .route-model-card p {
     min-height: 0;
+  }
+
+  .route-model-action-row {
+    grid-template-columns: minmax(0, 1fr) clamp(104px, 31vw, 132px);
+    min-height: 110px;
+  }
+
+  .route-model-cta-character {
+    margin-bottom: -16px;
   }
 
   .values-journey-heading {
@@ -1189,6 +1245,7 @@
 
   .route-model-card,
   .route-model-art img,
+  .route-model-cta-character img,
   .route-card-link {
     transition: none;
   }
