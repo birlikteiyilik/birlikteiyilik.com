@@ -287,8 +287,9 @@
 }
 
 .route-model-card {
+  position: relative;
   min-width: 0;
-  overflow: hidden;
+  overflow: visible;
   border: 1px solid rgba(16, 47, 79, 0.11);
   border-radius: 26px;
   background: #fff;
@@ -305,6 +306,7 @@
   display: block;
   aspect-ratio: 4 / 3;
   overflow: hidden;
+  border-radius: 25px 25px 0 0;
   background: #f1f6f4;
 }
 
@@ -374,12 +376,13 @@
 }
 
 .route-model-action-row {
-  --route-cta-character-size: clamp(104px, 7.8vw, 112px);
+  --route-cta-character-slot: clamp(104px, 7.8vw, 112px);
+  --route-cta-character-size: clamp(154px, 11.5vw, 165px);
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) var(--route-cta-character-size);
+  grid-template-columns: minmax(0, 1fr) var(--route-cta-character-slot);
   align-items: center;
-  width: min(100%, calc(228px + var(--route-cta-character-size)));
+  width: min(100%, calc(228px + var(--route-cta-character-slot)));
 }
 
 .route-model-action-row .btn {
@@ -399,8 +402,8 @@
 
 .route-model-cta-character {
   position: absolute;
-  right: 3px;
-  bottom: -26px;
+  right: -46px;
+  bottom: -56px;
   display: block;
   width: var(--route-cta-character-size);
   aspect-ratio: 1;
@@ -408,9 +411,9 @@
 }
 
 .route-model-card-face .route-model-cta-character {
-  right: 39px;
-  bottom: -25px;
-  width: calc(var(--route-cta-character-size) - 16px);
+  right: -13px;
+  bottom: -102px;
+  width: calc(var(--route-cta-character-size) + 5px);
 }
 
 .route-model-cta-character img {
@@ -920,6 +923,7 @@
 
   .route-model-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 96px;
   }
 
   .route-model-card:last-child {
@@ -1053,7 +1057,8 @@
   }
 
   .route-model-action-row {
-    --route-cta-character-size: clamp(106px, 16vw, 118px);
+    --route-cta-character-slot: clamp(106px, 16vw, 118px);
+    --route-cta-character-size: clamp(158px, 22vw, 170px);
   }
 
   .values-journey {
@@ -1122,6 +1127,7 @@
 
   .route-model-grid {
     grid-template-columns: 1fr;
+    row-gap: 88px;
   }
 
   .route-model-card:last-child {
@@ -1138,7 +1144,19 @@
   }
 
   .route-model-action-row {
-    --route-cta-character-size: clamp(100px, 27vw, 108px);
+    --route-cta-character-slot: clamp(100px, 27vw, 108px);
+    --route-cta-character-size: clamp(142px, 39vw, 150px);
+  }
+
+  .route-model-cta-character {
+    right: -36px;
+    bottom: -45px;
+  }
+
+  .route-model-card-face .route-model-cta-character {
+    right: -8px;
+    bottom: -85px;
+    width: calc(var(--route-cta-character-size) + 5px);
   }
 
   .values-journey-heading {
