@@ -1148,9 +1148,20 @@
     --route-cta-character-size: clamp(142px, 39vw, 150px);
   }
 
+  .route-model-card-online .route-model-action-row {
+    --route-cta-character-slot: 82px;
+    --route-cta-character-size: clamp(108px, 30vw, 118px);
+    transform: translateY(10px);
+  }
+
   .route-model-cta-character {
     right: -36px;
     bottom: -29px;
+  }
+
+  .route-model-card-online .route-model-cta-character {
+    right: -20px;
+    bottom: -20px;
   }
 
   .route-model-card-face .route-model-cta-character {
