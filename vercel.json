@@ -10,6 +10,7 @@
   ],
   "redirects": [
     {"source": "/:path*", "has": [{"type": "host", "value": "www.birlikteiyilik.com"}], "destination": "https://birlikteiyilik.com/:path*", "permanent": true},
+    {"source": "/qr", "destination": "/", "permanent": true},
     {"source": "/iletisim", "destination": "/#iletisim", "permanent": true},
     {"source": "/uygulama", "destination": "/#uygulama", "permanent": true},
     {"source": "/yazilar", "destination": "/#icerik", "permanent": true},
