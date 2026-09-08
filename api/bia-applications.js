@@ -10,6 +10,8 @@ const TIME_SLOTS = [
   '16:00-16:20', '16:20-16:40', '16:40-17:00',
   '17:00-17:20', '17:20-17:40', '17:40-18:00'
 ];
+const ATTENDANCE_STATUSES = ['katildi', 'gelmedi', 'mazeretli'];
+const PASSWORD_ITERATIONS = 210000;
 const ENUMS = {
   applicationType: ['yuz-yuze', 'online'],
   gender: ['erkek', 'kiz'],
@@ -17,7 +19,7 @@ const ENUMS = {
   guardianRelation: ['anne', 'baba', 'yasal-vasi', 'diger'],
   quranLevel: ['hic-bilmiyor', 'elif-ba', 'okuyabiliyor', 'tecvid'],
   previousTraining: ['evet', 'hayir'],
-  mediaConsent: ['izin-veriyorum', 'izin-vermiyorum']
+  mediaConsent: ['izin-veriyorum']
 };
 
 const encoder = new TextEncoder();
@@ -61,6 +63,40 @@ function bytesFromBase64(value) {
 function base64UrlToBytes(value) {
   const normalized = value.replace(/-/g, '+').replace(/_/g, '/');
   return bytesFromBase64(normalized + '='.repeat((4 - normalized.length % 4) % 4));
+}
+
+function base64UrlFromBytes(bytes) {
+  return base64FromBytes(bytes).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+}
+
+async function signJwt(payload, secret) {
+  const header = base64UrlFromBytes(encoder.encode(JSON.stringify({ alg: 'HS256', typ: 'JWT' })));
+  const body = base64UrlFromBytes(encoder.encode(JSON.stringify(payload)));
+  const key = await crypto.subtle.importKey(
+    'raw', encoder.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+  );
+  const signature = await crypto.subtle.sign('HMAC', key, encoder.encode(`${header}.${body}`));
+  return `${header}.${body}.${base64UrlFromBytes(new Uint8Array(signature))}`;
+}
+
+async function hashPassword(password, saltValue) {
+  const salt = saltValue ? bytesFromBase64(saltValue) : crypto.getRandomValues(new Uint8Array(16));
+  const material = await crypto.subtle.importKey('raw', encoder.encode(password), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', hash: 'SHA-256', salt, iterations: PASSWORD_ITERATIONS }, material, 256
+  );
+  return { passwordSalt: base64FromBytes(salt), passwordHash: base64FromBytes(new Uint8Array(bits)) };
+}
+
+async function passwordMatches(password, teacher) {
+  if (!teacher?.passwordHash || !teacher?.passwordSalt) return false;
+  const candidate = await hashPassword(password, teacher.passwordSalt);
+  const expected = bytesFromBase64(teacher.passwordHash);
+  const actual = bytesFromBase64(candidate.passwordHash);
+  if (expected.length !== actual.length) return false;
+  let difference = 0;
+  for (let index = 0; index < expected.length; index += 1) difference |= expected[index] ^ actual[index];
+  return difference === 0;
 }
 
 async function verifyJwt(token, secret) {
@@ -121,6 +157,14 @@ function cleanText(value, maxLength) {
     .replace(/\s+/g, ' ')
     .trim()
     .slice(0, maxLength);
+}
+
+function cleanPassword(value) {
+  return String(value == null ? '' : value).replace(/[\u0000-\u001F\u007F]/g, '').slice(0, 128);
+}
+
+function normalizeUsername(value) {
+  return cleanText(value, 40).toLowerCase().replace(/ı/g, 'i').normalize('NFKD').replace(/[\u0300-\u036f]/g, '');
 }
 
 function digits(value) { return String(value || '').replace(/\D/g, ''); }
@@ -208,7 +252,8 @@ function validateTeacher(body) {
     id: cleanText(teacher.id, 80), name: cleanText(teacher.name, 100),
     gender: cleanText(teacher.gender, 20), phone: digits(teacher.phone).slice(0, 12),
     modes: orderedUnique(teacher.modes, ENUMS.applicationType), days: orderedUnique(teacher.days, WEEKDAYS),
-    active: teacher.active !== false
+    active: teacher.active !== false, username: normalizeUsername(teacher.username),
+    password: cleanPassword(teacher.password)
   };
   if (result.name.length < 3) throw new RequestError('Öğretmen adı eksik.');
   if (!['erkek', 'kadin'].includes(result.gender)) throw new RequestError('Öğretmen cinsiyeti geçersiz.');
@@ -219,7 +264,46 @@ function validateTeacher(body) {
   if (!Array.isArray(teacher.days) || !result.days.length || result.days.length !== teacher.days.length) {
     throw new RequestError('En az bir çalışma günü seçin.');
   }
+  if (!/^[a-z0-9._-]{4,40}$/.test(result.username)) {
+    throw new RequestError('Kullanıcı adı 4-40 karakter olmalı; yalnızca küçük harf, rakam, nokta, tire ve alt çizgi kullanılabilir.');
+  }
+  if (result.password && result.password.length < 8) throw new RequestError('Şifre en az 8 karakter olmalı.');
   return result;
+}
+
+function publicTeacher(teacher) {
+  if (!teacher) return null;
+  const { passwordHash, passwordSalt, ...safe } = teacher;
+  return { ...safe, hasLogin: Boolean(passwordHash && passwordSalt && teacher.username) };
+}
+
+function attendanceDay(dateValue) {
+  if (!validDate(dateValue)) return '';
+  const index = new Date(`${dateValue}T12:00:00Z`).getUTCDay();
+  return ['', 'pazartesi', 'sali', 'carsamba', 'persembe', 'cuma', ''][index] || '';
+}
+
+function mondayFor(dateValue) {
+  const date = new Date(`${dateValue}T12:00:00Z`);
+  const day = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() - day + 1);
+  return date.toISOString().slice(0, 10);
+}
+
+function isoPlusDays(dateValue, amount) {
+  const date = new Date(`${dateValue}T12:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + amount);
+  return date.toISOString().slice(0, 10);
+}
+
+function assertAttendanceDate(value) {
+  const date = cleanText(value, 10);
+  if (!validDate(date) || !attendanceDay(date)) throw new RequestError('Yoklama için hafta içinden geçerli bir gün seçin.');
+  const today = new Date().toISOString().slice(0, 10);
+  const earliest = isoPlusDays(today, -120);
+  const latest = isoPlusDays(today, 7);
+  if (date < earliest || date > latest) throw new RequestError('Yoklama yalnızca son 120 gün ve gelecek 7 gün içinde düzenlenebilir.');
+  return date;
 }
 
 function normalizeSchedule(schedule) {
@@ -394,9 +478,56 @@ export default async function handler(req) {
     throw new RequestError('Veriler aynı anda güncellendi. Lütfen tekrar deneyin.', 409);
   }
 
-  async function checkAdmin() {
+  async function bearerPayload() {
     const header = req.headers.get('authorization') || '';
     return header.startsWith('Bearer ') ? verifyJwt(header.slice(7), jwtSecret) : null;
+  }
+
+  async function checkAdmin() {
+    const payload = await bearerPayload();
+    return payload && payload.role !== 'teacher' ? payload : null;
+  }
+
+  async function requireTeacherSession() {
+    const payload = await bearerPayload();
+    if (!payload || payload.role !== 'teacher' || !payload.sub) throw new RequestError('Öğretmen oturumu geçersiz.', 401);
+    const planning = await getArchive(PLANNING_FILE);
+    const teacher = planning.records.find((item) => item.kind === 'teacher' && item.id === payload.sub);
+    if (!teacher || !teacher.active) throw new RequestError('Öğretmen hesabı aktif değil.', 403);
+    return { payload, planning, teacher };
+  }
+
+  function teacherDayLessons(records, teacher, date) {
+    const day = attendanceDay(date);
+    if (!day) return [];
+    const saved = new Map(records.filter((item) => item.kind === 'attendance' && item.teacherId === teacher.id && item.lessonDate === date)
+      .map((item) => [`${item.applicationId}|${item.slot}`, item]));
+    return records.filter((item) => item.kind === 'placement' && (!item.startDate || item.startDate <= date))
+      .flatMap((placement) => (placement.schedule || [])
+        .filter((entry) => entry.teacherId === teacher.id && entry.day === day)
+        .map((entry) => {
+          const attendance = saved.get(`${placement.applicationId}|${entry.slot}`);
+          return {
+            applicationId: placement.applicationId, applicationReference: placement.applicationReference,
+            studentName: placement.studentName, applicationType: placement.applicationType,
+            startDate: placement.startDate, day, slot: entry.slot,
+            status: attendance?.status || '', note: attendance?.note || '',
+            attendanceId: attendance?.id || '', updatedAt: attendance?.updatedAt || ''
+          };
+        }))
+      .sort((a, b) => TIME_SLOTS.indexOf(a.slot) - TIME_SLOTS.indexOf(b.slot) || a.studentName.localeCompare(b.studentName, 'tr'));
+  }
+
+  function teacherWeekSummary(records, teacher, selectedDate) {
+    const start = mondayFor(selectedDate);
+    return WEEKDAYS.map((day, index) => {
+      const date = isoPlusDays(start, index);
+      const lessons = teacherDayLessons(records, teacher, date);
+      return {
+        day, date, expected: lessons.length,
+        completed: lessons.filter((item) => item.status).length
+      };
+    });
   }
 
   async function requireApplication(applicationId, applicationCreatedAt) {
@@ -422,6 +553,38 @@ export default async function handler(req) {
     const archives = await Promise.all(files.map((fileName) => getArchive(fileName)));
     return archives.flatMap((archive) => archive.records)
       .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+  }
+
+  async function markApplicationsAsReserve(skipped, admin) {
+    const reserve = new Map((skipped || [])
+      .filter((item) => item.applicationId && item.reason !== 'Programı zaten var.' && item.hadExisting !== true)
+      .map((item) => [item.applicationId, cleanText(item.reason, 400)]));
+    if (!reserve.size) return 0;
+    const files = await getApplicationFiles();
+    let updatedCount = 0;
+    for (const fileName of files) {
+      const current = await getArchive(fileName);
+      if (!current.records.some((item) => reserve.has(item.id))) continue;
+      const changed = await mutateArchive(fileName, (records) => {
+        let count = 0;
+        const now = new Date().toISOString();
+        const next = records.map((item) => {
+          if (!reserve.has(item.id)) return item;
+          count += 1;
+          const reason = reserve.get(item.id);
+          const automaticNote = `Otomatik atama yapılamadı; yedek listeye alındı. ${reason}`;
+          return {
+            ...item, status: 'yedek', autoReserveReason: reason,
+            adminNote: item.autoReserveReason === reason ? item.adminNote :
+              (item.adminNote ? `${item.adminNote}\n${automaticNote}`.slice(0, 1000) : automaticNote),
+            updatedAt: now, updatedBy: adminIdentity(admin)
+          };
+        });
+        return { records: next, value: count };
+      }, 'BIA: atanamayan başvurular yedek listeye alındı');
+      updatedCount += changed;
+    }
+    return updatedCount;
   }
 
   async function saveAutomaticPlacements(targets, startDate, admin, replaceIds) {
@@ -460,7 +623,10 @@ export default async function handler(req) {
           working = [...recordsForPlan, placement];
           created.push(placement);
         } catch (error) {
-          skipped.push({ applicationId: application.id, studentName: application.studentName, reason: error.message });
+          skipped.push({
+            applicationId: application.id, studentName: application.studentName,
+            reason: error.message, hadExisting: Boolean(existing)
+          });
         }
       });
       return { records: working, value: { placements: created, skipped } };
@@ -489,9 +655,10 @@ export default async function handler(req) {
       const [records, planning] = await Promise.all([getAllApplications(), getArchive(PLANNING_FILE)]);
       return json({
         data: records,
-        teachers: planning.records.filter((item) => item.kind === 'teacher'),
+        teachers: planning.records.filter((item) => item.kind === 'teacher').map(publicTeacher),
         placements: planning.records.filter((item) => item.kind === 'placement'),
-        meta: { weekdays: WEEKDAYS, timeSlots: TIME_SLOTS }
+        attendance: planning.records.filter((item) => item.kind === 'attendance'),
+        meta: { weekdays: WEEKDAYS, timeSlots: TIME_SLOTS, attendanceStatuses: ATTENDANCE_STATUSES }
       }, 200, cors);
     } catch (_) {
       return json({ error: 'Şifreli başvuru arşivi açılamadı. Şifreleme anahtarını kontrol edin.' }, 500, cors);
@@ -527,6 +694,93 @@ export default async function handler(req) {
       }
     }
 
+    if (body.action === 'teacher-login') {
+      const username = normalizeUsername(body.username);
+      const password = cleanPassword(body.password);
+      if (!username || !password) return json({ error: 'Kullanıcı adı ve şifre gereklidir.' }, 400, cors);
+      try {
+        const planning = await getArchive(PLANNING_FILE);
+        const teacher = planning.records.find((item) => item.kind === 'teacher' && item.username === username);
+        let matches = false;
+        if (teacher) matches = await passwordMatches(password, teacher);
+        else await hashPassword(password, 'AAAAAAAAAAAAAAAAAAAAAA==');
+        if (!teacher || !matches || !teacher.active) {
+          return json({ error: 'Kullanıcı adı veya şifre hatalı.' }, 401, cors);
+        }
+        const now = Math.floor(Date.now() / 1000);
+        const token = await signJwt({
+          sub: teacher.id, role: 'teacher', name: teacher.name, iat: now, exp: now + (12 * 60 * 60)
+        }, jwtSecret);
+        return json({ ok: true, token, teacher: publicTeacher(teacher) }, 200, cors);
+      } catch (_) {
+        return json({ error: 'Öğretmen oturumu şu anda açılamadı.' }, 500, cors);
+      }
+    }
+
+    if (body.action === 'teacher-data') {
+      try {
+        const date = assertAttendanceDate(body.date);
+        const { planning, teacher } = await requireTeacherSession();
+        return json({
+          ok: true, teacher: publicTeacher(teacher), date, day: attendanceDay(date),
+          lessons: teacherDayLessons(planning.records, teacher, date),
+          week: teacherWeekSummary(planning.records, teacher, date),
+          meta: { weekdays: WEEKDAYS, timeSlots: TIME_SLOTS, attendanceStatuses: ATTENDANCE_STATUSES }
+        }, 200, cors);
+      } catch (error) {
+        return json({ error: error.message || 'Dersler yüklenemedi.' }, error.status || 500, cors);
+      }
+    }
+
+    if (body.action === 'attendance-save') {
+      try {
+        const date = assertAttendanceDate(body.date);
+        if (date > new Date().toISOString().slice(0, 10)) throw new RequestError('Gelecek bir ders için yoklama kaydedilemez.', 409);
+        const entries = Array.isArray(body.entries) ? body.entries.slice(0, 100) : [];
+        if (!entries.length) throw new RequestError('Kaydedilecek yoklama seçimi bulunamadı.');
+        const session = await requireTeacherSession();
+        const teacher = session.teacher;
+        const day = attendanceDay(date);
+        const now = new Date().toISOString();
+        const saved = await mutateArchive(PLANNING_FILE, (records) => {
+          const currentTeacher = records.find((item) => item.kind === 'teacher' && item.id === teacher.id);
+          if (!currentTeacher?.active) throw new RequestError('Öğretmen hesabı aktif değil.', 403);
+          const available = new Map(teacherDayLessons(records, currentTeacher, date)
+            .map((lesson) => [`${lesson.applicationId}|${lesson.slot}`, lesson]));
+          const seen = new Set();
+          const result = [];
+          entries.forEach((entry) => {
+            const applicationId = cleanText(entry.applicationId, 80);
+            const slot = cleanText(entry.slot, 20);
+            const status = cleanText(entry.status, 20);
+            const note = cleanText(entry.note, 300);
+            const key = `${applicationId}|${slot}`;
+            const lesson = available.get(key);
+            if (!lesson || seen.has(key)) throw new RequestError('Ders ataması değişti. Programı yenileyip tekrar deneyin.', 409);
+            if (!ATTENDANCE_STATUSES.includes(status)) throw new RequestError(`${lesson.studentName} için yoklama durumu seçin.`);
+            seen.add(key);
+            const index = records.findIndex((item) => item.kind === 'attendance' && item.teacherId === teacher.id &&
+              item.applicationId === applicationId && item.lessonDate === date && item.slot === slot);
+            const existing = index >= 0 ? records[index] : null;
+            const attendance = {
+              kind: 'attendance', id: existing?.id || crypto.randomUUID(), teacherId: teacher.id,
+              teacherName: currentTeacher.name, applicationId, applicationReference: lesson.applicationReference,
+              studentName: lesson.studentName, applicationType: lesson.applicationType,
+              lessonDate: date, day, slot, status, note, isDemo: Boolean(existing?.isDemo ||
+                records.find((item) => item.kind === 'placement' && item.applicationId === applicationId)?.isDemo),
+              createdAt: existing?.createdAt || now, updatedAt: now, updatedBy: currentTeacher.name
+            };
+            if (index >= 0) records[index] = attendance; else records.push(attendance);
+            result.push(attendance);
+          });
+          return { records, value: result };
+        }, `BIA: ${date} öğretmen yoklaması güncellendi`);
+        return json({ ok: true, data: saved }, 200, cors);
+      } catch (error) {
+        return json({ error: error.message || 'Yoklama kaydedilemedi.' }, error.status || 500, cors);
+      }
+    }
+
     const admin = await checkAdmin();
     if (!admin) return json({ error: 'Yetkisiz erişim.' }, 401, cors);
 
@@ -545,7 +799,8 @@ export default async function handler(req) {
           targets, startDate, admin,
           body.replaceExisting === true ? requestedIds : []
         );
-        return json({ ok: true, data: result.placements, skipped: result.skipped }, 200, cors);
+        const reserved = await markApplicationsAsReserve(result.skipped, admin);
+        return json({ ok: true, data: result.placements, skipped: result.skipped, reserved }, 200, cors);
       } catch (error) {
         return json({ error: error.message || 'Otomatik ders ataması yapılamadı.' }, error.status || 500, cors);
       }
@@ -560,10 +815,29 @@ export default async function handler(req) {
           'Test Erkek Öğrenci 04', 'Test Erkek Öğrenci 05', 'Test Kız Öğrenci 01',
           'Test Kız Öğrenci 02', 'Test Kız Öğrenci 03', 'Test Kız Öğrenci 04', 'Test Kız Öğrenci 05'
         ];
+        const demoAvailability = [
+          ['17:40-18:00'],
+          ['17:40-18:00'],
+          ['17:20-17:40', '17:40-18:00'],
+          ['16:40-17:00', '17:00-17:20'],
+          ['15:00-15:20', '15:20-15:40', '15:40-16:00'],
+          ['17:40-18:00'],
+          ['17:40-18:00'],
+          ['17:20-17:40', '17:40-18:00'],
+          ['16:00-16:20', '16:20-16:40', '16:40-17:00'],
+          ['15:20-15:40', '15:40-16:00', '16:00-16:20', '16:20-16:40']
+        ];
         const demoApplications = await mutateArchive(monthFile, (records) => {
           studentNames.forEach((studentName, index) => {
             const demoKey = `bia-demo-student-${index + 1}`;
-            if (records.some((item) => item.demoKey === demoKey)) return;
+            const existingIndex = records.findIndex((item) => item.demoKey === demoKey);
+            if (existingIndex >= 0) {
+              records[existingIndex] = {
+                ...records[existingIndex], availabilitySlots: demoAvailability[index],
+                updatedAt: new Date().toISOString(), updatedBy: adminIdentity(admin)
+              };
+              return;
+            }
             const createdAt = new Date(now.getTime() - index * 60000).toISOString();
             records.push({
               id: crypto.randomUUID(), reference: `BIA-TEST-${String(index + 1).padStart(2, '0')}`,
@@ -574,7 +848,7 @@ export default async function handler(req) {
               guardianPhone: `050000000${String(index + 1).padStart(2, '0')}`, studentPhone: '',
               address: 'Test kaydıdır; gerçek kişiye ait değildir.', secondGuardianName: '', secondGuardianPhone: '',
               quranLevel: ENUMS.quranLevel[index % ENUMS.quranLevel.length], previousTraining: index % 3 === 0 ? 'evet' : 'hayir',
-              previousTrainingDetail: '', availabilitySlots: [...TIME_SLOTS], notes: 'Yönetim paneli test kaydı.',
+              previousTrainingDetail: '', availabilitySlots: demoAvailability[index], notes: 'Yönetim paneli test kaydı.',
               consents: { rulesAccepted: true, privacyAcknowledged: true, termsAccepted: true, mediaConsent: 'izin-veriyorum', version: '2026-09-08' },
               status: 'uygun', adminNote: 'Otomatik oluşturulan test kaydı.', isDemo: true, demoKey,
               createdAt, updatedAt: createdAt, updatedBy: adminIdentity(admin)
@@ -602,10 +876,11 @@ export default async function handler(req) {
         }, 'BIA: 5 örnek öğretmen eklendi');
 
         const startDate = validDate(body.startDate) ? String(body.startDate) : nextMondayIso();
-        const planned = await saveAutomaticPlacements(demoApplications, startDate, admin, []);
+        const planned = await saveAutomaticPlacements(demoApplications, startDate, admin, demoApplications.map((item) => item.id));
+        const reserved = await markApplicationsAsReserve(planned.skipped, admin);
         return json({
           ok: true, data: { applications: demoApplications, teachers: demoTeachers, placements: planned.placements },
-          skipped: planned.skipped
+          skipped: planned.skipped, reserved
         }, 200, cors);
       } catch (error) {
         return json({ error: error.message || 'Test verisi oluşturulamadı.' }, error.status || 500, cors);
@@ -619,7 +894,7 @@ export default async function handler(req) {
         const planningResult = await mutateArchive(PLANNING_FILE, (records) => {
           const assignments = records.filter((item) => item.kind === 'placement' && item.applicationId === applicationId);
           return {
-            records: records.filter((item) => !(item.kind === 'placement' && item.applicationId === applicationId)),
+            records: records.filter((item) => !(['placement', 'attendance'].includes(item.kind) && item.applicationId === applicationId)),
             value: assignments.length
           };
         }, `BIA: ${application.reference} öğrenci ataması silindi`);
@@ -689,15 +964,17 @@ export default async function handler(req) {
         if (scope === 'applications') {
           const planningResult = await mutateArchive(PLANNING_FILE, (records) => {
             const removedAssignments = records.filter((item) => item.kind === 'placement').length;
+            const removedAttendance = records.filter((item) => item.kind === 'attendance').length;
             return {
-              records: records.filter((item) => item.kind !== 'placement'),
-              value: { removedAssignments }
+              records: records.filter((item) => item.kind !== 'placement' && item.kind !== 'attendance'),
+              value: { removedAssignments, removedAttendance }
             };
           }, 'BIA: tüm öğrenci ders atamaları silindi');
           const removedApplications = await removeApplicationsFromArchives(() => true, 'BIA: tüm öğrenci başvuruları silindi');
           return json({
             ok: true,
-            data: { removedApplications: removedApplications.length, removedAssignments: planningResult.removedAssignments }
+            data: { removedApplications: removedApplications.length, removedAssignments: planningResult.removedAssignments,
+              removedAttendance: planningResult.removedAttendance }
           }, 200, cors);
         }
 
@@ -708,11 +985,15 @@ export default async function handler(req) {
           const shouldRemovePlacement = (item) => item.kind === 'placement' &&
             (item.isDemo === true || demoApplicationIds.has(item.applicationId) ||
               (item.schedule || []).some((entry) => demoTeacherIds.has(entry.teacherId)));
+          const shouldRemoveAttendance = (item) => item.kind === 'attendance' &&
+            (item.isDemo === true || demoApplicationIds.has(item.applicationId) || demoTeacherIds.has(item.teacherId));
           const removedTeachers = records.filter((item) => item.kind === 'teacher' && item.isDemo === true).length;
           const removedAssignments = records.filter(shouldRemovePlacement).length;
+          const removedAttendance = records.filter(shouldRemoveAttendance).length;
           return {
-            records: records.filter((item) => !(item.kind === 'teacher' && item.isDemo === true) && !shouldRemovePlacement(item)),
-            value: { removedTeachers, removedAssignments }
+            records: records.filter((item) => !(item.kind === 'teacher' && item.isDemo === true) &&
+              !shouldRemovePlacement(item) && !shouldRemoveAttendance(item)),
+            value: { removedTeachers, removedAssignments, removedAttendance }
           };
         }, 'BIA: test öğretmenleri ve atamaları silindi');
         const removedApplications = await removeApplicationsFromArchives(
@@ -732,10 +1013,16 @@ export default async function handler(req) {
       try {
         const input = validateTeacher(body);
         const now = new Date().toISOString();
+        const credentials = input.password ? await hashPassword(input.password) : null;
         const saved = await mutateArchive(PLANNING_FILE, (records) => {
           const index = input.id ? records.findIndex((item) => item.kind === 'teacher' && item.id === input.id) : -1;
           const existing = index >= 0 ? records[index] : null;
           if (input.id && !existing) throw new RequestError('Öğretmen bulunamadı.', 404);
+          const usernameOwner = records.find((item) => item.kind === 'teacher' && item.username === input.username && item.id !== input.id);
+          if (usernameOwner) throw new RequestError('Bu kullanıcı adı başka bir öğretmen tarafından kullanılıyor.', 409);
+          if (!credentials && (!existing?.passwordHash || !existing?.passwordSalt)) {
+            throw new RequestError('Öğretmen hesabı için en az 8 karakterli bir şifre belirleyin.');
+          }
           if (existing) {
             const assignedEntries = records.filter((item) => item.kind === 'placement')
               .flatMap((item) => (item.schedule || []).map((entry) => ({ ...entry, mode: item.applicationType })))
@@ -749,10 +1036,14 @@ export default async function handler(req) {
           const teacher = {
             kind: 'teacher', id: existing?.id || crypto.randomUUID(), name: input.name, gender: input.gender,
             phone: input.phone, modes: input.modes, days: input.days, active: input.active,
+            username: input.username,
+            passwordHash: credentials?.passwordHash || existing?.passwordHash,
+            passwordSalt: credentials?.passwordSalt || existing?.passwordSalt,
+            passwordUpdatedAt: credentials ? now : existing?.passwordUpdatedAt,
             createdAt: existing?.createdAt || now, updatedAt: now, updatedBy: adminIdentity(admin)
           };
           if (index >= 0) records[index] = teacher; else records.push(teacher);
-          return { records, value: teacher };
+          return { records, value: publicTeacher(teacher) };
         }, 'BIA: öğretmen bilgisi güncellendi');
         return json({ ok: true, data: saved }, 200, cors);
       } catch (error) {

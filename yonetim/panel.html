@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>BİA Yönetim Paneli</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
-<link rel="stylesheet" href="/css/admin-applications.css?v=4">
+<link rel="stylesheet" href="/css/admin-applications.css?v=5">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; color: #222; min-height: 100vh; }
@@ -364,6 +364,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
     <button type="button" class="is-active" id="appsTabApplications" aria-selected="true">Başvurular <span id="appsTabApplicationCount">0</span></button>
     <button type="button" id="appsTabTeachers" aria-selected="false">Öğretmenler <span id="appsTabTeacherCount">0</span></button>
     <button type="button" id="appsTabSchedule" aria-selected="false">Ders programı <span id="appsTabScheduleCount">0</span></button>
+    <button type="button" id="appsTabReports" aria-selected="false">Raporlar <span id="appsTabReportCount">0</span></button>
   </nav>
 
   <div id="appsApplicationsView" class="apps-view is-active">
@@ -490,6 +491,60 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
     <section class="program-board" id="programBoard" aria-live="polite"></section>
   </div>
+
+  <div id="appsReportsView" class="apps-view" hidden>
+    <section class="reports-head">
+      <div>
+        <span class="apps-eyebrow">E-yoklama merkezi</span>
+        <h2>Yoklama raporları</h2>
+        <p>Beklenen dersleri, tamamlanan yoklamaları ve takip gerektiren kayıtları tek bakışta görün.</p>
+      </div>
+      <div class="reports-head-actions">
+        <a class="btn btn-gray" href="/yoklama/" target="_blank" rel="noopener">Öğretmen ekranını aç</a>
+        <button type="button" class="btn btn-gray" id="reportsCsv">CSV indir</button>
+        <button type="button" class="btn btn-red" id="reportsExcel">Excel indir</button>
+      </div>
+    </section>
+
+    <section class="reports-toolbar" aria-labelledby="reportsFilterTitle">
+      <div class="reports-toolbar-head"><h3 id="reportsFilterTitle">Rapor aralığı</h3><button type="button" id="reportsReset">Bu haftaya dön</button></div>
+      <div class="reports-filter-grid">
+        <label>Başlangıç<input id="reportsFrom" type="date"></label>
+        <label>Bitiş<input id="reportsTo" type="date"></label>
+        <label>Öğretmen<select id="reportsTeacher"><option value="">Tüm öğretmenler</option></select></label>
+        <label>Durum<select id="reportsStatus"><option value="">Tüm durumlar</option><option value="katildi">Katıldı</option><option value="gelmedi">Gelmedi</option><option value="mazeretli">Mazeretli</option><option value="eksik">Yoklama bekliyor</option></select></label>
+        <label class="reports-search">Öğrenci ara<input id="reportsSearch" type="search" placeholder="Ad veya başvuru no..."></label>
+      </div>
+    </section>
+
+    <section class="reports-summary" aria-label="Yoklama özeti">
+      <article><span>Beklenen ders</span><strong id="reportsExpected">0</strong><small>Seçilen tarih aralığında</small></article>
+      <article class="is-complete"><span>Yoklaması tamamlanan</span><strong id="reportsCompleted">0</strong><small id="reportsCompletionText">%0 tamamlama</small></article>
+      <article class="is-present"><span>Katılım</span><strong id="reportsPresent">0</strong><small id="reportsAttendanceText">%0 katılım</small></article>
+      <article class="is-missing"><span>Takip bekleyen</span><strong id="reportsMissing">0</strong><small>Eksik yoklama</small></article>
+    </section>
+
+    <section class="reports-progress" aria-label="Yoklama tamamlama oranı">
+      <div><span>Yoklama tamamlama</span><strong id="reportsProgressValue">%0</strong></div>
+      <div class="reports-progress-track"><i id="reportsProgressBar"></i></div>
+    </section>
+
+    <div class="reports-dashboard-grid">
+      <section class="report-panel">
+        <header><div><span class="apps-eyebrow">Ekip görünümü</span><h3>Öğretmen özeti</h3></div><span id="reportsTeacherResult">0 öğretmen</span></header>
+        <div id="reportsTeacherSummary" class="reports-teacher-list"></div>
+      </section>
+      <section class="report-panel is-alerts">
+        <header><div><span class="apps-eyebrow">Takip listesi</span><h3>Eksik yoklamalar</h3></div><span id="reportsMissingResult">0 kayıt</span></header>
+        <div id="reportsMissingList" class="reports-missing-list"></div>
+      </section>
+    </div>
+
+    <section class="reports-table-card">
+      <header><div><span class="apps-eyebrow">Kayıt dökümü</span><h3>Yoklama hareketleri</h3></div><span id="reportsResultCount">0 kayıt</span></header>
+      <div class="reports-table-wrap"><table class="reports-table"><thead><tr><th>Tarih</th><th>Öğretmen</th><th>Öğrenci</th><th>Saat</th><th>Tür</th><th>Durum</th><th>Not</th></tr></thead><tbody id="reportsTableBody"><tr><td colspan="7" class="apps-empty">Henüz yoklama kaydı yok.</td></tr></tbody></table></div>
+    </section>
+  </div>
 </main>
 
 <dialog id="appsDialog" class="apps-dialog" aria-labelledby="appsModalTitle">
@@ -501,7 +556,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
     <div id="appsModalDetails"></div>
     <section class="apps-detail-section assignment-section">
       <div class="assignment-title"><div><span class="apps-eyebrow">Haftalık yerleştirme</span><h3>Öğretmen ve saat planı</h3></div><span class="assignment-state" id="appsAssignmentState">Planlanmadı</span></div>
-      <div class="availability-summary"><strong>Öğrencinin müsait olduğu saatler</strong><div id="appsAvailability" class="availability-chips"></div></div>
+      <div class="availability-summary"><strong>Başvuru formunda öğrencinin seçtiği müsait saatler</strong><div id="appsAvailability" class="availability-chips"></div></div>
       <div class="assignment-controls">
         <label>Başlangıç günü <input type="date" id="appsStartDate"></label>
         <p>Öğrenci haftanın beş günü ders alır. Her gün için uygun öğretmen ve saat seçin.</p>
@@ -543,6 +598,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
         <label class="is-wide">Öğretmen adı <input id="teacherName" type="text" minlength="3" maxlength="100" required placeholder="Ad soyad"></label>
         <label>Telefon numarası <input id="teacherPhone" type="tel" required placeholder="05xx xxx xx xx"></label>
         <fieldset><legend>Cinsiyet</legend><div class="teacher-choice-row"><label><input type="radio" name="teacherGender" value="erkek" required> Erkek</label><label><input type="radio" name="teacherGender" value="kadin" required> Kadın</label></div></fieldset>
+        <section class="teacher-login-fields is-wide" aria-labelledby="teacherLoginTitle">
+          <div class="teacher-login-head"><div><strong id="teacherLoginTitle">E-yoklama girişi</strong><small>Öğretmen bu bilgilerle birlikteiyilik.com/yoklama adresine girer.</small></div><span id="teacherLoginState">Yeni hesap</span></div>
+          <div class="teacher-login-grid">
+            <label>Kullanıcı adı <input id="teacherUsername" type="text" minlength="4" maxlength="40" pattern="[a-z0-9._-]{4,40}" required autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="ornek.hoca"></label>
+            <label>Şifre <span class="teacher-password-wrap"><input id="teacherPassword" type="password" minlength="8" maxlength="128" autocomplete="new-password" placeholder="En az 8 karakter"><button type="button" id="teacherPasswordToggle" aria-label="Şifreyi göster">Göster</button></span><small id="teacherPasswordHint">Yeni öğretmen için zorunludur.</small></label>
+          </div>
+        </section>
         <fieldset class="is-wide"><legend>Eğitim türü</legend><div class="teacher-choice-row"><label><input type="checkbox" name="teacherModes" value="yuz-yuze"> Yüz yüze</label><label><input type="checkbox" name="teacherModes" value="online"> Online</label></div></fieldset>
         <fieldset class="is-wide"><legend>Çalışma günleri</legend><div class="teacher-choice-row teacher-days"><label><input type="checkbox" name="teacherDays" value="pazartesi"> Pazartesi</label><label><input type="checkbox" name="teacherDays" value="sali"> Salı</label><label><input type="checkbox" name="teacherDays" value="carsamba"> Çarşamba</label><label><input type="checkbox" name="teacherDays" value="persembe"> Perşembe</label><label><input type="checkbox" name="teacherDays" value="cuma"> Cuma</label></div></fieldset>
         <label class="teacher-active is-wide"><input type="checkbox" id="teacherActive" checked><span><strong>Aktif öğretmen</strong><small>Pasif öğretmenlere yeni ders atanamaz.</small></span></label>
@@ -1330,6 +1392,6 @@ function logout() {
 loadNews();
 </script>
 <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="/js/admin-applications.js?v=4"></script>
+<script src="/js/admin-applications.js?v=5"></script>
 </body>
 </html>

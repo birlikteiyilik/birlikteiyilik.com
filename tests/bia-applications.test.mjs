@@ -107,7 +107,7 @@ const declinedMediaResponse = await handler(new Request('http://localhost:4173/a
   headers: { 'Content-Type': 'application/json', 'Origin': 'http://localhost:4173' },
   body: JSON.stringify({ ...validSubmission, startedAt: Date.now() - 5000, mediaConsent: 'izin-vermiyorum' })
 }));
-assert.equal(declinedMediaResponse.status, 201);
+assert.equal(declinedMediaResponse.status, 400);
 
 function base64url(value) {
   return Buffer.from(value).toString('base64url');
@@ -143,7 +143,8 @@ async function adminPost(body) {
 const mondayTeacherResponse = await adminPost({
   action: 'teacher-save', teacher: {
     name: 'Meryem Kaplan', phone: '05321110001', gender: 'kadin', modes: ['yuz-yuze'],
-    days: ['pazartesi', 'sali', 'carsamba'], active: true
+    days: ['pazartesi', 'sali', 'carsamba'], active: true,
+    username: 'meryem.kaplan', password: 'GuvenliSifre-01'
   }
 });
 assert.equal(mondayTeacherResponse.status, 200);
@@ -152,7 +153,8 @@ const mondayTeacher = (await mondayTeacherResponse.json()).data;
 const fridayTeacherResponse = await adminPost({
   action: 'teacher-save', teacher: {
     name: 'Ayşe Yılmaz', phone: '05321110002', gender: 'kadin', modes: ['yuz-yuze', 'online'],
-    days: ['persembe', 'cuma'], active: true
+    days: ['persembe', 'cuma'], active: true,
+    username: 'ayse.yilmaz', password: 'GuvenliSifre-02'
   }
 });
 assert.equal(fridayTeacherResponse.status, 200);
@@ -166,6 +168,8 @@ const list = await listResponse.json();
 const firstApplication = list.data.find((item) => item.studentName === validSubmission.studentName);
 assert.ok(firstApplication?.id);
 assert.equal(list.teachers.length, 2);
+assert.equal(list.teachers.every((teacher) => !('passwordHash' in teacher) && !('passwordSalt' in teacher)), true);
+assert.equal(list.teachers.every((teacher) => teacher.hasLogin), true);
 
 const splitSchedule = [
   ['pazartesi', mondayTeacher.id], ['sali', mondayTeacher.id], ['carsamba', mondayTeacher.id],
@@ -173,7 +177,7 @@ const splitSchedule = [
 ].map(([day, teacherId]) => ({ day, teacherId, slot: '15:00-15:20' }));
 const placementResponse = await adminPost({
   action: 'placement-save', applicationId: firstApplication.id, applicationCreatedAt: firstApplication.createdAt,
-  startDate: '2026-09-14', schedule: splitSchedule
+  startDate: '2020-01-01', schedule: splitSchedule
 });
 assert.equal(placementResponse.status, 200);
 assert.equal((await placementResponse.json()).data.schedule.length, 5);
@@ -183,6 +187,56 @@ const completeResponse = await adminPost({
   status: 'kayit-tamamlandi', adminNote: 'Plan hazır.'
 });
 assert.equal(completeResponse.status, 200);
+
+const failedTeacherLogin = await handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'POST', headers: { 'Content-Type': 'application/json', 'Origin': 'http://localhost:4173' },
+  body: JSON.stringify({ action: 'teacher-login', username: 'meryem.kaplan', password: 'yanlis-sifre' })
+}));
+assert.equal(failedTeacherLogin.status, 401);
+
+const teacherLoginResponse = await handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'POST', headers: { 'Content-Type': 'application/json', 'Origin': 'http://localhost:4173' },
+  body: JSON.stringify({ action: 'teacher-login', username: 'meryem.kaplan', password: 'GuvenliSifre-01' })
+}));
+assert.equal(teacherLoginResponse.status, 200);
+const teacherLogin = await teacherLoginResponse.json();
+assert.equal(teacherLogin.teacher.name, 'Meryem Kaplan');
+assert.ok(teacherLogin.token);
+
+const teacherHeaders = { 'Content-Type': 'application/json', 'Origin': 'http://localhost:4173', 'Authorization': `Bearer ${teacherLogin.token}` };
+const teacherAdminAttempt = await handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'GET', headers: teacherHeaders
+}));
+assert.equal(teacherAdminAttempt.status, 401);
+
+const today = new Date();
+const todayDay = today.getDay() || 7;
+today.setDate(today.getDate() - todayDay + 1);
+const attendanceDate = today.toISOString().slice(0, 10);
+const teacherDataResponse = await handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'POST', headers: teacherHeaders, body: JSON.stringify({ action: 'teacher-data', date: attendanceDate })
+}));
+assert.equal(teacherDataResponse.status, 200);
+const teacherData = await teacherDataResponse.json();
+assert.equal(teacherData.day, 'pazartesi');
+assert.equal(teacherData.lessons.length, 1);
+assert.equal(teacherData.lessons[0].studentName, validSubmission.studentName);
+
+const attendanceSaveResponse = await handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'POST', headers: teacherHeaders, body: JSON.stringify({
+    action: 'attendance-save', date: attendanceDate,
+    entries: [{ applicationId: firstApplication.id, slot: '15:00-15:20', status: 'katildi', note: 'Derse zamanında katıldı.' }]
+  })
+}));
+assert.equal(attendanceSaveResponse.status, 200);
+const savedAttendance = (await attendanceSaveResponse.json()).data[0];
+assert.equal(savedAttendance.status, 'katildi');
+
+const attendanceList = await (await handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'GET', headers: adminHeaders
+}))).json();
+assert.equal(attendanceList.attendance.length, 1);
+assert.equal(attendanceList.attendance[0].studentName, validSubmission.studentName);
 
 const secondSubmission = { ...validSubmission, studentName: 'İkinci Öğrenci', tckn: makeTckn('200000003'), startedAt: Date.now() - 5000 };
 const secondResponse = await handler(new Request('http://localhost:4173/api/bia-applications', {
@@ -205,7 +259,8 @@ assert.match((await conflictResponse.json()).error, /dolu/);
 const maleTeacherResponse = await adminPost({
   action: 'teacher-save', teacher: {
     name: 'Mustafa Kaplan', phone: '05321110003', gender: 'erkek', modes: ['yuz-yuze'],
-    days: ['pazartesi', 'sali', 'carsamba', 'persembe', 'cuma'], active: true
+    days: ['pazartesi', 'sali', 'carsamba', 'persembe', 'cuma'], active: true,
+    username: 'mustafa.kaplan', password: 'GuvenliSifre-03'
   }
 });
 assert.equal(maleTeacherResponse.status, 200);
@@ -254,12 +309,43 @@ assert.equal(new Set(autoPlan.data[0].schedule.map((entry) => entry.slot)).size,
 assert.ok(autoPlan.data[0].schedule.every((entry) => entry.teacherId === maleTeacher.id));
 assert.ok(autoPlan.data[0].schedule.every((entry) => maleSubmission.availabilitySlots.includes(entry.slot)));
 
+const reserveSubmission = {
+  ...validSubmission, applicationType: 'online', studentName: 'Yedek Test Öğrenci',
+  tckn: makeTckn('400000007'), availabilitySlots: ['17:40-18:00'], startedAt: Date.now() - 5000
+};
+const reserveSubmitResponse = await handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'POST', headers: { 'Content-Type': 'application/json', 'Origin': 'http://localhost:4173' },
+  body: JSON.stringify(reserveSubmission)
+}));
+assert.equal(reserveSubmitResponse.status, 201);
+const reserveBeforePlan = await (await handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'GET', headers: adminHeaders
+}))).json();
+const reserveApplication = reserveBeforePlan.data.find((item) => item.studentName === reserveSubmission.studentName);
+const reservePlanResponse = await adminPost({ action: 'auto-plan', applicationIds: [reserveApplication.id], startDate: '2026-09-14' });
+assert.equal(reservePlanResponse.status, 200);
+const reservePlan = await reservePlanResponse.json();
+assert.equal(reservePlan.data.length, 0);
+assert.equal(reservePlan.reserved, 1);
+const reserveAfterPlan = await (await handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'GET', headers: adminHeaders
+}))).json();
+assert.equal(reserveAfterPlan.data.find((item) => item.id === reserveApplication.id).status, 'yedek');
+
 const demoSeedResponse = await adminPost({ action: 'demo-seed', startDate: '2026-09-14' });
 assert.equal(demoSeedResponse.status, 200);
 const demoSeed = await demoSeedResponse.json();
 assert.equal(demoSeed.data.applications.length, 10);
 assert.equal(demoSeed.data.teachers.length, 5);
 assert.equal(demoSeed.data.placements.length, 10);
+assert.ok(demoSeed.data.applications.some((item) => item.availabilitySlots.length === 1 && item.availabilitySlots[0] === '17:40-18:00'));
+assert.ok(new Set(demoSeed.data.applications.map((item) => item.availabilitySlots.join('|'))).size >= 5);
+
+const demoRefreshResponse = await adminPost({ action: 'demo-seed', startDate: '2026-09-14' });
+assert.equal(demoRefreshResponse.status, 200);
+const demoRefresh = await demoRefreshResponse.json();
+assert.equal(demoRefresh.data.applications.length, 10);
+assert.equal(demoRefresh.data.placements.length, 10);
 
 const demoList = await (await handler(new Request('http://localhost:4173/api/bia-applications', {
   method: 'GET', headers: adminHeaders
@@ -309,6 +395,7 @@ const emptyList = await (await handler(new Request('http://localhost:4173/api/bi
 assert.equal(emptyList.data.length, 0);
 assert.equal(emptyList.teachers.length, 0);
 assert.equal(emptyList.placements.length, 0);
+assert.equal(emptyList.attendance.length, 0);
 
 globalThis.fetch = originalFetch;
 console.log('bia-applications tests passed');

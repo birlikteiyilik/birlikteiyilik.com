@@ -14,6 +14,7 @@
     previous: { evet: 'Evet', hayir: 'Hayır' },
     media: { 'izin-veriyorum': 'İzin veriyor', 'izin-vermiyorum': 'İzin vermiyor' },
     days: { pazartesi: 'Pazartesi', sali: 'Salı', carsamba: 'Çarşamba', persembe: 'Perşembe', cuma: 'Cuma' },
+    attendance: { katildi: 'Katıldı', gelmedi: 'Gelmedi', mazeretli: 'Mazeretli', eksik: 'Yoklama bekliyor' },
     status: {
       yeni: 'Yeni', inceleniyor: 'İnceleniyor', uygun: 'Uygun', yedek: 'Yedek',
       'kayit-tamamlandi': 'Kayıt tamamlandı', 'uygun-degil': 'Uygun değil'
@@ -23,6 +24,7 @@
   let applications = [];
   let teachers = [];
   let placements = [];
+  let attendanceRecords = [];
   let meta = fallbackMeta;
   let loaded = false;
   let selectedId = '';
@@ -108,13 +110,14 @@
     el('appsTabApplicationCount').textContent = applications.length;
     el('appsTabTeacherCount').textContent = teachers.length;
     el('appsTabScheduleCount').textContent = placements.length;
+    el('appsTabReportCount').textContent = attendanceRecords.length;
     const demoApplications = applications.filter((item) => item.isDemo).length;
     const demoTeachers = teachers.filter((item) => item.isDemo).length;
     const demoPlacements = placements.filter((item) => item.isDemo).length;
     const demoButton = el('programDemoSeed');
     const hasDemoData = demoApplications + demoTeachers + demoPlacements > 0;
-    demoButton.dataset.mode = hasDemoData ? 'remove' : 'seed';
-    demoButton.textContent = hasDemoData ? 'Test verilerini sil' : 'Test verisini kur';
+    demoButton.dataset.mode = hasDemoData ? 'refresh' : 'seed';
+    demoButton.textContent = hasDemoData ? 'Test verisini güncelle' : 'Test verisini kur';
     el('dataCountApplications').textContent = applications.length;
     el('dataCountTeachers').textContent = teachers.length;
     el('dataCountAssignments').textContent = placements.length;
@@ -165,7 +168,7 @@
     const query = el('appsTeacherSearch').value.trim().toLocaleLowerCase('tr-TR');
     const state = el('appsTeacherState').value;
     const filtered = teachers.filter((teacher) => {
-      const haystack = `${teacher.name} ${teacher.phone}`.toLocaleLowerCase('tr-TR');
+      const haystack = `${teacher.name} ${teacher.phone} ${teacher.username || ''}`.toLocaleLowerCase('tr-TR');
       return (!query || haystack.includes(query)) && (!state || (state === 'active' ? teacher.active : !teacher.active));
     });
     el('appsTeacherResult').textContent = `${filtered.length} öğretmen`;
@@ -180,7 +183,7 @@
         return `<article class="teacher-card ${teacher.active ? '' : 'is-passive'}" style="--card-index:${index}">
           <div class="teacher-card-top"><span class="teacher-avatar">${escapeHtml(teacher.name.charAt(0).toLocaleUpperCase('tr-TR'))}</span><span class="teacher-status">${teacher.active ? 'Aktif' : 'Pasif'}</span></div>
           <h3>${escapeHtml(teacher.name)}</h3><a href="tel:${escapeHtml(teacher.phone)}">${escapeHtml(formatPhone(teacher.phone))}</a>
-          <div class="teacher-tags">${teacher.modes.map((mode) => `<span>${escapeHtml(labels.type[mode])}</span>`).join('')}</div>
+          <div class="teacher-tags">${teacher.modes.map((mode) => `<span>${escapeHtml(labels.type[mode])}</span>`).join('')}<span>${teacher.hasLogin ? `Giriş: ${escapeHtml(teacher.username)}` : 'Giriş eksik'}</span></div>
           <div class="teacher-days-strip">${meta.weekdays.map((day) => `<span class="${teacher.days.includes(day) ? 'is-on' : ''}" title="${labels.days[day]}">${labels.days[day].slice(0, 2)}</span>`).join('')}</div>
           <div class="teacher-card-foot"><span>${escapeHtml(labels.gender[teacher.gender])} · ${assigned} öğrenci</span><button type="button" class="teacher-edit" data-teacher-id="${escapeHtml(teacher.id)}">Düzenle</button></div>
         </article>`;
@@ -313,9 +316,146 @@
     el('programBoard').innerHTML = cards.join('');
   }
 
+  function dateValue(date) {
+    const shifted = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+    return shifted.toISOString().slice(0, 10);
+  }
+
+  function addDays(value, amount) {
+    const date = new Date(`${value}T12:00:00`);
+    date.setDate(date.getDate() + amount);
+    return dateValue(date);
+  }
+
+  function thisWeekRange() {
+    const today = new Date();
+    const day = today.getDay() || 7;
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - day + 1);
+    return { from: dateValue(monday), to: dateValue(today) };
+  }
+
+  function dayForDate(value) {
+    return meta.weekdays[(new Date(`${value}T12:00:00`).getDay() || 7) - 1] || '';
+  }
+
+  function renderReportFilters() {
+    const value = el('reportsTeacher').value;
+    const attendanceTeachers = attendanceRecords.map((item) => ({ id: item.teacherId, name: item.teacherName })).filter((item) => item.id);
+    const choices = [...teachers.map((teacher) => ({ id: teacher.id, name: teacher.name })), ...attendanceTeachers]
+      .filter((teacher, index, list) => list.findIndex((item) => item.id === teacher.id) === index)
+      .sort((a, b) => a.name.localeCompare(b.name, 'tr'));
+    el('reportsTeacher').innerHTML = '<option value="">Tüm öğretmenler</option>' + choices
+      .map((teacher) => `<option value="${escapeHtml(teacher.id)}">${escapeHtml(teacher.name)}</option>`).join('');
+    el('reportsTeacher').value = choices.some((teacher) => teacher.id === value) ? value : '';
+  }
+
+  function reportRows(includeStatusFilter) {
+    const from = el('reportsFrom').value;
+    const requestedTo = el('reportsTo').value;
+    const today = dateValue(new Date());
+    const to = requestedTo && requestedTo < today ? requestedTo : today;
+    const teacherId = el('reportsTeacher').value;
+    const query = el('reportsSearch').value.trim().toLocaleLowerCase('tr-TR');
+    const status = includeStatusFilter ? el('reportsStatus').value : '';
+    if (!from || !to || from > to) return [];
+
+    const saved = new Map(attendanceRecords.map((item) => [
+      `${item.teacherId}|${item.applicationId}|${item.lessonDate}|${item.slot}`, item
+    ]));
+    const rows = [];
+    const known = new Set();
+    let date = from;
+    let guard = 0;
+    while (date <= to && guard < 370) {
+      const day = dayForDate(date);
+      if (day) {
+        placements.filter((placement) => !placement.startDate || placement.startDate <= date).forEach((placement) => {
+          (placement.schedule || []).filter((entry) => entry.day === day).forEach((entry) => {
+            const key = `${entry.teacherId}|${placement.applicationId}|${date}|${entry.slot}`;
+            const record = saved.get(key);
+            known.add(key);
+            rows.push({
+              teacherId: entry.teacherId, teacherName: entry.teacherName || teacherOf(entry.teacherId)?.name || 'Arşiv öğretmen',
+              applicationId: placement.applicationId, applicationReference: placement.applicationReference,
+              studentName: placement.studentName, applicationType: placement.applicationType,
+              lessonDate: date, day, slot: entry.slot, status: record?.status || 'eksik', note: record?.note || '',
+              updatedAt: record?.updatedAt || ''
+            });
+          });
+        });
+      }
+      date = addDays(date, 1);
+      guard += 1;
+    }
+    attendanceRecords.forEach((record) => {
+      if (record.lessonDate < from || record.lessonDate > to) return;
+      const key = `${record.teacherId}|${record.applicationId}|${record.lessonDate}|${record.slot}`;
+      if (known.has(key)) return;
+      rows.push({ ...record });
+    });
+    return rows.filter((row) => {
+      const haystack = `${row.studentName || ''} ${row.applicationReference || ''} ${row.teacherName || ''}`.toLocaleLowerCase('tr-TR');
+      return (!teacherId || row.teacherId === teacherId) && (!query || haystack.includes(query)) && (!status || row.status === status);
+    });
+  }
+
+  function renderReports() {
+    if (!el('reportsFrom').value || !el('reportsTo').value) {
+      const range = thisWeekRange();
+      el('reportsFrom').value = range.from;
+      el('reportsTo').value = range.to;
+    }
+    const all = reportRows(false);
+    const filtered = reportRows(true).sort((a, b) => b.lessonDate.localeCompare(a.lessonDate) ||
+      meta.timeSlots.indexOf(a.slot) - meta.timeSlots.indexOf(b.slot));
+    const completed = all.filter((row) => row.status !== 'eksik');
+    const present = all.filter((row) => row.status === 'katildi').length;
+    const missing = all.filter((row) => row.status === 'eksik');
+    const completionRate = all.length ? Math.round(completed.length / all.length * 100) : 0;
+    const attendanceRate = completed.length ? Math.round(present / completed.length * 100) : 0;
+    el('reportsExpected').textContent = all.length;
+    el('reportsCompleted').textContent = completed.length;
+    el('reportsPresent').textContent = present;
+    el('reportsMissing').textContent = missing.length;
+    el('reportsCompletionText').textContent = `%${completionRate} tamamlama`;
+    el('reportsAttendanceText').textContent = `%${attendanceRate} katılım`;
+    el('reportsProgressValue').textContent = `%${completionRate}`;
+    el('reportsProgressBar').style.transform = `scaleX(${completionRate / 100})`;
+    const grouped = new Map();
+    all.forEach((row) => {
+      const key = row.teacherId || row.teacherName;
+      if (!grouped.has(key)) grouped.set(key, { id: row.teacherId, name: row.teacherName || 'Arşiv öğretmen', expected: 0, completed: 0, present: 0 });
+      const group = grouped.get(key);
+      group.expected += 1;
+      if (row.status !== 'eksik') group.completed += 1;
+      if (row.status === 'katildi') group.present += 1;
+    });
+    const teacherRows = [...grouped.values()].sort((a, b) => b.expected - a.expected || a.name.localeCompare(b.name, 'tr'));
+    el('reportsTeacherResult').textContent = `${teacherRows.length} öğretmen`;
+    el('reportsTeacherSummary').innerHTML = teacherRows.length ? teacherRows.map((teacher) => {
+      const rate = teacher.expected ? Math.round(teacher.completed / teacher.expected * 100) : 0;
+      return `<article class="report-teacher-row"><div class="report-teacher-name"><span class="teacher-avatar">${escapeHtml(teacher.name.charAt(0).toLocaleUpperCase('tr-TR'))}</span><span><strong>${escapeHtml(teacher.name)}</strong><small>${teacher.completed}/${teacher.expected} yoklama · ${teacher.present} katılım</small></span></div><strong>%${rate}</strong><span class="report-mini-meter"><i style="--value:${rate}%"></i></span></article>`;
+    }).join('') : '<div class="report-empty">Bu aralıkta planlanmış ders bulunmuyor.</div>';
+
+    el('reportsMissingResult').textContent = `${missing.length} kayıt`;
+    el('reportsMissingList').innerHTML = missing.length ? missing.slice(0, 40).map((row) => {
+      const date = new Date(`${row.lessonDate}T12:00:00`);
+      return `<article class="report-missing-row"><span class="report-missing-date"><strong>${date.getDate()}</strong>${new Intl.DateTimeFormat('tr-TR', { month: 'short' }).format(date)}</span><span class="report-missing-copy"><strong>${escapeHtml(row.studentName)}</strong><small>${escapeHtml(row.teacherName)} · ${escapeHtml(labels.days[row.day] || row.day)}</small></span><time>${escapeHtml(row.slot)}</time></article>`;
+    }).join('') : '<div class="report-empty">Harika—seçilen aralıkta eksik yoklama yok.</div>';
+
+    el('reportsResultCount').textContent = `${filtered.length} kayıt`;
+    el('reportsTableBody').innerHTML = filtered.length ? filtered.map((row) => `<tr>
+      <td>${escapeHtml(formatDate(`${row.lessonDate}T12:00:00`, false))}</td><td>${escapeHtml(row.teacherName)}</td>
+      <td><span class="app-student">${escapeHtml(row.studentName)}</span><span class="app-ref">${escapeHtml(row.applicationReference)}</span></td>
+      <td>${escapeHtml(row.slot)}</td><td>${escapeHtml(labels.type[row.applicationType] || row.applicationType)}</td>
+      <td><span class="report-status report-status-${escapeHtml(row.status)}">${escapeHtml(labels.attendance[row.status] || row.status)}</span></td><td>${escapeHtml(row.note || '—')}</td>
+    </tr>`).join('') : '<tr><td colspan="7" class="apps-empty">Filtrelerle eşleşen yoklama kaydı bulunamadı.</td></tr>';
+  }
+
   async function load(force) {
     if (loaded && !force) {
-      renderStats(); renderTeacherFilter(); renderProgramFilters(); renderTable(); renderTeacherGrid(); renderProgram();
+      renderStats(); renderTeacherFilter(); renderProgramFilters(); renderTable(); renderTeacherGrid(); renderProgram(); renderReportFilters(); renderReports();
       return;
     }
     el('appsTableBody').innerHTML = '<tr><td colspan="9"><div class="apps-loading"><span class="spin"></span>Şifreli kayıtlar açılıyor...</div></td></tr>';
@@ -325,9 +465,10 @@
       applications = Array.isArray(result.data) ? result.data : [];
       teachers = Array.isArray(result.teachers) ? result.teachers : [];
       placements = Array.isArray(result.placements) ? result.placements : [];
+      attendanceRecords = Array.isArray(result.attendance) ? result.attendance : [];
       meta = result.meta?.weekdays && result.meta?.timeSlots ? result.meta : fallbackMeta;
       loaded = true;
-      renderStats(); renderTeacherFilter(); renderProgramFilters(); renderTable(); renderTeacherGrid(); renderProgram();
+      renderStats(); renderTeacherFilter(); renderProgramFilters(); renderTable(); renderTeacherGrid(); renderProgram(); renderReportFilters(); renderReports();
       if (force) toast('Başvurular ve ders planı güncellendi.');
     } catch (error) {
       el('appsTableBody').innerHTML = `<tr><td colspan="9" class="apps-empty">${escapeHtml(error.message)}</td></tr>`;
@@ -405,7 +546,8 @@
       </dl></section>
       <section class="apps-detail-section"><h3>Eğitim bilgileri</h3><dl class="apps-detail-grid">
         ${detail('Başvuru türü', labels.type[item.applicationType])}${detail('Kur’an seviyesi', labels.level[item.quranLevel])}
-        ${detail('Daha önce eğitim aldı', labels.previous[item.previousTraining])}${detail('Önceki program', item.previousTrainingDetail)}${detail('Veli notu', item.notes, true)}
+        ${detail('Daha önce eğitim aldı', labels.previous[item.previousTraining])}${detail('Önceki program', item.previousTrainingDetail)}
+        ${detail('Öğrencinin seçtiği müsait saatler', (item.availabilitySlots || []).join(', '), true)}${detail('Veli notu', item.notes, true)}
       </dl></section>
       <section class="apps-detail-section"><h3>Onaylar</h3><dl class="apps-detail-grid">
         ${detail('Program kuralları', item.consents?.rulesAccepted ? 'Kabul edildi' : 'Eksik')}
@@ -607,6 +749,57 @@
     toast('Filtrelenmiş başvurular Excel olarak indirildi.');
   }
 
+  function reportExportRows() {
+    return reportRows(true).map((row) => ({
+      'Ders Tarihi': row.lessonDate,
+      'Gün': labels.days[row.day] || row.day,
+      'Saat': row.slot,
+      'Öğretmen': row.teacherName,
+      'Öğrenci': row.studentName,
+      'Başvuru No': row.applicationReference,
+      'Eğitim Türü': labels.type[row.applicationType] || row.applicationType,
+      'Yoklama Durumu': labels.attendance[row.status] || row.status,
+      'Not': row.note || '',
+      'Son Güncelleme': row.updatedAt ? formatDate(row.updatedAt, true) : ''
+    }));
+  }
+
+  function exportReportCsv() {
+    const rows = reportExportRows();
+    if (!rows.length) return toast('Dışa aktarılacak yoklama kaydı bulunamadı.', 'error');
+    const headers = Object.keys(rows[0]);
+    const safe = (value) => {
+      let text = String(value == null ? '' : value);
+      if (/^[=+\-@\t\r]/.test(text)) text = `'${text}`;
+      return `"${text.replace(/"/g, '""')}"`;
+    };
+    const csv = [headers.map(safe).join(';'), ...rows.map((row) => headers.map((key) => safe(row[key])).join(';'))].join('\r\n');
+    download(new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' }), `bia-yoklama-${dateValue(new Date())}.csv`);
+    toast('Yoklama raporu CSV olarak indirildi.');
+  }
+
+  function exportReportExcel() {
+    const rows = reportExportRows();
+    if (!rows.length) return toast('Dışa aktarılacak yoklama kaydı bulunamadı.', 'error');
+    if (!window.XLSX) return toast('Excel bileşeni yüklenemedi; CSV kullanabilirsiniz.', 'error');
+    const sheet = XLSX.utils.json_to_sheet(rows);
+    sheet['!cols'] = Object.keys(rows[0]).map((key) => ({ wch: Math.min(36, Math.max(13, key.length + 2)) }));
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, sheet, 'Yoklama Raporu');
+    XLSX.writeFile(workbook, `bia-yoklama-${dateValue(new Date())}.xlsx`, { compression: true });
+    toast('Yoklama raporu Excel olarak indirildi.');
+  }
+
+  function resetReportFilters() {
+    const range = thisWeekRange();
+    el('reportsFrom').value = range.from;
+    el('reportsTo').value = range.to;
+    el('reportsTeacher').value = '';
+    el('reportsStatus').value = '';
+    el('reportsSearch').value = '';
+    renderReports();
+  }
+
   function resetFilters() {
     ['appsSearch', 'appsType', 'appsGender', 'appsGrade', 'appsLevel', 'appsStatus', 'appsPlanState', 'appsTeacher', 'appsFrom', 'appsTo']
       .forEach((id) => { el(id).value = ''; });
@@ -637,7 +830,7 @@
       return;
     }
     feedback.className = `program-auto-feedback ${created ? 'is-warning' : 'is-error'}`;
-    feedback.innerHTML = `<strong>${created} öğrenci atandı, ${skipped.length} başvuru bekliyor.</strong><span>${skipped.slice(0, 3).map((item) => `${escapeHtml(item.studentName)}: ${escapeHtml(item.reason)}`).join(' · ')}</span>`;
+    feedback.innerHTML = `<strong>${created} öğrenci atandı, ${skipped.length} başvuru yedek listeye alındı.</strong><span>${skipped.slice(0, 3).map((item) => `${escapeHtml(item.studentName)}: ${escapeHtml(item.reason)}`).join(' · ')}</span>`;
   }
 
   async function autoAssignAll() {
@@ -698,13 +891,12 @@
   }
 
   async function seedDemoData() {
-    if (el('programDemoSeed').dataset.mode === 'remove') {
-      await removeDemoData();
-      return;
-    }
+    const refreshing = el('programDemoSeed').dataset.mode === 'refresh';
     const accepted = await confirmModal(
-      'Gerçek kayıtlardan “Test” etiketiyle ayrılan 5 kız, 5 erkek öğrenci ve 5 öğretmen oluşturulup otomatik planlanacak.',
-      'Test verisini kur', '10 öğrenci + 5 öğretmen ekle'
+      refreshing
+        ? '10 test öğrencisinin müsait saatleri gerçekçi biçimde dağıtılacak ve programları yeniden hesaplanacak. Gerçek kayıtlar değişmeyecek.'
+        : 'Gerçek kayıtlardan “Test” etiketiyle ayrılan 5 kız, 5 erkek öğrenci ve 5 öğretmen oluşturulup otomatik planlanacak.',
+      refreshing ? 'Test verisini güncelle' : 'Test verisini kur', refreshing ? 'Saatleri dağıt ve planla' : '10 öğrenci + 5 öğretmen ekle'
     );
     if (!accepted) return;
     const button = el('programDemoSeed');
@@ -719,7 +911,7 @@
       showAutoFeedback((result.data?.placements || []).length, result.skipped || []);
       toast('10 test öğrencisi ve 5 test öğretmeni hazır.');
     } catch (error) {
-      button.disabled = false; button.textContent = 'Test verisini kur'; toast(error.message, 'error');
+      button.disabled = false; button.textContent = refreshing ? 'Test verisini güncelle' : 'Test verisini kur'; toast(error.message, 'error');
     }
   }
 
@@ -855,8 +1047,8 @@
   }
 
   function switchView(view) {
-    const views = { applications: 'appsApplicationsView', teachers: 'appsTeachersView', schedule: 'appsScheduleView' };
-    const tabs = { applications: 'appsTabApplications', teachers: 'appsTabTeachers', schedule: 'appsTabSchedule' };
+    const views = { applications: 'appsApplicationsView', teachers: 'appsTeachersView', schedule: 'appsScheduleView', reports: 'appsReportsView' };
+    const tabs = { applications: 'appsTabApplications', teachers: 'appsTabTeachers', schedule: 'appsTabSchedule', reports: 'appsTabReports' };
     Object.entries(views).forEach(([name, id]) => {
       const active = name === view;
       el(id).hidden = !active;
@@ -865,6 +1057,7 @@
       el(tabs[name]).setAttribute('aria-selected', String(active));
     });
     if (view === 'schedule') renderProgram();
+    if (view === 'reports') renderReports();
   }
 
   function closeTeacherDialog() {
@@ -877,6 +1070,14 @@
     el('teacherId').value = teacher?.id || '';
     el('teacherName').value = teacher?.name || '';
     el('teacherPhone').value = teacher ? formatPhone(teacher.phone) : '';
+    el('teacherUsername').value = teacher?.username || '';
+    el('teacherPassword').value = '';
+    el('teacherPassword').required = !teacher?.hasLogin;
+    el('teacherPassword').type = 'password';
+    el('teacherPasswordToggle').textContent = 'Göster';
+    el('teacherLoginState').textContent = teacher?.hasLogin ? 'Giriş hazır' : teacher ? 'Giriş eksik' : 'Yeni hesap';
+    el('teacherLoginState').className = teacher?.hasLogin ? 'is-ready' : '';
+    el('teacherPasswordHint').textContent = teacher?.hasLogin ? 'Boş bırakırsanız mevcut şifre değişmez.' : 'En az 8 karakter; bu hesap için zorunludur.';
     document.querySelectorAll('[name="teacherGender"]').forEach((input) => { input.checked = input.value === teacher?.gender; });
     document.querySelectorAll('[name="teacherModes"]').forEach((input) => { input.checked = teacher?.modes?.includes(input.value) || false; });
     document.querySelectorAll('[name="teacherDays"]').forEach((input) => { input.checked = teacher?.days?.includes(input.value) || false; });
@@ -895,8 +1096,12 @@
     const gender = document.querySelector('[name="teacherGender"]:checked')?.value || '';
     const modes = [...document.querySelectorAll('[name="teacherModes"]:checked')].map((input) => input.value);
     const days = [...document.querySelectorAll('[name="teacherDays"]:checked')].map((input) => input.value);
-    if (!el('teacherName').value.trim() || !el('teacherPhone').value.trim() || !gender || !modes.length || !days.length) {
-      el('teacherFormNotice').textContent = 'Ad, telefon, cinsiyet, en az bir eğitim türü ve çalışma günü seçin.';
+    const currentTeacher = teacherOf(el('teacherId').value);
+    const username = el('teacherUsername').value.trim().toLowerCase().replace(/ı/g, 'i').normalize('NFKD').replace(/[\u0300-\u036f]/g, '');
+    const password = el('teacherPassword').value;
+    if (!el('teacherName').value.trim() || !el('teacherPhone').value.trim() || !username ||
+      (!currentTeacher?.hasLogin && password.length < 8) || !gender || !modes.length || !days.length) {
+      el('teacherFormNotice').textContent = 'Ad, telefon, geçerli kullanıcı adı, şifre, cinsiyet, eğitim türü ve çalışma günlerini tamamlayın.';
       el('teacherFormNotice').className = 'teacher-form-notice is-error';
       return;
     }
@@ -906,7 +1111,7 @@
       const result = await api('POST', {
         action: 'teacher-save', teacher: {
           id: el('teacherId').value, name: el('teacherName').value, phone: el('teacherPhone').value,
-          gender, modes, days, active: el('teacherActive').checked
+          username, password, gender, modes, days, active: el('teacherActive').checked
         }
       });
       const index = teachers.findIndex((teacher) => teacher.id === result.data.id);
@@ -931,6 +1136,12 @@
     el('appsTabApplications').addEventListener('click', () => switchView('applications'));
     el('appsTabTeachers').addEventListener('click', () => switchView('teachers'));
     el('appsTabSchedule').addEventListener('click', () => switchView('schedule'));
+    el('appsTabReports').addEventListener('click', () => switchView('reports'));
+    ['reportsFrom', 'reportsTo', 'reportsTeacher', 'reportsStatus'].forEach((id) => el(id).addEventListener('change', renderReports));
+    el('reportsSearch').addEventListener('input', renderReports);
+    el('reportsReset').addEventListener('click', resetReportFilters);
+    el('reportsCsv').addEventListener('click', exportReportCsv);
+    el('reportsExcel').addEventListener('click', exportReportExcel);
     ['programSearch', 'programDay', 'programTeacher', 'programType', 'programSlot'].forEach((id) => {
       el(id).addEventListener(id === 'programSearch' ? 'input' : 'change', renderProgram);
     });
@@ -954,6 +1165,13 @@
     el('teacherDelete').addEventListener('click', deleteTeacher);
     el('teacherClose').addEventListener('click', closeTeacherDialog);
     el('teacherCancel').addEventListener('click', closeTeacherDialog);
+    el('teacherPasswordToggle').addEventListener('click', () => {
+      const input = el('teacherPassword');
+      const show = input.type === 'password';
+      input.type = show ? 'text' : 'password';
+      el('teacherPasswordToggle').textContent = show ? 'Gizle' : 'Göster';
+      el('teacherPasswordToggle').setAttribute('aria-label', show ? 'Şifreyi gizle' : 'Şifreyi göster');
+    });
     el('appsClose').addEventListener('click', closeDetail);
     el('appsCancel').addEventListener('click', closeDetail);
     el('appsSaveReview').addEventListener('click', saveReview);
