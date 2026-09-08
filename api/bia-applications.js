@@ -408,13 +408,18 @@ export default async function handler(req) {
     return application;
   }
 
-  async function getAllApplications() {
+  async function getApplicationFiles() {
     const listing = await github(`/repos/${dataRepo}/contents/${dataPath}?ref=${encodeURIComponent(dataBranch)}`);
     if (listing.status !== 404 && (!listing.ok || !Array.isArray(listing.data))) throw new Error('Arşiv listelenemedi.');
-    const files = listing.status === 404 ? [] : listing.data
+    return listing.status === 404 ? [] : listing.data
       .filter((entry) => entry.type === 'file' && /^\d{4}-\d{2}\.enc\.json$/.test(entry.name))
-      .sort((a, b) => b.name.localeCompare(a.name));
-    const archives = await Promise.all(files.map((entry) => getArchive(entry.name)));
+      .map((entry) => entry.name)
+      .sort((a, b) => b.localeCompare(a));
+  }
+
+  async function getAllApplications() {
+    const files = await getApplicationFiles();
+    const archives = await Promise.all(files.map((fileName) => getArchive(fileName)));
     return archives.flatMap((archive) => archive.records)
       .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
   }
@@ -460,6 +465,21 @@ export default async function handler(req) {
       });
       return { records: working, value: { placements: created, skipped } };
     }, 'BIA: düzenli otomatik ders ataması yapıldı');
+  }
+
+  async function removeApplicationsFromArchives(predicate, message) {
+    const files = await getApplicationFiles();
+    const removed = [];
+    for (const fileName of files) {
+      const current = await getArchive(fileName);
+      if (!current.records.some(predicate)) continue;
+      const deleted = await mutateArchive(fileName, (records) => {
+        const matches = records.filter(predicate);
+        return { records: records.filter((item) => !predicate(item)), value: matches };
+      }, message);
+      removed.push(...deleted);
+    }
+    return removed;
   }
 
   if (req.method === 'GET') {
@@ -589,6 +609,122 @@ export default async function handler(req) {
         }, 200, cors);
       } catch (error) {
         return json({ error: error.message || 'Test verisi oluşturulamadı.' }, error.status || 500, cors);
+      }
+    }
+
+    if (body.action === 'application-delete') {
+      try {
+        const applicationId = cleanText(body.applicationId, 80);
+        const application = await requireApplication(applicationId, body.applicationCreatedAt);
+        const planningResult = await mutateArchive(PLANNING_FILE, (records) => {
+          const assignments = records.filter((item) => item.kind === 'placement' && item.applicationId === applicationId);
+          return {
+            records: records.filter((item) => !(item.kind === 'placement' && item.applicationId === applicationId)),
+            value: assignments.length
+          };
+        }, `BIA: ${application.reference} öğrenci ataması silindi`);
+        const createdAt = new Date(application.createdAt);
+        const deleted = await mutateArchive(`${createdAt.toISOString().slice(0, 7)}.enc.json`, (records) => {
+          const target = records.find((item) => item.id === applicationId);
+          if (!target) throw new RequestError('Öğrenci başvurusu bulunamadı.', 404);
+          return { records: records.filter((item) => item.id !== applicationId), value: target };
+        }, `BIA: ${application.reference} öğrenci başvurusu silindi`);
+        return json({ ok: true, data: deleted, removedAssignments: planningResult }, 200, cors);
+      } catch (error) {
+        return json({ error: error.message || 'Öğrenci başvurusu silinemedi.' }, error.status || 500, cors);
+      }
+    }
+
+    if (body.action === 'teacher-delete') {
+      try {
+        const teacherId = cleanText(body.teacherId, 80);
+        if (!teacherId) throw new RequestError('Öğretmen bilgisi geçersiz.');
+        const deleted = await mutateArchive(PLANNING_FILE, (records) => {
+          const teacher = records.find((item) => item.kind === 'teacher' && item.id === teacherId);
+          if (!teacher) throw new RequestError('Öğretmen bulunamadı.', 404);
+          const assignments = records.filter((item) => item.kind === 'placement' &&
+            (item.schedule || []).some((entry) => entry.teacherId === teacherId));
+          if (assignments.length && body.removeAssignments !== true) {
+            throw new RequestError(`${teacher.name} için ${assignments.length} öğrenci programı var. Önce atamaları kaldırın.`, 409);
+          }
+          return {
+            records: records.filter((item) => !(item.kind === 'teacher' && item.id === teacherId) &&
+              !(item.kind === 'placement' && (item.schedule || []).some((entry) => entry.teacherId === teacherId))),
+            value: { teacher, removedAssignments: assignments.length }
+          };
+        }, 'BIA: öğretmen ve bağlı ders atamaları silindi');
+        return json({ ok: true, data: deleted }, 200, cors);
+      } catch (error) {
+        return json({ error: error.message || 'Öğretmen silinemedi.' }, error.status || 500, cors);
+      }
+    }
+
+    if (body.action === 'bulk-delete') {
+      try {
+        const scope = cleanText(body.scope, 30);
+        if (!['demo', 'assignments', 'teachers', 'applications'].includes(scope)) {
+          throw new RequestError('Toplu silme kapsamı geçersiz.');
+        }
+
+        if (scope === 'assignments') {
+          const result = await mutateArchive(PLANNING_FILE, (records) => {
+            const removedAssignments = records.filter((item) => item.kind === 'placement').length;
+            return { records: records.filter((item) => item.kind !== 'placement'), value: { removedAssignments } };
+          }, 'BIA: tüm ders atamaları silindi');
+          return json({ ok: true, data: result }, 200, cors);
+        }
+
+        if (scope === 'teachers') {
+          const result = await mutateArchive(PLANNING_FILE, (records) => {
+            const removedTeachers = records.filter((item) => item.kind === 'teacher').length;
+            const removedAssignments = records.filter((item) => item.kind === 'placement').length;
+            return {
+              records: records.filter((item) => item.kind !== 'teacher' && item.kind !== 'placement'),
+              value: { removedTeachers, removedAssignments }
+            };
+          }, 'BIA: tüm öğretmenler ve ders atamaları silindi');
+          return json({ ok: true, data: result }, 200, cors);
+        }
+
+        if (scope === 'applications') {
+          const planningResult = await mutateArchive(PLANNING_FILE, (records) => {
+            const removedAssignments = records.filter((item) => item.kind === 'placement').length;
+            return {
+              records: records.filter((item) => item.kind !== 'placement'),
+              value: { removedAssignments }
+            };
+          }, 'BIA: tüm öğrenci ders atamaları silindi');
+          const removedApplications = await removeApplicationsFromArchives(() => true, 'BIA: tüm öğrenci başvuruları silindi');
+          return json({
+            ok: true,
+            data: { removedApplications: removedApplications.length, removedAssignments: planningResult.removedAssignments }
+          }, 200, cors);
+        }
+
+        const allApplications = await getAllApplications();
+        const demoApplicationIds = new Set(allApplications.filter((item) => item.isDemo === true).map((item) => item.id));
+        const planningResult = await mutateArchive(PLANNING_FILE, (records) => {
+          const demoTeacherIds = new Set(records.filter((item) => item.kind === 'teacher' && item.isDemo === true).map((item) => item.id));
+          const shouldRemovePlacement = (item) => item.kind === 'placement' &&
+            (item.isDemo === true || demoApplicationIds.has(item.applicationId) ||
+              (item.schedule || []).some((entry) => demoTeacherIds.has(entry.teacherId)));
+          const removedTeachers = records.filter((item) => item.kind === 'teacher' && item.isDemo === true).length;
+          const removedAssignments = records.filter(shouldRemovePlacement).length;
+          return {
+            records: records.filter((item) => !(item.kind === 'teacher' && item.isDemo === true) && !shouldRemovePlacement(item)),
+            value: { removedTeachers, removedAssignments }
+          };
+        }, 'BIA: test öğretmenleri ve atamaları silindi');
+        const removedApplications = await removeApplicationsFromArchives(
+          (item) => item.isDemo === true,
+          'BIA: test öğrenci başvuruları silindi'
+        );
+        return json({
+          ok: true,
+          data: { removedApplications: removedApplications.length, ...planningResult }
+        }, 200, cors);
+      } catch (error) {
+        return json({ error: error.message || 'Toplu silme işlemi tamamlanamadı.' }, error.status || 500, cors);
       }
     }
 

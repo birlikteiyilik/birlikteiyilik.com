@@ -192,8 +192,9 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .program-overview-head { align-items: flex-end; margin: 4px 0 16px; }
 .program-overview-head h2 { color: var(--app-ink); font-size: 1.25rem; margin: 0 0 3px; }
 .program-head-actions { align-items: flex-end; display: flex; flex-direction: column; gap: 8px; }
+.program-head-button-row { display: flex; gap: 7px; }
 .program-head-actions .btn { font-size: .7rem; padding: 7px 10px; }
-.program-head-actions .btn:disabled { background: #e9f5ee; color: var(--app-green); opacity: 1; }
+.program-head-actions .btn[data-mode="remove"] { background: #fff0f3; color: var(--app-red-dark); }
 .program-legend { align-items: center; display: flex; gap: 13px; }
 .program-legend span { align-items: center; color: var(--app-muted); display: flex; font-size: .67rem; font-weight: 700; gap: 5px; }
 .program-legend i { background: var(--app-red); border-radius: 50%; display: inline-block; height: 7px; width: 7px; }
@@ -330,6 +331,9 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .apps-review-grid label { color: var(--app-muted); display: grid; font-size: .69rem; font-weight: 750; gap: 6px; }
 .apps-review-grid textarea { min-height: 84px; resize: vertical; }
 .apps-modal-actions { background: #fff; border-top: 1px solid var(--app-line); bottom: 0; padding: 13px 22px; position: sticky; z-index: 3; }
+.apps-modal-leading { align-items: center; display: flex; gap: 12px; min-width: 0; }
+.apps-delete-record { background: transparent; border: 1px solid #edbdc8; color: var(--app-red-dark); font-size: .72rem; padding: 8px 11px; }
+.apps-delete-record:hover { background: #fff1f4; border-color: #df8fa2; }
 .apps-modal-notice { font-size: .75rem; min-height: 18px; }
 .apps-modal-notice.is-success { color: var(--app-green); }
 .apps-modal-notice.is-error { color: var(--app-red-dark); }
@@ -388,6 +392,25 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .teacher-form-notice { font-size: .72rem; min-height: 18px; margin-top: 12px; }
 .teacher-form-notice.is-error { color: var(--app-red-dark); }
 
+.data-management-dialog { max-width: 720px; }
+.data-ledger { background: var(--app-navy); border-radius: 11px; color: #fff; display: grid; gap: 1px; grid-template-columns: repeat(4, 1fr); overflow: hidden; }
+.data-ledger span { align-items: baseline; background: rgba(255,255,255,.035); display: flex; font-size: .62rem; gap: 5px; justify-content: center; min-height: 60px; padding: 18px 10px; }
+.data-ledger span + span { border-left: 1px solid rgba(255,255,255,.12); }
+.data-ledger strong { font-size: 1.15rem; }
+.data-ledger .is-demo { background: rgba(255,201,74,.09); color: #ffe2a0; }
+.data-recovery-note { color: var(--app-muted); font-size: .65rem; line-height: 1.45; margin: 10px 2px 14px; }
+.data-danger-zone { border: 1px solid #f0cbd3; border-radius: 12px; overflow: hidden; }
+.data-danger-zone::before { background: #fff1f4; color: var(--app-red-dark); content: 'TEHLİKELİ ALAN'; display: block; font-size: .58rem; font-weight: 900; letter-spacing: .09em; padding: 8px 13px; }
+.data-danger-zone article { align-items: center; background: #fff; border-top: 1px solid #f2e3e7; display: flex; gap: 18px; justify-content: space-between; padding: 13px; }
+.data-danger-zone article > div { display: grid; gap: 3px; }
+.data-danger-zone article strong { color: var(--app-ink); font-size: .74rem; }
+.data-danger-zone article span { color: var(--app-muted); font-size: .62rem; line-height: 1.4; }
+.data-danger-zone .btn { background: #fff5f7; border: 1px solid #ecc0ca; color: var(--app-red-dark); flex: 0 0 auto; font-size: .65rem; justify-content: center; min-height: 38px; min-width: 132px; padding: 8px 10px; }
+.data-danger-zone .btn:hover { background: var(--app-red); border-color: var(--app-red); color: #fff; }
+.data-danger-zone .btn:disabled { cursor: wait; }
+.data-management-feedback { font-size: .68rem; min-height: 18px; padding-top: 10px; }
+.data-management-feedback.is-error { color: var(--app-red-dark); }
+
 .apps-toast { align-items: center; background: #143b2a; border-radius: 10px; bottom: 22px; box-shadow: 0 12px 40px rgba(12,30,22,.25); color: #fff; display: flex; font-size: .78rem; font-weight: 700; left: 50%; max-width: min(460px, calc(100% - 28px)); opacity: 0; padding: 11px 15px; pointer-events: none; position: fixed; transform: translate(-50%, 18px); transition: opacity .2s ease, transform .25s ease; z-index: 10000; }
 .apps-toast::before { content: '✓'; font-weight: 900; margin-right: 8px; }
 .apps-toast.is-error { background: #8f1830; }
@@ -436,6 +459,7 @@ html, body { max-width: 100%; overflow-x: hidden; }
   .schedule-day { grid-column: 1 / -1; min-height: auto; }
   .schedule-check { grid-column: 3; grid-row: 2; }
   .apps-modal-head, .apps-modal-body, .apps-modal-actions { padding-left: 15px; padding-right: 15px; }
+  .apps-modal-leading { align-items: flex-start; flex-direction: column; }
   .assignment-feedback { grid-template-columns: 80px auto; }
   .assignment-feedback > span:last-child { grid-column: 1 / -1; }
   .program-head-actions { align-items: flex-start; flex-direction: row; justify-content: space-between; width: 100%; }
@@ -452,6 +476,9 @@ html, body { max-width: 100%; overflow-x: hidden; }
   .program-week { grid-template-columns: 1fr; overflow: visible; }
   .program-day-column { border-left: 0; border-top: 1px solid #edf0f4; }
   .program-day-column:first-child { border-top: 0; }
+  .data-ledger { grid-template-columns: 1fr 1fr; }
+  .data-ledger span:nth-child(3) { border-left: 0; border-top: 1px solid rgba(255,255,255,.12); }
+  .data-ledger span:nth-child(4) { border-top: 1px solid rgba(255,255,255,.12); }
 }
 
 @media (max-width: 460px) {
@@ -472,9 +499,12 @@ html, body { max-width: 100%; overflow-x: hidden; }
   .program-filter-grid, .program-auto-bar { grid-template-columns: 1fr; }
   .program-search, .program-auto-copy { grid-column: auto; }
   .program-overview-head .program-head-actions { align-items: stretch; flex-direction: column; }
+  .program-head-button-row { display: grid; grid-template-columns: 1fr 1fr; }
   .program-summary article { align-items: flex-start; flex-direction: column; gap: 5px; }
   .program-lesson { grid-template-columns: auto minmax(0, 1fr); }
   .program-lesson button { grid-column: 2; justify-self: start; padding: 2px 0; }
+  .data-danger-zone article { align-items: stretch; flex-direction: column; }
+  .data-danger-zone .btn { min-height: 44px; width: 100%; }
 }
 
 @media (prefers-reduced-motion: reduce) {
