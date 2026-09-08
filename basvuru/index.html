@@ -14,7 +14,7 @@
   <meta property="og:type" content="website">
   <meta property="og:locale" content="tr_TR">
   <link rel="icon" href="/images/logo_icon.png">
-  <link rel="stylesheet" href="/css/basvuru.css?v=1">
+  <link rel="stylesheet" href="/css/basvuru.css?v=2">
 </head>
 <body>
   <a class="skip-link" href="#applicationForm">Forma geç</a>
@@ -266,13 +266,12 @@
           <section class="media-box" aria-labelledby="mediaTitle">
             <div>
               <h2 id="mediaTitle">Görsel paylaşım izni</h2>
-              <p>Öğrencinin eğitim anlarına ait fotoğraf veya videolarının Birlikte İyilik Akademi sosyal medya hesaplarında kullanılmasına ilişkin tercihiniz.</p>
+              <p>Öğrencinin eğitim anlarına ait fotoğraf veya videolarının Birlikte İyilik Akademi sosyal medya hesaplarında kullanılabilmesi için veli onayı gereklidir.</p>
             </div>
-            <div class="choice-grid choice-grid-2 media-choices">
-              <label class="choice-card"><input type="radio" name="mediaConsent" value="izin-veriyorum" required><span>İzin veriyorum</span></label>
-              <label class="choice-card"><input type="radio" name="mediaConsent" value="izin-vermiyorum" required><span>İzin vermiyorum</span></label>
-            </div>
-            <p class="field-hint">İzin vermemeniz başvurunun değerlendirilmesini etkilemez.</p>
+            <label class="consent-row media-consent" for="mediaConsent">
+              <input id="mediaConsent" name="mediaConsent" type="checkbox" value="izin-veriyorum" required>
+              <span>Fotoğraf ve/veya video görüntülerinin sosyal medya hesaplarında paylaşılmasına izin veriyorum. <b>*</b></span>
+            </label>
             <p class="field-error" id="mediaConsentError"></p>
           </section>
         </fieldset>
@@ -305,6 +304,6 @@
     <a href="/hakkimizda/seffaflik-belgeler">Şeffaflık ve belgeler</a>
   </footer>
 
-  <script src="/js/basvuru.js?v=1" defer></script>
+  <script src="/js/basvuru.js?v=2" defer></script>
 </body>
 </html>

@@ -35,7 +35,7 @@
     rulesAccepted: 'Devam etmek için program kurallarını kabul edin.',
     privacyAcknowledged: 'KVKK aydınlatma metnini okuduğunuzu onaylayın.',
     termsAccepted: 'Hizmet şartlarını kabul edin.',
-    mediaConsent: 'Görsel paylaşım tercihinizi belirtin.'
+    mediaConsent: 'Başvuruyu tamamlamak için görsel paylaşım iznini onaylayın.'
   };
 
   function digits(value) {
@@ -79,6 +79,8 @@
     group.forEach((item) => item.setAttribute('aria-invalid', message ? 'true' : 'false'));
     const error = fieldErrorElement(name);
     if (error) error.textContent = message || '';
+    const container = input.closest('.field, section');
+    container?.classList.toggle('has-error', Boolean(container.querySelector('[aria-invalid="true"]')));
   }
 
   function validateField(input) {
@@ -133,7 +135,14 @@
 
     if (firstInvalid) {
       firstInvalid.focus({ preventScroll: true });
-      firstInvalid.closest('.field, section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const invalidContainer = firstInvalid.closest('.field, section');
+      invalidContainer?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (invalidContainer) {
+        invalidContainer.classList.remove('is-shaking');
+        void invalidContainer.offsetWidth;
+        invalidContainer.classList.add('is-shaking');
+        window.setTimeout(() => invalidContainer.classList.remove('is-shaking'), 420);
+      }
     }
     return valid;
   }
@@ -148,9 +157,15 @@
     progressItems.forEach((item, index) => {
       item.classList.toggle('is-current', index === currentStep);
       item.classList.toggle('is-complete', index < currentStep);
+      item.classList.remove('is-entering');
       if (index === currentStep) item.setAttribute('aria-current', 'step');
       else item.removeAttribute('aria-current');
     });
+    const activeProgress = progressItems[currentStep];
+    if (activeProgress) {
+      void activeProgress.offsetWidth;
+      activeProgress.classList.add('is-entering');
+    }
     progressFill.style.width = `${(currentStep / (steps.length - 1)) * 100}%`;
     stepSummary.textContent = `${currentStep + 1} / ${steps.length}`;
     backButton.hidden = currentStep === 0;
@@ -181,6 +196,7 @@
 
   function setSubmitting(loading) {
     submitButton.disabled = loading;
+    submitButton.classList.toggle('is-loading', loading);
     submitButton.querySelector('.button-label').hidden = loading;
     submitButton.querySelector('.button-loading').hidden = !loading;
     backButton.disabled = loading;
@@ -282,6 +298,7 @@
       form.hidden = true;
       document.querySelector('.form-progress').hidden = true;
       successState.hidden = false;
+      successState.classList.add('is-visible');
       document.getElementById('applicationReference').textContent = result.reference || 'BIA';
       successState.scrollIntoView({ behavior: 'smooth', block: 'center' });
     } catch (error) {
