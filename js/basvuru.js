@@ -32,10 +32,11 @@
     secondGuardianPhone: 'İkinci veli telefonunu kontrol edin.',
     quranLevel: 'Kur’an-ı Kerim seviyesini seçin.',
     previousTraining: 'Önceki eğitim durumunu seçin.',
+    availabilitySlots: 'En az bir müsait saat aralığı seçin.',
     rulesAccepted: 'Devam etmek için program kurallarını kabul edin.',
     privacyAcknowledged: 'KVKK aydınlatma metnini okuduğunuzu onaylayın.',
     termsAccepted: 'Hizmet şartlarını kabul edin.',
-    mediaConsent: 'Başvuruyu tamamlamak için görsel paylaşım iznini onaylayın.'
+    mediaConsent: 'Görsel paylaşım tercihinizi belirtin.'
   };
 
   function digits(value) {
@@ -96,6 +97,11 @@
     }
 
     if (input.type === 'checkbox') {
+      if (name === 'availabilitySlots') {
+        const valid = Boolean(form.querySelector('[name="availabilitySlots"]:checked'));
+        setError(input, valid ? '' : messages[name]);
+        return valid;
+      }
       const valid = !input.required || input.checked;
       setError(input, valid ? '' : messages[name]);
       return valid;
@@ -118,14 +124,14 @@
 
   function validateStep(index) {
     const controls = Array.from(steps[index].querySelectorAll('input, select, textarea'));
-    const visitedRadioGroups = new Set();
+    const visitedGroups = new Set();
     let firstInvalid = null;
     let valid = true;
 
     controls.forEach((input) => {
-      if (input.type === 'radio') {
-        if (visitedRadioGroups.has(input.name)) return;
-        visitedRadioGroups.add(input.name);
+      if (input.type === 'radio' || input.name === 'availabilitySlots') {
+        if (visitedGroups.has(input.name)) return;
+        visitedGroups.add(input.name);
       }
       if (!validateField(input)) {
         valid = false;
@@ -203,7 +209,8 @@
   }
 
   function serialize() {
-    const data = Object.fromEntries(new FormData(form).entries());
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
     return {
       action: 'submit',
       website: data.website || '',
@@ -225,6 +232,7 @@
       quranLevel: data.quranLevel,
       previousTraining: data.previousTraining,
       previousTrainingDetail: data.previousTrainingDetail,
+      availabilitySlots: formData.getAll('availabilitySlots'),
       notes: data.notes,
       rulesAccepted: data.rulesAccepted === 'on',
       privacyAcknowledged: data.privacyAcknowledged === 'on',
@@ -249,6 +257,13 @@
   form.addEventListener('change', (event) => {
     const input = event.target;
     if (input.name) validateField(input);
+    if (input.name === 'availabilitySlots') {
+      const count = form.querySelectorAll('[name="availabilitySlots"]:checked').length;
+      const hint = document.getElementById('availabilitySlotsHint');
+      const warning = document.getElementById('availabilityWarning');
+      hint.textContent = count ? `${count} uygun saat işaretlendi. Atama bu seçenekler arasından yapılacak.` : 'Henüz saat seçilmedi.';
+      warning.classList.toggle('has-selection', count > 0);
+    }
   });
 
   document.getElementById('addSecondGuardian').addEventListener('change', (event) => {
