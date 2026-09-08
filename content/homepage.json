@@ -8,7 +8,7 @@
     },
     "cta2": {
       "label": "Yüz Yüze Eğitim Başvurusu",
-      "url": "https://forms.gle/yngrqhghJcdHtntR6"
+      "url": "/basvuru"
     }
   },
   "values_route": {
@@ -84,7 +84,7 @@
       {
         "icon": "🏫",
         "label": "Yüz Yüze Eğitim Başvurusu",
-        "url": "https://forms.gle/yngrqhghJcdHtntR6",
+        "url": "/basvuru",
         "desc": "Merkez eğitimlerimize katılmak için başvurun"
       },
       {

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#d7193f">
+  <title>Yüz Yüze Eğitim Başvurusu | Birlikte İyilik Akademi</title>
+  <meta name="description" content="Birlikte İyilik Akademi 2026-2027 yüz yüze Kur'an-ı Kerim ve Güzel Ahlak Eğitim Programı başvuru formu.">
+  <link rel="canonical" href="https://birlikteiyilik.com/basvuru">
+  <meta property="og:title" content="Yüz Yüze Eğitim Başvurusu | Birlikte İyilik Akademi">
+  <meta property="og:description" content="3, 4, 5, 6, 7 ve 8. sınıf öğrencileri için ücretsiz yüz yüze eğitim programı.">
+  <meta property="og:image" content="https://birlikteiyilik.com/images/basvuru/program-afisi.webp">
+  <meta property="og:url" content="https://birlikteiyilik.com/basvuru">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="tr_TR">
+  <link rel="icon" href="/images/logo_icon.png">
+  <link rel="stylesheet" href="/css/basvuru.css?v=1">
+</head>
+<body>
+  <a class="skip-link" href="#applicationForm">Forma geç</a>
+
+  <header class="form-header">
+    <a class="brand" href="/" aria-label="Birlikte İyilik Akademi ana sayfa">
+      <img src="/images/logo.png" alt="" width="116" height="80">
+      <span>
+        <strong>Birlikte İyilik</strong>
+      </span>
+    </a>
+    <a class="header-help" href="https://wa.me/905348117757" target="_blank" rel="noopener">
+      Yardım alın
+      <span>0534 811 77 57</span>
+    </a>
+  </header>
+
+  <main class="application-shell">
+    <div class="side-art side-art-left" aria-hidden="true">
+      <img src="/images/basvuru/yan-karakter-erkek.webp" alt="" width="452" height="1180">
+    </div>
+    <div class="side-art side-art-right" aria-hidden="true">
+      <img src="/images/basvuru/yan-karakter-kiz.webp" alt="" width="435" height="1180">
+    </div>
+
+    <section class="program-intro" aria-labelledby="pageTitle">
+      <p class="program-kicker">2026-2027 Eğitim Dönemi</p>
+      <h1 id="pageTitle">Güzel Ahlak Eğitim Programı</h1>
+      <p class="program-summary">Yüz yüze Kur'an-ı Kerim ve değerler eğitimi başvurusu.</p>
+      <dl class="program-facts">
+        <div><dt>Sınıflar</dt><dd>3, 4, 5, 6, 7 ve 8</dd></div>
+        <div><dt>Eğitim</dt><dd>Ücretsiz ve yüz yüze</dd></div>
+        <div><dt>Ders</dt><dd>Hafta içi, en az 20 dakika</dd></div>
+      </dl>
+    </section>
+
+    <section class="form-card" aria-label="Başvuru formu">
+      <div class="form-progress" aria-label="Başvuru ilerlemesi">
+        <div class="progress-track" aria-hidden="true"><span id="progressFill"></span></div>
+        <ol>
+          <li class="is-current" data-progress="0"><span>1</span>Öğrenci</li>
+          <li data-progress="1"><span>2</span>Veli</li>
+          <li data-progress="2"><span>3</span>Eğitim</li>
+          <li data-progress="3"><span>4</span>Onay</li>
+        </ol>
+      </div>
+
+      <div id="formNotice" class="form-notice" role="alert" aria-live="polite" hidden></div>
+
+      <form id="applicationForm" novalidate>
+        <input type="text" name="website" class="honeypot" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <input type="hidden" name="applicationType" value="yuz-yuze">
+        <input type="hidden" name="startedAt" id="startedAt">
+
+        <fieldset class="form-step is-active" data-step="0">
+          <legend>
+            <span>Öğrenciyi tanıyalım</span>
+            <small>Temel öğrenci bilgilerini eksiksiz girin.</small>
+          </legend>
+
+          <div class="field-grid field-grid-2">
+            <div class="field field-span-2">
+              <label for="studentName">Öğrencinin adı soyadı <b>*</b></label>
+              <input id="studentName" name="studentName" type="text" autocomplete="name" minlength="3" maxlength="100" required>
+              <p class="field-error" id="studentNameError"></p>
+            </div>
+
+            <div class="field">
+              <label for="tckn">T.C. kimlik numarası <b>*</b></label>
+              <input id="tckn" name="tckn" type="text" inputmode="numeric" autocomplete="off" minlength="11" maxlength="11" pattern="[0-9]{11}" required aria-describedby="tcknHint tcknError">
+              <p class="field-hint" id="tcknHint">Yalnızca 11 haneli numarayı yazın.</p>
+              <p class="field-error" id="tcknError"></p>
+            </div>
+
+            <div class="field">
+              <label for="birthDate">Doğum tarihi <b>*</b></label>
+              <input id="birthDate" name="birthDate" type="date" autocomplete="bday" required>
+              <p class="field-error" id="birthDateError"></p>
+            </div>
+
+            <div class="field field-span-2">
+              <span class="field-label">Cinsiyet <b>*</b></span>
+              <div class="choice-grid choice-grid-2">
+                <label class="choice-card"><input type="radio" name="gender" value="erkek" required><span>Erkek</span></label>
+                <label class="choice-card"><input type="radio" name="gender" value="kiz" required><span>Kız</span></label>
+              </div>
+              <p class="field-error" id="genderError"></p>
+            </div>
+
+            <div class="field">
+              <label for="school">Öğrencinin okulu <b>*</b></label>
+              <input id="school" name="school" type="text" autocomplete="organization" maxlength="140" required>
+              <p class="field-error" id="schoolError"></p>
+            </div>
+
+            <div class="field">
+              <label for="grade">Sınıfı <b>*</b></label>
+              <select id="grade" name="grade" required>
+                <option value="">Seçin</option>
+                <option value="3">3. sınıf</option>
+                <option value="4">4. sınıf</option>
+                <option value="5">5. sınıf</option>
+                <option value="6">6. sınıf</option>
+                <option value="7">7. sınıf</option>
+                <option value="8">8. sınıf</option>
+              </select>
+              <p class="field-error" id="gradeError"></p>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="form-step" data-step="1">
+          <legend>
+            <span>Size nasıl ulaşalım?</span>
+            <small>Başvuruyla ilgili iletişim birincil veli üzerinden yürütülür.</small>
+          </legend>
+
+          <div class="field-grid field-grid-2">
+            <div class="field">
+              <label for="guardianName">Veli adı soyadı <b>*</b></label>
+              <input id="guardianName" name="guardianName" type="text" autocomplete="name" maxlength="100" required>
+              <p class="field-error" id="guardianNameError"></p>
+            </div>
+
+            <div class="field">
+              <label for="guardianRelation">Yakınlık <b>*</b></label>
+              <select id="guardianRelation" name="guardianRelation" required>
+                <option value="">Seçin</option>
+                <option value="anne">Anne</option>
+                <option value="baba">Baba</option>
+                <option value="yasal-vasi">Yasal vasi</option>
+                <option value="diger">Diğer</option>
+              </select>
+              <p class="field-error" id="guardianRelationError"></p>
+            </div>
+
+            <div class="field">
+              <label for="guardianPhone">Veli telefon numarası <b>*</b></label>
+              <input id="guardianPhone" name="guardianPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="05__ ___ __ __" maxlength="15" required>
+              <p class="field-error" id="guardianPhoneError"></p>
+            </div>
+
+            <div class="field">
+              <label for="studentPhone">Öğrencinin telefonu</label>
+              <input id="studentPhone" name="studentPhone" type="tel" inputmode="tel" placeholder="Varsa" maxlength="15">
+              <p class="field-error" id="studentPhoneError"></p>
+            </div>
+
+            <div class="field field-span-2">
+              <label for="address">İkamet adresi</label>
+              <textarea id="address" name="address" rows="3" autocomplete="street-address" maxlength="400" placeholder="Mahalle, ilçe ve il bilgisi yeterlidir."></textarea>
+              <p class="field-error" id="addressError"></p>
+            </div>
+
+            <div class="field field-span-2 optional-block">
+              <label class="check-row" for="addSecondGuardian">
+                <input id="addSecondGuardian" type="checkbox">
+                <span>İkinci bir veli bilgisi eklemek istiyorum</span>
+              </label>
+              <div id="secondGuardianFields" class="field-grid field-grid-2 conditional-fields" hidden>
+                <div class="field">
+                  <label for="secondGuardianName">İkinci veli adı soyadı</label>
+                  <input id="secondGuardianName" name="secondGuardianName" type="text" maxlength="100">
+                </div>
+                <div class="field">
+                  <label for="secondGuardianPhone">İkinci veli telefonu</label>
+                  <input id="secondGuardianPhone" name="secondGuardianPhone" type="tel" inputmode="tel" maxlength="15">
+                  <p class="field-error" id="secondGuardianPhoneError"></p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="form-step" data-step="2">
+          <legend>
+            <span>Eğitim ihtiyacını belirleyelim</span>
+            <small>Bu bilgiler öğrencinin uygun gruba yerleştirilmesine yardımcı olur.</small>
+          </legend>
+
+          <div class="field">
+            <span class="field-label">Kur'an-ı Kerim seviyesi <b>*</b></span>
+            <div class="choice-grid level-grid">
+              <label class="choice-card"><input type="radio" name="quranLevel" value="hic-bilmiyor" required><span><strong>Başlangıç</strong><small>Henüz bilmiyor</small></span></label>
+              <label class="choice-card"><input type="radio" name="quranLevel" value="elif-ba" required><span><strong>Elif Ba</strong><small>Harfleri öğreniyor</small></span></label>
+              <label class="choice-card"><input type="radio" name="quranLevel" value="okuyabiliyor" required><span><strong>Okuyabiliyor</strong><small>Okumasını ilerletmek istiyor</small></span></label>
+              <label class="choice-card"><input type="radio" name="quranLevel" value="tecvid" required><span><strong>Tecvid</strong><small>Tecvid öğrenmek istiyor</small></span></label>
+            </div>
+            <p class="field-error" id="quranLevelError"></p>
+          </div>
+
+          <div class="field">
+            <span class="field-label">Daha önce kurumumuzdan eğitim aldınız mı? <b>*</b></span>
+            <div class="choice-grid choice-grid-2">
+              <label class="choice-card"><input type="radio" name="previousTraining" value="evet" required><span>Evet</span></label>
+              <label class="choice-card"><input type="radio" name="previousTraining" value="hayir" required><span>Hayır</span></label>
+            </div>
+            <p class="field-error" id="previousTrainingError"></p>
+          </div>
+
+          <div id="previousTrainingDetailWrap" class="field conditional-fields" hidden>
+            <label for="previousTrainingDetail">Program ve dönem bilgisi</label>
+            <input id="previousTrainingDetail" name="previousTrainingDetail" type="text" maxlength="180" placeholder="Örnek: 2025 yaz okulu">
+          </div>
+
+          <div class="field">
+            <label for="notes">Bize iletmek istediğiniz bir not var mı?</label>
+            <textarea id="notes" name="notes" rows="4" maxlength="600" placeholder="Öğrencinin eğitimiyle ilgili bilmemizi istediğiniz bilgileri yazabilirsiniz."></textarea>
+          </div>
+        </fieldset>
+
+        <fieldset class="form-step" data-step="3">
+          <legend>
+            <span>Son kontroller ve izinler</span>
+            <small>Lütfen program kurallarını ve bilgilendirme metinlerini okuyun.</small>
+          </legend>
+
+          <section class="rules-box" aria-labelledby="rulesTitle">
+            <h2 id="rulesTitle">Program kuralları</h2>
+            <ul>
+              <li>Öğrencinin 2026-2027 eğitim yılı boyunca, özel durumlar haricinde ders ve etkinliklere düzenli katılımı sağlanacaktır.</li>
+              <li>Bir hafta içinde geçerli mazeret olmaksızın iki gün katılım sağlamayan öğrencinin kaydı silinebilir.</li>
+              <li>Sağlık sorunu veya kaçınılmaz bir durumda 0534 811 77 57 numaralı WhatsApp hattına bilgi verilecektir.</li>
+              <li>Öğrencinin eğitim ortamına uygun, sade ve uzun kıyafetle gelmesi sağlanacaktır.</li>
+              <li>Veli, öğrencinin aktif katılımını ve motivasyonunu destekleyecektir.</li>
+            </ul>
+            <label class="consent-row" for="rulesAccepted">
+              <input id="rulesAccepted" name="rulesAccepted" type="checkbox" required>
+              <span>Program kurallarını okudum ve sorumlulukları kabul ediyorum. <b>*</b></span>
+            </label>
+            <p class="field-error" id="rulesAcceptedError"></p>
+          </section>
+
+          <section class="legal-box" aria-labelledby="legalTitle">
+            <h2 id="legalTitle">KVKK ve kullanım koşulları</h2>
+            <p>Başvuru bilgileriniz programın değerlendirilmesi ve sizinle iletişim kurulması amacıyla işlenir.</p>
+            <label class="consent-row" for="privacyAcknowledged">
+              <input id="privacyAcknowledged" name="privacyAcknowledged" type="checkbox" required>
+              <span><a href="https://www.tacev.org.tr/kvkk-aydinlatma-metni/" target="_blank" rel="noopener">KVKK Aydınlatma Metni</a>'ni okudum ve bilgilendirildim. <b>*</b></span>
+            </label>
+            <label class="consent-row" for="termsAccepted">
+              <input id="termsAccepted" name="termsAccepted" type="checkbox" required>
+              <span><a href="https://www.tacev.org.tr/wp-content/uploads/2022/07/HIZMET%20%C5%9EARTLARI.pdf" target="_blank" rel="noopener">Hizmet Şartları ve Kullanım Koşulları</a>'nı okudum ve kabul ediyorum. <b>*</b></span>
+            </label>
+            <p class="field-error" id="privacyAcknowledgedError"></p>
+            <p class="field-error" id="termsAcceptedError"></p>
+          </section>
+
+          <section class="media-box" aria-labelledby="mediaTitle">
+            <div>
+              <h2 id="mediaTitle">Görsel paylaşım izni</h2>
+              <p>Öğrencinin eğitim anlarına ait fotoğraf veya videolarının Birlikte İyilik Akademi sosyal medya hesaplarında kullanılmasına ilişkin tercihiniz.</p>
+            </div>
+            <div class="choice-grid choice-grid-2 media-choices">
+              <label class="choice-card"><input type="radio" name="mediaConsent" value="izin-veriyorum" required><span>İzin veriyorum</span></label>
+              <label class="choice-card"><input type="radio" name="mediaConsent" value="izin-vermiyorum" required><span>İzin vermiyorum</span></label>
+            </div>
+            <p class="field-hint">İzin vermemeniz başvurunun değerlendirilmesini etkilemez.</p>
+            <p class="field-error" id="mediaConsentError"></p>
+          </section>
+        </fieldset>
+
+        <div class="form-actions">
+          <button type="button" class="button button-secondary" id="backButton" hidden>Geri</button>
+          <p id="stepSummary" aria-live="polite">1 / 4</p>
+          <button type="button" class="button button-primary" id="nextButton">Devam et</button>
+          <button type="submit" class="button button-primary" id="submitButton" hidden>
+            <span class="button-label">Başvuruyu gönder</span>
+            <span class="button-loading" hidden>Gönderiliyor...</span>
+          </button>
+        </div>
+      </form>
+
+      <section id="successState" class="success-state" aria-live="polite" hidden>
+        <span class="success-mark" aria-hidden="true">✓</span>
+        <h2>Başvurunuz alındı</h2>
+        <p>Değerlendirme sonrasında velimizle telefon üzerinden iletişime geçeceğiz.</p>
+        <p class="reference">Başvuru numarası: <strong id="applicationReference"></strong></p>
+        <a class="button button-primary" href="/">Ana sayfaya dön</a>
+      </section>
+    </section>
+
+    <p class="form-security-note">Bilgileriniz güvenli bağlantı üzerinden iletilir ve yalnızca yetkili kişiler tarafından incelenir.</p>
+  </main>
+
+  <footer class="minimal-footer">
+    <span>© 2026 Birlikte İyilik Akademi</span>
+    <a href="/hakkimizda/seffaflik-belgeler">Şeffaflık ve belgeler</a>
+  </footer>
+
+  <script src="/js/basvuru.js?v=1" defer></script>
+</body>
+</html>

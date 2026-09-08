@@ -180,7 +180,7 @@ def build_site(base_path=''):
     # ── 4) sitemap.xml ──
     # Jinja2'den üretilen + repo root'taki statik HTML sayfalar
     SITEMAP_EXCLUDE = {'yonetim', '404', '_src', 'node_modules', '.git'}
-    STATIC_SCAN_DIRS = ['hakkimizda', 'egitimler', 'basvurular', 'destek-ol']
+    STATIC_SCAN_DIRS = ['hakkimizda', 'egitimler', 'basvurular', 'basvuru', 'destek-ol']
     sitemap_entries = set()
 
     # 4a) dist/ içinden Jinja2-üretilen sayfaları ekle

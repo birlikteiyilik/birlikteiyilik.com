@@ -34,7 +34,7 @@
       "title": "Başvuru & Destek",
       "links": [
         { "label": "Online Başvuru", "url": "/basvurular/online-egitim" },
-        { "label": "Yüz Yüze Başvuru", "url": "/basvurular/yuz-yuze-egitim" },
+        { "label": "Yüz Yüze Başvuru", "url": "/basvuru" },
         { "label": "Gönüllü Öğretmen Ol", "url": "/basvurular/gonullu-ogretmen" },
         { "label": "Destek Ol", "url": "/destek-ol" }
       ]
