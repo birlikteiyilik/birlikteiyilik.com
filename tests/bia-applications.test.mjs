@@ -142,7 +142,7 @@ async function adminPost(body) {
 
 const mondayTeacherResponse = await adminPost({
   action: 'teacher-save', teacher: {
-    name: 'Mustafa Kaplan', phone: '05321110001', gender: 'erkek', modes: ['yuz-yuze'],
+    name: 'Meryem Kaplan', phone: '05321110001', gender: 'kadin', modes: ['yuz-yuze'],
     days: ['pazartesi', 'sali', 'carsamba'], active: true
   }
 });
@@ -201,6 +201,65 @@ const conflictResponse = await adminPost({
 });
 assert.equal(conflictResponse.status, 409);
 assert.match((await conflictResponse.json()).error, /dolu/);
+
+const maleTeacherResponse = await adminPost({
+  action: 'teacher-save', teacher: {
+    name: 'Mustafa Kaplan', phone: '05321110003', gender: 'erkek', modes: ['yuz-yuze'],
+    days: ['pazartesi', 'sali', 'carsamba', 'persembe', 'cuma'], active: true
+  }
+});
+assert.equal(maleTeacherResponse.status, 200);
+const maleTeacher = (await maleTeacherResponse.json()).data;
+
+const maleSubmission = {
+  ...validSubmission, studentName: 'Erkek Test Öğrenci', gender: 'erkek',
+  tckn: makeTckn('300000005'), startedAt: Date.now() - 5000
+};
+const maleResponse = await handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'POST', headers: { 'Content-Type': 'application/json', 'Origin': 'http://localhost:4173' },
+  body: JSON.stringify(maleSubmission)
+}));
+assert.equal(maleResponse.status, 201);
+const beforeAutoPlan = await (await handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'GET', headers: adminHeaders
+}))).json();
+const maleApplication = beforeAutoPlan.data.find((item) => item.studentName === maleSubmission.studentName);
+
+const wrongGenderSchedule = ['pazartesi', 'sali', 'carsamba', 'persembe', 'cuma']
+  .map((day) => ({ day, teacherId: fridayTeacher.id, slot: '15:20-15:40' }));
+const wrongGenderResponse = await adminPost({
+  action: 'placement-save', applicationId: maleApplication.id, applicationCreatedAt: maleApplication.createdAt,
+  startDate: '2026-09-14', schedule: wrongGenderSchedule
+});
+assert.equal(wrongGenderResponse.status, 409);
+assert.match((await wrongGenderResponse.json()).error, /erkek öğretmen/);
+
+const autoPlanResponse = await adminPost({
+  action: 'auto-plan', applicationIds: [maleApplication.id], startDate: '2026-09-14'
+});
+assert.equal(autoPlanResponse.status, 200);
+const autoPlan = await autoPlanResponse.json();
+assert.equal(autoPlan.data.length, 1);
+assert.equal(new Set(autoPlan.data[0].schedule.map((entry) => entry.teacherId)).size, 1);
+assert.equal(new Set(autoPlan.data[0].schedule.map((entry) => entry.slot)).size, 1);
+assert.ok(autoPlan.data[0].schedule.every((entry) => entry.teacherId === maleTeacher.id));
+
+const demoSeedResponse = await adminPost({ action: 'demo-seed', startDate: '2026-09-14' });
+assert.equal(demoSeedResponse.status, 200);
+const demoSeed = await demoSeedResponse.json();
+assert.equal(demoSeed.data.applications.length, 10);
+assert.equal(demoSeed.data.teachers.length, 5);
+assert.equal(demoSeed.data.placements.length, 10);
+
+const demoList = await (await handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'GET', headers: adminHeaders
+}))).json();
+const teacherById = new Map(demoList.teachers.map((teacher) => [teacher.id, teacher]));
+demoList.placements.filter((placement) => placement.isDemo).forEach((placement) => {
+  const application = demoList.data.find((item) => item.id === placement.applicationId);
+  const expectedGender = application.gender === 'kiz' ? 'kadin' : 'erkek';
+  assert.ok(placement.schedule.every((entry) => teacherById.get(entry.teacherId)?.gender === expectedGender));
+});
 
 globalThis.fetch = originalFetch;
 console.log('bia-applications tests passed');

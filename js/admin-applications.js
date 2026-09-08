@@ -107,6 +107,12 @@
     el('appsRegistered').textContent = applications.filter((item) => item.status === 'kayit-tamamlandi').length;
     el('appsTabApplicationCount').textContent = applications.length;
     el('appsTabTeacherCount').textContent = teachers.length;
+    el('appsTabScheduleCount').textContent = placements.length;
+    const demoApplications = applications.filter((item) => item.isDemo).length;
+    const demoTeachers = teachers.filter((item) => item.isDemo).length;
+    const demoButton = el('programDemoSeed');
+    demoButton.disabled = demoApplications >= 10 && demoTeachers >= 5;
+    demoButton.textContent = demoButton.disabled ? 'Test verisi hazır' : 'Test verisini kur';
   }
 
   function renderTeacherFilter() {
@@ -175,8 +181,137 @@
       }).join('');
   }
 
+  function programEntries() {
+    return placements.flatMap((placement) => {
+      const application = applications.find((item) => item.id === placement.applicationId);
+      return (placement.schedule || []).map((entry) => ({
+        ...entry,
+        applicationId: placement.applicationId,
+        applicationReference: placement.applicationReference || application?.reference || '',
+        studentName: placement.studentName || application?.studentName || 'Öğrenci',
+        applicationType: placement.applicationType || application?.applicationType || '',
+        startDate: placement.startDate || '',
+        teacherName: entry.teacherName || teacherOf(entry.teacherId)?.name || 'Arşiv öğretmen',
+        isDemo: placement.isDemo === true || application?.isDemo === true
+      }));
+    });
+  }
+
+  function programTeachers(entries) {
+    const result = teachers.slice();
+    const known = new Set(result.map((teacher) => teacher.id));
+    entries.forEach((entry) => {
+      if (known.has(entry.teacherId)) return;
+      known.add(entry.teacherId);
+      const teacherEntries = entries.filter((item) => item.teacherId === entry.teacherId);
+      result.push({
+        id: entry.teacherId, name: entry.teacherName, phone: '', active: false, gender: '',
+        modes: [...new Set(teacherEntries.map((item) => item.applicationType).filter(Boolean))],
+        days: [...new Set(teacherEntries.map((item) => item.day))], archived: true
+      });
+    });
+    return result;
+  }
+
+  function renderProgramFilters() {
+    const entries = programEntries();
+    const teacherValue = el('programTeacher').value;
+    const slotValue = el('programSlot').value;
+    el('programTeacher').innerHTML = '<option value="">Tüm öğretmenler</option>' + programTeachers(entries)
+      .slice().sort((a, b) => a.name.localeCompare(b.name, 'tr'))
+      .map((teacher) => `<option value="${escapeHtml(teacher.id)}">${escapeHtml(teacher.name)}${teacher.active ? '' : ' · Pasif'}</option>`).join('');
+    el('programTeacher').value = [...el('programTeacher').options].some((option) => option.value === teacherValue) ? teacherValue : '';
+    el('programSlot').innerHTML = '<option value="">Tüm saatler</option>' + meta.timeSlots
+      .map((slot) => `<option value="${escapeHtml(slot)}">${escapeHtml(slot)}</option>`).join('');
+    el('programSlot').value = meta.timeSlots.includes(slotValue) ? slotValue : '';
+  }
+
+  function renderProgramSummary(entries) {
+    el('programActiveTeachers').textContent = teachers.filter((teacher) => teacher.active).length;
+    el('programAssignedStudents').textContent = new Set(entries.map((entry) => entry.applicationId)).size;
+    el('programWeeklyLessons').textContent = entries.length;
+    const slotCounts = new Map();
+    entries.forEach((entry) => slotCounts.set(entry.slot, (slotCounts.get(entry.slot) || 0) + 1));
+    const busiest = [...slotCounts.entries()].sort((a, b) => b[1] - a[1] || meta.timeSlots.indexOf(a[0]) - meta.timeSlots.indexOf(b[0]))[0];
+    el('programBusiestSlot').textContent = busiest ? busiest[0].replace(/:/g, '.') : '—';
+  }
+
+  function programLesson(entry, index) {
+    const start = entry.startDate ? formatDate(`${entry.startDate}T00:00:00`, false) : '';
+    const demo = entry.isDemo ? '<span class="program-demo-tag">Test</span>' : '';
+    return `<li class="program-lesson is-${escapeHtml(entry.applicationType)}" style="--lesson-index:${index}">
+      <time>${escapeHtml(entry.slot.replace('-', ' – '))}</time>
+      <div class="program-student"><strong>${escapeHtml(entry.studentName)} ${demo}</strong><small>${escapeHtml(labels.type[entry.applicationType] || entry.applicationType)}${start ? ` · Başlangıç ${escapeHtml(start)}` : ''}</small></div>
+      <button type="button" data-program-open="${escapeHtml(entry.applicationId)}" aria-label="${escapeHtml(entry.studentName)} başvurusunu incele">İncele</button>
+    </li>`;
+  }
+
+  function renderProgram() {
+    const entries = programEntries();
+    renderProgramSummary(entries);
+    const query = el('programSearch').value.trim().toLocaleLowerCase('tr-TR');
+    const dayFilter = el('programDay').value;
+    const teacherFilter = el('programTeacher').value;
+    const typeFilter = el('programType').value;
+    const slotFilter = el('programSlot').value;
+    const hasEntryFilter = Boolean(dayFilter || typeFilter || slotFilter);
+    const cards = [];
+
+    programTeachers(entries)
+      .slice().sort((a, b) => Number(b.active) - Number(a.active) || a.name.localeCompare(b.name, 'tr'))
+      .forEach((teacher) => {
+        if (teacherFilter && teacher.id !== teacherFilter) return;
+        const teacherQueryMatch = `${teacher.name} ${teacher.phone || ''}`.toLocaleLowerCase('tr-TR').includes(query);
+        const allTeacherEntries = entries.filter((entry) => entry.teacherId === teacher.id);
+        const visibleEntries = allTeacherEntries.filter((entry) => {
+          const studentQueryMatch = `${entry.studentName} ${entry.applicationReference}`.toLocaleLowerCase('tr-TR').includes(query);
+          return (!query || teacherQueryMatch || studentQueryMatch) && (!dayFilter || entry.day === dayFilter) &&
+            (!typeFilter || entry.applicationType === typeFilter) && (!slotFilter || entry.slot === slotFilter);
+        });
+        if (!visibleEntries.length && (hasEntryFilter || (query && !teacherQueryMatch))) return;
+
+        const totalStudents = new Set(allTeacherEntries.map((entry) => entry.applicationId)).size;
+        const totalLessons = allTeacherEntries.length;
+        const capacity = Math.max(1, (teacher.days || []).length * meta.timeSlots.length);
+        const occupancy = Math.min(100, Math.round(totalLessons / capacity * 100));
+        const scheduledDays = new Set(allTeacherEntries.map((entry) => entry.day));
+        let displayDays = dayFilter ? [dayFilter] : meta.weekdays.filter((day) => (teacher.days || []).includes(day) || scheduledDays.has(day));
+        if ((query || typeFilter || slotFilter) && !dayFilter) {
+          displayDays = meta.weekdays.filter((day) => visibleEntries.some((entry) => entry.day === day));
+        }
+        if (!displayDays.length && !hasEntryFilter && (!query || teacherQueryMatch)) displayDays = teacher.days || [];
+        const dayColumns = displayDays.map((day, dayIndex) => {
+          const dayEntries = visibleEntries.filter((entry) => entry.day === day)
+            .sort((a, b) => meta.timeSlots.indexOf(a.slot) - meta.timeSlots.indexOf(b.slot) || a.studentName.localeCompare(b.studentName, 'tr'));
+          return `<section class="program-day-column" style="--day-index:${dayIndex}">
+            <header><div><span>${escapeHtml(labels.days[day].slice(0, 2).toLocaleUpperCase('tr-TR'))}</span><h4>${escapeHtml(labels.days[day])}</h4></div><em>${dayEntries.length} ders</em></header>
+            ${dayEntries.length ? `<ol>${dayEntries.map(programLesson).join('')}</ol>` : '<div class="program-day-empty"><span>＋</span> Henüz ders yok</div>'}
+          </section>`;
+        }).join('');
+        const testTag = teacher.isDemo ? '<span class="program-demo-tag">Test</span>' : '';
+        cards.push(`<article class="program-teacher-card ${teacher.active ? '' : 'is-passive'}" style="--program-index:${cards.length}">
+          <header class="program-teacher-head">
+            <div class="program-teacher-identity"><span class="teacher-avatar">${escapeHtml(teacher.name.charAt(0).toLocaleUpperCase('tr-TR'))}</span><div><div class="program-teacher-name"><h3>${escapeHtml(teacher.name)}</h3>${testTag}<span class="teacher-status">${teacher.active ? 'Aktif' : teacher.archived ? 'Arşiv' : 'Pasif'}</span></div><small>${escapeHtml((teacher.days || []).map((day) => labels.days[day]).join(', ') || 'Çalışma günü yok')}</small></div></div>
+            <div class="program-load-summary"><div><span><strong>${totalStudents}</strong> öğrenci</span><span><strong>${totalLessons}</strong> ders / hafta</span></div><div class="program-load-meter" aria-label="Yüzde ${occupancy} doluluk"><i style="--load:${occupancy}%"></i></div><small>${occupancy}% haftalık doluluk</small></div>
+          </header>
+          <div class="program-week" style="--day-count:${Math.max(1, displayDays.length)}">${dayColumns || '<div class="program-card-empty">Bu öğretmene henüz ders atanmamış.</div>'}</div>
+        </article>`);
+      });
+
+    el('programFilterResult').textContent = `${cards.length} öğretmen gösteriliyor`;
+    if (!cards.length) {
+      const hasTeachers = teachers.length > 0;
+      el('programBoard').innerHTML = `<div class="program-empty-state"><span aria-hidden="true">${hasTeachers ? '⌕' : '+'}</span><strong>${hasTeachers ? 'Filtrelerle eşleşen ders bulunamadı.' : 'Henüz öğretmen kaydı yok.'}</strong><p>${hasTeachers ? 'Filtreleri temizleyin veya Başvurular bölümünden bir öğrenciye program atayın.' : 'Önce Öğretmenler bölümünden çalışma günleriyle birlikte öğretmen ekleyin.'}</p></div>`;
+      return;
+    }
+    el('programBoard').innerHTML = cards.join('');
+  }
+
   async function load(force) {
-    if (loaded && !force) { renderStats(); renderTeacherFilter(); renderTable(); renderTeacherGrid(); return; }
+    if (loaded && !force) {
+      renderStats(); renderTeacherFilter(); renderProgramFilters(); renderTable(); renderTeacherGrid(); renderProgram();
+      return;
+    }
     el('appsTableBody').innerHTML = '<tr><td colspan="9"><div class="apps-loading"><span class="spin"></span>Şifreli kayıtlar açılıyor...</div></td></tr>';
     el('appsNotice').innerHTML = '';
     try {
@@ -186,7 +321,7 @@
       placements = Array.isArray(result.placements) ? result.placements : [];
       meta = result.meta?.weekdays && result.meta?.timeSlots ? result.meta : fallbackMeta;
       loaded = true;
-      renderStats(); renderTeacherFilter(); renderTable(); renderTeacherGrid();
+      renderStats(); renderTeacherFilter(); renderProgramFilters(); renderTable(); renderTeacherGrid(); renderProgram();
       if (force) toast('Başvurular ve ders planı güncellendi.');
     } catch (error) {
       el('appsTableBody').innerHTML = `<tr><td colspan="9" class="apps-empty">${escapeHtml(error.message)}</td></tr>`;
@@ -205,8 +340,9 @@
   }
 
   function eligibleTeachers(item, day, currentId) {
+    const expectedGender = item.gender === 'kiz' ? 'kadin' : 'erkek';
     return teachers.filter((teacher) => (teacher.active || teacher.id === currentId) &&
-      teacher.modes.includes(item.applicationType) && teacher.days.includes(day));
+      teacher.gender === expectedGender && teacher.modes.includes(item.applicationType) && teacher.days.includes(day));
   }
 
   function renderScheduleRows(item) {
@@ -308,7 +444,7 @@
       el('appsAssignmentState').textContent = 'Plan kaydedildi';
       el('appsAssignmentState').className = 'assignment-state is-ready';
       el('appsRemoveAssignment').hidden = false;
-      renderStats(); renderTable(); renderTeacherGrid(); renderScheduleRows(item);
+      renderStats(); renderTable(); renderTeacherGrid(); renderProgramFilters(); renderProgram(); renderScheduleRows(item);
       toast('Beş günlük ders planı güvenle kaydedildi.');
     } catch (error) {
       toast(error.message, 'error');
@@ -332,7 +468,7 @@
       el('appsAssignmentState').className = 'assignment-state';
       el('appsRemoveAssignment').hidden = true;
       draftSchedule = Object.fromEntries(meta.weekdays.map((day) => [day, { teacherId: '', slot: '' }]));
-      renderStats(); renderTable(); renderTeacherGrid(); renderScheduleRows(item);
+      renderStats(); renderTable(); renderTeacherGrid(); renderProgramFilters(); renderProgram(); renderScheduleRows(item);
       toast('Ders planı kaldırıldı.');
     } catch (error) { toast(error.message, 'error'); }
   }
@@ -469,14 +605,128 @@
     renderTable();
   }
 
+  function nextMondayValue() {
+    const date = new Date();
+    date.setDate(date.getDate() + (((8 - date.getDay()) % 7) || 7));
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  function mergePlacements(records) {
+    (records || []).forEach((record) => {
+      const index = placements.findIndex((placement) => placement.applicationId === record.applicationId);
+      if (index >= 0) placements[index] = record; else placements.push(record);
+    });
+  }
+
+  function showAutoFeedback(created, skipped) {
+    const feedback = el('programAutoFeedback');
+    if (!skipped.length) {
+      feedback.className = 'program-auto-feedback is-success';
+      feedback.innerHTML = `<strong>✓ ${created} öğrenci düzenli programa atandı.</strong><span>Çakışma oluşmadı; cinsiyet, gün ve müsait saat kuralları doğrulandı.</span>`;
+      return;
+    }
+    feedback.className = `program-auto-feedback ${created ? 'is-warning' : 'is-error'}`;
+    feedback.innerHTML = `<strong>${created} öğrenci atandı, ${skipped.length} başvuru bekliyor.</strong><span>${skipped.slice(0, 3).map((item) => `${escapeHtml(item.studentName)}: ${escapeHtml(item.reason)}`).join(' · ')}</span>`;
+  }
+
+  async function autoAssignAll() {
+    const startDate = el('programAutoStartDate').value;
+    if (!startDate) return toast('Otomatik atama için başlangıç günü seçin.', 'error');
+    const unplanned = applications.filter((item) => ['yeni', 'inceleniyor', 'uygun'].includes(item.status) && !placementOf(item.id));
+    if (!unplanned.length) return toast('Planlanmayı bekleyen uygun başvuru yok.', 'error');
+    const accepted = await confirmModal(
+      `${unplanned.length} başvuru; cinsiyet, müsait saat ve öğretmen doluluğu kontrol edilerek otomatik planlanacak.`,
+      'Düzenli otomatik atama', 'Atamayı başlat'
+    );
+    if (!accepted) return;
+    const button = el('programAutoAssign');
+    button.disabled = true; button.textContent = 'Programlar hesaplanıyor...';
+    try {
+      const result = await api('POST', { action: 'auto-plan', startDate });
+      mergePlacements(result.data);
+      renderStats(); renderTable(); renderTeacherGrid(); renderProgramFilters(); renderProgram();
+      showAutoFeedback((result.data || []).length, result.skipped || []);
+      toast(`${(result.data || []).length} öğrenci otomatik programa alındı.`);
+    } catch (error) { toast(error.message, 'error'); }
+    finally { button.disabled = false; button.textContent = 'Planlanmayanları ata'; }
+  }
+
+  async function autoPlanSelected() {
+    const item = applications.find((record) => record.id === selectedId);
+    if (!item) return;
+    const startDate = el('appsStartDate').value;
+    if (!startDate) return toast('Önce başlangıç gününü seçin.', 'error');
+    const existing = placementOf(item.id);
+    if (existing) {
+      const accepted = await confirmModal(
+        'Mevcut beş günlük program, en düzenli yeni atamayla değiştirilecek.',
+        'Programı yeniden hesapla', 'Yeniden planla'
+      );
+      if (!accepted) return;
+    }
+    const button = el('appsAutoAssignment');
+    button.disabled = true; button.textContent = 'Hesaplanıyor...';
+    try {
+      const result = await api('POST', {
+        action: 'auto-plan', startDate, applicationIds: [item.id], replaceExisting: Boolean(existing)
+      });
+      if (!result.data?.length) throw new Error(result.skipped?.[0]?.reason || 'Uygun program bulunamadı.');
+      mergePlacements(result.data);
+      const placement = placementOf(item.id);
+      draftSchedule = Object.fromEntries(meta.weekdays.map((day) => {
+        const entry = placement.schedule.find((scheduled) => scheduled.day === day);
+        return [day, { teacherId: entry?.teacherId || '', slot: entry?.slot || '' }];
+      }));
+      el('appsAssignmentState').textContent = 'Otomatik planlandı';
+      el('appsAssignmentState').className = 'assignment-state is-ready';
+      el('appsRemoveAssignment').hidden = false;
+      renderStats(); renderTable(); renderTeacherGrid(); renderProgramFilters(); renderProgram(); renderScheduleRows(item);
+      toast(`${item.studentName} için en düzenli program kaydedildi.`);
+    } catch (error) { toast(error.message, 'error'); }
+    finally { button.disabled = false; button.textContent = '✦ Otomatik planla'; }
+  }
+
+  async function seedDemoData() {
+    const accepted = await confirmModal(
+      'Gerçek kayıtlardan “Test” etiketiyle ayrılan 5 kız, 5 erkek öğrenci ve 5 öğretmen oluşturulup otomatik planlanacak.',
+      'Test verisini kur', '10 öğrenci + 5 öğretmen ekle'
+    );
+    if (!accepted) return;
+    const button = el('programDemoSeed');
+    button.disabled = true; button.textContent = 'Test verisi hazırlanıyor...';
+    try {
+      const result = await api('POST', {
+        action: 'demo-seed', startDate: el('programAutoStartDate').value || nextMondayValue()
+      });
+      loaded = false;
+      await load(false);
+      switchView('schedule');
+      showAutoFeedback((result.data?.placements || []).length, result.skipped || []);
+      toast('10 test öğrencisi ve 5 test öğretmeni hazır.');
+    } catch (error) {
+      button.disabled = false; button.textContent = 'Test verisini kur'; toast(error.message, 'error');
+    }
+  }
+
+  function resetProgramFilters() {
+    ['programSearch', 'programDay', 'programTeacher', 'programType', 'programSlot'].forEach((id) => { el(id).value = ''; });
+    renderProgram();
+  }
+
   function switchView(view) {
-    const applicationsView = view === 'applications';
-    el('appsApplicationsView').hidden = !applicationsView;
-    el('appsTeachersView').hidden = applicationsView;
-    el('appsApplicationsView').classList.toggle('is-active', applicationsView);
-    el('appsTeachersView').classList.toggle('is-active', !applicationsView);
-    el('appsTabApplications').classList.toggle('is-active', applicationsView);
-    el('appsTabTeachers').classList.toggle('is-active', !applicationsView);
+    const views = { applications: 'appsApplicationsView', teachers: 'appsTeachersView', schedule: 'appsScheduleView' };
+    const tabs = { applications: 'appsTabApplications', teachers: 'appsTabTeachers', schedule: 'appsTabSchedule' };
+    Object.entries(views).forEach(([name, id]) => {
+      const active = name === view;
+      el(id).hidden = !active;
+      el(id).classList.toggle('is-active', active);
+      el(tabs[name]).classList.toggle('is-active', active);
+      el(tabs[name]).setAttribute('aria-selected', String(active));
+    });
+    if (view === 'schedule') renderProgram();
   }
 
   function closeTeacherDialog() {
@@ -520,7 +770,7 @@
       });
       const index = teachers.findIndex((teacher) => teacher.id === result.data.id);
       if (index >= 0) teachers[index] = result.data; else teachers.push(result.data);
-      renderStats(); renderTeacherFilter(); renderTeacherGrid(); renderTable();
+      renderStats(); renderTeacherFilter(); renderProgramFilters(); renderTeacherGrid(); renderTable(); renderProgram();
       closeTeacherDialog(); toast(`${result.data.name} kaydedildi.`);
     } catch (error) {
       el('teacherFormNotice').textContent = error.message;
@@ -539,6 +789,18 @@
     el('appsExcel').addEventListener('click', exportExcel);
     el('appsTabApplications').addEventListener('click', () => switchView('applications'));
     el('appsTabTeachers').addEventListener('click', () => switchView('teachers'));
+    el('appsTabSchedule').addEventListener('click', () => switchView('schedule'));
+    ['programSearch', 'programDay', 'programTeacher', 'programType', 'programSlot'].forEach((id) => {
+      el(id).addEventListener(id === 'programSearch' ? 'input' : 'change', renderProgram);
+    });
+    el('programReset').addEventListener('click', resetProgramFilters);
+    el('programAutoAssign').addEventListener('click', autoAssignAll);
+    el('programDemoSeed').addEventListener('click', seedDemoData);
+    el('programAutoStartDate').value = nextMondayValue();
+    el('programBoard').addEventListener('click', (event) => {
+      const button = event.target.closest('[data-program-open]');
+      if (button) openDetail(button.dataset.programOpen);
+    });
     el('appsTeacherSearch').addEventListener('input', renderTeacherGrid);
     el('appsTeacherState').addEventListener('change', renderTeacherGrid);
     el('appsAddTeacher').addEventListener('click', () => openTeacherDialog(''));
@@ -553,6 +815,7 @@
     el('appsCancel').addEventListener('click', closeDetail);
     el('appsSaveReview').addEventListener('click', saveReview);
     el('appsSaveAssignment').addEventListener('click', saveAssignment);
+    el('appsAutoAssignment').addEventListener('click', autoPlanSelected);
     el('appsRemoveAssignment').addEventListener('click', removeAssignment);
     el('appsScheduleRows').addEventListener('change', (event) => {
       const item = applications.find((record) => record.id === selectedId);

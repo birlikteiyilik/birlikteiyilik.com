@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>BİA Yönetim Paneli</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
-<link rel="stylesheet" href="/css/admin-applications.css?v=2">
+<link rel="stylesheet" href="/css/admin-applications.css?v=3">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; color: #222; min-height: 100vh; }
@@ -358,8 +358,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   </header>
 
   <nav class="apps-workspace-tabs" aria-label="Başvuru yönetimi bölümleri">
-    <button type="button" class="is-active" id="appsTabApplications">Başvurular <span id="appsTabApplicationCount">0</span></button>
-    <button type="button" id="appsTabTeachers">Öğretmenler <span id="appsTabTeacherCount">0</span></button>
+    <button type="button" class="is-active" id="appsTabApplications" aria-selected="true">Başvurular <span id="appsTabApplicationCount">0</span></button>
+    <button type="button" id="appsTabTeachers" aria-selected="false">Öğretmenler <span id="appsTabTeacherCount">0</span></button>
+    <button type="button" id="appsTabSchedule" aria-selected="false">Ders programı <span id="appsTabScheduleCount">0</span></button>
   </nav>
 
   <div id="appsApplicationsView" class="apps-view is-active">
@@ -430,6 +431,62 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
     </div>
     <section class="teacher-grid" id="appsTeacherGrid" aria-live="polite"></section>
   </div>
+
+  <div id="appsScheduleView" class="apps-view" hidden>
+    <section class="program-overview-head">
+      <div>
+        <span class="apps-eyebrow">Haftalık canlı görünüm</span>
+        <h2>Ders programı</h2>
+        <p>Her öğretmenin öğrenci yükünü, gününü ve birebir ders saatini tek bakışta takip edin.</p>
+      </div>
+      <div class="program-head-actions">
+        <div class="program-legend" aria-label="Program açıklaması">
+          <span><i class="is-face"></i> Yüz yüze</span>
+          <span><i class="is-online"></i> Online</span>
+        </div>
+        <button type="button" class="btn btn-gray" id="programDemoSeed">Test verisini kur</button>
+      </div>
+    </section>
+
+    <section class="program-summary" aria-label="Ders programı özeti">
+      <article><span>Aktif öğretmen</span><strong id="programActiveTeachers">0</strong></article>
+      <article><span>Atanan öğrenci</span><strong id="programAssignedStudents">0</strong></article>
+      <article><span>Haftalık ders</span><strong id="programWeeklyLessons">0</strong></article>
+      <article class="is-clock"><span>En yoğun saat</span><strong id="programBusiestSlot">—</strong></article>
+    </section>
+
+    <section class="program-toolbar" aria-labelledby="programFilterTitle">
+      <div class="program-toolbar-head">
+        <div><h3 id="programFilterTitle">Programı süz</h3><span id="programFilterResult">0 öğretmen gösteriliyor</span></div>
+        <button type="button" id="programReset">Filtreleri temizle</button>
+      </div>
+      <div class="program-filter-grid">
+        <label class="program-search">Öğretmen veya öğrenci ara
+          <input type="search" id="programSearch" placeholder="İsim ya da başvuru no...">
+        </label>
+        <label>Gün
+          <select id="programDay"><option value="">Tüm hafta</option><option value="pazartesi">Pazartesi</option><option value="sali">Salı</option><option value="carsamba">Çarşamba</option><option value="persembe">Perşembe</option><option value="cuma">Cuma</option></select>
+        </label>
+        <label>Öğretmen
+          <select id="programTeacher"><option value="">Tüm öğretmenler</option></select>
+        </label>
+        <label>Eğitim türü
+          <select id="programType"><option value="">Tümü</option><option value="yuz-yuze">Yüz yüze</option><option value="online">Online</option></select>
+        </label>
+        <label>Saat
+          <select id="programSlot"><option value="">Tüm saatler</option></select>
+        </label>
+      </div>
+      <div class="program-auto-bar">
+        <div class="program-auto-copy"><span class="program-auto-icon" aria-hidden="true">✦</span><div><strong>Düzenli otomatik atama</strong><small>Kız öğrenciye kadın, erkek öğrenciye erkek öğretmen atar; önce tek öğretmen ve aynı saati, sonra en az bölünmüş programı seçer.</small></div></div>
+        <label>Başlangıç günü <input type="date" id="programAutoStartDate"></label>
+        <button type="button" class="btn btn-red" id="programAutoAssign">Planlanmayanları ata</button>
+      </div>
+      <div class="program-auto-feedback" id="programAutoFeedback" role="status"></div>
+    </section>
+
+    <section class="program-board" id="programBoard" aria-live="polite"></section>
+  </div>
 </main>
 
 <dialog id="appsDialog" class="apps-dialog" aria-labelledby="appsModalTitle">
@@ -450,7 +507,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
       <div class="assignment-feedback" id="appsAssignmentFeedback" role="status"></div>
       <div class="assignment-actions">
         <button type="button" class="btn btn-gray" id="appsRemoveAssignment" hidden>Programı kaldır</button>
-        <button type="button" class="btn btn-red" id="appsSaveAssignment">Ders planını kaydet</button>
+        <div><button type="button" class="btn btn-gray" id="appsAutoAssignment">✦ Otomatik planla</button> <button type="button" class="btn btn-red" id="appsSaveAssignment">Ders planını kaydet</button></div>
       </div>
     </section>
     <section class="apps-detail-section">
@@ -1246,6 +1303,6 @@ function logout() {
 loadNews();
 </script>
 <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="/js/admin-applications.js?v=2"></script>
+<script src="/js/admin-applications.js?v=3"></script>
 </body>
 </html>
