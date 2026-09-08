@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#111722">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>BİA E-Yoklama</title>
+  <link rel="stylesheet" href="/css/yoklama.css?v=1">
+</head>
+<body>
+  <svg class="symbol-library" aria-hidden="true">
+    <symbol id="icon-calendar" viewBox="0 0 24 24"><path d="M7 3v3M17 3v3M4.5 9h15M6 5h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"/></symbol>
+    <symbol id="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"/></symbol>
+    <symbol id="icon-moon" viewBox="0 0 24 24"><path d="M20 15.4A8.5 8.5 0 0 1 8.6 4a8.5 8.5 0 1 0 11.4 11.4Z"/></symbol>
+    <symbol id="icon-eye" viewBox="0 0 24 24"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6S2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></symbol>
+    <symbol id="icon-arrow" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+    <symbol id="icon-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="icon-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+    <symbol id="icon-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+    <symbol id="icon-note" viewBox="0 0 24 24"><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5"/></symbol>
+    <symbol id="icon-logout" viewBox="0 0 24 24"><path d="M10 5H5v14h5M14 8l4 4-4 4M18 12H9"/></symbol>
+    <symbol id="icon-refresh" viewBox="0 0 24 24"><path d="M20 6v5h-5M4 18v-5h5M18.5 9A7 7 0 0 0 6 7.5L4 11M5.5 15A7 7 0 0 0 18 16.5l2-3.5"/></symbol>
+  </svg>
+
+  <button class="theme-control login-theme-control" id="loginTheme" type="button" aria-label="Renk temasını değiştir">
+    <svg><use href="#icon-moon"></use></svg>
+  </button>
+
+  <main class="login-view" id="loginView">
+    <section class="login-stage" aria-labelledby="loginTitle">
+      <div class="login-context">
+        <div class="login-brand"><span>BİA</span><div><strong>Birlikte İyilik</strong><small>E-Yoklama</small></div></div>
+        <div class="login-context-copy">
+          <span class="context-kicker">Öğretmen uygulaması</span>
+          <h1>Gününüz,<br>tek bakışta.</h1>
+          <p>Atanan derslerinizi görün, yoklamayı birkaç dokunuşla tamamlayın.</p>
+        </div>
+        <div class="context-ledger" aria-hidden="true">
+          <span><time>15.00</time><i></i><b>Ders programı</b></span>
+          <span><time>16.20</time><i></i><b>Hızlı yoklama</b></span>
+          <span><time>17.40</time><i></i><b>Anında kayıt</b></span>
+        </div>
+      </div>
+
+      <div class="login-panel">
+        <form class="login-card" id="loginForm" novalidate>
+          <header>
+            <span class="mobile-brand">BİA · E-Yoklama</span>
+            <span class="login-step">Güvenli öğretmen girişi</span>
+            <h2 id="loginTitle">Tekrar hoş geldiniz</h2>
+            <p>Yönetici tarafından tanımlanan bilgilerinizle devam edin.</p>
+          </header>
+          <label>Kullanıcı adı
+            <input id="username" name="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" minlength="4" maxlength="40" required placeholder="kullanici.adi">
+          </label>
+          <label>Şifre
+            <span class="password-field"><input id="password" name="password" type="password" autocomplete="current-password" minlength="8" maxlength="128" required placeholder="Şifreniz"><button type="button" id="passwordToggle" aria-label="Şifreyi göster"><svg><use href="#icon-eye"></use></svg></button></span>
+          </label>
+          <div class="login-feedback" id="loginFeedback" role="alert"></div>
+          <button class="primary-action" id="loginSubmit" type="submit"><span>Giriş yap</span><svg><use href="#icon-arrow"></use></svg></button>
+          <small class="login-help">Giriş sorunu yaşıyorsanız yöneticinizden hesabınızı kontrol etmesini isteyin.</small>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <div class="app-view" id="appView" hidden>
+    <header class="app-bar">
+      <div class="app-bar-inner">
+        <a class="app-brand" href="/yoklama/" aria-label="E-Yoklama ana ekranı"><span>BİA</span><div><strong>E-Yoklama</strong><small>Öğretmen uygulaması</small></div></a>
+        <div class="app-bar-actions">
+          <button class="icon-action" id="appTheme" type="button" aria-label="Renk temasını değiştir"><svg><use href="#icon-moon"></use></svg></button>
+          <button class="account-action" id="accountButton" type="button" aria-expanded="false"><span id="teacherInitial">Ö</span><strong id="teacherNameTop">Öğretmen</strong><svg><use href="#icon-arrow"></use></svg></button>
+        </div>
+      </div>
+      <div class="account-menu" id="accountMenu" hidden>
+        <div><strong id="teacherNameMenu">Öğretmen</strong><small id="teacherUsernameMenu"></small></div>
+        <button id="logoutButton" type="button"><svg><use href="#icon-logout"></use></svg>Oturumu kapat</button>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <section class="day-intro">
+        <div><span class="day-kicker" id="dayKicker">Bugünün programı</span><h1 id="dayHeading">Derslerim</h1><p id="daySubheading">Yoklamayı ders sonrasında tamamlayın.</p></div>
+        <div class="day-score" aria-live="polite"><strong id="completedCount">0</strong><span>/ <b id="lessonCount">0</b> yoklama</span></div>
+      </section>
+
+      <section class="week-panel" aria-label="Hafta seçimi">
+        <div class="week-toolbar"><button class="icon-action" id="previousWeek" type="button" aria-label="Önceki hafta"><svg class="is-back"><use href="#icon-arrow"></use></svg></button><strong id="weekLabel">Hafta</strong><button class="icon-action" id="nextWeek" type="button" aria-label="Sonraki hafta"><svg><use href="#icon-arrow"></use></svg></button></div>
+        <div class="week-days" id="weekDays"></div>
+      </section>
+
+      <section class="lesson-section" aria-labelledby="lessonTitle">
+        <header class="lesson-head"><div><span class="section-kicker">Ders akışı</span><h2 id="lessonTitle">Atanan dersler</h2></div><button class="quiet-action" id="refreshButton" type="button"><svg><use href="#icon-refresh"></use></svg>Yenile</button></header>
+        <div class="state-panel loading-state" id="loadingState" aria-live="polite">
+          <span class="skeleton is-time"></span><span class="skeleton is-card"></span><span class="skeleton is-time"></span><span class="skeleton is-card"></span>
+        </div>
+        <div class="state-panel error-state" id="errorState" hidden><span>!</span><div><strong>Dersler yüklenemedi</strong><p id="errorMessage">Bağlantınızı kontrol edip yeniden deneyin.</p></div><button type="button" id="retryButton">Tekrar dene</button></div>
+        <div class="state-panel empty-state" id="emptyState" hidden><svg><use href="#icon-calendar"></use></svg><strong>Bu gün için atanmış dersiniz yok</strong><p>Başka bir gün seçebilir veya programınız güncellendiyse sayfayı yenileyebilirsiniz.</p></div>
+        <div class="lesson-timeline" id="lessonList" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <div class="save-dock" id="saveDock" hidden>
+      <div><strong id="dirtyCount">0 değişiklik</strong><span>Henüz kaydedilmedi</span></div>
+      <button class="primary-action" id="saveButton" type="button"><span>Yoklamayı kaydet</span><svg><use href="#icon-check"></use></svg></button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"><svg><use href="#icon-check"></use></svg><span></span></div>
+  <script src="/js/yoklama.js?v=1"></script>
+</body>
+</html>

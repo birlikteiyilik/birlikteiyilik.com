@@ -36,7 +36,7 @@
     rulesAccepted: 'Devam etmek için program kurallarını kabul edin.',
     privacyAcknowledged: 'KVKK aydınlatma metnini okuduğunuzu onaylayın.',
     termsAccepted: 'Hizmet şartlarını kabul edin.',
-    mediaConsent: 'Görsel paylaşım tercihinizi belirtin.'
+    mediaConsent: 'Başvuruyu tamamlamak için görsel paylaşım iznini onaylayın.'
   };
 
   function digits(value) {
