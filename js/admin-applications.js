@@ -110,9 +110,15 @@
     el('appsTabScheduleCount').textContent = placements.length;
     const demoApplications = applications.filter((item) => item.isDemo).length;
     const demoTeachers = teachers.filter((item) => item.isDemo).length;
+    const demoPlacements = placements.filter((item) => item.isDemo).length;
     const demoButton = el('programDemoSeed');
-    demoButton.disabled = demoApplications >= 10 && demoTeachers >= 5;
-    demoButton.textContent = demoButton.disabled ? 'Test verisi hazır' : 'Test verisini kur';
+    const hasDemoData = demoApplications + demoTeachers + demoPlacements > 0;
+    demoButton.dataset.mode = hasDemoData ? 'remove' : 'seed';
+    demoButton.textContent = hasDemoData ? 'Test verilerini sil' : 'Test verisini kur';
+    el('dataCountApplications').textContent = applications.length;
+    el('dataCountTeachers').textContent = teachers.length;
+    el('dataCountAssignments').textContent = placements.length;
+    el('dataCountDemo').textContent = demoApplications + demoTeachers + demoPlacements;
   }
 
   function renderTeacherFilter() {
@@ -416,6 +422,8 @@
     renderScheduleRows(item);
     el('appsReviewStatus').value = item.status || 'yeni';
     el('appsAdminNote').value = item.adminNote || '';
+    el('appsDeleteApplication').disabled = false;
+    el('appsDeleteApplication').textContent = 'Öğrenciyi sil';
     el('appsModalNotice').textContent = '';
     const dialog = el('appsDialog');
     if (typeof dialog.showModal === 'function') dialog.showModal(); else dialog.setAttribute('open', '');
@@ -690,6 +698,10 @@
   }
 
   async function seedDemoData() {
+    if (el('programDemoSeed').dataset.mode === 'remove') {
+      await removeDemoData();
+      return;
+    }
     const accepted = await confirmModal(
       'Gerçek kayıtlardan “Test” etiketiyle ayrılan 5 kız, 5 erkek öğrenci ve 5 öğretmen oluşturulup otomatik planlanacak.',
       'Test verisini kur', '10 öğrenci + 5 öğretmen ekle'
@@ -708,6 +720,132 @@
       toast('10 test öğrencisi ve 5 test öğretmeni hazır.');
     } catch (error) {
       button.disabled = false; button.textContent = 'Test verisini kur'; toast(error.message, 'error');
+    }
+  }
+
+  async function removeDemoData() {
+    const demoApplications = applications.filter((item) => item.isDemo).length;
+    const demoTeachers = teachers.filter((item) => item.isDemo).length;
+    const accepted = await confirmModal(
+      `${demoApplications} test öğrencisi, ${demoTeachers} test öğretmeni ve bunlara bağlı ders atamaları silinecek. Gerçek kayıtlar korunacak.`,
+      'Test verilerini sil', 'Test verilerini sil'
+    );
+    if (!accepted) return;
+    const button = el('programDemoSeed');
+    button.disabled = true; button.textContent = 'Test verileri siliniyor...';
+    try {
+      const result = await api('POST', { action: 'bulk-delete', scope: 'demo' });
+      loaded = false;
+      await load(false);
+      toast(`${result.data.removedApplications || 0} test öğrencisi ve ${result.data.removedTeachers || 0} test öğretmeni silindi.`);
+    } catch (error) {
+      button.disabled = false; button.textContent = 'Test verilerini sil'; toast(error.message, 'error');
+    }
+  }
+
+  async function deleteApplication() {
+    const item = applications.find((record) => record.id === selectedId);
+    if (!item) return;
+    const hasAssignment = Boolean(placementOf(item.id));
+    const accepted = await confirmModal(
+      `${item.studentName} adlı öğrencinin başvurusu${hasAssignment ? ' ve beş günlük ders ataması' : ''} silinecek.`,
+      'Öğrenciyi sil', 'Öğrenciyi sil'
+    );
+    if (!accepted) return;
+    const button = el('appsDeleteApplication');
+    button.disabled = true; button.textContent = 'Siliniyor...';
+    try {
+      await api('POST', {
+        action: 'application-delete', applicationId: item.id, applicationCreatedAt: item.createdAt
+      });
+      applications = applications.filter((record) => record.id !== item.id);
+      placements = placements.filter((placement) => placement.applicationId !== item.id);
+      closeDetail();
+      renderStats(); renderTeacherFilter(); renderProgramFilters(); renderTable(); renderTeacherGrid(); renderProgram();
+      toast(`${item.studentName} panelden silindi.`);
+    } catch (error) {
+      button.disabled = false; button.textContent = 'Öğrenciyi sil'; toast(error.message, 'error');
+    }
+  }
+
+  async function deleteTeacher() {
+    const teacher = teacherOf(el('teacherId').value);
+    if (!teacher) return;
+    const assigned = placements.filter((placement) =>
+      placement.schedule?.some((entry) => entry.teacherId === teacher.id)).length;
+    const accepted = await confirmModal(
+      `${teacher.name} silinecek.${assigned ? ` Öğretmene bağlı ${assigned} öğrenci programı da kaldırılacak; öğrenci başvuruları korunacak.` : ''}`,
+      'Öğretmeni sil', 'Öğretmeni sil'
+    );
+    if (!accepted) return;
+    const button = el('teacherDelete');
+    button.disabled = true; button.textContent = 'Siliniyor...';
+    try {
+      await api('POST', { action: 'teacher-delete', teacherId: teacher.id, removeAssignments: true });
+      teachers = teachers.filter((item) => item.id !== teacher.id);
+      placements = placements.filter((placement) =>
+        !placement.schedule?.some((entry) => entry.teacherId === teacher.id));
+      closeTeacherDialog();
+      renderStats(); renderTeacherFilter(); renderProgramFilters(); renderTable(); renderTeacherGrid(); renderProgram();
+      toast(`${teacher.name} ve ${assigned} bağlı program silindi.`);
+    } catch (error) {
+      button.disabled = false; button.textContent = 'Öğretmeni sil'; toast(error.message, 'error');
+    }
+  }
+
+  function openDataManagement() {
+    renderStats();
+    el('dataManagementFeedback').textContent = '';
+    const counts = {
+      demo: applications.filter((item) => item.isDemo).length + teachers.filter((item) => item.isDemo).length + placements.filter((item) => item.isDemo).length,
+      assignments: placements.length, teachers: teachers.length, applications: applications.length
+    };
+    document.querySelectorAll('[data-bulk-delete]').forEach((button) => { button.disabled = !counts[button.dataset.bulkDelete]; });
+    const dialog = el('dataManagementDialog');
+    if (typeof dialog.showModal === 'function') dialog.showModal(); else dialog.setAttribute('open', '');
+  }
+
+  function closeDataManagement() {
+    const dialog = el('dataManagementDialog');
+    if (typeof dialog.close === 'function') dialog.close(); else dialog.removeAttribute('open');
+  }
+
+  async function bulkDelete(scope, button) {
+    const definitions = {
+      demo: {
+        title: 'Test verilerini sil', action: 'Test verilerini sil',
+        message: 'Yalnız Test etiketli öğrenciler, öğretmenler ve bunlara bağlı atamalar silinecek. Gerçek kayıtlar korunacak.'
+      },
+      assignments: {
+        title: 'Tüm atamaları sil', action: 'Tüm atamaları sil',
+        message: `${placements.length} haftalık ders ataması silinecek. Öğrenci ve öğretmen kayıtları korunacak.`
+      },
+      teachers: {
+        title: 'Tüm öğretmenleri sil', action: 'Öğretmenleri ve atamaları sil',
+        message: `${teachers.length} öğretmen ve ${placements.length} haftalık ders ataması silinecek. Öğrenci başvuruları korunacak.`
+      },
+      applications: {
+        title: 'Tüm öğrencileri sil', action: 'Öğrencileri ve atamaları sil',
+        message: `${applications.length} öğrenci başvurusu ve bunlara bağlı ders atamaları silinecek. Öğretmen kayıtları korunacak.`
+      }
+    };
+    const definition = definitions[scope];
+    if (!definition) return;
+    const accepted = await confirmModal(definition.message, definition.title, definition.action);
+    if (!accepted) return;
+    const originalText = button.textContent;
+    button.disabled = true; button.textContent = 'Siliniyor...';
+    try {
+      const result = await api('POST', { action: 'bulk-delete', scope });
+      loaded = false;
+      closeDataManagement();
+      await load(false);
+      const removed = result.data || {};
+      toast(`${(removed.removedApplications || 0) + (removed.removedTeachers || 0) + (removed.removedAssignments || 0)} kayıt silindi.`);
+    } catch (error) {
+      button.disabled = false; button.textContent = originalText;
+      el('dataManagementFeedback').textContent = error.message;
+      el('dataManagementFeedback').className = 'data-management-feedback is-error';
     }
   }
 
@@ -743,6 +881,9 @@
     document.querySelectorAll('[name="teacherModes"]').forEach((input) => { input.checked = teacher?.modes?.includes(input.value) || false; });
     document.querySelectorAll('[name="teacherDays"]').forEach((input) => { input.checked = teacher?.days?.includes(input.value) || false; });
     el('teacherActive').checked = teacher ? teacher.active : true;
+    el('teacherDelete').hidden = !teacher;
+    el('teacherDelete').disabled = false;
+    el('teacherDelete').textContent = 'Öğretmeni sil';
     el('teacherDialogTitle').textContent = teacher ? 'Öğretmeni düzenle' : 'Yeni öğretmen';
     el('teacherFormNotice').textContent = '';
     const dialog = el('teacherDialog');
@@ -796,6 +937,7 @@
     el('programReset').addEventListener('click', resetProgramFilters);
     el('programAutoAssign').addEventListener('click', autoAssignAll);
     el('programDemoSeed').addEventListener('click', seedDemoData);
+    el('programDataTools').addEventListener('click', openDataManagement);
     el('programAutoStartDate').value = nextMondayValue();
     el('programBoard').addEventListener('click', (event) => {
       const button = event.target.closest('[data-program-open]');
@@ -809,11 +951,13 @@
       if (button) openTeacherDialog(button.dataset.teacherId);
     });
     el('teacherForm').addEventListener('submit', saveTeacher);
+    el('teacherDelete').addEventListener('click', deleteTeacher);
     el('teacherClose').addEventListener('click', closeTeacherDialog);
     el('teacherCancel').addEventListener('click', closeTeacherDialog);
     el('appsClose').addEventListener('click', closeDetail);
     el('appsCancel').addEventListener('click', closeDetail);
     el('appsSaveReview').addEventListener('click', saveReview);
+    el('appsDeleteApplication').addEventListener('click', deleteApplication);
     el('appsSaveAssignment').addEventListener('click', saveAssignment);
     el('appsAutoAssignment').addEventListener('click', autoPlanSelected);
     el('appsRemoveAssignment').addEventListener('click', removeAssignment);
@@ -845,5 +989,12 @@
     });
     el('appsDialog').addEventListener('click', (event) => { if (event.target === el('appsDialog')) closeDetail(); });
     el('teacherDialog').addEventListener('click', (event) => { if (event.target === el('teacherDialog')) closeTeacherDialog(); });
+    el('dataManagementClose').addEventListener('click', closeDataManagement);
+    el('dataManagementDone').addEventListener('click', closeDataManagement);
+    el('dataManagementDialog').addEventListener('click', (event) => {
+      if (event.target === el('dataManagementDialog')) { closeDataManagement(); return; }
+      const button = event.target.closest('[data-bulk-delete]');
+      if (button) bulkDelete(button.dataset.bulkDelete, button);
+    });
   });
 })();

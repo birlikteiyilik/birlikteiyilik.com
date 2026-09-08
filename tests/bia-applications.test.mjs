@@ -213,7 +213,7 @@ const maleTeacher = (await maleTeacherResponse.json()).data;
 
 const maleSubmission = {
   ...validSubmission, studentName: 'Erkek Test Öğrenci', gender: 'erkek',
-  tckn: makeTckn('300000005'), startedAt: Date.now() - 5000
+  tckn: makeTckn('300000005'), availabilitySlots: ['17:40-18:00'], startedAt: Date.now() - 5000
 };
 const maleResponse = await handler(new Request('http://localhost:4173/api/bia-applications', {
   method: 'POST', headers: { 'Content-Type': 'application/json', 'Origin': 'http://localhost:4173' },
@@ -234,6 +234,15 @@ const wrongGenderResponse = await adminPost({
 assert.equal(wrongGenderResponse.status, 409);
 assert.match((await wrongGenderResponse.json()).error, /erkek öğretmen/);
 
+const unavailableSchedule = ['pazartesi', 'sali', 'carsamba', 'persembe', 'cuma']
+  .map((day) => ({ day, teacherId: maleTeacher.id, slot: '15:00-15:20' }));
+const unavailableResponse = await adminPost({
+  action: 'placement-save', applicationId: maleApplication.id, applicationCreatedAt: maleApplication.createdAt,
+  startDate: '2026-09-14', schedule: unavailableSchedule
+});
+assert.equal(unavailableResponse.status, 409);
+assert.match((await unavailableResponse.json()).error, /müsait saatler/);
+
 const autoPlanResponse = await adminPost({
   action: 'auto-plan', applicationIds: [maleApplication.id], startDate: '2026-09-14'
 });
@@ -243,6 +252,7 @@ assert.equal(autoPlan.data.length, 1);
 assert.equal(new Set(autoPlan.data[0].schedule.map((entry) => entry.teacherId)).size, 1);
 assert.equal(new Set(autoPlan.data[0].schedule.map((entry) => entry.slot)).size, 1);
 assert.ok(autoPlan.data[0].schedule.every((entry) => entry.teacherId === maleTeacher.id));
+assert.ok(autoPlan.data[0].schedule.every((entry) => maleSubmission.availabilitySlots.includes(entry.slot)));
 
 const demoSeedResponse = await adminPost({ action: 'demo-seed', startDate: '2026-09-14' });
 assert.equal(demoSeedResponse.status, 200);
@@ -260,6 +270,45 @@ demoList.placements.filter((placement) => placement.isDemo).forEach((placement) 
   const expectedGender = application.gender === 'kiz' ? 'kadin' : 'erkek';
   assert.ok(placement.schedule.every((entry) => teacherById.get(entry.teacherId)?.gender === expectedGender));
 });
+
+const deleteApplicationResponse = await adminPost({
+  action: 'application-delete', applicationId: maleApplication.id, applicationCreatedAt: maleApplication.createdAt
+});
+assert.equal(deleteApplicationResponse.status, 200);
+assert.equal((await deleteApplicationResponse.json()).removedAssignments, 1);
+
+const demoTeacherWithLessons = demoList.teachers.find((teacher) => teacher.isDemo &&
+  demoList.placements.some((placement) => placement.schedule.some((entry) => entry.teacherId === teacher.id)));
+const deleteTeacherResponse = await adminPost({
+  action: 'teacher-delete', teacherId: demoTeacherWithLessons.id, removeAssignments: true
+});
+assert.equal(deleteTeacherResponse.status, 200);
+assert.ok((await deleteTeacherResponse.json()).data.removedAssignments > 0);
+
+const deleteAssignmentsResponse = await adminPost({ action: 'bulk-delete', scope: 'assignments' });
+assert.equal(deleteAssignmentsResponse.status, 200);
+assert.ok((await deleteAssignmentsResponse.json()).data.removedAssignments > 0);
+
+const deleteDemoResponse = await adminPost({ action: 'bulk-delete', scope: 'demo' });
+assert.equal(deleteDemoResponse.status, 200);
+const deletedDemo = await deleteDemoResponse.json();
+assert.equal(deletedDemo.data.removedApplications, 10);
+assert.equal(deletedDemo.data.removedTeachers, 4);
+
+const deleteAllApplicationsResponse = await adminPost({ action: 'bulk-delete', scope: 'applications' });
+assert.equal(deleteAllApplicationsResponse.status, 200);
+assert.ok((await deleteAllApplicationsResponse.json()).data.removedApplications >= 2);
+
+const deleteAllTeachersResponse = await adminPost({ action: 'bulk-delete', scope: 'teachers' });
+assert.equal(deleteAllTeachersResponse.status, 200);
+assert.ok((await deleteAllTeachersResponse.json()).data.removedTeachers >= 3);
+
+const emptyList = await (await handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'GET', headers: adminHeaders
+}))).json();
+assert.equal(emptyList.data.length, 0);
+assert.equal(emptyList.teachers.length, 0);
+assert.equal(emptyList.placements.length, 0);
 
 globalThis.fetch = originalFetch;
 console.log('bia-applications tests passed');
