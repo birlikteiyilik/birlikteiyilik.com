@@ -10,7 +10,7 @@ const ENUMS = {
   guardianRelation: ['anne', 'baba', 'yasal-vasi', 'diger'],
   quranLevel: ['hic-bilmiyor', 'elif-ba', 'okuyabiliyor', 'tecvid'],
   previousTraining: ['evet', 'hayir'],
-  mediaConsent: ['izin-veriyorum', 'izin-vermiyorum']
+  mediaConsent: ['izin-veriyorum']
 };
 
 const encoder = new TextEncoder();

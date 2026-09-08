@@ -46,7 +46,7 @@ const validSubmission = {
   rulesAccepted: true,
   privacyAcknowledged: true,
   termsAccepted: true,
-  mediaConsent: 'izin-vermiyorum'
+  mediaConsent: 'izin-veriyorum'
 };
 
 const response = await handler(new Request('http://localhost:4173/api/bia-applications', {
@@ -71,6 +71,13 @@ const invalidResponse = await handler(new Request('http://localhost:4173/api/bia
   body: JSON.stringify({ ...validSubmission, startedAt: Date.now() - 5000, tckn: '11111111111' })
 }));
 assert.equal(invalidResponse.status, 400);
+
+const missingMediaConsentResponse = await handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json', 'Origin': 'http://localhost:4173' },
+  body: JSON.stringify({ ...validSubmission, startedAt: Date.now() - 5000, mediaConsent: 'izin-vermiyorum' })
+}));
+assert.equal(missingMediaConsentResponse.status, 400);
 
 globalThis.fetch = originalFetch;
 console.log('bia-applications tests passed');
