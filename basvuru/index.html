@@ -14,7 +14,7 @@
   <meta property="og:type" content="website">
   <meta property="og:locale" content="tr_TR">
   <link rel="icon" href="/images/logo_icon.png">
-  <link rel="stylesheet" href="/css/basvuru.css?v=2">
+  <link rel="stylesheet" href="/css/basvuru.css?v=4">
 </head>
 <body>
   <a class="skip-link" href="#applicationForm">Forma geç</a>
@@ -220,6 +220,31 @@
             <input id="previousTrainingDetail" name="previousTrainingDetail" type="text" maxlength="180" placeholder="Örnek: 2025 yaz okulu">
           </div>
 
+          <div class="field availability-field">
+            <span class="field-label">Öğrencinin müsait olduğu saatler <b>*</b></span>
+            <p class="field-hint availability-intro">Uygun olan tüm saat aralıklarını seçebilirsiniz. Öğrenci hafta içi beş gün eğitim alacaktır.</p>
+            <aside class="availability-warning" id="availabilityWarning" aria-label="Saat seçimi uyarısı">
+              <span class="warning-mark" aria-hidden="true">!</span>
+              <div>
+                <strong>Çakışmaları düşünerek seçim yapın</strong>
+                <p>Okul, etüt, başka kurslar, servis ve aile programıyla çakışmayacak; öğrencinin beş gün boyunca gerçekten katılabileceği tüm saatleri işaretleyin.</p>
+              </div>
+            </aside>
+            <div class="availability-grid" role="group" aria-describedby="availabilitySlotsHint availabilitySlotsError">
+              <label><input type="checkbox" name="availabilitySlots" value="15:00-15:20"><span><strong>15.00</strong><small>15.20</small></span></label>
+              <label><input type="checkbox" name="availabilitySlots" value="15:20-15:40"><span><strong>15.20</strong><small>15.40</small></span></label>
+              <label><input type="checkbox" name="availabilitySlots" value="15:40-16:00"><span><strong>15.40</strong><small>16.00</small></span></label>
+              <label><input type="checkbox" name="availabilitySlots" value="16:00-16:20"><span><strong>16.00</strong><small>16.20</small></span></label>
+              <label><input type="checkbox" name="availabilitySlots" value="16:20-16:40"><span><strong>16.20</strong><small>16.40</small></span></label>
+              <label><input type="checkbox" name="availabilitySlots" value="16:40-17:00"><span><strong>16.40</strong><small>17.00</small></span></label>
+              <label><input type="checkbox" name="availabilitySlots" value="17:00-17:20"><span><strong>17.00</strong><small>17.20</small></span></label>
+              <label><input type="checkbox" name="availabilitySlots" value="17:20-17:40"><span><strong>17.20</strong><small>17.40</small></span></label>
+              <label><input type="checkbox" name="availabilitySlots" value="17:40-18:00"><span><strong>17.40</strong><small>18.00</small></span></label>
+            </div>
+            <p class="availability-count" id="availabilitySlotsHint" aria-live="polite">Henüz saat seçilmedi.</p>
+            <p class="field-error" id="availabilitySlotsError"></p>
+          </div>
+
           <div class="field">
             <label for="notes">Bize iletmek istediğiniz bir not var mı?</label>
             <textarea id="notes" name="notes" rows="4" maxlength="600" placeholder="Öğrencinin eğitimiyle ilgili bilmemizi istediğiniz bilgileri yazabilirsiniz."></textarea>
@@ -253,7 +278,7 @@
             <p>Başvuru bilgileriniz programın değerlendirilmesi ve sizinle iletişim kurulması amacıyla işlenir.</p>
             <label class="consent-row" for="privacyAcknowledged">
               <input id="privacyAcknowledged" name="privacyAcknowledged" type="checkbox" required>
-              <span><a href="https://www.tacev.org.tr/kvkk-aydinlatma-metni/" target="_blank" rel="noopener">KVKK Aydınlatma Metni</a>'ni okudum ve bilgilendirildim. <b>*</b></span>
+              <span><a href="/kvkk" target="_blank" rel="noopener">KVKK Aydınlatma Metni</a>'ni okudum ve bilgilendirildim. <b>*</b></span>
             </label>
             <label class="consent-row" for="termsAccepted">
               <input id="termsAccepted" name="termsAccepted" type="checkbox" required>
@@ -266,12 +291,13 @@
           <section class="media-box" aria-labelledby="mediaTitle">
             <div>
               <h2 id="mediaTitle">Görsel paylaşım izni</h2>
-              <p>Öğrencinin eğitim anlarına ait fotoğraf veya videolarının Birlikte İyilik Akademi sosyal medya hesaplarında kullanılabilmesi için veli onayı gereklidir.</p>
+              <p>Öğrencinin eğitim anlarına ait fotoğraf veya videolarının Birlikte İyilik Akademi sosyal medya hesaplarında kullanılmasıyla ilgili tercihinizi belirtin.</p>
             </div>
-            <label class="consent-row media-consent" for="mediaConsent">
-              <input id="mediaConsent" name="mediaConsent" type="checkbox" value="izin-veriyorum" required>
-              <span>Fotoğraf ve/veya video görüntülerinin sosyal medya hesaplarında paylaşılmasına izin veriyorum. <b>*</b></span>
-            </label>
+            <div class="choice-grid choice-grid-2 media-choices">
+              <label class="choice-card"><input type="radio" name="mediaConsent" value="izin-veriyorum" required><span>İzin veriyorum</span></label>
+              <label class="choice-card"><input type="radio" name="mediaConsent" value="izin-vermiyorum" required><span>İzin vermiyorum</span></label>
+            </div>
+            <p class="field-hint">Bir tercih yapmanız gerekir; izin vermemeniz başvurunun değerlendirilmesini etkilemez.</p>
             <p class="field-error" id="mediaConsentError"></p>
           </section>
         </fieldset>
@@ -301,9 +327,10 @@
 
   <footer class="minimal-footer">
     <span>© 2026 Birlikte İyilik Akademi</span>
+    <a href="/kvkk">KVKK</a>
     <a href="/hakkimizda/seffaflik-belgeler">Şeffaflık ve belgeler</a>
   </footer>
 
-  <script src="/js/basvuru.js?v=2" defer></script>
+  <script src="/js/basvuru.js?v=4" defer></script>
 </body>
 </html>
