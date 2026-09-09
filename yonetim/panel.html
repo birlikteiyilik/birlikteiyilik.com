@@ -396,6 +396,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
         <label>Kur'an seviyesi
           <select id="appsLevel"><option value="">Tümü</option><option value="hic-bilmiyor">Başlangıç</option><option value="elif-ba">Elif Ba</option><option value="okuyabiliyor">Okuyabiliyor</option><option value="tecvid">Tecvid</option></select>
         </label>
+        <label>Daha önce eğitim aldı mı?
+          <select id="appsPreviousTraining"><option value="">Tümü</option><option value="evet">Evet</option><option value="hayir">Hayır</option></select>
+        </label>
         <label>Durum
           <select id="appsStatus"><option value="">Tümü</option><option value="yeni">Yeni</option><option value="inceleniyor">İnceleniyor</option><option value="uygun">Uygun</option><option value="yedek">Yedek</option><option value="kayit-tamamlandi">Kayıt tamamlandı</option><option value="uygun-degil">Uygun değil</option></select>
         </label>
@@ -1392,6 +1395,6 @@ function logout() {
 loadNews();
 </script>
 <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="/js/admin-applications.js?v=5"></script>
+<script src="/js/admin-applications.js?v=6"></script>
 </body>
 </html>

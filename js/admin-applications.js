@@ -82,6 +82,7 @@
     const gender = el('appsGender').value;
     const grade = el('appsGrade').value;
     const level = el('appsLevel').value;
+    const previousTraining = el('appsPreviousTraining').value;
     const status = el('appsStatus').value;
     const planState = el('appsPlanState').value;
     const teacherId = el('appsTeacher').value;
@@ -95,7 +96,9 @@
       const date = String(item.createdAt || '').slice(0, 10);
       return (!query || haystack.includes(query)) && (!type || item.applicationType === type) &&
         (!gender || item.gender === gender) && (!grade || item.grade === grade) &&
-        (!level || item.quranLevel === level) && (!status || item.status === status) &&
+        (!level || item.quranLevel === level) &&
+        (!previousTraining || item.previousTraining === previousTraining) &&
+        (!status || item.status === status) &&
         (!planState || (planState === 'planned' ? Boolean(placement) : !placement)) &&
         (!teacherId || placement?.schedule?.some((entry) => entry.teacherId === teacherId)) &&
         (!from || date >= from) && (!to || date <= to);
@@ -801,7 +804,7 @@
   }
 
   function resetFilters() {
-    ['appsSearch', 'appsType', 'appsGender', 'appsGrade', 'appsLevel', 'appsStatus', 'appsPlanState', 'appsTeacher', 'appsFrom', 'appsTo']
+    ['appsSearch', 'appsType', 'appsGender', 'appsGrade', 'appsLevel', 'appsPreviousTraining', 'appsStatus', 'appsPlanState', 'appsTeacher', 'appsFrom', 'appsTo']
       .forEach((id) => { el(id).value = ''; });
     renderTable();
   }
@@ -1127,7 +1130,7 @@
   window.showApplications = function () { showScreen('applicationsScreen'); load(false); };
 
   document.addEventListener('DOMContentLoaded', () => {
-    const filterIds = ['appsSearch', 'appsType', 'appsGender', 'appsGrade', 'appsLevel', 'appsStatus', 'appsPlanState', 'appsTeacher', 'appsFrom', 'appsTo'];
+    const filterIds = ['appsSearch', 'appsType', 'appsGender', 'appsGrade', 'appsLevel', 'appsPreviousTraining', 'appsStatus', 'appsPlanState', 'appsTeacher', 'appsFrom', 'appsTo'];
     filterIds.forEach((id) => el(id).addEventListener(id === 'appsSearch' ? 'input' : 'change', renderTable));
     el('appsReset').addEventListener('click', resetFilters);
     el('appsRefresh').addEventListener('click', () => load(true));
