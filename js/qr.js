@@ -30,9 +30,6 @@
   themeButton.addEventListener('click', function () {
     var nextTheme = root.dataset.theme === 'dark' ? 'light' : 'dark';
     applyTheme(nextTheme);
-    try {
-      localStorage.setItem('qr-theme', nextTheme);
-    } catch (error) {}
   });
 
   shareButton.addEventListener('click', async function () {
