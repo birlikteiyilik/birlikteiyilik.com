@@ -10,6 +10,11 @@ const TIME_SLOTS = [
   '16:00-16:20', '16:20-16:40', '16:40-17:00',
   '17:00-17:20', '17:20-17:40', '17:40-18:00'
 ];
+const ONLINE_TIME_RANGES = [
+  '10:00-13:00', '13:00-15:00', '15:00-17:00',
+  '17:00-19:00', '19:00-21:00', '21:00-23:00'
+];
+const REFERRAL_SOURCES = ['ogrenci-arkadasi', 'arkadas-tavsiyesi', 'bilgilendirme-mesaji', 'kendi-arastirmam', 'diger'];
 const ATTENDANCE_STATUSES = ['katildi', 'gelmedi', 'mazeretli'];
 const PASSWORD_ITERATIONS = 210000;
 const ENUMS = {
@@ -17,7 +22,7 @@ const ENUMS = {
   gender: ['erkek', 'kiz'],
   grade: ['3', '4', '5', '6', '7', '8'],
   guardianRelation: ['anne', 'baba', 'yasal-vasi', 'diger'],
-  quranLevel: ['hic-bilmiyor', 'elif-ba', 'okuyabiliyor', 'tecvid'],
+  quranLevel: ['hic-bilmiyor', 'elif-ba', 'okuyabiliyor', 'gelistirmek-istiyor', 'tecvid'],
   previousTraining: ['evet', 'hayir'],
   mediaConsent: ['izin-veriyorum']
 };
@@ -199,6 +204,31 @@ function validDate(value) {
 }
 
 function validateSubmission(body) {
+  const isNewOnlineForm = body.applicationType === 'online' && body.applicationVersion === 'online-2026-09';
+  if (isNewOnlineForm) {
+    if (cleanText(body.studentName, 100).length < 3) return 'Öğrenci adı soyadı eksik.';
+    if (!validDate(body.birthDate) || new Date(`${body.birthDate}T00:00:00Z`) > new Date()) return 'Doğum tarihi geçersiz.';
+    if (!ENUMS.gender.includes(String(body.gender || '')) || !ENUMS.grade.includes(String(body.grade || '')) ||
+      !ENUMS.quranLevel.includes(String(body.quranLevel || '')) || !ENUMS.previousTraining.includes(String(body.previousTraining || ''))) {
+      return 'Öğrenci veya eğitim bilgilerinden biri geçersiz.';
+    }
+    for (const [key, label] of [['motherName', 'Anne'], ['fatherName', 'Baba']]) {
+      if (cleanText(body[key], 100).length < 3) return `${label} adı soyadı eksik.`;
+    }
+    if (!isValidPhone(body.motherPhone, false) || !isValidPhone(body.fatherPhone, false) || !isValidPhone(body.studentPhone, true)) {
+      return 'Telefon numaralarından biri geçersiz.';
+    }
+    if (cleanText(body.location, 140).length < 2) return 'İlçe / şehir bilgisi eksik.';
+    const ranges = orderedUnique(body.availabilityRanges, ONLINE_TIME_RANGES);
+    if (!Array.isArray(body.availabilityRanges) || !ranges.length || ranges.length !== body.availabilityRanges.length) {
+      return 'En az bir geçerli müsait saat aralığı seçin.';
+    }
+    if (!REFERRAL_SOURCES.includes(String(body.referralSource || ''))) return 'Bizi nereden duyduğunuzu seçin.';
+    if (body.referralSource === 'diger' && cleanText(body.referralOther, 180).length < 2) return 'Yönlendirme kaynağını belirtin.';
+    if (body.previousTraining === 'evet' && cleanText(body.previousTrainingDetail, 180).length < 2) return 'Önceki eğitim bilgisini belirtin.';
+    if (body.privacyAcknowledged !== true || body.termsAccepted !== true) return 'Zorunlu onaylar eksik.';
+    return '';
+  }
   for (const [key, min] of [['studentName', 3], ['school', 2], ['guardianName', 3]]) {
     if (cleanText(body[key], 200).length < min) return `${key} alanı eksik.`;
   }
@@ -220,6 +250,24 @@ function validateSubmission(body) {
 }
 
 function normalizeSubmission(body) {
+  if (body.applicationType === 'online' && body.applicationVersion === 'online-2026-09') {
+    return {
+      applicationType: 'online', applicationVersion: 'online-2026-09',
+      studentName: cleanText(body.studentName, 100), tckn: '', birthDate: String(body.birthDate),
+      gender: String(body.gender), school: '', grade: String(body.grade),
+      guardianName: cleanText(body.motherName, 100), guardianRelation: 'anne',
+      guardianPhone: digits(body.motherPhone).slice(0, 12), studentPhone: digits(body.studentPhone).slice(0, 12),
+      address: cleanText(body.location, 140), secondGuardianName: cleanText(body.fatherName, 100),
+      secondGuardianPhone: digits(body.fatherPhone).slice(0, 12), motherName: cleanText(body.motherName, 100),
+      motherPhone: digits(body.motherPhone).slice(0, 12), fatherName: cleanText(body.fatherName, 100),
+      fatherPhone: digits(body.fatherPhone).slice(0, 12), location: cleanText(body.location, 140),
+      quranLevel: String(body.quranLevel), previousTraining: String(body.previousTraining),
+      previousTrainingDetail: cleanText(body.previousTrainingDetail, 180), availabilitySlots: [],
+      availabilityRanges: orderedUnique(body.availabilityRanges, ONLINE_TIME_RANGES),
+      referralSource: String(body.referralSource), referralOther: cleanText(body.referralOther, 180), notes: '',
+      consents: { rulesAccepted: false, privacyAcknowledged: true, termsAccepted: true, mediaConsent: 'uygulanmiyor', version: '2026-09-11' }
+    };
+  }
   return {
     applicationType: String(body.applicationType), studentName: cleanText(body.studentName, 100),
     tckn: digits(body.tckn), birthDate: String(body.birthDate), gender: String(body.gender),
@@ -658,7 +706,7 @@ export default async function handler(req) {
         teachers: planning.records.filter((item) => item.kind === 'teacher').map(publicTeacher),
         placements: planning.records.filter((item) => item.kind === 'placement'),
         attendance: planning.records.filter((item) => item.kind === 'attendance'),
-        meta: { weekdays: WEEKDAYS, timeSlots: TIME_SLOTS, attendanceStatuses: ATTENDANCE_STATUSES }
+        meta: { weekdays: WEEKDAYS, timeSlots: TIME_SLOTS, onlineTimeRanges: ONLINE_TIME_RANGES, attendanceStatuses: ATTENDANCE_STATUSES }
       }, 200, cors);
     } catch (_) {
       return json({ error: 'Şifreli başvuru arşivi açılamadı. Şifreleme anahtarını kontrol edin.' }, 500, cors);
@@ -683,7 +731,11 @@ export default async function handler(req) {
       };
       try {
         const reference = await mutateArchive(`${now.toISOString().slice(0, 7)}.enc.json`, (records) => {
-          const duplicate = records.find((item) => item.tckn === record.tckn && item.applicationType === record.applicationType);
+          const duplicate = record.applicationVersion === 'online-2026-09'
+            ? records.find((item) => item.applicationVersion === record.applicationVersion &&
+              item.studentName.toLocaleLowerCase('tr-TR') === record.studentName.toLocaleLowerCase('tr-TR') &&
+              item.birthDate === record.birthDate && item.guardianPhone === record.guardianPhone)
+            : records.find((item) => item.tckn === record.tckn && item.applicationType === record.applicationType);
           if (duplicate) return { records, value: duplicate.reference };
           records.push(record);
           return { records, value: record.reference };
@@ -792,8 +844,9 @@ export default async function handler(req) {
           .map((id) => cleanText(id, 80)).filter(Boolean))].slice(0, 100);
         const allApplications = await getAllApplications();
         const targets = requestedIds.length
-          ? allApplications.filter((application) => requestedIds.includes(application.id))
-          : allApplications.filter((application) => ['yeni', 'inceleniyor', 'uygun'].includes(application.status));
+          ? allApplications.filter((application) => requestedIds.includes(application.id) && application.applicationVersion !== 'online-2026-09')
+          : allApplications.filter((application) => application.applicationVersion !== 'online-2026-09' &&
+            ['yeni', 'inceleniyor', 'uygun'].includes(application.status));
         if (!targets.length) throw new RequestError('Otomatik atanabilecek başvuru bulunamadı.', 404);
         const result = await saveAutomaticPlacements(
           targets, startDate, admin,
