@@ -10,6 +10,7 @@
   ],
   "redirects": [
     {"source": "/:path*", "has": [{"type": "host", "value": "www.birlikteiyilik.com"}], "destination": "https://birlikteiyilik.com/:path*", "permanent": true},
+    {"source": "/basvurular/online-egitim", "destination": "/basvurular/online", "permanent": true},
     {"source": "/basvurular/yuz-yuze-egitim", "destination": "/basvuru", "permanent": true},
     {"source": "/iletisim", "destination": "/#iletisim", "permanent": true},
     {"source": "/uygulama", "destination": "/#uygulama", "permanent": true},
