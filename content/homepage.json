@@ -4,7 +4,7 @@
     "subtitle": "Birlikte İyilik Akademi; güzel ahlak, Kur'an-ı Kerim eğitimi, öğrenci takibi ve aile iş birliğiyle çocuklarımızın gelişimini destekleyen değer odaklı bir eğitim yapısı sunar.",
     "cta1": {
       "label": "Online Eğitim Başvurusu",
-      "url": "/basvurular/online-egitim"
+      "url": "/basvurular/online"
     },
     "cta2": {
       "label": "Yüz Yüze Eğitim Başvurusu",
@@ -78,7 +78,7 @@
       {
         "icon": "📚",
         "label": "Online Eğitim Başvurusu",
-        "url": "/basvurular/online-egitim",
+        "url": "/basvurular/online",
         "desc": "Çevrim içi eğitim programımıza hemen başvurun"
       },
       {
