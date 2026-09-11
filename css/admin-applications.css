@@ -607,3 +607,6 @@ html, body { max-width: 100%; overflow-x: hidden; }
 @media (prefers-reduced-motion: reduce) {
   #applicationsScreen *, .apps-dialog, .apps-toast { animation: none !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
 }
+
+.apps-detail-section[hidden] { display: none !important; }
+.program-state.is-online { background: #eaf2f8; color: #123457; border-color: #bdd1df; }

@@ -9,10 +9,11 @@
   const labels = {
     type: { 'yuz-yuze': 'Yüz yüze', online: 'Online' },
     gender: { erkek: 'Erkek', kiz: 'Kız', kadin: 'Kadın' },
-    level: { 'hic-bilmiyor': 'Başlangıç', 'elif-ba': 'Elif Ba', okuyabiliyor: 'Okuyabiliyor', tecvid: 'Tecvid' },
+    level: { 'hic-bilmiyor': 'Başlangıç', 'elif-ba': 'Elif Ba', okuyabiliyor: 'Okuyabiliyor', 'gelistirmek-istiyor': 'Okuyor, geliştirmek istiyor', tecvid: 'Tecvid' },
     relation: { anne: 'Anne', baba: 'Baba', 'yasal-vasi': 'Yasal vasi', diger: 'Diğer' },
     previous: { evet: 'Evet', hayir: 'Hayır' },
-    media: { 'izin-veriyorum': 'İzin veriyor', 'izin-vermiyorum': 'İzin vermiyor' },
+    media: { 'izin-veriyorum': 'İzin veriyor', 'izin-vermiyorum': 'İzin vermiyor', uygulanmiyor: 'Uygulanmıyor' },
+    referral: { 'ogrenci-arkadasi': 'Öğrenci arkadaşından', 'arkadas-tavsiyesi': 'Arkadaş tavsiyesi', 'bilgilendirme-mesaji': 'Bilgilendirme mesajı', 'kendi-arastirmam': 'Kendi araştırmam', diger: 'Diğer' },
     days: { pazartesi: 'Pazartesi', sali: 'Salı', carsamba: 'Çarşamba', persembe: 'Perşembe', cuma: 'Cuma' },
     attendance: { katildi: 'Katıldı', gelmedi: 'Gelmedi', mazeretli: 'Mazeretli', eksik: 'Yoklama bekliyor' },
     status: {
@@ -91,7 +92,8 @@
 
     return applications.filter((item) => {
       const placement = placementOf(item.id);
-      const haystack = [item.studentName, item.guardianName, item.guardianPhone, item.reference, item.school]
+      const haystack = [item.studentName, item.guardianName, item.guardianPhone, item.reference, item.school,
+        item.motherName, item.motherPhone, item.fatherName, item.fatherPhone, item.location]
         .join(' ').toLocaleLowerCase('tr-TR');
       const date = String(item.createdAt || '').slice(0, 10);
       return (!query || haystack.includes(query)) && (!type || item.applicationType === type) &&
@@ -135,7 +137,8 @@
     el('appsTeacher').value = value;
   }
 
-  function compactProgram(placement) {
+  function compactProgram(item, placement) {
+    if (!placement && item.applicationVersion === 'online-2026-09') return '<span class="program-state is-online">Online görüşme bekliyor</span>';
     if (!placement) return '<span class="program-state is-empty">Atama bekliyor</span>';
     const names = [...new Set((placement.schedule || []).map((entry) => entry.teacherName || teacherOf(entry.teacherId)?.name).filter(Boolean))];
     return `<span class="program-state is-ready">5 gün planlandı</span><span class="program-names">${escapeHtml(names.join(', '))}</span>`;
@@ -160,7 +163,7 @@
         <td>${escapeHtml(labels.gender[item.gender] || item.gender)}</td>
         <td>${escapeHtml(item.grade)}. sınıf</td>
         <td>${escapeHtml(labels.level[item.quranLevel] || item.quranLevel)}</td>
-        <td>${compactProgram(placement)}</td>
+        <td>${compactProgram(item, placement)}</td>
         <td><span class="app-status app-status-${escapeHtml(item.status)}">${escapeHtml(labels.status[item.status] || item.status)}</span></td>
         <td><div class="app-row-actions"><button type="button" class="btn btn-gray app-open" data-open-id="${escapeHtml(item.id)}">İncele</button>${messageButton}</div></td>
       </tr>`;
@@ -529,6 +532,7 @@
   function openDetail(id) {
     const item = applications.find((record) => record.id === id);
     if (!item) return;
+    const isNewOnline = item.applicationVersion === 'online-2026-09';
     selectedId = id;
     const placement = placementOf(id);
     draftSchedule = Object.fromEntries(meta.weekdays.map((day) => {
@@ -537,7 +541,25 @@
     }));
     el('appsModalTitle').textContent = item.studentName;
     el('appsModalReference').textContent = `${item.reference} · ${formatDate(item.createdAt, true)}`;
-    el('appsModalDetails').innerHTML = `
+    el('appsModalDetails').innerHTML = isNewOnline ? `
+      <section class="apps-detail-section"><h3>Öğrenci bilgileri</h3><dl class="apps-detail-grid">
+        ${detail('Doğum tarihi', formatDate(`${item.birthDate}T00:00:00`, false))}${detail('Cinsiyet', labels.gender[item.gender])}
+        ${detail('Sınıf', `${item.grade}. sınıf`)}${detail('Kur’an seviyesi', labels.level[item.quranLevel])}
+      </dl></section>
+      <section class="apps-detail-section"><h3>Veli ve iletişim</h3><dl class="apps-detail-grid">
+        ${detail('Anne', item.motherName || item.guardianName)}${detail('Anne telefonu', formatPhone(item.motherPhone || item.guardianPhone))}
+        ${detail('Baba', item.fatherName || item.secondGuardianName)}${detail('Baba telefonu', formatPhone(item.fatherPhone || item.secondGuardianPhone))}
+        ${detail('Öğrenci telefonu', formatPhone(item.studentPhone))}${detail('İlçe / şehir', item.location || item.address)}
+      </dl></section>
+      <section class="apps-detail-section"><h3>Online eğitim tercihleri</h3><dl class="apps-detail-grid">
+        ${detail('Başvuru türü', 'Online eğitim')}${detail('Daha önce eğitim aldı', labels.previous[item.previousTraining])}
+        ${detail('Önceki program', item.previousTrainingDetail)}${detail('Bizi nereden duydu', `${labels.referral[item.referralSource] || item.referralSource || 'Belirtilmedi'}${item.referralOther ? ` · ${item.referralOther}` : ''}`)}
+        ${detail('Öğrencinin seçtiği saat aralıkları', (item.availabilityRanges || []).join(', '), true)}
+      </dl></section>
+      <section class="apps-detail-section"><h3>Onaylar</h3><dl class="apps-detail-grid">
+        ${detail('KVKK bilgilendirmesi', item.consents?.privacyAcknowledged ? 'Okundu' : 'Eksik')}
+        ${detail('Online hizmet şartları', item.consents?.termsAccepted ? 'Kabul edildi' : 'Eksik')}
+      </dl></section>` : `
       <section class="apps-detail-section"><h3>Öğrenci bilgileri</h3><dl class="apps-detail-grid">
         ${detail('T.C. kimlik numarası', item.tckn)}${detail('Doğum tarihi', formatDate(`${item.birthDate}T00:00:00`, false))}
         ${detail('Cinsiyet', labels.gender[item.gender])}${detail('Sınıf', `${item.grade}. sınıf`)}${detail('Okul', item.school, true)}
@@ -558,13 +580,15 @@
         ${detail('Hizmet şartları', item.consents?.termsAccepted ? 'Kabul edildi' : 'Eksik')}
         ${detail('Görsel paylaşımı', labels.media[item.consents?.mediaConsent])}
       </dl></section>`;
-    const availability = Array.isArray(item.availabilitySlots) && item.availabilitySlots.length ? item.availabilitySlots : meta.timeSlots;
+    const availability = isNewOnline ? (item.availabilityRanges || []) :
+      (Array.isArray(item.availabilitySlots) && item.availabilitySlots.length ? item.availabilitySlots : meta.timeSlots);
     el('appsAvailability').innerHTML = availability.map((slot) => `<span>${escapeHtml(slot)}</span>`).join('');
+    el('appsAssignmentSection').hidden = isNewOnline;
     el('appsStartDate').value = placement?.startDate || '';
     el('appsAssignmentState').textContent = placement ? 'Plan kaydedildi' : 'Planlanmadı';
     el('appsAssignmentState').className = `assignment-state ${placement ? 'is-ready' : ''}`;
     el('appsRemoveAssignment').hidden = !placement;
-    renderScheduleRows(item);
+    if (!isNewOnline) renderScheduleRows(item);
     el('appsReviewStatus').value = item.status || 'yeni';
     el('appsAdminNote').value = item.adminNote || '';
     el('appsDeleteApplication').disabled = false;
@@ -703,12 +727,15 @@
         'T.C. Kimlik No': String(item.tckn || ''), 'Doğum Tarihi': item.birthDate,
         'Cinsiyet': labels.gender[item.gender] || item.gender, 'Okul': item.school, 'Sınıf': item.grade,
         'Kur’an Seviyesi': labels.level[item.quranLevel] || item.quranLevel,
-        'Müsait Saatler': (item.availabilitySlots || []).join(', '), 'Veli Adı Soyadı': item.guardianName,
+        'Müsait Saatler': (item.availabilityRanges || item.availabilitySlots || []).join(', '), 'Veli Adı Soyadı': item.guardianName,
         'Yakınlık': labels.relation[item.guardianRelation] || item.guardianRelation,
         'Veli Telefonu': formatPhone(item.guardianPhone), 'Öğrenci Telefonu': formatPhone(item.studentPhone),
         'İkinci Veli': item.secondGuardianName, 'İkinci Veli Telefonu': formatPhone(item.secondGuardianPhone),
-        'Adres': item.address, 'Daha Önce Eğitim': labels.previous[item.previousTraining] || item.previousTraining,
+        'Anne Adı': item.motherName || '', 'Anne Telefonu': formatPhone(item.motherPhone),
+        'Baba Adı': item.fatherName || '', 'Baba Telefonu': formatPhone(item.fatherPhone),
+        'Adres': item.address, 'İlçe / Şehir': item.location || '', 'Daha Önce Eğitim': labels.previous[item.previousTraining] || item.previousTraining,
         'Önceki Program': item.previousTrainingDetail, 'Veli Notu': item.notes,
+        'Bizi Nereden Duydu': labels.referral[item.referralSource] || item.referralSource || '', 'Diğer Kaynak': item.referralOther || '',
         'Görsel Paylaşım İzni': labels.media[item.consents?.mediaConsent] || item.consents?.mediaConsent,
         'Başlangıç Günü': placement?.startDate || '', 'Yönetici Notu': item.adminNote
       };
@@ -839,7 +866,8 @@
   async function autoAssignAll() {
     const startDate = el('programAutoStartDate').value;
     if (!startDate) return toast('Otomatik atama için başlangıç günü seçin.', 'error');
-    const unplanned = applications.filter((item) => ['yeni', 'inceleniyor', 'uygun'].includes(item.status) && !placementOf(item.id));
+    const unplanned = applications.filter((item) => item.applicationVersion !== 'online-2026-09' &&
+      ['yeni', 'inceleniyor', 'uygun'].includes(item.status) && !placementOf(item.id));
     if (!unplanned.length) return toast('Planlanmayı bekleyen uygun başvuru yok.', 'error');
     const accepted = await confirmModal(
       `${unplanned.length} başvuru; cinsiyet, müsait saat ve öğretmen doluluğu kontrol edilerek otomatik planlanacak.`,

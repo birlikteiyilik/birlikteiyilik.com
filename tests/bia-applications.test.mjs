@@ -109,6 +109,29 @@ const declinedMediaResponse = await handler(new Request('http://localhost:4173/a
 }));
 assert.equal(declinedMediaResponse.status, 400);
 
+const onlineSubmission = {
+  action: 'submit', website: '', startedAt: Date.now() - 5000,
+  applicationType: 'online', applicationVersion: 'online-2026-09',
+  studentName: 'Online Test Öğrenci', birthDate: '2014-04-10', gender: 'erkek', grade: '6',
+  quranLevel: 'gelistirmek-istiyor', studentPhone: '', motherName: 'Online Test Anne',
+  motherPhone: '05321112234', fatherName: 'Online Test Baba', fatherPhone: '05321112235',
+  location: 'Üsküdar / İstanbul', availabilityRanges: ['17:00-19:00', '19:00-21:00'],
+  previousTraining: 'hayir', previousTrainingDetail: '', referralSource: 'kendi-arastirmam', referralOther: '',
+  privacyAcknowledged: true, termsAccepted: true
+};
+const onlineResponse = await handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'POST', headers: { 'Content-Type': 'application/json', 'Origin': 'http://localhost:4173' },
+  body: JSON.stringify(onlineSubmission)
+}));
+assert.equal(onlineResponse.status, 201);
+assert.equal((await onlineResponse.json()).ok, true);
+
+const invalidOnlineResponse = await handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'POST', headers: { 'Content-Type': 'application/json', 'Origin': 'http://localhost:4173' },
+  body: JSON.stringify({ ...onlineSubmission, startedAt: Date.now() - 5000, availabilityRanges: [] })
+}));
+assert.equal(invalidOnlineResponse.status, 400);
+
 function base64url(value) {
   return Buffer.from(value).toString('base64url');
 }
@@ -166,7 +189,16 @@ const listResponse = await handler(new Request('http://localhost:4173/api/bia-ap
 assert.equal(listResponse.status, 200);
 const list = await listResponse.json();
 const firstApplication = list.data.find((item) => item.studentName === validSubmission.studentName);
+const onlineApplication = list.data.find((item) => item.studentName === onlineSubmission.studentName);
 assert.ok(firstApplication?.id);
+assert.equal(onlineApplication?.applicationVersion, 'online-2026-09');
+assert.deepEqual(onlineApplication?.availabilityRanges, onlineSubmission.availabilityRanges);
+assert.equal(onlineApplication?.motherName, onlineSubmission.motherName);
+assert.equal(onlineApplication?.fatherName, onlineSubmission.fatherName);
+assert.equal(onlineApplication?.consents?.mediaConsent, 'uygulanmiyor');
+assert.deepEqual(list.meta.onlineTimeRanges, [
+  '10:00-13:00', '13:00-15:00', '15:00-17:00', '17:00-19:00', '19:00-21:00', '21:00-23:00'
+]);
 assert.equal(list.teachers.length, 2);
 assert.equal(list.teachers.every((teacher) => !('passwordHash' in teacher) && !('passwordSalt' in teacher)), true);
 assert.equal(list.teachers.every((teacher) => teacher.hasLogin), true);
