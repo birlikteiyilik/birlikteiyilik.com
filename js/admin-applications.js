@@ -2,9 +2,19 @@
   'use strict';
 
   const API_URL = '/api/bia-applications';
+  function createTimeSlots(startHour, endHour) {
+    const slots = [];
+    for (let minute = startHour * 60; minute < endHour * 60; minute += 20) {
+      const format = (value) => `${String(Math.floor(value / 60)).padStart(2, '0')}:${String(value % 60).padStart(2, '0')}`;
+      slots.push(`${format(minute)}-${format(minute + 20)}`);
+    }
+    return slots;
+  }
   const fallbackMeta = {
     weekdays: ['pazartesi', 'sali', 'carsamba', 'persembe', 'cuma'],
-    timeSlots: ['15:00-15:20', '15:20-15:40', '15:40-16:00', '16:00-16:20', '16:20-16:40', '16:40-17:00', '17:00-17:20', '17:20-17:40', '17:40-18:00']
+    timeSlots: ['15:00-15:20', '15:20-15:40', '15:40-16:00', '16:00-16:20', '16:20-16:40', '16:40-17:00', '17:00-17:20', '17:20-17:40', '17:40-18:00'],
+    onlineTimeSlots: createTimeSlots(10, 23),
+    onlineTimeRanges: ['10:00-13:00', '13:00-15:00', '15:00-17:00', '17:00-19:00', '19:00-21:00', '21:00-23:00']
   };
   const labels = {
     type: { 'yuz-yuze': 'Yüz yüze', online: 'Online' },
@@ -31,6 +41,7 @@
   let selectedId = '';
   let draftSchedule = {};
   let toastTimer = 0;
+  let activeApplicationType = '';
 
   function el(id) { return document.getElementById(id); }
   function escapeHtml(value) {
@@ -54,6 +65,39 @@
     return placements.find((item) => item.applicationId === applicationId);
   }
   function teacherOf(teacherId) { return teachers.find((item) => item.id === teacherId); }
+  function scopedApplications() {
+    return activeApplicationType ? applications.filter((item) => item.applicationType === activeApplicationType) : [];
+  }
+  function scopedPlacements() {
+    return activeApplicationType ? placements.filter((item) => {
+      const application = applications.find((record) => record.id === item.applicationId);
+      return (item.applicationType || application?.applicationType) === activeApplicationType;
+    }) : [];
+  }
+  function scopedTeachers() {
+    return activeApplicationType ? teachers.filter((item) => Array.isArray(item.modes) && item.modes.includes(activeApplicationType)) : [];
+  }
+  function slotsForType(type) {
+    return type === 'online' ? (meta.onlineTimeSlots || fallbackMeta.onlineTimeSlots) : meta.timeSlots;
+  }
+  function rangeMinutes(value) {
+    const [start, end] = String(value || '').split('-').map((part) => {
+      const [hours, minutes] = part.split(':').map(Number);
+      return hours * 60 + minutes;
+    });
+    return { start, end };
+  }
+  function slotsForApplication(item) {
+    if (item.applicationType !== 'online') {
+      return Array.isArray(item.availabilitySlots) && item.availabilitySlots.length ? item.availabilitySlots : meta.timeSlots;
+    }
+    const ranges = Array.isArray(item.availabilityRanges) ? item.availabilityRanges.map(rangeMinutes) : [];
+    const slots = slotsForType('online').filter((slot) => {
+      const candidate = rangeMinutes(slot);
+      return !ranges.length || ranges.some((range) => candidate.start >= range.start && candidate.end <= range.end);
+    });
+    return slots.length ? slots : slotsForType('online');
+  }
   function toast(message, tone) {
     const node = el('appsToast');
     node.textContent = message;
@@ -79,7 +123,6 @@
 
   function filterData() {
     const query = el('appsSearch').value.trim().toLocaleLowerCase('tr-TR');
-    const type = el('appsType').value;
     const gender = el('appsGender').value;
     const grade = el('appsGrade').value;
     const level = el('appsLevel').value;
@@ -90,13 +133,13 @@
     const from = el('appsFrom').value;
     const to = el('appsTo').value;
 
-    return applications.filter((item) => {
+    return scopedApplications().filter((item) => {
       const placement = placementOf(item.id);
       const haystack = [item.studentName, item.guardianName, item.guardianPhone, item.reference, item.school,
         item.motherName, item.motherPhone, item.fatherName, item.fatherPhone, item.location]
         .join(' ').toLocaleLowerCase('tr-TR');
       const date = String(item.createdAt || '').slice(0, 10);
-      return (!query || haystack.includes(query)) && (!type || item.applicationType === type) &&
+      return (!query || haystack.includes(query)) &&
         (!gender || item.gender === gender) && (!grade || item.grade === grade) &&
         (!level || item.quranLevel === level) &&
         (!previousTraining || item.previousTraining === previousTraining) &&
@@ -108,14 +151,26 @@
   }
 
   function renderStats() {
-    el('appsTotal').textContent = applications.length;
-    el('appsNew').textContent = applications.filter((item) => item.status === 'yeni').length;
-    el('appsPlanned').textContent = placements.length;
-    el('appsRegistered').textContent = applications.filter((item) => item.status === 'kayit-tamamlandi').length;
-    el('appsTabApplicationCount').textContent = applications.length;
-    el('appsTabTeacherCount').textContent = teachers.length;
-    el('appsTabScheduleCount').textContent = placements.length;
-    el('appsTabReportCount').textContent = attendanceRecords.length;
+    const modeApplications = scopedApplications();
+    const modePlacements = scopedPlacements();
+    const modeTeachers = scopedTeachers();
+    const modeAttendance = attendanceRecords.filter((item) =>
+      (item.applicationType || placementOf(item.applicationId)?.applicationType) === activeApplicationType);
+    el('appsTotal').textContent = modeApplications.length;
+    el('appsNew').textContent = modeApplications.filter((item) => item.status === 'yeni').length;
+    el('appsPlanned').textContent = modePlacements.length;
+    el('appsRegistered').textContent = modeApplications.filter((item) => item.status === 'kayit-tamamlandi').length;
+    el('appsTabApplicationCount').textContent = modeApplications.length;
+    el('appsTabTeacherCount').textContent = modeTeachers.length;
+    el('appsTabScheduleCount').textContent = modePlacements.length;
+    el('appsTabReportCount').textContent = modeAttendance.length;
+    ['yuz-yuze', 'online'].forEach((type) => {
+      const rows = applications.filter((item) => item.applicationType === type);
+      const waiting = rows.filter((item) => !placementOf(item.id) && ['yeni', 'inceleniyor', 'uygun'].includes(item.status)).length;
+      const prefix = type === 'online' ? 'appsOnline' : 'appsFace';
+      el(`${prefix}Total`).textContent = rows.length;
+      el(`${prefix}Waiting`).textContent = waiting;
+    });
     const demoApplications = applications.filter((item) => item.isDemo).length;
     const demoTeachers = teachers.filter((item) => item.isDemo).length;
     const demoPlacements = placements.filter((item) => item.isDemo).length;
@@ -131,14 +186,13 @@
 
   function renderTeacherFilter() {
     const value = el('appsTeacher').value;
-    el('appsTeacher').innerHTML = '<option value="">Tümü</option>' + teachers
+    el('appsTeacher').innerHTML = '<option value="">Tümü</option>' + scopedTeachers()
       .slice().sort((a, b) => a.name.localeCompare(b.name, 'tr'))
       .map((teacher) => `<option value="${escapeHtml(teacher.id)}">${escapeHtml(teacher.name)}${teacher.active ? '' : ' · Pasif'}</option>`).join('');
     el('appsTeacher').value = value;
   }
 
   function compactProgram(item, placement) {
-    if (!placement && item.applicationVersion === 'online-2026-09') return '<span class="program-state is-online">Online görüşme bekliyor</span>';
     if (!placement) return '<span class="program-state is-empty">Atama bekliyor</span>';
     const names = [...new Set((placement.schedule || []).map((entry) => entry.teacherName || teacherOf(entry.teacherId)?.name).filter(Boolean))];
     return `<span class="program-state is-ready">5 gün planlandı</span><span class="program-names">${escapeHtml(names.join(', '))}</span>`;
@@ -173,7 +227,7 @@
   function renderTeacherGrid() {
     const query = el('appsTeacherSearch').value.trim().toLocaleLowerCase('tr-TR');
     const state = el('appsTeacherState').value;
-    const filtered = teachers.filter((teacher) => {
+    const filtered = scopedTeachers().filter((teacher) => {
       const haystack = `${teacher.name} ${teacher.phone} ${teacher.username || ''}`.toLocaleLowerCase('tr-TR');
       return (!query || haystack.includes(query)) && (!state || (state === 'active' ? teacher.active : !teacher.active));
     });
@@ -185,7 +239,7 @@
     el('appsTeacherGrid').innerHTML = filtered
       .slice().sort((a, b) => Number(b.active) - Number(a.active) || a.name.localeCompare(b.name, 'tr'))
       .map((teacher, index) => {
-        const assigned = placements.filter((placement) => placement.schedule?.some((entry) => entry.teacherId === teacher.id)).length;
+        const assigned = scopedPlacements().filter((placement) => placement.schedule?.some((entry) => entry.teacherId === teacher.id)).length;
         return `<article class="teacher-card ${teacher.active ? '' : 'is-passive'}" style="--card-index:${index}">
           <div class="teacher-card-top"><span class="teacher-avatar">${escapeHtml(teacher.name.charAt(0).toLocaleUpperCase('tr-TR'))}</span><span class="teacher-status">${teacher.active ? 'Aktif' : 'Pasif'}</span></div>
           <h3>${escapeHtml(teacher.name)}</h3><a href="tel:${escapeHtml(teacher.phone)}">${escapeHtml(formatPhone(teacher.phone))}</a>
@@ -197,7 +251,7 @@
   }
 
   function programEntries() {
-    return placements.flatMap((placement) => {
+    return scopedPlacements().flatMap((placement) => {
       const application = applications.find((item) => item.id === placement.applicationId);
       return (placement.schedule || []).map((entry) => ({
         ...entry,
@@ -213,7 +267,7 @@
   }
 
   function programTeachers(entries) {
-    const result = teachers.slice();
+    const result = scopedTeachers().slice();
     const known = new Set(result.map((teacher) => teacher.id));
     entries.forEach((entry) => {
       if (known.has(entry.teacherId)) return;
@@ -230,24 +284,26 @@
 
   function renderProgramFilters() {
     const entries = programEntries();
+    const slots = slotsForType(activeApplicationType);
     const teacherValue = el('programTeacher').value;
     const slotValue = el('programSlot').value;
     el('programTeacher').innerHTML = '<option value="">Tüm öğretmenler</option>' + programTeachers(entries)
       .slice().sort((a, b) => a.name.localeCompare(b.name, 'tr'))
       .map((teacher) => `<option value="${escapeHtml(teacher.id)}">${escapeHtml(teacher.name)}${teacher.active ? '' : ' · Pasif'}</option>`).join('');
     el('programTeacher').value = [...el('programTeacher').options].some((option) => option.value === teacherValue) ? teacherValue : '';
-    el('programSlot').innerHTML = '<option value="">Tüm saatler</option>' + meta.timeSlots
+    el('programSlot').innerHTML = '<option value="">Tüm saatler</option>' + slots
       .map((slot) => `<option value="${escapeHtml(slot)}">${escapeHtml(slot)}</option>`).join('');
-    el('programSlot').value = meta.timeSlots.includes(slotValue) ? slotValue : '';
+    el('programSlot').value = slots.includes(slotValue) ? slotValue : '';
   }
 
   function renderProgramSummary(entries) {
-    el('programActiveTeachers').textContent = teachers.filter((teacher) => teacher.active).length;
+    const slots = slotsForType(activeApplicationType);
+    el('programActiveTeachers').textContent = scopedTeachers().filter((teacher) => teacher.active).length;
     el('programAssignedStudents').textContent = new Set(entries.map((entry) => entry.applicationId)).size;
     el('programWeeklyLessons').textContent = entries.length;
     const slotCounts = new Map();
     entries.forEach((entry) => slotCounts.set(entry.slot, (slotCounts.get(entry.slot) || 0) + 1));
-    const busiest = [...slotCounts.entries()].sort((a, b) => b[1] - a[1] || meta.timeSlots.indexOf(a[0]) - meta.timeSlots.indexOf(b[0]))[0];
+    const busiest = [...slotCounts.entries()].sort((a, b) => b[1] - a[1] || slots.indexOf(a[0]) - slots.indexOf(b[0]))[0];
     el('programBusiestSlot').textContent = busiest ? busiest[0].replace(/:/g, '.') : '—';
   }
 
@@ -263,13 +319,13 @@
 
   function renderProgram() {
     const entries = programEntries();
+    const slots = slotsForType(activeApplicationType);
     renderProgramSummary(entries);
     const query = el('programSearch').value.trim().toLocaleLowerCase('tr-TR');
     const dayFilter = el('programDay').value;
     const teacherFilter = el('programTeacher').value;
-    const typeFilter = el('programType').value;
     const slotFilter = el('programSlot').value;
-    const hasEntryFilter = Boolean(dayFilter || typeFilter || slotFilter);
+    const hasEntryFilter = Boolean(dayFilter || slotFilter);
     const cards = [];
 
     programTeachers(entries)
@@ -281,23 +337,23 @@
         const visibleEntries = allTeacherEntries.filter((entry) => {
           const studentQueryMatch = `${entry.studentName} ${entry.applicationReference}`.toLocaleLowerCase('tr-TR').includes(query);
           return (!query || teacherQueryMatch || studentQueryMatch) && (!dayFilter || entry.day === dayFilter) &&
-            (!typeFilter || entry.applicationType === typeFilter) && (!slotFilter || entry.slot === slotFilter);
+            (!slotFilter || entry.slot === slotFilter);
         });
         if (!visibleEntries.length && (hasEntryFilter || (query && !teacherQueryMatch))) return;
 
         const totalStudents = new Set(allTeacherEntries.map((entry) => entry.applicationId)).size;
         const totalLessons = allTeacherEntries.length;
-        const capacity = Math.max(1, (teacher.days || []).length * meta.timeSlots.length);
+        const capacity = Math.max(1, (teacher.days || []).length * slots.length);
         const occupancy = Math.min(100, Math.round(totalLessons / capacity * 100));
         const scheduledDays = new Set(allTeacherEntries.map((entry) => entry.day));
         let displayDays = dayFilter ? [dayFilter] : meta.weekdays.filter((day) => (teacher.days || []).includes(day) || scheduledDays.has(day));
-        if ((query || typeFilter || slotFilter) && !dayFilter) {
+        if ((query || slotFilter) && !dayFilter) {
           displayDays = meta.weekdays.filter((day) => visibleEntries.some((entry) => entry.day === day));
         }
         if (!displayDays.length && !hasEntryFilter && (!query || teacherQueryMatch)) displayDays = teacher.days || [];
         const dayColumns = displayDays.map((day, dayIndex) => {
           const dayEntries = visibleEntries.filter((entry) => entry.day === day)
-            .sort((a, b) => meta.timeSlots.indexOf(a.slot) - meta.timeSlots.indexOf(b.slot) || a.studentName.localeCompare(b.studentName, 'tr'));
+            .sort((a, b) => slots.indexOf(a.slot) - slots.indexOf(b.slot) || a.studentName.localeCompare(b.studentName, 'tr'));
           return `<section class="program-day-column" style="--day-index:${dayIndex}">
             <header><div><span>${escapeHtml(labels.days[day].slice(0, 2).toLocaleUpperCase('tr-TR'))}</span><h4>${escapeHtml(labels.days[day])}</h4></div><em>${dayEntries.length} ders</em></header>
             ${dayEntries.length ? `<ol>${dayEntries.map(programLesson).join('')}</ol>` : '<div class="program-day-empty"><span>＋</span> Henüz ders yok</div>'}
@@ -315,7 +371,7 @@
 
     el('programFilterResult').textContent = `${cards.length} öğretmen gösteriliyor`;
     if (!cards.length) {
-      const hasTeachers = teachers.length > 0;
+      const hasTeachers = scopedTeachers().length > 0;
       el('programBoard').innerHTML = `<div class="program-empty-state"><span aria-hidden="true">${hasTeachers ? '⌕' : '+'}</span><strong>${hasTeachers ? 'Filtrelerle eşleşen ders bulunamadı.' : 'Henüz öğretmen kaydı yok.'}</strong><p>${hasTeachers ? 'Filtreleri temizleyin veya Başvurular bölümünden bir öğrenciye program atayın.' : 'Önce Öğretmenler bölümünden çalışma günleriyle birlikte öğretmen ekleyin.'}</p></div>`;
       return;
     }
@@ -347,8 +403,11 @@
 
   function renderReportFilters() {
     const value = el('reportsTeacher').value;
-    const attendanceTeachers = attendanceRecords.map((item) => ({ id: item.teacherId, name: item.teacherName })).filter((item) => item.id);
-    const choices = [...teachers.map((teacher) => ({ id: teacher.id, name: teacher.name })), ...attendanceTeachers]
+    const attendanceTeachers = attendanceRecords.filter((item) => {
+      const placement = placementOf(item.applicationId);
+      return (item.applicationType || placement?.applicationType) === activeApplicationType;
+    }).map((item) => ({ id: item.teacherId, name: item.teacherName })).filter((item) => item.id);
+    const choices = [...scopedTeachers().map((teacher) => ({ id: teacher.id, name: teacher.name })), ...attendanceTeachers]
       .filter((teacher, index, list) => list.findIndex((item) => item.id === teacher.id) === index)
       .sort((a, b) => a.name.localeCompare(b.name, 'tr'));
     el('reportsTeacher').innerHTML = '<option value="">Tüm öğretmenler</option>' + choices
@@ -376,7 +435,7 @@
     while (date <= to && guard < 370) {
       const day = dayForDate(date);
       if (day) {
-        placements.filter((placement) => !placement.startDate || placement.startDate <= date).forEach((placement) => {
+        scopedPlacements().filter((placement) => !placement.startDate || placement.startDate <= date).forEach((placement) => {
           (placement.schedule || []).filter((entry) => entry.day === day).forEach((entry) => {
             const key = `${entry.teacherId}|${placement.applicationId}|${date}|${entry.slot}`;
             const record = saved.get(key);
@@ -396,9 +455,11 @@
     }
     attendanceRecords.forEach((record) => {
       if (record.lessonDate < from || record.lessonDate > to) return;
+      const placement = placementOf(record.applicationId);
+      if ((record.applicationType || placement?.applicationType) !== activeApplicationType) return;
       const key = `${record.teacherId}|${record.applicationId}|${record.lessonDate}|${record.slot}`;
       if (known.has(key)) return;
-      rows.push({ ...record });
+      rows.push({ ...record, applicationType: record.applicationType || placement?.applicationType || '' });
     });
     return rows.filter((row) => {
       const haystack = `${row.studentName || ''} ${row.applicationReference || ''} ${row.teacherName || ''}`.toLocaleLowerCase('tr-TR');
@@ -413,8 +474,9 @@
       el('reportsTo').value = range.to;
     }
     const all = reportRows(false);
+    const slots = slotsForType(activeApplicationType);
     const filtered = reportRows(true).sort((a, b) => b.lessonDate.localeCompare(a.lessonDate) ||
-      meta.timeSlots.indexOf(a.slot) - meta.timeSlots.indexOf(b.slot));
+      slots.indexOf(a.slot) - slots.indexOf(b.slot));
     const completed = all.filter((row) => row.status !== 'eksik');
     const present = all.filter((row) => row.status === 'katildi').length;
     const missing = all.filter((row) => row.status === 'eksik');
@@ -472,7 +534,9 @@
       teachers = Array.isArray(result.teachers) ? result.teachers : [];
       placements = Array.isArray(result.placements) ? result.placements : [];
       attendanceRecords = Array.isArray(result.attendance) ? result.attendance : [];
-      meta = result.meta?.weekdays && result.meta?.timeSlots ? result.meta : fallbackMeta;
+      meta = result.meta?.weekdays && result.meta?.timeSlots
+        ? { ...fallbackMeta, ...result.meta, onlineTimeSlots: result.meta.onlineTimeSlots || fallbackMeta.onlineTimeSlots }
+        : fallbackMeta;
       loaded = true;
       renderStats(); renderTeacherFilter(); renderProgramFilters(); renderTable(); renderTeacherGrid(); renderProgram(); renderReportFilters(); renderReports();
       if (force) toast('Başvurular ve ders planı güncellendi.');
@@ -499,7 +563,7 @@
   }
 
   function renderScheduleRows(item) {
-    const availability = Array.isArray(item.availabilitySlots) && item.availabilitySlots.length ? item.availabilitySlots : meta.timeSlots;
+    const availability = slotsForApplication(item);
     el('appsScheduleRows').innerHTML = meta.weekdays.map((day, index) => {
       const draft = draftSchedule[day] || { teacherId: '', slot: '' };
       const eligible = eligibleTeachers(item, day, draft.teacherId);
@@ -583,12 +647,12 @@
     const availability = isNewOnline ? (item.availabilityRanges || []) :
       (Array.isArray(item.availabilitySlots) && item.availabilitySlots.length ? item.availabilitySlots : meta.timeSlots);
     el('appsAvailability').innerHTML = availability.map((slot) => `<span>${escapeHtml(slot)}</span>`).join('');
-    el('appsAssignmentSection').hidden = isNewOnline;
+    el('appsAssignmentSection').hidden = false;
     el('appsStartDate').value = placement?.startDate || '';
     el('appsAssignmentState').textContent = placement ? 'Plan kaydedildi' : 'Planlanmadı';
     el('appsAssignmentState').className = `assignment-state ${placement ? 'is-ready' : ''}`;
     el('appsRemoveAssignment').hidden = !placement;
-    if (!isNewOnline) renderScheduleRows(item);
+    renderScheduleRows(item);
     el('appsReviewStatus').value = item.status || 'yeni';
     el('appsAdminNote').value = item.adminNote || '';
     el('appsDeleteApplication').disabled = false;
@@ -764,7 +828,7 @@
       return `"${text.replace(/"/g, '""')}"`;
     };
     const csv = [headers.map(safe).join(';'), ...rows.map((row) => headers.map((key) => safe(row[key])).join(';'))].join('\r\n');
-    download(new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' }), `bia-basvurular-${new Date().toISOString().slice(0, 10)}.csv`);
+    download(new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' }), `bia-${activeApplicationType}-basvurular-${new Date().toISOString().slice(0, 10)}.csv`);
     toast('Filtrelenmiş başvurular CSV olarak indirildi.');
   }
   function exportExcel() {
@@ -774,8 +838,8 @@
     const sheet = XLSX.utils.json_to_sheet(rows);
     sheet['!cols'] = Object.keys(rows[0]).map((key) => ({ wch: Math.min(42, Math.max(13, key.length + 2)) }));
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, sheet, 'Başvurular');
-    XLSX.writeFile(workbook, `bia-basvurular-${new Date().toISOString().slice(0, 10)}.xlsx`, { compression: true });
+    XLSX.utils.book_append_sheet(workbook, sheet, activeApplicationType === 'online' ? 'Online Başvurular' : 'Yüz Yüze Başvurular');
+    XLSX.writeFile(workbook, `bia-${activeApplicationType}-basvurular-${new Date().toISOString().slice(0, 10)}.xlsx`, { compression: true });
     toast('Filtrelenmiş başvurular Excel olarak indirildi.');
   }
 
@@ -804,7 +868,7 @@
       return `"${text.replace(/"/g, '""')}"`;
     };
     const csv = [headers.map(safe).join(';'), ...rows.map((row) => headers.map((key) => safe(row[key])).join(';'))].join('\r\n');
-    download(new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' }), `bia-yoklama-${dateValue(new Date())}.csv`);
+    download(new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' }), `bia-${activeApplicationType}-yoklama-${dateValue(new Date())}.csv`);
     toast('Yoklama raporu CSV olarak indirildi.');
   }
 
@@ -815,8 +879,8 @@
     const sheet = XLSX.utils.json_to_sheet(rows);
     sheet['!cols'] = Object.keys(rows[0]).map((key) => ({ wch: Math.min(36, Math.max(13, key.length + 2)) }));
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, sheet, 'Yoklama Raporu');
-    XLSX.writeFile(workbook, `bia-yoklama-${dateValue(new Date())}.xlsx`, { compression: true });
+    XLSX.utils.book_append_sheet(workbook, sheet, activeApplicationType === 'online' ? 'Online Yoklama' : 'Yüz Yüze Yoklama');
+    XLSX.writeFile(workbook, `bia-${activeApplicationType}-yoklama-${dateValue(new Date())}.xlsx`, { compression: true });
     toast('Yoklama raporu Excel olarak indirildi.');
   }
 
@@ -831,7 +895,7 @@
   }
 
   function resetFilters() {
-    ['appsSearch', 'appsType', 'appsGender', 'appsGrade', 'appsLevel', 'appsPreviousTraining', 'appsStatus', 'appsPlanState', 'appsTeacher', 'appsFrom', 'appsTo']
+    ['appsSearch', 'appsGender', 'appsGrade', 'appsLevel', 'appsPreviousTraining', 'appsStatus', 'appsPlanState', 'appsTeacher', 'appsFrom', 'appsTo']
       .forEach((id) => { el(id).value = ''; });
     renderTable();
   }
@@ -866,7 +930,7 @@
   async function autoAssignAll() {
     const startDate = el('programAutoStartDate').value;
     if (!startDate) return toast('Otomatik atama için başlangıç günü seçin.', 'error');
-    const unplanned = applications.filter((item) => item.applicationVersion !== 'online-2026-09' &&
+    const unplanned = scopedApplications().filter((item) =>
       ['yeni', 'inceleniyor', 'uygun'].includes(item.status) && !placementOf(item.id));
     if (!unplanned.length) return toast('Planlanmayı bekleyen uygun başvuru yok.', 'error');
     const accepted = await confirmModal(
@@ -877,7 +941,10 @@
     const button = el('programAutoAssign');
     button.disabled = true; button.textContent = 'Programlar hesaplanıyor...';
     try {
-      const result = await api('POST', { action: 'auto-plan', startDate });
+      const result = await api('POST', {
+        action: 'auto-plan', startDate, applicationType: activeApplicationType,
+        applicationIds: unplanned.map((item) => item.id)
+      });
       mergePlacements(result.data);
       renderStats(); renderTable(); renderTeacherGrid(); renderProgramFilters(); renderProgram();
       showAutoFeedback((result.data || []).length, result.skipped || []);
@@ -903,7 +970,8 @@
     button.disabled = true; button.textContent = 'Hesaplanıyor...';
     try {
       const result = await api('POST', {
-        action: 'auto-plan', startDate, applicationIds: [item.id], replaceExisting: Boolean(existing)
+        action: 'auto-plan', startDate, applicationType: item.applicationType,
+        applicationIds: [item.id], replaceExisting: Boolean(existing)
       });
       if (!result.data?.length) throw new Error(result.skipped?.[0]?.reason || 'Uygun program bulunamadı.');
       mergePlacements(result.data);
@@ -1073,8 +1141,63 @@
   }
 
   function resetProgramFilters() {
-    ['programSearch', 'programDay', 'programTeacher', 'programType', 'programSlot'].forEach((id) => { el(id).value = ''; });
+    ['programSearch', 'programDay', 'programTeacher', 'programSlot'].forEach((id) => { el(id).value = ''; });
     renderProgram();
+  }
+
+  function renderWorkspaceData() {
+    renderStats();
+    renderTeacherFilter();
+    renderProgramFilters();
+    renderTable();
+    renderTeacherGrid();
+    renderProgram();
+    renderReportFilters();
+    renderReports();
+  }
+
+  function updateWorkspaceShell() {
+    const inWorkspace = Boolean(activeApplicationType);
+    const isOnline = activeApplicationType === 'online';
+    el('appsModeChooser').hidden = inWorkspace;
+    el('appsWorkspace').hidden = !inWorkspace;
+    el('appsCsv').hidden = !inWorkspace;
+    el('appsExcel').hidden = !inWorkspace;
+    el('applicationsScreen').classList.toggle('is-online-workspace', isOnline);
+    if (!inWorkspace) {
+      el('appsHeaderEyebrow').textContent = 'Öğrenci kabul merkezi';
+      el('appsHeaderTitle').textContent = 'Eğitim çalışma alanını seçin';
+      el('appsHeaderCopy').textContent = 'Online ve yüz yüze süreçleri birbirinden bağımsız yönetin.';
+      return;
+    }
+    const modeName = isOnline ? 'Online eğitim' : 'Yüz yüze eğitim';
+    el('appsHeaderEyebrow').textContent = isOnline ? 'Online öğrenci kabul merkezi' : 'Yüz yüze öğrenci kabul merkezi';
+    el('appsHeaderTitle').textContent = `${modeName} yönetimi`;
+    el('appsHeaderCopy').textContent = `${modeName} başvurularını, öğretmen atamalarını ve ders programını ayrı yönetin.`;
+    el('appsWorkspaceTitle').textContent = modeName;
+    el('appsTeacherViewCopy').textContent = `${modeName} için görev alan öğretmenlerin günlerini ve kapasitesini yönetin.`;
+    el('appsProgramViewCopy').textContent = `${modeName} öğretmen yükünü ve birebir derslerini tek bakışta takip edin.`;
+    el('programModeLabel').textContent = modeName;
+    el('programModeDot').className = isOnline ? 'is-online' : 'is-face';
+    el('programDemoSeed').hidden = isOnline;
+    el('programDataTools').textContent = 'Tüm veri yönetimi';
+  }
+
+  function selectApplicationType(type) {
+    if (!['yuz-yuze', 'online'].includes(type)) return;
+    activeApplicationType = type;
+    resetFilters();
+    resetProgramFilters();
+    updateWorkspaceShell();
+    switchView('applications');
+    renderWorkspaceData();
+    window.requestAnimationFrame(() => el('appsBackToModes').focus({ preventScroll: true }));
+  }
+
+  function showTypeChooser() {
+    activeApplicationType = '';
+    updateWorkspaceShell();
+    renderStats();
   }
 
   function switchView(view) {
@@ -1110,7 +1233,9 @@
     el('teacherLoginState').className = teacher?.hasLogin ? 'is-ready' : '';
     el('teacherPasswordHint').textContent = teacher?.hasLogin ? 'Boş bırakırsanız mevcut şifre değişmez.' : 'En az 8 karakter; bu hesap için zorunludur.';
     document.querySelectorAll('[name="teacherGender"]').forEach((input) => { input.checked = input.value === teacher?.gender; });
-    document.querySelectorAll('[name="teacherModes"]').forEach((input) => { input.checked = teacher?.modes?.includes(input.value) || false; });
+    document.querySelectorAll('[name="teacherModes"]').forEach((input) => {
+      input.checked = teacher ? teacher.modes?.includes(input.value) || false : input.value === activeApplicationType;
+    });
     document.querySelectorAll('[name="teacherDays"]').forEach((input) => { input.checked = teacher?.days?.includes(input.value) || false; });
     el('teacherActive').checked = teacher ? teacher.active : true;
     el('teacherDelete').hidden = !teacher;
@@ -1155,15 +1280,18 @@
     } finally { button.disabled = false; button.textContent = 'Öğretmeni kaydet'; }
   }
 
-  window.showApplications = function () { showScreen('applicationsScreen'); load(false); };
+  window.showApplications = function () { showScreen('applicationsScreen'); showTypeChooser(); load(false); };
 
   document.addEventListener('DOMContentLoaded', () => {
-    const filterIds = ['appsSearch', 'appsType', 'appsGender', 'appsGrade', 'appsLevel', 'appsPreviousTraining', 'appsStatus', 'appsPlanState', 'appsTeacher', 'appsFrom', 'appsTo'];
+    const filterIds = ['appsSearch', 'appsGender', 'appsGrade', 'appsLevel', 'appsPreviousTraining', 'appsStatus', 'appsPlanState', 'appsTeacher', 'appsFrom', 'appsTo'];
     filterIds.forEach((id) => el(id).addEventListener(id === 'appsSearch' ? 'input' : 'change', renderTable));
     el('appsReset').addEventListener('click', resetFilters);
     el('appsRefresh').addEventListener('click', () => load(true));
     el('appsCsv').addEventListener('click', exportCsv);
     el('appsExcel').addEventListener('click', exportExcel);
+    el('appsChooseFace').addEventListener('click', () => selectApplicationType('yuz-yuze'));
+    el('appsChooseOnline').addEventListener('click', () => selectApplicationType('online'));
+    el('appsBackToModes').addEventListener('click', showTypeChooser);
     el('appsTabApplications').addEventListener('click', () => switchView('applications'));
     el('appsTabTeachers').addEventListener('click', () => switchView('teachers'));
     el('appsTabSchedule').addEventListener('click', () => switchView('schedule'));
@@ -1173,7 +1301,7 @@
     el('reportsReset').addEventListener('click', resetReportFilters);
     el('reportsCsv').addEventListener('click', exportReportCsv);
     el('reportsExcel').addEventListener('click', exportReportExcel);
-    ['programSearch', 'programDay', 'programTeacher', 'programType', 'programSlot'].forEach((id) => {
+    ['programSearch', 'programDay', 'programTeacher', 'programSlot'].forEach((id) => {
       el(id).addEventListener(id === 'programSearch' ? 'input' : 'change', renderProgram);
     });
     el('programReset').addEventListener('click', resetProgramFilters);

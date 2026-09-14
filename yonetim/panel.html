@@ -8,7 +8,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="/images/favicon-square.png">
 <link rel="apple-touch-icon" href="/images/favicon-square.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
-<link rel="stylesheet" href="/css/admin-applications.css?v=5">
+<link rel="stylesheet" href="/css/admin-applications.css?v=7">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; color: #222; min-height: 100vh; }
@@ -351,16 +351,48 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   <div id="appsNotice"></div>
   <header class="apps-header">
     <div>
-      <span class="apps-eyebrow">Öğrenci kabul merkezi</span>
-      <h1>Başvurular ve ders planı</h1>
-      <p>Başvurudan beş günlük öğretmen atamasına kadar tüm süreci tek yerden yönetin.</p>
+      <span class="apps-eyebrow" id="appsHeaderEyebrow">Öğrenci kabul merkezi</span>
+      <h1 id="appsHeaderTitle">Eğitim çalışma alanını seçin</h1>
+      <p id="appsHeaderCopy">Online ve yüz yüze süreçleri birbirinden bağımsız yönetin.</p>
     </div>
     <div class="apps-actions">
       <button type="button" class="btn btn-gray" id="appsRefresh">Yenile</button>
-      <button type="button" class="btn btn-gray" id="appsCsv">CSV indir</button>
-      <button type="button" class="btn btn-red" id="appsExcel">Excel indir</button>
+      <button type="button" class="btn btn-gray" id="appsCsv" hidden>CSV indir</button>
+      <button type="button" class="btn btn-red" id="appsExcel" hidden>Excel indir</button>
     </div>
   </header>
+
+  <section class="apps-mode-chooser" id="appsModeChooser" aria-labelledby="appsModeChooserTitle">
+    <div class="apps-mode-intro">
+      <span class="apps-eyebrow">İki ayrı çalışma alanı</span>
+      <h2 id="appsModeChooserTitle">Hangi başvuruları yöneteceksiniz?</h2>
+      <p>Her alan kendi başvurularını, öğretmenlerini, atamalarını, ders programını ve yoklama raporlarını gösterir.</p>
+    </div>
+    <div class="apps-mode-grid">
+      <button type="button" class="apps-mode-card is-face" id="appsChooseFace" data-application-type="yuz-yuze">
+        <span class="apps-mode-visual" aria-hidden="true">
+          <svg viewBox="0 0 64 64"><path d="M12 47V25l20-10 20 10v22"/><path d="M8 49h48M23 49V35h18v14M18 29h28"/><circle cx="32" cy="25" r="2"/></svg>
+        </span>
+        <span class="apps-mode-copy"><small>Akademide eğitim</small><strong>Yüz yüze başvurular</strong><span>Başvuruları inceleyin, sınıf programlarını ve öğretmen atamalarını yönetin.</span></span>
+        <span class="apps-mode-metrics"><span><strong id="appsFaceTotal">0</strong> başvuru</span><span><strong id="appsFaceWaiting">0</strong> atama bekliyor</span></span>
+        <span class="apps-mode-arrow" aria-hidden="true">→</span>
+      </button>
+      <button type="button" class="apps-mode-card is-online" id="appsChooseOnline" data-application-type="online">
+        <span class="apps-mode-visual" aria-hidden="true">
+          <svg viewBox="0 0 64 64"><rect x="9" y="14" width="46" height="34" rx="5"/><path d="M23 55h18M32 48v7M25 26h14M21 34h22"/><circle cx="32" cy="20" r="1.5"/></svg>
+        </span>
+        <span class="apps-mode-copy"><small>Uzaktan eğitim</small><strong>Online başvurular</strong><span>Online öğrencileri, uygun saatleri, öğretmen atamalarını ve ders takibini yönetin.</span></span>
+        <span class="apps-mode-metrics"><span><strong id="appsOnlineTotal">0</strong> başvuru</span><span><strong id="appsOnlineWaiting">0</strong> atama bekliyor</span></span>
+        <span class="apps-mode-arrow" aria-hidden="true">→</span>
+      </button>
+    </div>
+  </section>
+
+  <section class="apps-workspace" id="appsWorkspace" hidden>
+    <div class="apps-workspace-context">
+      <button type="button" class="apps-back-button" id="appsBackToModes"><span aria-hidden="true">←</span> Eğitim türleri</button>
+      <div><span class="apps-workspace-dot" id="appsWorkspaceDot"></span><span><small>Aktif çalışma alanı</small><strong id="appsWorkspaceTitle">Yüz yüze eğitim</strong></span></div>
+    </div>
 
   <nav class="apps-workspace-tabs" aria-label="Başvuru yönetimi bölümleri">
     <button type="button" class="is-active" id="appsTabApplications" aria-selected="true">Başvurular <span id="appsTabApplicationCount">0</span></button>
@@ -385,9 +417,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
       <div class="apps-filter-grid">
         <label class="apps-search-field">Arama
           <input id="appsSearch" type="search" placeholder="Öğrenci, veli, telefon, okul, başvuru no...">
-        </label>
-        <label>Eğitim türü
-          <select id="appsType"><option value="">Tümü</option><option value="yuz-yuze">Yüz yüze</option><option value="online">Online</option></select>
         </label>
         <label>Cinsiyet
           <select id="appsGender"><option value="">Tümü</option><option value="erkek">Erkek</option><option value="kiz">Kız</option></select>
@@ -430,7 +459,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
   <div id="appsTeachersView" class="apps-view" hidden>
     <section class="teachers-head">
-      <div><span class="apps-eyebrow">Ders kapasitesi</span><h2>Öğretmenler</h2><p>Çalışma günlerini ve eğitim türlerini belirleyin; sistem çakışmaları otomatik engeller.</p></div>
+      <div><span class="apps-eyebrow">Ders kapasitesi</span><h2>Öğretmenler</h2><p id="appsTeacherViewCopy">Bu eğitim türünde görev alan öğretmenlerin günlerini ve kapasitesini yönetin.</p></div>
       <button type="button" class="btn btn-red" id="appsAddTeacher">+ Öğretmen ekle</button>
     </section>
     <div class="teacher-toolbar">
@@ -446,12 +475,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
       <div>
         <span class="apps-eyebrow">Haftalık canlı görünüm</span>
         <h2>Ders programı</h2>
-        <p>Her öğretmenin öğrenci yükünü, gününü ve birebir ders saatini tek bakışta takip edin.</p>
+        <p id="appsProgramViewCopy">Seçilen eğitim türünün öğretmen yükünü ve birebir derslerini tek bakışta takip edin.</p>
       </div>
       <div class="program-head-actions">
-        <div class="program-legend" aria-label="Program açıklaması">
-          <span><i class="is-face"></i> Yüz yüze</span>
-          <span><i class="is-online"></i> Online</span>
+        <div class="program-legend" aria-label="Aktif eğitim türü">
+          <span><i id="programModeDot"></i><strong id="programModeLabel">Yüz yüze</strong></span>
         </div>
         <div class="program-head-button-row"><button type="button" class="btn btn-gray" id="programDemoSeed">Test verisini kur</button><button type="button" class="btn btn-gray" id="programDataTools">Veri yönetimi</button></div>
       </div>
@@ -478,9 +506,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
         </label>
         <label>Öğretmen
           <select id="programTeacher"><option value="">Tüm öğretmenler</option></select>
-        </label>
-        <label>Eğitim türü
-          <select id="programType"><option value="">Tümü</option><option value="yuz-yuze">Yüz yüze</option><option value="online">Online</option></select>
         </label>
         <label>Saat
           <select id="programSlot"><option value="">Tüm saatler</option></select>
@@ -550,6 +575,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
       <div class="reports-table-wrap"><table class="reports-table"><thead><tr><th>Tarih</th><th>Öğretmen</th><th>Öğrenci</th><th>Saat</th><th>Tür</th><th>Durum</th><th>Not</th></tr></thead><tbody id="reportsTableBody"><tr><td colspan="7" class="apps-empty">Henüz yoklama kaydı yok.</td></tr></tbody></table></div>
     </section>
   </div>
+  </section>
 </main>
 
 <dialog id="appsDialog" class="apps-dialog" aria-labelledby="appsModalTitle">
@@ -1397,6 +1423,6 @@ function logout() {
 loadNews();
 </script>
 <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="/js/admin-applications.js?v=6"></script>
+<script src="/js/admin-applications.js?v=8"></script>
 </body>
 </html>

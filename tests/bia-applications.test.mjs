@@ -199,6 +199,9 @@ assert.equal(onlineApplication?.consents?.mediaConsent, 'uygulanmiyor');
 assert.deepEqual(list.meta.onlineTimeRanges, [
   '10:00-13:00', '13:00-15:00', '15:00-17:00', '17:00-19:00', '19:00-21:00', '21:00-23:00'
 ]);
+assert.equal(list.meta.onlineTimeSlots.length, 39);
+assert.equal(list.meta.onlineTimeSlots[0], '10:00-10:20');
+assert.equal(list.meta.onlineTimeSlots.at(-1), '22:40-23:00');
 assert.equal(list.teachers.length, 2);
 assert.equal(list.teachers.every((teacher) => !('passwordHash' in teacher) && !('passwordSalt' in teacher)), true);
 assert.equal(list.teachers.every((teacher) => teacher.hasLogin), true);
@@ -297,6 +300,37 @@ const maleTeacherResponse = await adminPost({
 });
 assert.equal(maleTeacherResponse.status, 200);
 const maleTeacher = (await maleTeacherResponse.json()).data;
+
+const onlineMaleTeacherResponse = await adminPost({
+  action: 'teacher-save', teacher: {
+    name: 'Online Erkek Öğretmen', phone: '05321110004', gender: 'erkek', modes: ['online'],
+    days: ['pazartesi', 'sali', 'carsamba', 'persembe', 'cuma'], active: true,
+    username: 'online.ogretmen', password: 'GuvenliSifre-04'
+  }
+});
+assert.equal(onlineMaleTeacherResponse.status, 200);
+const onlineMaleTeacher = (await onlineMaleTeacherResponse.json()).data;
+
+const onlineOutsideRangeSchedule = ['pazartesi', 'sali', 'carsamba', 'persembe', 'cuma']
+  .map((day) => ({ day, teacherId: onlineMaleTeacher.id, slot: '10:00-10:20' }));
+const onlineOutsideRangeResponse = await adminPost({
+  action: 'placement-save', applicationId: onlineApplication.id, applicationCreatedAt: onlineApplication.createdAt,
+  startDate: '2026-09-14', schedule: onlineOutsideRangeSchedule
+});
+assert.equal(onlineOutsideRangeResponse.status, 409);
+assert.match((await onlineOutsideRangeResponse.json()).error, /müsait saatler/);
+
+const onlineAutoPlanResponse = await adminPost({
+  action: 'auto-plan', applicationIds: [onlineApplication.id], startDate: '2026-09-14'
+});
+assert.equal(onlineAutoPlanResponse.status, 200);
+const onlineAutoPlan = await onlineAutoPlanResponse.json();
+assert.equal(onlineAutoPlan.data.length, 1);
+assert.ok(onlineAutoPlan.data[0].schedule.every((entry) => entry.teacherId === onlineMaleTeacher.id));
+assert.ok(onlineAutoPlan.data[0].schedule.every((entry) => {
+  const hour = Number(entry.slot.slice(0, 2));
+  return hour >= 17 && hour < 21;
+}));
 
 const maleSubmission = {
   ...validSubmission, studentName: 'Erkek Test Öğrenci', gender: 'erkek',

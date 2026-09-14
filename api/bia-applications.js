@@ -10,6 +10,15 @@ const TIME_SLOTS = [
   '16:00-16:20', '16:20-16:40', '16:40-17:00',
   '17:00-17:20', '17:20-17:40', '17:40-18:00'
 ];
+function createTimeSlots(startHour, endHour) {
+  const slots = [];
+  const format = (value) => `${String(Math.floor(value / 60)).padStart(2, '0')}:${String(value % 60).padStart(2, '0')}`;
+  for (let minute = startHour * 60; minute < endHour * 60; minute += 20) {
+    slots.push(`${format(minute)}-${format(minute + 20)}`);
+  }
+  return slots;
+}
+const ONLINE_TIME_SLOTS = createTimeSlots(10, 23);
 const ONLINE_TIME_RANGES = [
   '10:00-13:00', '13:00-15:00', '15:00-17:00',
   '17:00-19:00', '19:00-21:00', '21:00-23:00'
@@ -370,7 +379,31 @@ function placementFor(records, applicationId) {
   return records.find((item) => item.kind === 'placement' && item.applicationId === applicationId);
 }
 
-function scheduleScore(schedule, currentLoads) {
+function slotMinutes(value) {
+  const [hours, minutes] = String(value || '').split(':').map(Number);
+  return hours * 60 + minutes;
+}
+
+function applicationSlots(application) {
+  if (application.applicationType !== 'online') {
+    return orderedUnique(
+      Array.isArray(application.availabilitySlots) && application.availabilitySlots.length ? application.availabilitySlots : TIME_SLOTS,
+      TIME_SLOTS
+    );
+  }
+  const ranges = orderedUnique(application.availabilityRanges, ONLINE_TIME_RANGES).map((range) => {
+    const [start, end] = range.split('-');
+    return { start: slotMinutes(start), end: slotMinutes(end) };
+  });
+  const slots = ONLINE_TIME_SLOTS.filter((slot) => {
+    const [start, end] = slot.split('-');
+    const candidate = { start: slotMinutes(start), end: slotMinutes(end) };
+    return !ranges.length || ranges.some((range) => candidate.start >= range.start && candidate.end <= range.end);
+  });
+  return slots.length ? slots : ONLINE_TIME_SLOTS;
+}
+
+function scheduleScore(schedule, currentLoads, slotList) {
   const teacherIds = schedule.map((entry) => entry.teacherId);
   const slots = schedule.map((entry) => entry.slot);
   const teacherCounts = teacherIds.reduce((counts, id) => ({ ...counts, [id]: (counts[id] || 0) + 1 }), {});
@@ -380,7 +413,7 @@ function scheduleScore(schedule, currentLoads) {
   const projectedLoads = Object.entries(teacherCounts).map(([id, count]) => (currentLoads.get(id) || 0) + count);
   const maxLoad = Math.max(0, ...projectedLoads);
   const squaredLoad = projectedLoads.reduce((sum, load) => sum + load * load, 0);
-  const slotOrder = slots.reduce((sum, slot) => sum + Math.max(0, TIME_SLOTS.indexOf(slot)), 0);
+  const slotOrder = slots.reduce((sum, slot) => sum + Math.max(0, slotList.indexOf(slot)), 0);
   return (teacherCount - 1) * 1e9 + (slotCount - 1) * 1e7 + switches * 1e5 + maxLoad * 1e3 + squaredLoad * 10 + slotOrder;
 }
 
@@ -392,10 +425,7 @@ function automaticSchedule(application, teacherRecords, planningRecords) {
     throw new RequestError(`${application.studentName} için uygun cinsiyette ve eğitim türünde aktif öğretmen yok.`, 409);
   }
 
-  const availableSlots = orderedUnique(
-    Array.isArray(application.availabilitySlots) && application.availabilitySlots.length ? application.availabilitySlots : TIME_SLOTS,
-    TIME_SLOTS
-  );
+  const availableSlots = applicationSlots(application);
   const occupied = new Set(planningRecords.filter((item) => item.kind === 'placement')
     .flatMap((placement) => (placement.schedule || []).map((entry) => `${entry.teacherId}|${entry.day}|${entry.slot}`)));
   const loads = new Map();
@@ -409,7 +439,7 @@ function automaticSchedule(application, teacherRecords, planningRecords) {
       .filter((slot) => !occupied.has(`${teacher.id}|${day}|${slot}`))
       .map((slot) => ({ day, teacherId: teacher.id, teacherName: teacher.name, slot })))
     .sort((a, b) => (loads.get(a.teacherId) || 0) - (loads.get(b.teacherId) || 0) ||
-      a.teacherName.localeCompare(b.teacherName, 'tr') || TIME_SLOTS.indexOf(a.slot) - TIME_SLOTS.indexOf(b.slot)));
+      a.teacherName.localeCompare(b.teacherName, 'tr') || availableSlots.indexOf(a.slot) - availableSlots.indexOf(b.slot)));
 
   const missingDay = choicesByDay.findIndex((choices) => !choices.length);
   if (missingDay >= 0) {
@@ -421,7 +451,7 @@ function automaticSchedule(application, teacherRecords, planningRecords) {
     availableSlots.forEach((slot) => {
       const schedule = WEEKDAYS.map((day, index) => choicesByDay[index]
         .find((choice) => choice.teacherId === teacher.id && choice.slot === slot));
-      if (schedule.every(Boolean)) perfectSchedules.push({ schedule, score: scheduleScore(schedule, loads) });
+      if (schedule.every(Boolean)) perfectSchedules.push({ schedule, score: scheduleScore(schedule, loads, availableSlots) });
     });
   });
   if (perfectSchedules.length) {
@@ -435,7 +465,7 @@ function automaticSchedule(application, teacherRecords, planningRecords) {
     states.forEach((state) => {
       choices.forEach((choice) => {
         const schedule = [...state.schedule, choice];
-        candidates.push({ schedule, score: scheduleScore(schedule, loads) });
+        candidates.push({ schedule, score: scheduleScore(schedule, loads, availableSlots) });
       });
     });
     candidates.sort((a, b) => a.score - b.score);
@@ -563,7 +593,7 @@ export default async function handler(req) {
             attendanceId: attendance?.id || '', updatedAt: attendance?.updatedAt || ''
           };
         }))
-      .sort((a, b) => TIME_SLOTS.indexOf(a.slot) - TIME_SLOTS.indexOf(b.slot) || a.studentName.localeCompare(b.studentName, 'tr'));
+      .sort((a, b) => slotMinutes(a.slot) - slotMinutes(b.slot) || a.studentName.localeCompare(b.studentName, 'tr'));
   }
 
   function teacherWeekSummary(records, teacher, selectedDate) {
@@ -642,8 +672,8 @@ export default async function handler(req) {
       const created = [];
       const skipped = [];
       const sortedTargets = targets.slice().sort((a, b) => {
-        const aSlots = Array.isArray(a.availabilitySlots) ? a.availabilitySlots.length : TIME_SLOTS.length;
-        const bSlots = Array.isArray(b.availabilitySlots) ? b.availabilitySlots.length : TIME_SLOTS.length;
+        const aSlots = applicationSlots(a).length;
+        const bSlots = applicationSlots(b).length;
         return aSlots - bSlots || String(a.createdAt).localeCompare(String(b.createdAt));
       });
 
@@ -706,7 +736,7 @@ export default async function handler(req) {
         teachers: planning.records.filter((item) => item.kind === 'teacher').map(publicTeacher),
         placements: planning.records.filter((item) => item.kind === 'placement'),
         attendance: planning.records.filter((item) => item.kind === 'attendance'),
-        meta: { weekdays: WEEKDAYS, timeSlots: TIME_SLOTS, onlineTimeRanges: ONLINE_TIME_RANGES, attendanceStatuses: ATTENDANCE_STATUSES }
+        meta: { weekdays: WEEKDAYS, timeSlots: TIME_SLOTS, onlineTimeSlots: ONLINE_TIME_SLOTS, onlineTimeRanges: ONLINE_TIME_RANGES, attendanceStatuses: ATTENDANCE_STATUSES }
       }, 200, cors);
     } catch (_) {
       return json({ error: 'Şifreli başvuru arşivi açılamadı. Şifreleme anahtarını kontrol edin.' }, 500, cors);
@@ -777,7 +807,7 @@ export default async function handler(req) {
           ok: true, teacher: publicTeacher(teacher), date, day: attendanceDay(date),
           lessons: teacherDayLessons(planning.records, teacher, date),
           week: teacherWeekSummary(planning.records, teacher, date),
-          meta: { weekdays: WEEKDAYS, timeSlots: TIME_SLOTS, attendanceStatuses: ATTENDANCE_STATUSES }
+          meta: { weekdays: WEEKDAYS, timeSlots: TIME_SLOTS, onlineTimeSlots: ONLINE_TIME_SLOTS, attendanceStatuses: ATTENDANCE_STATUSES }
         }, 200, cors);
       } catch (error) {
         return json({ error: error.message || 'Dersler yüklenemedi.' }, error.status || 500, cors);
@@ -842,10 +872,12 @@ export default async function handler(req) {
         if (!validDate(startDate)) throw new RequestError('Otomatik atama için başlangıç günü seçin.');
         const requestedIds = [...new Set((Array.isArray(body.applicationIds) ? body.applicationIds : [])
           .map((id) => cleanText(id, 80)).filter(Boolean))].slice(0, 100);
+        const requestedType = ENUMS.applicationType.includes(body.applicationType) ? body.applicationType : '';
         const allApplications = await getAllApplications();
         const targets = requestedIds.length
-          ? allApplications.filter((application) => requestedIds.includes(application.id) && application.applicationVersion !== 'online-2026-09')
-          : allApplications.filter((application) => application.applicationVersion !== 'online-2026-09' &&
+          ? allApplications.filter((application) => requestedIds.includes(application.id) &&
+            (!requestedType || application.applicationType === requestedType))
+          : allApplications.filter((application) => (!requestedType || application.applicationType === requestedType) &&
             ['yeni', 'inceleniyor', 'uygun'].includes(application.status));
         if (!targets.length) throw new RequestError('Otomatik atanabilecek başvuru bulunamadı.', 404);
         const result = await saveAutomaticPlacements(
@@ -1110,6 +1142,7 @@ export default async function handler(req) {
         const application = await requireApplication(applicationId, body.applicationCreatedAt);
         if (!validDate(body.startDate)) throw new RequestError('Başlangıç tarihi seçin.');
         const schedule = normalizeSchedule(body.schedule);
+        const allowedSlots = applicationSlots(application);
         const saved = await mutateArchive(PLANNING_FILE, (records) => {
           const teachers = new Map(records.filter((item) => item.kind === 'teacher').map((item) => [item.id, item]));
           const existing = placementFor(records, applicationId);
@@ -1123,7 +1156,8 @@ export default async function handler(req) {
             }
             if (!teacher.modes.includes(application.applicationType)) throw new RequestError(`${teacher.name}, bu eğitim türünde ders vermiyor.`, 409);
             if (!teacher.days.includes(entry.day)) throw new RequestError(`${teacher.name}, seçilen günde çalışmıyor.`, 409);
-            if (!TIME_SLOTS.includes(entry.slot)) throw new RequestError(`${entry.day} için saat seçin.`);
+            if (!entry.slot) throw new RequestError(`${entry.day} için saat seçin.`);
+            if (!allowedSlots.includes(entry.slot)) throw new RequestError(`${entry.slot}, öğrencinin bildirdiği müsait saatler arasında değil.`, 409);
             if (Array.isArray(application.availabilitySlots) && application.availabilitySlots.length &&
               !application.availabilitySlots.includes(entry.slot)) {
               throw new RequestError(`${entry.slot}, öğrencinin bildirdiği müsait saatler arasında değil.`, 409);
