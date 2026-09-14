@@ -18,8 +18,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="/yon/assets/kendi-yolunda-hero.webp" fetchpriority="high">
-  <link rel="preload" as="script" href="/yon/motion-player.js?v=4">
-  <link rel="stylesheet" href="/yon/yon.css?v=4">
+  <link rel="stylesheet" href="/yon/yon.css?v=5">
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"Course","name":"Kendi Yolunda","description":"Gençler için 6 haftalık uygulamalı hayat becerileri programı","provider":{"@type":"EducationalOrganization","name":"Birlikte İyilik Akademi","url":"https://birlikteiyilik.com"}}
   </script>
@@ -33,7 +32,7 @@
       <img src="/images/logo_icon_white.png" alt="" width="34" height="43">
       <span>Birlikte İyilik Akademi</span>
     </a>
-    <div class="topbar-step" aria-live="polite"><b id="currentStep">01</b><span>/</span><span>14</span></div>
+    <div class="topbar-step" aria-live="polite"><b id="currentStep">01</b><span>/</span><span>11</span></div>
     <a class="topbar-action" href="/yon/assets/kendi-yolunda-proje-dosyasi.pdf" target="_blank" rel="noopener">
       <span>Proje dosyası</span>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 20h14"/></svg>
@@ -43,8 +42,12 @@
   <main class="story" id="hikaye" aria-label="Kendi Yolunda proje sunumu">
     <h1 class="sr-only">Kendi Yolunda — 6 Haftalık Uygulamalı Hayat Becerileri Programı</h1>
     <div class="story-stage" id="storyStage">
-      <div class="motion-loader" aria-hidden="true"><img src="/images/logo_icon_white.png" alt=""><span>Hikâye hazırlanıyor</span></div>
-      <div id="remotion-root" class="remotion-root" aria-label="Scroll ile ilerleyen Kendi Yolunda motion sunumu"></div>
+      <picture class="film-poster" aria-hidden="true"><source media="(orientation: portrait)" srcset="/yon/assets/film-mobile-poster.jpg"><img src="/yon/assets/film-desktop-poster.jpg" alt=""></picture>
+      <video id="storyVideo" class="story-video" muted playsinline preload="auto" poster="/yon/assets/film-desktop-poster.jpg" aria-label="Kendi Yolunda — 77 saniyelik sunum filmi" aria-describedby="filmTranscript">
+        <p>Tarayıcınız video oynatmayı desteklemiyor. <a href="/yon/assets/kendi-yolunda-desktop-v1.mp4">Sunum filmini açın.</a></p>
+      </video>
+      <div class="motion-loader" role="status"><span id="filmStatus">Film yükleniyor</span><a href="/yon/assets/kendi-yolunda-desktop-v1.mp4">Videoyu doğrudan aç ↗</a></div>
+      <button class="watch-film" id="watchFilm" type="button" aria-pressed="false" disabled>Filmi izle ↗</button>
 
       <div class="story-footer" aria-hidden="true">
         <span id="chapterTitle">Başlangıç</span>
@@ -59,10 +62,12 @@
     </div>
   </main>
 
-  <section class="story-summary" aria-label="Program özeti">
+  <section class="story-summary" aria-label="Program özeti" id="filmTranscript">
     <p>6 hafta · haftada 90 dakika · 18–22 yaş · 20–24 kişilik pilot grup</p>
     <h2>Kendini daha net gör, düşünceni ifade et ve bir sonraki adımını başlat.</h2>
     <a href="/yon/assets/kendi-yolunda-proje-dosyasi.pdf" target="_blank" rel="noopener">Projenin tüm ayrıntılarını incele ↗</a>
+    <a class="film-download" href="/yon/assets/kendi-yolunda-desktop-v1.mp4" download>Sunum videosunu indir ↗</a>
+    <details><summary>Filmin metnini oku</summary><p>Kendi Yolunda; kendini tanıma, düşüncelerini ifade etme ve sonraki adımı planlama odaklı bir uygulama programıdır.</p><ol><li>Güçlü yön ve değer haritası.</li><li>90 günlük hedef ve engel planı.</li><li>Aktif dinleme, açık soru ve iletişim uygulaması.</li><li>İki dakikalık konuşma ve davranışa yönelik geri bildirim.</li><li>Zaman günlüğü ve davranış deneyi.</li><li>30 günlük eylem sözleşmesi ve destek haritası.</li></ol><p>Haftalık 90 dakikanın en az yarısı uygulamaya ayrılır. Paylaşım gönüllüdür; program terapi değildir. Pilot; devam, tamamlama ve 30. günde eylem denemesi hedefleriyle, 30 ve 90 günlük takiple değerlendirilir. Bu hedefler sonuç garantisi değildir.</p></details>
   </section>
 
   <footer class="footer">
@@ -71,6 +76,6 @@
     <a href="#hikaye">Başa dön ↑</a>
   </footer>
 
-  <script src="/yon/motion-player.js?v=4" defer></script>
+  <script src="/yon/video-scroll.js?v=1" defer></script>
 </body>
 </html>

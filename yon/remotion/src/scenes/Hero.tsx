@@ -32,7 +32,9 @@ export const Hero: React.FC = () => {
         </div>
         <div style={{marginTop: portrait ? 56 : 40, maxWidth: portrait ? 820 : 850, fontSize: portrait ? 38 : 34, lineHeight: 1.5, color: 'rgba(255,255,255,.78)', opacity: interpolate(frame, [0.7 * fps, 1.45 * fps], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'}), translate: interpolate(frame, [0.7 * fps, 1.45 * fps], ['0px 24px', '0px 0px'], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'})}}>Ne istediğini tam bilmiyor olabilirsin.<br/>Bu, geride olduğun anlamına gelmez.</div>
       </div>
-      <div style={{position: 'absolute', left: portrait ? 64 : 120, right: portrait ? 64 : 120, bottom: portrait ? 110 : 78, height: 3, backgroundColor: 'rgba(255,255,255,.2)'}}><div style={{width: `${interpolate(frame, [0, durationInFrames], [0,100], {extrapolateLeft:'clamp',extrapolateRight:'clamp'})}%`, height: '100%', backgroundColor: COLORS.red}}/></div>
+      <div style={{position:'absolute',left:portrait?64:120,right:portrait?64:120,bottom:portrait?180:115,display:'flex',gap:portrait?55:80,borderTop:'1px solid rgba(255,255,255,.3)',paddingTop:30,opacity:interpolate(frame,[45,80],[0,1],{extrapolateLeft:'clamp',extrapolateRight:'clamp'})}}>
+        {[['6','hafta'],['6','uygulama'],['1','yol haritası']].map(([value,label],index)=><div key={label} style={{translate:interpolate(frame,[45+index*6,80+index*6],['0px 28px','0px 0px'],{extrapolateLeft:'clamp',extrapolateRight:'clamp',easing:Easing.out(Easing.cubic)})}}><b style={{fontFamily:DISPLAY,fontSize:portrait?78:66,lineHeight:1}}>{value}</b><div style={{marginTop:10,fontSize:portrait?25:21,color:'rgba(255,255,255,.7)'}}>{label}</div></div>)}
+      </div>
     </AbsoluteFill>
   );
 };

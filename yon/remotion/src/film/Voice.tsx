@@ -1,0 +1,3 @@
+import React from 'react';
+import {ArtBox,C,Copy,Label,Tag,TextBlock,Title} from './system';
+export const Voice:React.FC=()=> <><TextBlock><Label dark>03 — 04 / Kendini ifade et</Label><Title dark lines={['ÖNCE DİNLE.','SONRA','SESİNİ BUL.']} size={126} accent={2}/><Copy dark>Net konuşmayı, sınır koymayı<br/>ve kendini anlatmayı prova et.</Copy><Tag dark>İletişim uygulaması → 2 dakikalık konuşma</Tag></TextBlock><ArtBox><svg width="100%" height="100%" viewBox="0 0 800 800"><line x1="65" x2="735" y1="400" y2="400" stroke="#0c232b22"/><text x="400" y="680" textAnchor="middle" fill={C.ink} fontSize="30" fontFamily="Arial">Bir fikrin var. Bir sesin var.</text></svg></ArtBox></>;
