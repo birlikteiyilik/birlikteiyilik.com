@@ -1,5 +1,5 @@
 import React from 'react';
-import {AbsoluteFill, Easing, interpolate, useCurrentFrame, useVideoConfig} from 'remotion';
+import {AbsoluteFill, Easing, interpolate, staticFile, useCurrentFrame, useVideoConfig} from 'remotion';
 
 export const COLORS = {
   ink: '#102c43',
@@ -14,7 +14,7 @@ export const COLORS = {
 export const DISPLAY = '"Arial Black", "Arial Narrow", sans-serif';
 export const BODY = 'Inter, Arial, sans-serif';
 
-export const asset = (name: string) => `/yon/assets/${name}`;
+export const asset = (name: string) => staticFile(name);
 
 export const SceneShell: React.FC<{
   background?: string;
