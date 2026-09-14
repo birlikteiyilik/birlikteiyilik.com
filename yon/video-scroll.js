@@ -23,15 +23,33 @@
   let generation = 0;
   const end = () => Math.max(START, (video.duration || 77) - .1);
   const ratio = () => Math.max(0, Math.min(1, (scrollY - story.offsetTop) / Math.max(1, story.offsetHeight - stage.offsetHeight)));
+  // Mirrors the rendered camera in remotion/src/film/camera.ts.
+  const cameraPage = (time) => {
+    const progress = Math.max(0, Math.min(10, (time * 30 - 96) / 211.8));
+    const page = Math.floor(progress), u = progress - page;
+    return page + .18 * u + .82 * u * u * u * (u * (u * 6 - 15) + 10);
+  };
+  const scrollTime = (fraction) => {
+    const targetPage = Math.max(0, Math.min(10, fraction * 10));
+    if (targetPage === 10) return 73.8;
+    const page = Math.floor(targetPage), within = targetPage - page;
+    let low = 0, high = 1;
+    for (let i = 0; i < 24; i++) {
+      const u = (low + high) / 2;
+      const travel = .18 * u + .82 * u * u * u * (u * (u * 6 - 15) + 10);
+      if (travel < within) low = u; else high = u;
+    }
+    return (96 + (page + (low + high) / 2) * 211.8) / 30;
+  };
 
   function updateUI(time) {
-    const fraction = Math.max(0, Math.min(1, (time - START) / (end() - START)));
-    const chapter = Math.min(10, Math.max(0, Math.floor(time / 7)));
+    const fraction = cameraPage(time) / 10;
+    const chapter = Math.min(10, Math.max(0, Math.round(cameraPage(time))));
     step.textContent = String(chapter + 1).padStart(2, '0');
     chapterTitle.textContent = labels[chapter];
     progress.style.transform = `scaleX(${fraction})`;
     chapterProgress.style.transform = `scaleX(${fraction})`;
-    stage.classList.toggle('is-last', time > 74);
+    stage.classList.toggle('is-last', cameraPage(time) > 9.96);
   }
 
   function tick(now) {
@@ -52,7 +70,7 @@
   function schedule() { if (!raf) raf = requestAnimationFrame(tick); }
   function syncScroll() {
     if (mode !== 'scroll') return;
-    target = START + ratio() * (end() - START);
+    target = scrollTime(ratio());
     schedule();
   }
   video.addEventListener('seeked', () => {
@@ -64,7 +82,7 @@
     ready = true;
     status.textContent = 'Kaydırarak ilerle';
     toggle.disabled = false;
-    position = START + ratio() * (end() - START);
+    position = scrollTime(ratio());
     video.currentTime = position;
     syncScroll();
   });
@@ -89,7 +107,7 @@
     video.controls = false;
     toggle.textContent = 'Filmi izle ↗';
     toggle.setAttribute('aria-pressed', 'false');
-    const fraction = Math.max(0, Math.min(1, (video.currentTime - START) / (end() - START)));
+    const fraction = cameraPage(video.currentTime) / 10;
     position = target = video.currentTime;
     window.scrollTo({top:story.offsetTop + fraction * (story.offsetHeight - stage.offsetHeight),behavior:'instant'});
     stage.classList.remove('is-watching');
@@ -115,8 +133,8 @@
     stage.classList.remove('is-loaded');
     toggle.disabled = true;
     status.textContent = 'Film yükleniyor';
-    video.poster = `/yon/assets/film-${media.matches ? 'mobile' : 'desktop'}-poster.jpg`;
-    video.src = `/yon/assets/kendi-yolunda-${media.matches ? 'mobile' : 'desktop'}-v1.mp4`;
+    video.poster = `/yon/assets/film-${media.matches ? 'mobile' : 'desktop'}-poster-v2.jpg`;
+    video.src = `/yon/assets/kendi-yolunda-${media.matches ? 'mobile' : 'desktop'}-v2.mp4`;
     video.load();
     // If orientation changes during playback, return to deterministic scroll mode.
     mode = 'scroll'; video.controls = false;

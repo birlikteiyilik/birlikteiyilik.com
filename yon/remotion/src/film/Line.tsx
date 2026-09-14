@@ -1,10 +1,10 @@
 import React from 'react';
-import {Easing, interpolate, useCurrentFrame} from 'remotion';
-import {ArtBox,C,clamp,SHOT} from './system';
+import {interpolate, useCurrentFrame} from 'remotion';
+import {ArtBox,C,clamp} from './system';
 
 type Point=[number,number];
 function along(points:Point[],t:number):Point{const pos=t*(points.length-1),i=Math.min(points.length-2,Math.floor(pos)),u=pos-i;return[points[i][0]+(points[i+1][0]-points[i][0])*u,points[i][1]+(points[i+1][1]-points[i][1])*u];}
-function shape(index:number,t:number,frame:number):Point{
+export function shape(index:number,t:number,frame:number):Point{
   const a=t*Math.PI*2;
   switch(index){
     case 0:return[120+510*t,720-510*t+70*Math.sin(a)];
@@ -21,16 +21,15 @@ function shape(index:number,t:number,frame:number):Point{
   }
 }
 
-export const LivingLine:React.FC=()=>{
+export const LivingLine:React.FC<{chapter:number}>=({chapter})=>{
   const frame=useCurrentFrame();
-  const chapter=Math.min(10,Math.floor(frame/SHOT)),local=frame-chapter*SHOT;
-  const morph=interpolate(local,[0,48],[0,1],{...clamp,easing:Easing.inOut(Easing.cubic)});
-  const points=Array.from({length:121},(_,i)=>{const a=shape(Math.max(0,chapter-1),i/120,frame),b=shape(chapter,i/120,frame);return[a[0]+(b[0]-a[0])*morph,a[1]+(b[1]-a[1])*morph] as Point;});
+  const points=Array.from({length:121},(_,i)=>shape(chapter,i/120,frame));
   const d=points.map((p,i)=>`${i?'L':'M'}${p[0].toFixed(2)},${p[1].toFixed(2)}`).join(' ');
-  const head=points[Math.min(120,Math.floor(interpolate(frame,[0,95],[0,120],clamp)))];
+  const reveal=chapter===0?interpolate(frame,[0,95],[0,1],clamp):1;
+  const head=points[Math.min(120,Math.floor(reveal*120))];
   return <ArtBox><svg width="100%" height="100%" viewBox="0 0 800 800" style={{overflow:'visible'}}>
     <path d={d} fill="none" stroke={C.red} strokeWidth="22" opacity=".04" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d={d} fill="none" stroke={C.red} strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" pathLength="1" strokeDasharray="1" strokeDashoffset={interpolate(frame,[0,95],[1,0],{...clamp,easing:Easing.inOut(Easing.cubic)})}/>
+    <path d={d} fill="none" stroke={C.red} strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" pathLength="1" strokeDasharray="1" strokeDashoffset={1-reveal}/>
     <circle cx={head[0]} cy={head[1]} r="9" fill={C.red}/>
   </svg></ArtBox>;
 };
