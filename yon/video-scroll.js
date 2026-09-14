@@ -11,6 +11,7 @@
   const step = document.getElementById('currentStep');
   const media = matchMedia('(orientation: portrait)');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  const frameCallbacks = typeof video.requestVideoFrameCallback === 'function';
   const START = 3.2;
   const labels = ['Başlangıç','Bir adım','6 haftalık rota','Yönünü gör','Sesini bul','Düzenini kur','Uygulama','Yol haritası','Güvenli alan','Pilot ve takip','Sonraki adım'];
   let mode = 'scroll';
@@ -56,7 +57,7 @@
   }
   video.addEventListener('seeked', () => {
     if (ready) stage.classList.add('is-loaded');
-    updateUI(video.currentTime);
+    if (!frameCallbacks) updateUI(video.currentTime);
     if (mode === 'scroll' && Math.abs(target - video.currentTime) > 1 / 60) schedule();
   });
   video.addEventListener('loadeddata', () => {
@@ -67,7 +68,16 @@
     video.currentTime = position;
     syncScroll();
   });
-  video.addEventListener('timeupdate', () => { if (mode === 'watch') updateUI(video.currentTime); });
+  video.addEventListener('timeupdate', () => { if (mode === 'watch' && !frameCallbacks) updateUI(video.currentTime); });
+  // The chapter label follows the frame actually presented by the decoder,
+  // rather than the requested seek time during fast scrolls.
+  if (frameCallbacks) {
+    const observeFrame = () => video.requestVideoFrameCallback((_, metadata) => {
+      updateUI(metadata.mediaTime);
+      observeFrame();
+    });
+    observeFrame();
+  }
   video.addEventListener('error', () => {
     status.textContent = 'Video yüklenemedi. Aşağıdaki bağlantıdan açabilirsiniz.';
     stage.classList.add('has-error');
