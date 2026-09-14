@@ -16,9 +16,10 @@
   <link rel="icon" href="/images/logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="/yon/assets/kendi-yolunda-hero.webp" fetchpriority="high">
-  <link rel="stylesheet" href="/yon/yon.css?v=3">
+  <link rel="preload" as="script" href="/yon/motion-player.js?v=4">
+  <link rel="stylesheet" href="/yon/yon.css?v=4">
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"Course","name":"Kendi Yolunda","description":"Gençler için 6 haftalık uygulamalı hayat becerileri programı","provider":{"@type":"EducationalOrganization","name":"Birlikte İyilik Akademi","url":"https://birlikteiyilik.com"}}
   </script>
@@ -32,122 +33,44 @@
       <img src="/images/logo_icon_white.png" alt="" width="34" height="43">
       <span>Birlikte İyilik Akademi</span>
     </a>
-    <div class="topbar-step" aria-live="polite"><b id="currentStep">01</b><span>/</span><span id="totalSteps">14</span></div>
+    <div class="topbar-step" aria-live="polite"><b id="currentStep">01</b><span>/</span><span>14</span></div>
     <a class="topbar-action" href="/yon/assets/kendi-yolunda-proje-dosyasi.pdf" target="_blank" rel="noopener">
       <span>Proje dosyası</span>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 20h14"/></svg>
     </a>
   </header>
 
-  <main class="story" id="hikaye">
+  <main class="story" id="hikaye" aria-label="Kendi Yolunda proje sunumu">
+    <h1 class="sr-only">Kendi Yolunda — 6 Haftalık Uygulamalı Hayat Becerileri Programı</h1>
     <div class="story-stage" id="storyStage">
-      <section class="story-panel panel-hero is-active" data-title="Başlangıç">
-        <div class="panel-media"><img src="/yon/assets/kendi-yolunda-hero.webp" alt="" width="1916" height="821" fetchpriority="high"></div>
-        <div class="panel-shade panel-shade--hero"></div>
-        <img class="hero-mark" src="/images/logo_icon_white.png" alt="">
-        <div class="panel-inner panel-inner--left">
-          <p class="eyebrow">Birlikte İyilik Akademi sunar</p>
-          <h1>Kendi<br><span>Yolunda</span></h1>
-          <p class="hero-lead">Ne istediğini tam bilmiyor olabilirsin.<br> Bu, geride olduğun anlamına gelmez.</p>
-          <div class="hero-proof">6 hafta <i></i> 6 uygulama <i></i> 1 kişisel yol haritası</div>
-        </div>
-      </section>
+      <div class="motion-loader" aria-hidden="true"><img src="/images/logo_icon_white.png" alt=""><span>Hikâye hazırlanıyor</span></div>
+      <div id="remotion-root" class="remotion-root" aria-label="Scroll ile ilerleyen Kendi Yolunda motion sunumu"></div>
 
-      <section class="story-panel panel-statement" data-title="İhtiyaç">
-        <div class="panel-inner panel-inner--wide">
-          <p class="eyebrow">Bazen mesele motivasyon değildir</p>
-          <div class="statement-list">
-            <p>Ne istediğimi <span>bilmiyorum.</span></p>
-            <p>Hedef koyuyorum ama <span>başlayamıyorum.</span></p>
-            <p>Kendimi anlatırken <span>geri çekiliyorum.</span></p>
-            <p>Zamanımın nereye gittiğini <span>göremiyorum.</span></p>
-          </div>
-          <p class="panel-note">Kendi Yolunda, büyük sözler yerine <strong>uygulanabilir bir sonraki adımı</strong> görünür kılar.</p>
-        </div>
-      </section>
+      <div class="story-footer" aria-hidden="true">
+        <span id="chapterTitle">Başlangıç</span>
+        <div><i id="chapterProgress"></i></div>
+        <b>Kaydır ↓</b>
+      </div>
 
-      <section class="story-panel panel-method" data-title="Yöntem">
-        <div class="method-grid">
-          <div class="method-side method-side--muted">
-            <p class="eyebrow">Bu bir</p><h2>Seminer<br>serisi değil.</h2>
-            <p>Tek yönlü konuşma · aşırı vaat · zorunlu özel paylaşım</p>
-          </div>
-          <div class="method-side method-side--active">
-            <p class="eyebrow">Bu bir</p><h2>Deneme<br>alanı.</h2>
-            <p>Uygulama · prova · geri bildirim · gerçek takip</p>
-          </div>
-        </div>
-      </section>
-
-      <section class="story-panel panel-week" data-title="Hafta 1">
-        <div class="route-visual" aria-hidden="true"><span style="--n:1">1</span><i></i><span>2</span><i></i><span>3</span><i></i><span>4</span><i></i><span>5</span><i></i><span>6</span></div>
-        <div class="panel-inner panel-inner--week"><div class="week-index">01</div><div><p class="eyebrow">Yönünü gör · I</p><h2>Kendimi tanımaya nereden başlarım?</h2><p>Güçlü yönlerini sıfatlarla değil, davranışsal kanıtlarla gör. Sana yön veren değerleri fark et.</p><b>Çıktı · Güçlü yön ve değer haritası</b></div></div>
-      </section>
-      <section class="story-panel panel-week" data-title="Hafta 2">
-        <div class="route-visual" aria-hidden="true"><span class="done">1</span><i></i><span style="--n:2">2</span><i></i><span>3</span><i></i><span>4</span><i></i><span>5</span><i></i><span>6</span></div>
-        <div class="panel-inner panel-inner--week"><div class="week-index">02</div><div><p class="eyebrow">Yönünü gör · II</p><h2>Hedefi eyleme çevirmek.</h2><p>Hedefini küçük, tarihli ve kontrol edilebilir adımlara böl. İlk 48 saati ve engel planını kur.</p><b>Çıktı · 90 günlük hedef ve engel planı</b></div></div>
-      </section>
-      <section class="story-panel panel-week" data-title="Hafta 3">
-        <div class="route-visual" aria-hidden="true"><span class="done">1</span><i></i><span class="done">2</span><i></i><span style="--n:3">3</span><i></i><span>4</span><i></i><span>5</span><i></i><span>6</span></div>
-        <div class="panel-inner panel-inner--week"><div class="week-index">03</div><div><p class="eyebrow">Kendini ifade et · I</p><h2>Dinlemek ve net konuşmak.</h2><p>Aktif dinleme, açık soru, ben dili ve saygılı sınır yöntemlerini güvenli senaryolarda prova et.</p><b>Çıktı · İletişim senaryosu uygulama notu</b></div></div>
-      </section>
-      <section class="story-panel panel-week" data-title="Hafta 4">
-        <div class="route-visual" aria-hidden="true"><span class="done">1</span><i></i><span class="done">2</span><i></i><span class="done">3</span><i></i><span style="--n:4">4</span><i></i><span>5</span><i></i><span>6</span></div>
-        <div class="panel-inner panel-inner--week"><div class="week-index">04</div><div><p class="eyebrow">Kendini ifade et · II</p><h2>Güvenli ortamda kendini ifade etmek.</h2><p>İki dakikalık konuşmanı yapılandır; küçük grupta dene; davranışına yönelik geri bildirim al.</p><b>Çıktı · Konuşma ve geri bildirim rubriği</b></div></div>
-      </section>
-      <section class="story-panel panel-week" data-title="Hafta 5">
-        <div class="route-visual" aria-hidden="true"><span class="done">1</span><i></i><span class="done">2</span><i></i><span class="done">3</span><i></i><span class="done">4</span><i></i><span style="--n:5">5</span><i></i><span>6</span></div>
-        <div class="panel-inner panel-inner--week"><div class="week-index">05</div><div><p class="eyebrow">Düzenini kur · I</p><h2>Zamanımı görmek.</h2><p>İdeal haftayı değil, gerçek haftanı incele. Örüntüyü gör ve tek bir davranış deneyi seç.</p><b>Çıktı · Zaman günlüğü ve davranış deneyi</b></div></div>
-      </section>
-      <section class="story-panel panel-week" data-title="Hafta 6">
-        <div class="route-visual" aria-hidden="true"><span class="done">1</span><i></i><span class="done">2</span><i></i><span class="done">3</span><i></i><span class="done">4</span><i></i><span class="done">5</span><i></i><span style="--n:6">6</span></div>
-        <div class="panel-inner panel-inner--week"><div class="week-index">06</div><div><p class="eyebrow">Düzenini kur · II</p><h2>Sorumluluk ve sonraki adım.</h2><p>Kontrol, etki ve destek alanlarını ayır. Önündeki 30 gün için gerçekçi bir sözleşme hazırla.</p><b>Çıktı · Eylem sözleşmesi ve destek haritası</b></div></div>
-      </section>
-
-      <section class="story-panel panel-session" data-title="90 dakika">
-        <div class="panel-media"><img src="/yon/assets/kendi-yolunda-workshop.webp" alt="" width="1672" height="941" loading="lazy"></div>
-        <div class="panel-shade panel-shade--dark"></div>
-        <div class="panel-inner panel-inner--wide session-inner">
-          <p class="eyebrow">Her hafta aynı ritim</p><h2>90 dakika.<br><span>En az yarısı uygulama.</span></h2>
-          <div class="session-flow"><div><b>10′</b><span>Karşılama</span></div><div><b>20′</b><span>Ana kavram</span></div><div><b>15′</b><span>Gösterim</span></div><div class="focus"><b>35′</b><span>Uygulama</span></div><div><b>10′</b><span>Yansıtma</span></div></div>
-        </div>
-      </section>
-
-      <section class="story-panel panel-outputs" data-title="Çıktılar">
-        <div class="panel-inner panel-inner--wide"><p class="eyebrow">Kişisel gelişim dosyası</p><h2 class="compact-title">Altı haftanın sonunda elinde ne kalır?</h2>
-          <div class="output-grid"><article><b>01</b><span>Güçlü yön & değer haritası</span></article><article><b>02</b><span>90 günlük hedef planı</span></article><article><b>03</b><span>İletişim uygulama notu</span></article><article><b>04</b><span>Konuşma geri bildirimi</span></article><article><b>05</b><span>Zaman günlüğü</span></article><article class="accent"><b>06</b><span>30 günlük eylem sözleşmesi</span></article></div>
-        </div>
-      </section>
-
-      <section class="story-panel panel-safety" data-title="Güven">
-        <div class="panel-inner panel-inner--wide"><p class="eyebrow">Güvenli katılım</p><h2 class="compact-title">Paylaşmak bir hak.<br>Paylaşmamak da.</h2>
-          <div class="safety-grid"><article><b>01</b><h3>Gönüllü paylaşım</h3><p>Katılımcı “geçmek istiyorum” diyebilir.</p></article><article><b>02</b><h3>Davranışa geri bildirim</h3><p>Kişiliğe değil, gözlenen davranışa.</p></article><article><b>03</b><h3>Ölçülü vaat</h3><p>Program terapi değildir.</p></article><article><b>04</b><h3>İhtiyaç kadar veri</h3><p>Fotoğraf izni ayrı ve gönüllüdür.</p></article></div>
-        </div>
-      </section>
-
-      <section class="story-panel panel-pilot" data-title="Pilot">
-        <div class="panel-inner panel-inner--wide"><p class="eyebrow">Pilot model</p><h2 class="compact-title">Küçük grup.<br>Ölçülebilir ilerleme.</h2>
-          <div class="metric-grid"><article><strong>24</strong><span>ideal kontenjan</span></article><article><strong>%80</strong><span>devam hedefi</span></article><article><strong>%80</strong><span>tamamlama hedefi</span></article><article><strong>%70</strong><span>30. günde eylem denemesi</span></article></div>
-          <div class="timeline"><span>Program biter</span><i></i><span>30. gün</span><i></i><span>90. gün</span></div><p class="panel-note">Bu eşikler sonuç garantisi değil; pilotu ölçmek ve iyileştirmek içindir.</p>
-        </div>
-      </section>
-
-      <section class="story-panel panel-decision" data-title="Sonraki adım">
-        <div class="panel-media"><img src="/yon/assets/kendi-yolunda-next-step.webp" alt="" width="1672" height="941" loading="lazy"></div>
-        <div class="panel-shade panel-shade--decision"></div>
-        <div class="panel-inner panel-inner--left decision-inner">
-          <img class="decision-wordmark" src="/yon/assets/birlikte-iyilik-akademi-wordmark-white.webp" alt="Birlikte İyilik Akademi" width="1400" height="238">
-          <p class="eyebrow">Proje kararı</p><h2>Kendi yolunu bulmak değil.<br><span>Bir sonraki adımı başlatmak.</span></h2>
-          <p>18–22 yaş için küçük kohort, sabit kolaylaştırıcı, güvenlik protokolü ve gerçek takip sistemiyle pilot uygulamaya hazır.</p>
-          <div class="decision-actions"><a class="button button--primary" href="/yon/assets/kendi-yolunda-proje-dosyasi.pdf" target="_blank" rel="noopener">Proje dosyasını incele ↗</a><a class="button button--ghost" href="mailto:bilgi@birlikteiyilik.com?subject=Kendi%20Yolunda%20Pilot%20Programı">Pilot için iletişime geç</a></div>
-        </div>
-      </section>
-
-      <div class="story-footer" aria-hidden="true"><span id="chapterTitle">Başlangıç</span><div><i id="chapterProgress"></i></div><b>Kaydır ↓</b></div>
+      <div class="story-cta">
+        <a class="button button--primary" href="/yon/assets/kendi-yolunda-proje-dosyasi.pdf" target="_blank" rel="noopener">Proje dosyasını incele ↗</a>
+        <a class="button button--ghost" href="mailto:bilgi@birlikteiyilik.com?subject=Kendi%20Yolunda%20Pilot%20Programı">Pilot için iletişime geç</a>
+      </div>
     </div>
   </main>
 
-  <footer class="footer"><a href="/"><img src="/images/logo_icon_white.png" alt="Birlikte İyilik Akademi" width="40" height="52"></a><p>© 2026 Birlikte İyilik Akademi</p><a href="#hikaye">Başa dön ↑</a></footer>
-  <script src="/yon/yon.js?v=3" defer></script>
+  <section class="story-summary" aria-label="Program özeti">
+    <p>6 hafta · haftada 90 dakika · 18–22 yaş · 20–24 kişilik pilot grup</p>
+    <h2>Kendini daha net gör, düşünceni ifade et ve bir sonraki adımını başlat.</h2>
+    <a href="/yon/assets/kendi-yolunda-proje-dosyasi.pdf" target="_blank" rel="noopener">Projenin tüm ayrıntılarını incele ↗</a>
+  </section>
+
+  <footer class="footer">
+    <a href="/" aria-label="Birlikte İyilik Akademi ana sayfa"><img src="/images/logo_icon_white.png" alt="" width="40" height="52"></a>
+    <p>© 2026 Birlikte İyilik Akademi</p>
+    <a href="#hikaye">Başa dön ↑</a>
+  </footer>
+
+  <script src="/yon/motion-player.js?v=4" defer></script>
 </body>
 </html>

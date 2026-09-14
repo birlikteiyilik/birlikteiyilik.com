@@ -1,0 +1,23 @@
+{
+  "name": "kendi-yolunda-motion",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "build": "node build.mjs",
+    "studio": "remotion studio src/index.tsx --no-open"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.506",
+    "@remotion/player": "4.0.506",
+    "@remotion/transitions": "4.0.506",
+    "react": "19.1.1",
+    "react-dom": "19.1.1",
+    "remotion": "4.0.506"
+  },
+  "devDependencies": {
+    "@types/react": "19.1.12",
+    "@types/react-dom": "19.1.9",
+    "esbuild": "0.25.9",
+    "typescript": "5.9.2"
+  }
+}
