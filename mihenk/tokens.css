@@ -1,0 +1,3 @@
+:root{--navy:#162534;--beige:#EBD7B7;--forest:#232F24;--paper:#F3ECE0;--olive:#9F9E81;--brick:#962B15;--honey:#CF954D;--muted:#535B57;--line:#16253433;--sans:'Manrope',Arial,sans-serif;--serif:'Libre Caslon Display',Georgia,serif;--ease:cubic-bezier(.16,1,.3,1)}
+/* Final user preference: a fixed, lightly beige page; no speaker color changes. */
+:root{--paper:#F0E6D7}
