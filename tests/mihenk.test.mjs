@@ -54,6 +54,17 @@ test('dynamic posters, downloads and opening film stay inside /mihenk', () => {
   }
 });
 
+test('high-school and university cohorts are distinct without invented ages or sessions', () => {
+  const groups = html.match(/<div class="participant-groups"[\s\S]*?<\/section>/)?.[0];
+  assert.ok(groups);
+  assert.match(groups, /<h3>Lise grubu<\/h3>/);
+  assert.match(groups, /<h3>Üniversite grubu<\/h3>/);
+  assert.match(groups, /iki ayrı katılımcı grubuyla/);
+  assert.match(html, /Lise ve üniversite gruplarının oturum planları ayrıca paylaşılacak/);
+  assert.match(html, /id="dialog-status"[^>]*>[^<]*iki ayrı katılımcı grubu/);
+  assert.doesNotMatch(groups, /\d+\s*[–-]\s*\d+\s*yaş/);
+});
+
 test('sitemap includes MİHENK now and after the site generator is run', () => {
   assert.match(readFileSync(resolve(root, 'sitemap.xml'), 'utf8'), /<loc>https:\/\/birlikteiyilik\.com\/mihenk<\/loc>/);
   assert.match(readFileSync(resolve(root, '_src/build.py'), 'utf8'), /STATIC_SCAN_DIRS = .*'mihenk'/);
