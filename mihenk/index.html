@@ -11,7 +11,9 @@
   <link rel="stylesheet" href="/mihenk/styles.css">
   <link rel="stylesheet" href="/mihenk/sections.css">
   <link rel="stylesheet" href="/mihenk/experience.css">
+  <link rel="stylesheet" href="/mihenk/calendar.css">
   <script src="/mihenk/app.js" defer></script>
+  <script src="/mihenk/calendar.js" defer></script>
 </head>
 <body>
 <dialog id="brand-intro" aria-label="MİHENK marka açılışı"><video id="brand-film" muted playsinline preload="none" aria-label="MİHENK wordmark açılış filmi"></video><button id="skip-intro" type="button">Açılışı geç <span aria-hidden="true">↗</span></button></dialog>
@@ -19,7 +21,7 @@
 <header class="site-header wrap">
   <a class="academy" href="#baslangic" aria-label="Mihenk ana sayfa">BİRLİKTE İYİLİK<br><span>AKADEMİ SUNAR</span></a>
   <nav aria-label="Ana menü"><a href="#hakkinda">Mihenk nedir?</a><a href="#program">Buluşmalar</a><a href="#sertifika">Katılım sertifikası</a></nav>
-  <a class="season-link" href="#program">İlk sezon <span>2026</span></a>
+  <a class="season-link" href="#takvim">Etkinlik takvimi <span>2026</span></a>
 </header>
 <main id="icerik">
 <section class="hero" id="baslangic" aria-label="Mihenk" data-theme="nuh">
@@ -45,6 +47,26 @@
   </div>
 </section>
 <section class="intro wrap" id="hakkinda"><p class="section-label">MİHENK NEDİR?</p><div class="intro-grid"><h2>Her sözden bir iz.<br>Her fikirden bir ölçü.</h2><div><p class="lead">MİHENK, gençlerin farklı meseleleri ehil isimlerle birlikte tarttığı bir fikir ve şahsiyet mektebi.</p><p>Güncel meselelerden edebiyata, tarihten hayat tecrübesine uzanan buluşmalarda yalnızca dinlemeye değil; soru sormaya, düşünmeye ve kendi ölçünü bulmaya davetlisin.</p></div></div></section>
+<section class="calendar" id="takvim" aria-labelledby="calendar-heading">
+  <div class="wrap">
+    <div class="calendar-heading"><div><h2 id="calendar-heading">Buluşma takvimi.</h2><p>Ayda iki buluşma. Bir sonraki soruya yer aç.</p></div><span class="calendar-season">İlk sezon / 2026</span></div>
+    <div class="calendar-toolbar"><div class="calendar-months" role="group" aria-label="Takvimde aya git"><button type="button" data-calendar-month="ekim" aria-controls="calendar-viewport">Ekim <span>02 buluşma</span></button><button type="button" data-calendar-month="kasim" aria-controls="calendar-viewport">Kasım <span>02 buluşma</span></button><button type="button" data-calendar-month="devam" aria-controls="calendar-viewport">Devamı <span>Yakında</span></button></div><div class="calendar-controls" role="group" aria-label="Takvim kontrolleri"><button type="button" id="calendar-prev" aria-label="Takvimde geri git" aria-controls="calendar-viewport">←</button><button type="button" id="calendar-toggle" aria-label="Takvimin otomatik kaymasını durdur" aria-pressed="false" aria-controls="calendar-viewport"><span aria-hidden="true">Ⅱ</span></button><button type="button" id="calendar-next" aria-label="Takvimde ileri git" aria-controls="calendar-viewport">→</button></div></div>
+    <div class="calendar-viewport" id="calendar-viewport" role="region" aria-label="Planlanan buluşmalar; ok tuşlarıyla gezinebilirsiniz" tabindex="0">
+      <div class="calendar-track">
+        <div class="calendar-month" id="calendar-ekim"><div class="calendar-month-title"><h3>Ekim</h3><span>2026</span></div><div class="calendar-events">
+          <article class="calendar-event"><div class="calendar-event-meta"><span>MİHENK #01</span><span>Planlanıyor</span></div><div class="calendar-event-body"><div><p class="calendar-field">Medya · Güncel meseleler</p><h4>Nuh<br>Albayrak</h4></div><img src="/mihenk/assets/nuh.webp" width="900" height="1125" loading="lazy" alt="Nuh Albayrak buluşma afişi"></div><p class="calendar-title">Gençlik, Medya ve Değişen Dünya</p><button type="button" data-event="nuh" aria-label="Nuh Albayrak buluşma ayrıntıları">Buluşmayı incele <span aria-hidden="true">↗</span></button></article>
+          <article class="calendar-event"><div class="calendar-event-meta"><span>MİHENK #02</span><span>Planlanıyor</span></div><div class="calendar-event-body"><div><p class="calendar-field">Edebiyat · İnsan</p><h4>Hayati<br>İnanç</h4></div><img src="/mihenk/assets/hayati.webp" width="900" height="1125" loading="lazy" alt="Hayati İnanç buluşma afişi"></div><p class="calendar-title">İnsan, Edebiyat ve Hayata Dair</p><button type="button" data-event="hayati" aria-label="Hayati İnanç buluşma ayrıntıları">Buluşmayı incele <span aria-hidden="true">↗</span></button></article>
+        </div></div>
+        <div class="calendar-month" id="calendar-kasim"><div class="calendar-month-title"><h3>Kasım</h3><span>2026</span></div><div class="calendar-events">
+          <article class="calendar-event"><div class="calendar-event-meta"><span>MİHENK #03</span><span>Planlanıyor</span></div><div class="calendar-event-body"><div><p class="calendar-field">Tarih · Medeniyet</p><h4>Ahmet<br>Şimşirgil</h4></div><img src="/mihenk/assets/ahmet.webp" width="900" height="1125" loading="lazy" alt="Ahmet Şimşirgil buluşma afişi"></div><p class="calendar-title">Tarihten Bugüne: Nereden Geldik, Nereye Gidiyoruz?</p><button type="button" data-event="ahmet" aria-label="Ahmet Şimşirgil buluşma ayrıntıları">Buluşmayı incele <span aria-hidden="true">↗</span></button></article>
+          <article class="calendar-event"><div class="calendar-event-meta"><span>MİHENK #04</span><span>Planlanıyor</span></div><div class="calendar-event-body"><div><p class="calendar-field">İlim · Kültür · Tecrübe</p><h4>Ramazan<br>Ayvallı</h4></div><img src="/mihenk/assets/ramazan.webp" width="900" height="1125" loading="lazy" alt="Ramazan Ayvallı buluşma afişi"></div><p class="calendar-title">İlim, Kültür ve Hayatın İçinden</p><button type="button" data-event="ramazan" aria-label="Ramazan Ayvallı buluşma ayrıntıları">Buluşmayı incele <span aria-hidden="true">↗</span></button></article>
+        </div></div>
+        <div class="calendar-future" id="calendar-devam"><p>Sonraki sayfa</p><h3>Yeni isimler.<br>Yeni sorular.</h3><span>Yeni konuşmacılar yakında.</span><a href="#yayinlar">Buluşmadan sonra <span aria-hidden="true">↗</span></a></div>
+      </div>
+    </div>
+    <div class="calendar-bottom"><p>Planlanan program · Kesin gün, saat ve mekân yakında duyurulacak.</p><span id="calendar-status">Kaydırarak keşfet</span></div>
+  </div>
+</section>
 <section class="programme" id="program"><div class="wrap"><div class="section-heading"><h2>İlk sezon.<br>Dört ayrı pencere.</h2><p>Planlanan program · Ekim–Kasım 2026<br>Kesin tarih ve mekân yakında duyurulacak.</p></div><div class="event-grid">
 <article class="event reveal" id="nuh">
   <div class="event-top"><span>MİHENK #01</span><span>Ekim 2026</span></div>

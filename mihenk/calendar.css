@@ -1,0 +1,51 @@
+/* Hallmark · component: event calendar · genre: editorial · theme: existing MİHENK
+ * Pre-emit critique: P4 H5 E4 S5 R4 V4. Existing Caslon/Manrope and palette retained.
+ * Motion: time-based horizontal rail + restrained hover. No new dependencies. */
+.calendar{padding-block:0 88px;--calendar-card:320px}
+.calendar-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:32px}
+.calendar-heading h2{font-size:clamp(40px,4.4vw,64px);overflow-wrap:anywhere;min-width:0}
+.calendar-heading p{color:var(--muted);margin-top:16px}
+.calendar-season{color:var(--forest);font-size:14px;white-space:nowrap}
+.calendar-toolbar{display:flex;align-items:center;justify-content:space-between;gap:20px;border-block:1px solid var(--line);padding-block:12px;margin-bottom:24px}
+.calendar-months,.calendar-controls{display:flex;align-items:center;gap:8px}
+.calendar button,.calendar-future a{color:var(--navy);background:none;border:0;cursor:pointer;min-height:44px;white-space:nowrap}
+.calendar-months button{font-size:16px;padding:8px 16px;text-align:left;border-bottom:2px solid transparent}
+.calendar-months button span{display:block;font-size:11px;color:var(--muted)}
+.calendar-months button[aria-current=true]{border-color:var(--forest)}
+.calendar-controls button{width:44px;border:1px solid var(--line);font-size:23px;display:grid;place-items:center}
+.calendar-controls #calendar-toggle{font-size:16px}
+.calendar button:focus-visible,.calendar-future a:focus-visible,.calendar-viewport:focus-visible{outline:3px solid var(--brick);outline-offset:3px}
+.calendar button:active{transform:translateY(1px)}
+.calendar button:disabled{opacity:.4;cursor:not-allowed}
+.calendar-viewport{overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;scrollbar-color:var(--olive) var(--paper);overscroll-behavior-x:contain;padding:4px 4px 16px;margin-inline:-4px}
+.calendar-track{display:flex;width:max-content;gap:40px}
+.calendar-month{flex:none}
+.calendar-month-title{display:flex;align-items:baseline;gap:16px;padding:0 0 20px;border-bottom:1px solid var(--line)}
+.calendar-month-title h3{font:400 64px/1 var(--serif);letter-spacing:-.04em}
+.calendar-month-title>span{font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.calendar-events{display:flex;gap:0;padding-top:20px}
+.calendar-event{width:var(--calendar-card);padding:20px 24px 8px;position:relative;isolation:isolate;border-right:1px solid var(--line)}
+.calendar-event:first-child{border-left:1px solid var(--line)}
+.calendar-event:before{content:'';position:absolute;inset:0;background:var(--beige);z-index:-1;opacity:0;transition:opacity 250ms var(--ease)}
+.calendar-event:focus-within:before{opacity:1}
+.calendar-event-meta{display:flex;justify-content:space-between;gap:12px;font-size:11px;font-weight:600;letter-spacing:.04em}
+.calendar-event-meta>span:last-child{font-weight:400;color:var(--muted)}
+.calendar-event-body{display:grid;grid-template-columns:minmax(0,1fr) 76px;align-items:end;gap:12px;margin-block:24px 20px}
+.calendar-field{font-size:11px;color:var(--muted);margin-bottom:10px}
+.calendar-event h4{margin:0;font:400 38px/1.02 var(--serif);letter-spacing:-.025em;overflow-wrap:anywhere}
+.calendar-event img{width:76px;height:95px;object-fit:contain}
+.calendar-title{font-size:14px;line-height:1.6;min-height:68px;max-width:29ch}
+.calendar-event button{display:flex;align-items:center;justify-content:space-between;width:100%;font-size:13px;padding:12px 0;border-top:1px solid var(--line);margin-top:20px}
+.calendar-event button span{font-size:22px}
+.calendar-future{width:280px;flex:none;display:flex;flex-direction:column;justify-content:center;border-block:1px solid var(--line);padding:24px 16px}
+.calendar-future>p{font-size:14px;color:var(--muted);margin-bottom:24px}
+.calendar-future h3{font:400 46px/1.05 var(--serif);letter-spacing:-.025em}
+.calendar-future>span{font-size:14px;color:var(--muted);margin-top:24px}
+.calendar-future a{display:flex;align-items:center;justify-content:space-between;font-size:13px;margin-top:32px;border-bottom:1px solid var(--line)}
+.calendar-bottom{display:flex;justify-content:space-between;gap:24px;padding-top:16px;font-size:12px;color:var(--muted)}
+#calendar-status{white-space:nowrap}
+@media(hover:hover){.calendar-event:hover:before{opacity:1}.calendar-controls button:hover{background:var(--forest);color:var(--paper)}.calendar-months button:hover{border-color:var(--olive)}}
+@media(max-width:700px){.calendar{padding-bottom:64px;--calendar-card:280px}.calendar-heading{display:block}.calendar-heading p{font-size:14px}.calendar-season{display:block;margin-top:16px;font-size:12px}.calendar-toolbar{flex-wrap:wrap;gap:12px}.calendar-months{width:100%;justify-content:space-between;gap:4px}.calendar-months button{padding-inline:8px;font-size:15px}.calendar-controls{margin-left:auto}.calendar-track{gap:24px}.calendar-month-title h3{font-size:52px}.calendar-event{padding-inline:16px}.calendar-event h4{font-size:34px}.calendar-bottom{display:block}.calendar-bottom>span{display:block;margin-top:8px}.season-link{white-space:nowrap}.site-header{flex-wrap:wrap}}
+@media(max-width:360px){.calendar{--calendar-card:264px}.calendar-event-body{grid-template-columns:minmax(0,1fr) 64px}.calendar-event img{width:64px;height:80px}}
+@media(prefers-reduced-motion:reduce){.calendar *{transition:none!important}}
+@media print{.calendar{display:none}}

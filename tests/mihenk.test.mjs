@@ -19,13 +19,25 @@ test('MİHENK uses canonical /mihenk and subpath-safe resources', () => {
 });
 
 test('styles resolve their own local images, fonts and imports', () => {
-  for (const filename of ['styles.css', 'sections.css', 'experience.css', 'tokens.css']) {
+  for (const filename of ['styles.css', 'sections.css', 'experience.css', 'tokens.css', 'calendar.css']) {
     const file = resolve(root, 'mihenk', filename);
     const css = readFileSync(file, 'utf8');
     for (const [, value] of css.matchAll(/url\(['"]?([^'"\)]+)['"]?\)/g)) {
       if (/^(data:|https?:|#)/.test(value)) continue;
       assert.ok(existsSync(resolve(dirname(file), value)), `${filename}: ${value}`);
     }
+  }
+});
+
+test('calendar includes all planned events, honest date status and accessible controls', () => {
+  const calendar = html.match(/<section class="calendar"[\s\S]*?<\/section>/)?.[0];
+  assert.ok(calendar);
+  for (const id of ['nuh', 'hayati', 'ahmet', 'ramazan']) assert.match(calendar, new RegExp(`data-event="${id}"`));
+  assert.match(calendar, /Kesin gün, saat ve mekân yakında duyurulacak/);
+  assert.match(calendar, /Yeni konuşmacılar yakında/);
+  assert.doesNotMatch(calendar, /datetime="2026-\d\d-\d\d"/);
+  for (const id of ['calendar-prev', 'calendar-toggle', 'calendar-next']) {
+    assert.match(calendar, new RegExp(`id="${id}" aria-label="[^"]+"`));
   }
 });
 
