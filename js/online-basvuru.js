@@ -102,7 +102,7 @@
   }
 
   function updateStep(next) {
-    activeStep = next;
+    activeStep = Math.max(0, Math.min(steps.length - 1, next));
     steps.forEach((step, index) => {
       step.hidden = index !== activeStep;
       step.classList.toggle('is-active', index === activeStep);
@@ -158,7 +158,14 @@
     };
   }
 
-  nextButton.addEventListener('click', () => { if (validateStep(activeStep)) updateStep(activeStep + 1); });
+  nextButton.addEventListener('click', () => {
+    if (!validateStep(activeStep)) return;
+    if (activeStep >= steps.length - 1) {
+      form.requestSubmit();
+      return;
+    }
+    updateStep(activeStep + 1);
+  });
   backButton.addEventListener('click', () => updateStep(activeStep - 1));
   form.addEventListener('input', (event) => setError(event.target, ''));
 
