@@ -204,6 +204,8 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .app-row-actions .btn { font-size: .67rem; padding: 6px 9px; white-space: nowrap; }
 .app-copy { background: #e9f7f0; border: 0; color: #116a44; }
 .app-copy:hover { background: #d7f0e4; }
+.app-copy-teacher { background: #eef3ff; border: 0; color: #244b91; }
+.app-copy-teacher:hover { background: #dfe8ff; }
 .program-state { border-radius: 999px; display: inline-flex; font-size: .64rem; font-weight: 800; padding: 4px 7px; white-space: nowrap; }
 .program-state.is-ready { background: #e8f7f1; color: #14683f; }
 .program-state.is-empty { background: #f2f4f7; color: #697386; }
