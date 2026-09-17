@@ -61,6 +61,11 @@
     if (d.length !== 11) return value || '';
     return `${d.slice(0, 4)} ${d.slice(4, 7)} ${d.slice(7, 9)} ${d.slice(9)}`;
   }
+  function formatNumericDate(value) {
+    const parts = String(value || '').split('-');
+    if (parts.length !== 3) return value || 'Belirtilmedi';
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  }
   function placementOf(applicationId) {
     return placements.find((item) => item.applicationId === applicationId);
   }
@@ -209,7 +214,9 @@
     body.innerHTML = filtered.map((item, index) => {
       const placement = placementOf(item.id);
       const messageButton = item.status === 'kayit-tamamlandi' && placement
-        ? `<button type="button" class="btn app-copy" data-copy-id="${escapeHtml(item.id)}" aria-label="Bilgilendirme mesajını kopyala">Mesajı kopyala</button>` : '';
+        ? `<button type="button" class="btn app-copy" data-copy-id="${escapeHtml(item.id)}" aria-label="Veli bilgilendirme mesajını kopyala">Veli mesajı</button>` : '';
+      const teacherMessageButton = item.applicationType === 'online'
+        ? `<button type="button" class="btn app-copy-teacher" data-teacher-copy-id="${escapeHtml(item.id)}" aria-label="${escapeHtml(item.studentName)} için hocaya gönderilecek mesajı kopyala">Hocaya mesaj</button>` : '';
       return `<tr data-id="${escapeHtml(item.id)}" tabindex="0" style="--row-index:${index}" aria-label="${escapeHtml(item.studentName)} başvurusunu aç">
         <td>${escapeHtml(formatDate(item.createdAt, false))}</td>
         <td><span class="app-student">${escapeHtml(item.studentName)}</span><span class="app-ref">${escapeHtml(item.reference)}</span></td>
@@ -219,7 +226,7 @@
         <td>${escapeHtml(labels.level[item.quranLevel] || item.quranLevel)}</td>
         <td>${compactProgram(item, placement)}</td>
         <td><span class="app-status app-status-${escapeHtml(item.status)}">${escapeHtml(labels.status[item.status] || item.status)}</span></td>
-        <td><div class="app-row-actions"><button type="button" class="btn btn-gray app-open" data-open-id="${escapeHtml(item.id)}">İncele</button>${messageButton}</div></td>
+        <td><div class="app-row-actions"><button type="button" class="btn btn-gray app-open" data-open-id="${escapeHtml(item.id)}">İncele</button>${teacherMessageButton}${messageButton}</div></td>
       </tr>`;
     }).join('');
   }
@@ -779,6 +786,45 @@
       }
       toast(`${item.studentName} için mesaj panoya kopyalandı.`);
     } catch (_) { toast('Mesaj kopyalanamadı.', 'error'); }
+  }
+
+  function teacherMessageFor(item, placement) {
+    const assignedTeacherNames = [...new Set((placement?.schedule || [])
+      .map((entry) => entry.teacherName || teacherOf(entry.teacherId)?.name)
+      .filter(Boolean))];
+    const teacherFirstName = assignedTeacherNames.length === 1
+      ? assignedTeacherNames[0].trim().split(/\s+/)[0]
+      : '';
+    const greeting = teacherFirstName ? `${teacherFirstName} Hocam Merhabalar,` : 'Hocam Merhabalar,';
+    const levelText = {
+      'hic-bilmiyor': 'Kur’an-ı Kerim okumayı bilmiyor',
+      'elif-ba': 'Elif-Ba okuyor',
+      okuyabiliyor: 'Kur’an-ı Kerim okuyor',
+      'gelistirmek-istiyor': 'Kur’an-ı Kerim okuyor fakat ilerletmek istiyor',
+      tecvid: 'Tecvid öğrenmek istiyor'
+    }[item.quranLevel] || labels.level[item.quranLevel] || item.quranLevel || 'Belirtilmedi';
+    const motherName = item.motherName || item.guardianName || 'Belirtilmedi';
+    const motherPhone = formatPhone(item.motherPhone || item.guardianPhone) || 'Belirtilmedi';
+    const fatherName = item.fatherName || item.secondGuardianName || 'Belirtilmedi';
+    const fatherPhone = formatPhone(item.fatherPhone || item.secondGuardianPhone) || 'Belirtilmedi';
+    const location = item.location || item.address || 'Belirtilmedi';
+
+    return `${greeting}\n\nAşağıdaki bilgileri bulunan öğrencimiz Online Kur’an-ı Kerim ve Güzel Ahlak eğitimi almak istemektedir. Telefon numaranız, onayınızın ardından öğrencimizin velisiyle paylaşılacaktır. Onayınızı rica ederiz.\n\nÖğrenci: ${item.studentName || 'Belirtilmedi'}\nDoğum Tarihi: ${formatNumericDate(item.birthDate)}\nSeviyesi: ${levelText}\nSınıfı: ${item.grade ? `${item.grade}. Sınıf` : 'Belirtilmedi'}\nBaba Bilgisi: ${fatherName} ${fatherPhone}\nAnne Bilgisi: ${motherName} ${motherPhone}\nİkamet: ${location}\n\nTeşekkür eder, hayırlı günler dileriz.\nBİRLİKTE İYİLİK AKADEMİ\nwww.birlikteiyilik.com\n0534 811 77 57`;
+  }
+
+  async function copyTeacherMessage(id) {
+    const item = applications.find((record) => record.id === id);
+    if (!item || item.applicationType !== 'online') return toast('Online başvuru bulunamadı.', 'error');
+    const message = teacherMessageFor(item, placementOf(id));
+    try {
+      if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(message);
+      else {
+        const area = document.createElement('textarea');
+        area.value = message; area.style.position = 'fixed'; area.style.opacity = '0';
+        document.body.appendChild(area); area.select(); document.execCommand('copy'); area.remove();
+      }
+      toast(`${item.studentName} için hocaya gönderilecek mesaj kopyalandı.`);
+    } catch (_) { toast('Hocaya gönderilecek mesaj kopyalanamadı.', 'error'); }
   }
 
   function exportRows() {
@@ -1352,6 +1398,8 @@
       }
     });
     el('appsTableBody').addEventListener('click', (event) => {
+      const teacherCopy = event.target.closest('[data-teacher-copy-id]');
+      if (teacherCopy) { event.stopPropagation(); copyTeacherMessage(teacherCopy.dataset.teacherCopyId); return; }
       const copy = event.target.closest('[data-copy-id]');
       if (copy) { event.stopPropagation(); copyMessage(copy.dataset.copyId); return; }
       const open = event.target.closest('[data-open-id]');
