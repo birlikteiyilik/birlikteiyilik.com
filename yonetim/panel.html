@@ -8,7 +8,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="/images/favicon-square.png">
 <link rel="apple-touch-icon" href="/images/favicon-square.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
-<link rel="stylesheet" href="/css/admin-applications.css?v=8">
+<link rel="stylesheet" href="/css/admin-applications.css?v=9">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; color: #222; min-height: 100vh; }
@@ -511,12 +511,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
           <select id="programSlot"><option value="">Tüm saatler</option></select>
         </label>
       </div>
-      <div class="program-auto-bar">
-        <div class="program-auto-copy"><span class="program-auto-icon" aria-hidden="true">✦</span><div><strong>Düzenli otomatik atama</strong><small>Kız öğrenciye kadın, erkek öğrenciye erkek öğretmen atar; önce tek öğretmen ve aynı saati, sonra en az bölünmüş programı seçer.</small></div></div>
-        <label>Başlangıç günü <input type="date" id="programAutoStartDate"></label>
-        <button type="button" class="btn btn-red" id="programAutoAssign">Planlanmayanları ata</button>
-      </div>
-      <div class="program-auto-feedback" id="programAutoFeedback" role="status"></div>
     </section>
 
     <section class="program-board" id="programBoard" aria-live="polite"></section>
@@ -587,16 +581,16 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
     <div id="appsModalDetails"></div>
     <section class="apps-detail-section assignment-section" id="appsAssignmentSection">
       <div class="assignment-title"><div><span class="apps-eyebrow">Haftalık yerleştirme</span><h3>Öğretmen ve saat planı</h3></div><span class="assignment-state" id="appsAssignmentState">Planlanmadı</span></div>
-      <div class="availability-summary"><strong>Başvuru formunda öğrencinin seçtiği müsait saatler</strong><div id="appsAvailability" class="availability-chips"></div></div>
+      <div class="availability-summary"><strong>Öğrencinin başvuruda belirttiği saat tercihleri</strong><div id="appsAvailability" class="availability-chips"></div><small>Bu tercihler planlama için bilgi amaçlıdır; uygun olan farklı bir saati de atayabilirsiniz.</small></div>
       <div class="assignment-controls">
         <label>Başlangıç günü <input type="date" id="appsStartDate"></label>
-        <p>Öğrenci haftanın beş günü ders alır. Her gün için uygun öğretmen ve saat seçin.</p>
+        <p>İhtiyaç duyulan günlere öğretmen ve saat atayın. Bir ile beş gün arasında seçim yapabilirsiniz; boş günler programa eklenmez.</p>
       </div>
       <div class="schedule-table" id="appsScheduleRows"></div>
       <div class="assignment-feedback" id="appsAssignmentFeedback" role="status"></div>
       <div class="assignment-actions">
         <button type="button" class="btn btn-gray" id="appsRemoveAssignment" hidden>Programı kaldır</button>
-        <div><button type="button" class="btn btn-gray" id="appsAutoAssignment">✦ Otomatik planla</button> <button type="button" class="btn btn-red" id="appsSaveAssignment">Ders planını kaydet</button></div>
+        <button type="button" class="btn btn-red" id="appsSaveAssignment">Ders planını kaydet</button>
       </div>
     </section>
     <section class="apps-detail-section">
@@ -620,7 +614,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 <dialog id="teacherDialog" class="apps-dialog teacher-dialog" aria-labelledby="teacherDialogTitle">
   <form id="teacherForm" novalidate>
     <div class="apps-modal-head">
-      <div><span class="apps-eyebrow">Öğretmen kaydı</span><h2 id="teacherDialogTitle">Yeni öğretmen</h2><p>Uygunluk bilgileri ders planında otomatik kullanılır.</p></div>
+      <div><span class="apps-eyebrow">Öğretmen kaydı</span><h2 id="teacherDialogTitle">Yeni öğretmen</h2><p>Öğretmenin uygunluk bilgileri atama sırasında kontrol edilir.</p></div>
       <button type="button" class="apps-close" id="teacherClose" aria-label="Pencereyi kapat">×</button>
     </div>
     <div class="apps-modal-body teacher-form-body">
@@ -1423,6 +1417,6 @@ function logout() {
 loadNews();
 </script>
 <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="/js/admin-applications.js?v=9"></script>
+<script src="/js/admin-applications.js?v=10"></script>
 </body>
 </html>

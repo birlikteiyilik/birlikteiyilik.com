@@ -92,17 +92,6 @@
     });
     return { start, end };
   }
-  function slotsForApplication(item) {
-    if (item.applicationType !== 'online') {
-      return Array.isArray(item.availabilitySlots) && item.availabilitySlots.length ? item.availabilitySlots : meta.timeSlots;
-    }
-    const ranges = Array.isArray(item.availabilityRanges) ? item.availabilityRanges.map(rangeMinutes) : [];
-    const slots = slotsForType('online').filter((slot) => {
-      const candidate = rangeMinutes(slot);
-      return !ranges.length || ranges.some((range) => candidate.start >= range.start && candidate.end <= range.end);
-    });
-    return slots.length ? slots : slotsForType('online');
-  }
   function toast(message, tone) {
     const node = el('appsToast');
     node.textContent = message;
@@ -200,7 +189,8 @@
   function compactProgram(item, placement) {
     if (!placement) return '<span class="program-state is-empty">Atama bekliyor</span>';
     const names = [...new Set((placement.schedule || []).map((entry) => entry.teacherName || teacherOf(entry.teacherId)?.name).filter(Boolean))];
-    return `<span class="program-state is-ready">5 gün planlandı</span><span class="program-names">${escapeHtml(names.join(', '))}</span>`;
+    const dayCount = (placement.schedule || []).length;
+    return `<span class="program-state is-ready">${dayCount} gün planlandı</span><span class="program-names">${escapeHtml(names.join(', '))}</span>`;
   }
 
   function renderTable() {
@@ -214,7 +204,7 @@
     body.innerHTML = filtered.map((item, index) => {
       const placement = placementOf(item.id);
       const messageButton = item.status === 'kayit-tamamlandi' && placement
-        ? `<button type="button" class="btn app-copy" data-copy-id="${escapeHtml(item.id)}" aria-label="Veli bilgilendirme mesajını kopyala">Veli mesajı</button>` : '';
+        ? `<button type="button" class="btn app-copy" data-copy-id="${escapeHtml(item.id)}" aria-label="${item.applicationType === 'online' ? 'Online ders için veli bilgilendirme mesajını' : 'Veli bilgilendirme mesajını'} kopyala">${item.applicationType === 'online' ? 'Online veli mesajı' : 'Veli mesajı'}</button>` : '';
       const teacherMessageButton = item.applicationType === 'online'
         ? `<button type="button" class="btn app-copy-teacher" data-teacher-copy-id="${escapeHtml(item.id)}" aria-label="${escapeHtml(item.studentName)} için hocaya gönderilecek mesajı kopyala">Hocaya mesaj</button>` : '';
       return `<tr data-id="${escapeHtml(item.id)}" tabindex="0" style="--row-index:${index}" aria-label="${escapeHtml(item.studentName)} başvurusunu aç">
@@ -570,12 +560,12 @@
   }
 
   function renderScheduleRows(item) {
-    const availability = slotsForApplication(item);
+    const availableSlots = slotsForType(item.applicationType);
     el('appsScheduleRows').innerHTML = meta.weekdays.map((day, index) => {
       const draft = draftSchedule[day] || { teacherId: '', slot: '' };
       const eligible = eligibleTeachers(item, day, draft.teacherId);
       const teacherOptions = eligible.map((teacher) => `<option value="${escapeHtml(teacher.id)}" ${teacher.id === draft.teacherId ? 'selected' : ''}>${escapeHtml(teacher.name)}${teacher.active ? '' : ' · Pasif'}</option>`).join('');
-      const slotOptions = availability.map((slot) => {
+      const slotOptions = availableSlots.map((slot) => {
         const conflict = occupiedBy(item.id, draft.teacherId, day, slot);
         const suffix = conflict ? ` · Dolu: ${conflict.studentName || conflict.applicationReference}` : '';
         return `<option value="${escapeHtml(slot)}" ${slot === draft.slot ? 'selected' : ''} ${conflict ? 'disabled' : ''}>${escapeHtml(slot + suffix)}</option>`;
@@ -595,9 +585,13 @@
   function updateAssignmentFeedback(item) {
     const completeCount = meta.weekdays.filter((day) => draftSchedule[day]?.teacherId && draftSchedule[day]?.slot &&
       !occupiedBy(item.id, draftSchedule[day].teacherId, day, draftSchedule[day].slot)).length;
+    const partialDays = meta.weekdays.filter((day) => Boolean(draftSchedule[day]?.teacherId) !== Boolean(draftSchedule[day]?.slot));
     const feedback = el('appsAssignmentFeedback');
-    feedback.className = `assignment-feedback ${completeCount === 5 ? 'is-ready' : ''}`;
-    feedback.innerHTML = `<span class="assignment-meter"><i style="--progress:${completeCount * 20}%"></i></span><strong>${completeCount}/5 gün hazır</strong><span>${completeCount === 5 ? 'Program kaydedilmeye hazır.' : 'Eksik günlerde öğretmen ve saat seçin.'}</span>`;
+    const ready = completeCount > 0 && partialDays.length === 0;
+    feedback.className = `assignment-feedback ${ready ? 'is-ready' : partialDays.length ? 'is-error' : ''}`;
+    const hint = partialDays.length ? 'Seçtiğiniz her gün için hem öğretmen hem saat belirleyin.' :
+      completeCount ? 'Program kaydedilmeye hazır.' : 'Bir veya daha fazla ders günü seçin.';
+    feedback.innerHTML = `<span class="assignment-meter"><i style="--progress:${completeCount * 20}%"></i></span><strong>${completeCount} gün seçildi</strong><span>${hint}</span>`;
   }
 
   function openDetail(id) {
@@ -678,6 +672,11 @@
   async function saveAssignment() {
     const item = applications.find((record) => record.id === selectedId);
     if (!item) return;
+    const partialDays = meta.weekdays.filter((day) => Boolean(draftSchedule[day]?.teacherId) !== Boolean(draftSchedule[day]?.slot));
+    const schedule = meta.weekdays.filter((day) => draftSchedule[day]?.teacherId && draftSchedule[day]?.slot)
+      .map((day) => ({ day, ...draftSchedule[day] }));
+    if (partialDays.length) return toast('Seçtiğiniz her gün için hem öğretmen hem saat belirleyin.', 'error');
+    if (!schedule.length) return toast('En az bir ders günü ve saati seçin.', 'error');
     const button = el('appsSaveAssignment');
     button.disabled = true; button.textContent = 'Plan kontrol ediliyor...';
     el('appsAssignmentFeedback').classList.add('is-saving');
@@ -685,7 +684,7 @@
       const result = await api('POST', {
         action: 'placement-save', applicationId: item.id, applicationCreatedAt: item.createdAt,
         startDate: el('appsStartDate').value,
-        schedule: meta.weekdays.map((day) => ({ day, ...draftSchedule[day] }))
+        schedule
       });
       const index = placements.findIndex((placement) => placement.applicationId === item.id);
       if (index >= 0) placements[index] = result.data; else placements.push(result.data);
@@ -693,7 +692,7 @@
       el('appsAssignmentState').className = 'assignment-state is-ready';
       el('appsRemoveAssignment').hidden = false;
       renderStats(); renderTable(); renderTeacherGrid(); renderProgramFilters(); renderProgram(); renderScheduleRows(item);
-      toast('Beş günlük ders planı güvenle kaydedildi.');
+      toast(`${schedule.length} günlük ders planı güvenle kaydedildi.`);
     } catch (error) {
       toast(error.message, 'error');
       el('appsAssignmentFeedback').className = 'assignment-feedback is-error';
@@ -706,7 +705,7 @@
   async function removeAssignment() {
     const item = applications.find((record) => record.id === selectedId);
     if (!item) return;
-    const accepted = await confirmModal('Bu öğrencinin beş günlük ders planı kaldırılacak. Başvuru kaydı korunur.', 'Ders planını kaldır', 'Programı kaldır');
+    const accepted = await confirmModal('Bu öğrencinin ders planı kaldırılacak. Başvuru kaydı korunur.', 'Ders planını kaldır', 'Programı kaldır');
     if (!accepted) return;
     try {
       await api('POST', { action: 'placement-remove', applicationId: item.id });
@@ -747,6 +746,19 @@
 
   function messageFor(item, placement) {
     const schedule = placement.schedule || [];
+    if (item.applicationType === 'online') {
+      const assignedTeachers = [...new Map(schedule.map((entry) => {
+        const teacher = teacherOf(entry.teacherId);
+        return [entry.teacherId || entry.teacherName, {
+          name: entry.teacherName || teacher?.name || 'Öğretmen bilgisi eksik',
+          phone: teacher?.phone || ''
+        }];
+      })).values()];
+      const teacherText = assignedTeachers.map((teacher) => `${teacher.name} ${formatTeacherPhone(teacher.phone)}`).join('\n');
+      const teacherCount = assignedTeachers.length;
+      const teacherLabel = teacherCount > 1 ? 'Gönüllü Online Kuran-ı Kerim ve Güzel Ahlak Eğitmen bilgileri' : 'Gönüllü Online Kuran-ı Kerim ve Güzel Ahlak Eğitmen bilgisi';
+      return `Merhaba Efendim,\nÖğrenciniz ${item.studentName} için atanan ${teacherLabel} aşağıdaki gibidir.\nMüsait zamanınızda kendisi ile telefonla iletişim kurarak tanışma dersini planlayabilirsiniz.\n${teacherText || 'Öğretmen bilgisi belirtilmedi.'}\nİlginiz için teşekkür eder, Hayırlı Günler dileriz.\nBİRLİKTE İYİLİK AKADEMİ\nwww.birlikteiyilik.com`;
+    }
     const groups = [];
     schedule.forEach((entry) => {
       const key = `${entry.teacherId}|${entry.slot}`;
@@ -759,7 +771,7 @@
     });
     const place = item.applicationType === 'online' ? 'online olarak' : "BİRLİKTE İYİLİK AKADEMİ'de";
     let programText = '';
-    if (groups.length === 1 && schedule.length === 5) {
+    if (groups.length === 1) {
       const group = groups[0];
       programText = `${group.days.join(', ')} günleri ${group.slot.replace(':', '.').replace('-', ' - ').replace(':', '.')} saatleri arasında ${place} gerçekleşecektir.\n\nHoca Adı: ${group.teacher.toLocaleUpperCase('tr-TR')}`;
     } else {
@@ -770,6 +782,13 @@
       ? new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'long', weekday: 'long' }).format(start).toLocaleUpperCase('tr-TR')
       : placement.startDate;
     return `🌸 BİRLİKTE İYİLİK AKADEMİ BİLGİLENDİRME 🌸\n\nDeğerli Velimiz,\n\n${item.studentName}'ın Kur'an-ı Kerim ve Güzel Ahlak Kursu'ndaki programı ${programText}\n\nKursumuza ${startText} günü itibariyle başlayabilir.\n\nEğitimlerimizin verimli geçebilmesi için öğrencimizin ders saatlerine riayet etmesi, ders saatinden 5 dakika önce sınıfında bulunması konusunda sizlerin de hassasiyet göstermenizi rica ederiz.\n\nTeşekkür eder, hayırlı günler dileriz. 😊\n\nBİRLİKTE İYİLİK AKADEMİ`;
+  }
+
+  function formatTeacherPhone(value) {
+    let digits = String(value || '').replace(/\D/g, '').replace(/^90/, '');
+    if (digits.length === 11 && digits.startsWith('0')) digits = digits.slice(1);
+    if (digits.length === 10) return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+    return value || 'Telefon belirtilmedi';
   }
 
   async function copyMessage(id) {
@@ -946,114 +965,22 @@
     renderTable();
   }
 
-  function nextMondayValue() {
-    const date = new Date();
-    date.setDate(date.getDate() + (((8 - date.getDay()) % 7) || 7));
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  }
-
-  function mergePlacements(records) {
-    (records || []).forEach((record) => {
-      const index = placements.findIndex((placement) => placement.applicationId === record.applicationId);
-      if (index >= 0) placements[index] = record; else placements.push(record);
-    });
-  }
-
-  function showAutoFeedback(created, skipped) {
-    const feedback = el('programAutoFeedback');
-    if (!skipped.length) {
-      feedback.className = 'program-auto-feedback is-success';
-      feedback.innerHTML = `<strong>✓ ${created} öğrenci düzenli programa atandı.</strong><span>Çakışma oluşmadı; cinsiyet, gün ve müsait saat kuralları doğrulandı.</span>`;
-      return;
-    }
-    feedback.className = `program-auto-feedback ${created ? 'is-warning' : 'is-error'}`;
-    feedback.innerHTML = `<strong>${created} öğrenci atandı, ${skipped.length} başvuru yedek listeye alındı.</strong><span>${skipped.slice(0, 3).map((item) => `${escapeHtml(item.studentName)}: ${escapeHtml(item.reason)}`).join(' · ')}</span>`;
-  }
-
-  async function autoAssignAll() {
-    const startDate = el('programAutoStartDate').value;
-    if (!startDate) return toast('Otomatik atama için başlangıç günü seçin.', 'error');
-    const unplanned = scopedApplications().filter((item) =>
-      ['yeni', 'inceleniyor', 'uygun'].includes(item.status) && !placementOf(item.id));
-    if (!unplanned.length) return toast('Planlanmayı bekleyen uygun başvuru yok.', 'error');
-    const accepted = await confirmModal(
-      `${unplanned.length} başvuru; cinsiyet, müsait saat ve öğretmen doluluğu kontrol edilerek otomatik planlanacak.`,
-      'Düzenli otomatik atama', 'Atamayı başlat'
-    );
-    if (!accepted) return;
-    const button = el('programAutoAssign');
-    button.disabled = true; button.textContent = 'Programlar hesaplanıyor...';
-    try {
-      const result = await api('POST', {
-        action: 'auto-plan', startDate, applicationType: activeApplicationType,
-        applicationIds: unplanned.map((item) => item.id)
-      });
-      mergePlacements(result.data);
-      renderStats(); renderTable(); renderTeacherGrid(); renderProgramFilters(); renderProgram();
-      showAutoFeedback((result.data || []).length, result.skipped || []);
-      toast(`${(result.data || []).length} öğrenci otomatik programa alındı.`);
-    } catch (error) { toast(error.message, 'error'); }
-    finally { button.disabled = false; button.textContent = 'Planlanmayanları ata'; }
-  }
-
-  async function autoPlanSelected() {
-    const item = applications.find((record) => record.id === selectedId);
-    if (!item) return;
-    const startDate = el('appsStartDate').value;
-    if (!startDate) return toast('Önce başlangıç gününü seçin.', 'error');
-    const existing = placementOf(item.id);
-    if (existing) {
-      const accepted = await confirmModal(
-        'Mevcut beş günlük program, en düzenli yeni atamayla değiştirilecek.',
-        'Programı yeniden hesapla', 'Yeniden planla'
-      );
-      if (!accepted) return;
-    }
-    const button = el('appsAutoAssignment');
-    button.disabled = true; button.textContent = 'Hesaplanıyor...';
-    try {
-      const result = await api('POST', {
-        action: 'auto-plan', startDate, applicationType: item.applicationType,
-        applicationIds: [item.id], replaceExisting: Boolean(existing)
-      });
-      if (!result.data?.length) throw new Error(result.skipped?.[0]?.reason || 'Uygun program bulunamadı.');
-      mergePlacements(result.data);
-      const placement = placementOf(item.id);
-      draftSchedule = Object.fromEntries(meta.weekdays.map((day) => {
-        const entry = placement.schedule.find((scheduled) => scheduled.day === day);
-        return [day, { teacherId: entry?.teacherId || '', slot: entry?.slot || '' }];
-      }));
-      el('appsAssignmentState').textContent = 'Otomatik planlandı';
-      el('appsAssignmentState').className = 'assignment-state is-ready';
-      el('appsRemoveAssignment').hidden = false;
-      renderStats(); renderTable(); renderTeacherGrid(); renderProgramFilters(); renderProgram(); renderScheduleRows(item);
-      toast(`${item.studentName} için en düzenli program kaydedildi.`);
-    } catch (error) { toast(error.message, 'error'); }
-    finally { button.disabled = false; button.textContent = '✦ Otomatik planla'; }
-  }
-
   async function seedDemoData() {
     const refreshing = el('programDemoSeed').dataset.mode === 'refresh';
     const accepted = await confirmModal(
       refreshing
-        ? '10 test öğrencisinin müsait saatleri gerçekçi biçimde dağıtılacak ve programları yeniden hesaplanacak. Gerçek kayıtlar değişmeyecek.'
-        : 'Gerçek kayıtlardan “Test” etiketiyle ayrılan 5 kız, 5 erkek öğrenci ve 5 öğretmen oluşturulup otomatik planlanacak.',
-      refreshing ? 'Test verisini güncelle' : 'Test verisini kur', refreshing ? 'Saatleri dağıt ve planla' : '10 öğrenci + 5 öğretmen ekle'
+        ? 'Test öğrencilerinin müsait saat tercihleri güncellenecek. Gerçek kayıtlar etkilenmez.'
+        : 'Gerçek kayıtlardan “Test” etiketiyle ayrılan 5 kız, 5 erkek öğrenci ve 5 öğretmen oluşturulacak.',
+      refreshing ? 'Test verisini güncelle' : 'Test verisini kur', refreshing ? 'Tercihleri güncelle' : '10 öğrenci + 5 öğretmen ekle'
     );
     if (!accepted) return;
     const button = el('programDemoSeed');
     button.disabled = true; button.textContent = 'Test verisi hazırlanıyor...';
     try {
-      const result = await api('POST', {
-        action: 'demo-seed', startDate: el('programAutoStartDate').value || nextMondayValue()
-      });
+      await api('POST', { action: 'demo-seed' });
       loaded = false;
       await load(false);
-      switchView('schedule');
-      showAutoFeedback((result.data?.placements || []).length, result.skipped || []);
+      switchView('applications');
       toast('10 test öğrencisi ve 5 test öğretmeni hazır.');
     } catch (error) {
       button.disabled = false; button.textContent = refreshing ? 'Test verisini güncelle' : 'Test verisini kur'; toast(error.message, 'error');
@@ -1085,7 +1012,7 @@
     if (!item) return;
     const hasAssignment = Boolean(placementOf(item.id));
     const accepted = await confirmModal(
-      `${item.studentName} adlı öğrencinin başvurusu${hasAssignment ? ' ve beş günlük ders ataması' : ''} silinecek.`,
+      `${item.studentName} adlı öğrencinin başvurusu${hasAssignment ? ' ve ders ataması' : ''} silinecek.`,
       'Öğrenciyi sil', 'Öğrenciyi sil'
     );
     if (!accepted) return;
@@ -1351,10 +1278,8 @@
       el(id).addEventListener(id === 'programSearch' ? 'input' : 'change', renderProgram);
     });
     el('programReset').addEventListener('click', resetProgramFilters);
-    el('programAutoAssign').addEventListener('click', autoAssignAll);
     el('programDemoSeed').addEventListener('click', seedDemoData);
     el('programDataTools').addEventListener('click', openDataManagement);
-    el('programAutoStartDate').value = nextMondayValue();
     el('programBoard').addEventListener('click', (event) => {
       const button = event.target.closest('[data-program-open]');
       if (button) openDetail(button.dataset.programOpen);
@@ -1382,7 +1307,6 @@
     el('appsSaveReview').addEventListener('click', saveReview);
     el('appsDeleteApplication').addEventListener('click', deleteApplication);
     el('appsSaveAssignment').addEventListener('click', saveAssignment);
-    el('appsAutoAssignment').addEventListener('click', autoPlanSelected);
     el('appsRemoveAssignment').addEventListener('click', removeAssignment);
     el('appsScheduleRows').addEventListener('change', (event) => {
       const item = applications.find((record) => record.id === selectedId);
