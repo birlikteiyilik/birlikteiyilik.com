@@ -118,12 +118,16 @@
     const today = dateValue(new Date());
     el('weekDays').innerHTML = week.map((item) => {
       const isActive = item.date === selectedDate;
+      const isFuture = item.date > today;
       const complete = item.expected > 0 && item.completed === item.expected;
-      return `<button class="week-day${isActive ? ' is-active' : ''}${complete ? ' is-complete' : ''}" type="button" data-date="${item.date}" ${item.date > today ? 'disabled' : ''} aria-pressed="${isActive}">
-        <span>${labels.shortDays[item.day]}</span><strong>${Number(item.date.slice(8))}</strong><small>${item.completed}/${item.expected}</small>
+      return `<button class="week-day${isActive ? ' is-active' : ''}${complete ? ' is-complete' : ''}${isFuture ? ' is-future' : ''}" type="button" data-date="${item.date}" aria-pressed="${isActive}" aria-label="${labels.days[item.day]}, ${formatDate(item.date, { day: 'numeric', month: 'long' })}${isFuture ? ', ileri tarihli program' : ''}">
+        <span>${labels.shortDays[item.day]}</span><strong>${Number(item.date.slice(8))}</strong><small>${isFuture ? `${item.expected} ders` : `${item.completed}/${item.expected}`}</small>
       </button>`;
     }).join('');
-    el('nextWeek').disabled = mondayFor(selectedDate) >= mondayFor(today);
+    const earliest = addDays(today, -120);
+    const latest = addDays(today, 365);
+    el('previousWeek').disabled = addDays(start, -3) < earliest;
+    el('nextWeek').disabled = addDays(start, 7) > mondayFor(latest);
   }
 
   function dirtyState(lesson) {
@@ -144,16 +148,19 @@
 
   function renderLessons() {
     const list = el('lessonList');
+    const isFuture = selectedDate > dateValue(new Date());
     el('loadingState').hidden = true;
     el('errorState').hidden = true;
     el('emptyState').hidden = lessons.length > 0;
     list.hidden = lessons.length === 0;
     const completed = lessons.filter((lesson) => lesson.status).length;
-    el('completedCount').textContent = completed;
-    el('lessonCount').textContent = lessons.length;
-    el('dayKicker').textContent = selectedDate === dateValue(new Date()) ? 'Bugünün programı' : formatDate(selectedDate, { weekday: 'long' });
+    el('completedCount').textContent = isFuture ? lessons.length : completed;
+    el('dayScoreText').innerHTML = isFuture ? 'atanmış ders' : `/ <b>${lessons.length}</b> yoklama`;
+    el('dayKicker').textContent = isFuture ? 'İleri tarihli program · yoklama alınamaz' : selectedDate === dateValue(new Date()) ? 'Bugünün programı' : formatDate(selectedDate, { weekday: 'long' });
     el('dayHeading').textContent = formatDate(selectedDate, { day: 'numeric', month: 'long' });
-    el('daySubheading').textContent = lessons.length ? `${lessons.length} birebir ders planlandı. Yoklamayı ders sonrasında tamamlayın.` : 'Bu gün için planlanmış bir ders bulunmuyor.';
+    el('daySubheading').textContent = isFuture
+      ? lessons.length ? 'İleri tarihli ders programınızı önceden görüntülüyorsunuz. Yoklama, ders günü açılacaktır.' : 'Bu tarih için atanmış bir ders görünmüyor.'
+      : lessons.length ? `${lessons.length} birebir ders planlandı. Yoklamayı ders sonrasında tamamlayın.` : 'Bu gün için planlanmış bir ders bulunmuyor.';
     list.innerHTML = lessons.map((lesson, index) => {
       const active = (status) => lesson.status === status ? ' is-active' : '';
       return `<article class="lesson-card${dirtyState(lesson) ? ' is-dirty' : ''}" style="--index:${index}">
@@ -161,9 +168,9 @@
         <div class="lesson-surface">
           <header class="lesson-summary"><div class="student-info"><strong>${escapeHtml(lesson.studentName)}</strong><span>${escapeHtml(lesson.applicationReference || '')}</span></div><span class="lesson-mode">${escapeHtml(labels.type[lesson.applicationType] || lesson.applicationType)}</span></header>
           <div class="attendance-controls" role="group" aria-label="${escapeHtml(lesson.studentName)} yoklama durumu">
-            ${['katildi', 'gelmedi', 'mazeretli'].map((status) => `<button type="button" class="status-action${active(status)}" data-lesson-key="${escapeHtml(lessonKey(lesson))}" data-status="${status}" aria-pressed="${lesson.status === status}"><svg><use href="#${icon[status]}"></use></svg>${labels.status[status]}</button>`).join('')}
+            ${['katildi', 'gelmedi', 'mazeretli'].map((status) => `<button type="button" class="status-action${active(status)}" data-lesson-key="${escapeHtml(lessonKey(lesson))}" data-status="${status}" aria-pressed="${lesson.status === status}" ${isFuture ? 'disabled' : ''}><svg><use href="#${icon[status]}"></use></svg>${labels.status[status]}</button>`).join('')}
           </div>
-          <details class="lesson-note" ${lesson.note ? 'open' : ''}><summary><svg><use href="#icon-note"></use></svg>Ders notu ${lesson.note ? '· eklendi' : 'ekle'}</summary><textarea data-note-key="${escapeHtml(lessonKey(lesson))}" maxlength="300" ${lesson.status ? '' : 'disabled'} placeholder="Yalnızca gerekli kısa notu yazın...">${escapeHtml(lesson.note)}</textarea></details>
+          <details class="lesson-note" ${lesson.note ? 'open' : ''}><summary><svg><use href="#icon-note"></use></svg>Ders notu ${lesson.note ? '· eklendi' : 'ekle'}</summary><textarea data-note-key="${escapeHtml(lessonKey(lesson))}" maxlength="300" ${lesson.status && !isFuture ? '' : 'disabled'} placeholder="Yalnızca gerekli kısa notu yazın...">${escapeHtml(lesson.note)}</textarea></details>
         </div>
       </article>`;
     }).join('');

@@ -363,6 +363,16 @@ function assertAttendanceDate(value) {
   return date;
 }
 
+function assertTeacherViewDate(value) {
+  const date = cleanText(value, 10);
+  if (!validDate(date) || !attendanceDay(date)) throw new RequestError('Programı görüntülemek için hafta içinden geçerli bir gün seçin.');
+  const today = new Date().toISOString().slice(0, 10);
+  const earliest = isoPlusDays(today, -120);
+  const latest = isoPlusDays(today, 365);
+  if (date < earliest || date > latest) throw new RequestError('Program yalnızca son 120 gün ve gelecek 1 yıl içinde görüntülenebilir.');
+  return date;
+}
+
 function normalizeSchedule(schedule) {
   if (!Array.isArray(schedule)) throw new RequestError('Ders planı geçersiz.');
   const normalized = schedule.map((entry) => ({
@@ -622,7 +632,7 @@ export default async function handler(req) {
 
     if (body.action === 'teacher-data') {
       try {
-        const date = assertAttendanceDate(body.date);
+        const date = assertTeacherViewDate(body.date);
         const { planning, teacher } = await requireTeacherSession();
         return json({
           ok: true, teacher: publicTeacher(teacher), date, day: attendanceDay(date),

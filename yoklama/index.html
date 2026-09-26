@@ -10,7 +10,7 @@
   <title>BİA E-Yoklama</title>
   <link rel="icon" type="image/png" sizes="192x192" href="/images/favicon-square.png">
   <link rel="apple-touch-icon" href="/images/favicon-square.png">
-  <link rel="stylesheet" href="/css/yoklama.css?v=1">
+  <link rel="stylesheet" href="/css/yoklama.css?v=2">
 </head>
 <body>
   <svg class="symbol-library" aria-hidden="true">
@@ -87,7 +87,7 @@
     <main class="app-main">
       <section class="day-intro">
         <div><span class="day-kicker" id="dayKicker">Bugünün programı</span><h1 id="dayHeading">Derslerim</h1><p id="daySubheading">Yoklamayı ders sonrasında tamamlayın.</p></div>
-        <div class="day-score" aria-live="polite"><strong id="completedCount">0</strong><span>/ <b id="lessonCount">0</b> yoklama</span></div>
+        <div class="day-score" aria-live="polite"><strong id="completedCount">0</strong><span id="dayScoreText">/ <b id="lessonCount">0</b> yoklama</span></div>
       </section>
 
       <section class="week-panel" aria-label="Hafta seçimi">
@@ -113,6 +113,6 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"><svg><use href="#icon-check"></use></svg><span></span></div>
-  <script src="/js/yoklama.js?v=1"></script>
+  <script src="/js/yoklama.js?v=2"></script>
 </body>
 </html>
