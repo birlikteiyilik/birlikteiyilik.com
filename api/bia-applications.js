@@ -32,10 +32,6 @@ const DIRECTORY_PASSWORD_VERIFIER = {
   passwordSalt: 'drZhAtuCsj+yEQS4KEAOqw==',
   passwordHash: 'Qn1nf3Ufv65gmOIh4+nY7z7P9K+nqVg6NXRx7j3UDDQ='
 };
-// Temporary, single-manifest import gate. Remove immediately after the one-time migration.
-const MANUAL_IMPORT_KEY_HASH = '6fc1332d8b62bc2dcf41855cb3dfc82cb89ca65d35651db09bbc13f1c045fd80';
-const MANUAL_IMPORT_MANIFEST_HASH = 'dbe90e2bac73ac21425d47f8e61f199a1901f09bfc85a1ca26b692449d64f9d1';
-const MANUAL_IMPORT_ALIASES_HASH = '4a335ec9dd57969f501b7faa97f6268f01c3e95aec8b5d98da7c82b06ef729d2';
 function slotMinutes(slot) {
   const match = /^(\d{2}):(\d{2})/.exec(String(slot || ''));
   return match ? (Number(match[1]) * 60) + Number(match[2]) : Number.MAX_SAFE_INTEGER;
@@ -95,11 +91,6 @@ function base64UrlToBytes(value) {
 
 function base64UrlFromBytes(bytes) {
   return base64FromBytes(bytes).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
-}
-
-async function sha256Hex(value) {
-  const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', encoder.encode(value)));
-  return [...digest].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
 async function signJwt(payload, secret) {
@@ -429,102 +420,6 @@ function placementUsesTeacher(placement, teacherId) {
   return placement?.teacherId === teacherId || (placement?.schedule || []).some((entry) => entry.teacherId === teacherId);
 }
 
-function nearbyNames(name, records) {
-  const source = searchableName(name);
-  const distance = (left, right) => {
-    const previous = Array.from({ length: right.length + 1 }, (_, index) => index);
-    for (let row = 1; row <= left.length; row += 1) {
-      const current = [row];
-      for (let column = 1; column <= right.length; column += 1) {
-        current[column] = Math.min(current[column - 1] + 1, previous[column] + 1,
-          previous[column - 1] + (left[row - 1] === right[column - 1] ? 0 : 1));
-      }
-      previous.splice(0, previous.length, ...current);
-    }
-    return previous[right.length];
-  };
-  return records.map((record) => ({ name: record.name || record.studentName,
-    difference: distance(source, searchableName(record.name || record.studentName)) }))
-    .sort((a, b) => a.difference - b.difference)
-    .slice(0, 3);
-}
-
-function planOneTimeFaceToFaceImport(manifest, aliases, applications, records) {
-  const issues = [];
-  if (manifest?.startDate !== '2026-09-28' || !Array.isArray(manifest.teachers) ||
-      manifest.teachers.length !== 5 || JSON.stringify(manifest.timeSlots) !== JSON.stringify(TIME_SLOTS)) {
-    throw new RequestError('İçe aktarma listesi geçersiz.');
-  }
-  const teachers = records.filter((item) => item.kind === 'teacher');
-  const requested = manifest.teachers.flatMap((entry) => {
-    if (!Array.isArray(entry.days) || entry.days.length !== 2 ||
-        entry.days.some((day) => !WEEKDAYS.includes(day)) || !Array.isArray(entry.students) || entry.students.length !== TIME_SLOTS.length) {
-      throw new RequestError('Öğretmen gün veya saat listesi geçersiz.');
-    }
-    return entry.students.flatMap((studentName, slotIndex) => studentName ? [{
-      teacherName: entry.name, studentName, days: entry.days, slot: TIME_SLOTS[slotIndex]
-    }] : []);
-  });
-  if (requested.length !== 44 || new Set(requested.map((item) => searchableName(item.studentName))).size !== 44) {
-    throw new RequestError('Öğrenci listesi eksik veya yinelenmiş.');
-  }
-  const planned = [];
-  const statuses = {};
-  for (const entry of requested) {
-    const teacherName = aliases.teachers?.[entry.teacherName] || entry.teacherName;
-    const studentName = aliases.students?.[entry.studentName] || entry.studentName;
-    const teacherMatches = teachers.filter((teacher) => searchableName(teacher.name) === searchableName(teacherName));
-    const studentMatches = applications.filter((application) => application.applicationType === 'yuz-yuze' &&
-      searchableName(application.studentName) === searchableName(studentName));
-    if (teacherMatches.length !== 1) issues.push({ type: teacherMatches.length ? 'teacher-ambiguous' : 'teacher-missing',
-      name: entry.teacherName, candidates: nearbyNames(entry.teacherName, teachers) });
-    if (studentMatches.length !== 1) issues.push({ type: studentMatches.length ? 'student-ambiguous' : 'student-missing',
-      name: entry.studentName, candidates: nearbyNames(entry.studentName, applications.filter((item) => item.applicationType === 'yuz-yuze')) });
-    if (teacherMatches.length !== 1 || studentMatches.length !== 1) continue;
-    const teacher = teacherMatches[0];
-    const application = studentMatches[0];
-    if (!teacher.active || teacher.gender !== 'kadin' || !teacher.modes?.includes('yuz-yuze') ||
-        entry.days.some((day) => !teacher.days?.includes(day))) {
-      issues.push({ type: 'teacher-profile', name: teacher.name, days: entry.days });
-    }
-    if (application.gender !== 'kiz') issues.push({ type: 'student-gender', name: application.studentName });
-    statuses[application.status || 'belirsiz'] = (statuses[application.status || 'belirsiz'] || 0) + 1;
-    const schedule = entry.days.map((day) => ({ day, slot: entry.slot, teacherId: teacher.id, teacherName: teacher.name }))
-      .sort((a, b) => WEEKDAYS.indexOf(a.day) - WEEKDAYS.indexOf(b.day));
-    const existing = placementFor(records, application.id);
-    if (existing?.schedule?.length) {
-      const signature = (items) => items.map((item) => `${item.day}|${item.slot}|${item.teacherId}`).sort().join(',');
-      if (signature(existing.schedule) !== signature(schedule)) {
-        issues.push({ type: 'existing-assignment', name: application.studentName });
-      }
-    }
-    for (const lesson of schedule) {
-      const occupied = records.find((placement) => placement.kind === 'placement' && placement.applicationId !== application.id &&
-        (placement.schedule || []).some((item) => item.teacherId === lesson.teacherId && item.day === lesson.day && item.slot === lesson.slot));
-      if (occupied) issues.push({ type: 'teacher-conflict', name: teacher.name, day: lesson.day, slot: lesson.slot, occupiedBy: occupied.studentName });
-    }
-    planned.push({ application, schedule, existing });
-  }
-  const requestedSlots = new Set();
-  const requestedApplications = new Set();
-  for (const item of planned) for (const lesson of item.schedule) {
-    const key = `${lesson.teacherId}|${lesson.day}|${lesson.slot}`;
-    if (requestedSlots.has(key)) issues.push({ type: 'import-conflict', name: lesson.teacherName, day: lesson.day, slot: lesson.slot });
-    requestedSlots.add(key);
-  }
-  for (const item of planned) {
-    if (requestedApplications.has(item.application.id)) issues.push({ type: 'duplicate-student-match', name: item.application.studentName });
-    requestedApplications.add(item.application.id);
-  }
-  return {
-    issues: [...new Map(issues.map((issue) => [JSON.stringify(issue), issue])).values()],
-    planned,
-    summary: { teachers: manifest.teachers.length, requestedStudents: requested.length,
-      matchedStudents: planned.length, newAssignments: planned.filter((item) => !item.existing?.schedule?.length).length,
-      alreadyAssigned: planned.filter((item) => item.existing?.schedule?.length).length, statuses }
-  };
-}
-
 function demoTckn(index) {
   const firstNine = String(900000000 + index).split('').map(Number);
   const odd = firstNine[0] + firstNine[2] + firstNine[4] + firstNine[6] + firstNine[8];
@@ -792,51 +687,6 @@ export default async function handler(req) {
         return json({ ok: true, ...(await directoryResults(query, mode)) }, 200, cors);
       } catch (error) {
         return json({ error: error.message || 'Arama şu anda yapılamıyor.' }, error.status || 500, cors);
-      }
-    }
-
-    if (body.action === 'one-time-face-to-face-import') {
-      const key = String(body.key || '');
-      const manifestText = String(body.manifestText || '');
-      const aliasesText = String(body.aliasesText || '');
-      if (!/^[0-9a-f]{64}$/.test(key) || !(await sameSecret(await sha256Hex(key), MANUAL_IMPORT_KEY_HASH)) ||
-          !(await sameSecret(await sha256Hex(manifestText), MANUAL_IMPORT_MANIFEST_HASH)) ||
-          (aliasesText && !(await sameSecret(await sha256Hex(aliasesText), MANUAL_IMPORT_ALIASES_HASH))) ||
-          (body.mode === 'apply' && !aliasesText)) {
-        return json({ error: 'İçe aktarma yetkisi geçersiz.' }, 403, cors);
-      }
-      try {
-        const manifest = JSON.parse(manifestText);
-        const aliases = aliasesText ? JSON.parse(aliasesText) : { teachers: {}, students: {} };
-        const applications = await getAllApplications();
-        const planning = await getArchive(PLANNING_FILE);
-        const preview = planOneTimeFaceToFaceImport(manifest, aliases, applications, planning.records);
-        if (body.mode !== 'apply') return json({ ok: true, mode: 'dry-run', ...preview.summary, issues: preview.issues }, 200, cors);
-        if (preview.issues.length) return json({ error: 'Eşleşme veya çakışma var; hiçbir kayıt değiştirilmedi.', ...preview.summary, issues: preview.issues }, 409, cors);
-        const imported = await mutateArchive(PLANNING_FILE, (records) => {
-          const fresh = planOneTimeFaceToFaceImport(manifest, aliases, applications, records);
-          if (fresh.issues.length) throw new RequestError('Atamalar kontrol sırasında değişti; hiçbir kayıt kaydedilmedi.', 409);
-          let created = 0;
-          const now = new Date().toISOString();
-          for (const item of fresh.planned) {
-            if (item.existing?.schedule?.length) continue;
-            const placement = {
-              kind: 'placement', id: item.existing?.id || crypto.randomUUID(), applicationId: item.application.id,
-              applicationCreatedAt: item.application.createdAt, applicationReference: item.application.reference,
-              studentName: item.application.studentName, applicationType: 'yuz-yuze',
-              startDate: manifest.startDate, schedule: item.schedule,
-              createdAt: item.existing?.createdAt || now, updatedAt: now,
-              updatedBy: '2026-09-26 kullanıcı tarafından verilen toplu atama listesi'
-            };
-            const index = item.existing ? records.findIndex((record) => record.kind === 'placement' && record.applicationId === item.application.id) : -1;
-            if (index >= 0) records[index] = placement; else records.push(placement);
-            created += 1;
-          }
-          return { records, value: { created, alreadyAssigned: fresh.summary.alreadyAssigned } };
-        }, 'BIA: kullanıcı listesinden yüz yüze ders atamaları içe aktarıldı');
-        return json({ ok: true, mode: 'apply', ...imported }, 200, cors);
-      } catch (error) {
-        return json({ error: error.message || 'İçe aktarma yapılamadı.' }, error.status || 500, cors);
       }
     }
 
