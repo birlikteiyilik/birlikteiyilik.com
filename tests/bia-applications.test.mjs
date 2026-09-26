@@ -265,6 +265,15 @@ assert.ok(directoryStudent);
 assert.equal(directoryStudent.school, validSubmission.school);
 assert.equal(directoryStudent.guardianPhone, validSubmission.guardianPhone);
 assert.equal(directoryStudent.teachers.length, 2);
+assert.deepEqual(directoryStudent.teachers[0].schedule, [
+  { day: 'pazartesi', slot: '15:00-15:20' },
+  { day: 'sali', slot: '15:00-15:20' },
+  { day: 'carsamba', slot: '15:00-15:20' }
+]);
+assert.deepEqual(directoryStudent.teachers[1].schedule, [
+  { day: 'persembe', slot: '15:00-15:20' },
+  { day: 'cuma', slot: '15:00-15:20' }
+]);
 assert.ok(!('tckn' in directoryStudent));
 const directoryTeacherResponse = await handler(new Request('http://localhost:4173/api/bia-applications', {
   method: 'POST', headers: directoryHeaders,
@@ -274,6 +283,10 @@ assert.equal(directoryTeacherResponse.status, 200);
 const directoryTeacherData = await directoryTeacherResponse.json();
 assert.equal(directoryTeacherData.groups[0].teacher.name, 'Meryem Kaplan');
 assert.equal(directoryTeacherData.groups[0].students[0].studentName, validSubmission.studentName);
+assert.deepEqual(directoryTeacherData.groups[0].students[0].teachers.find((teacher) => teacher.id === fridayTeacher.id).schedule, [
+  { day: 'persembe', slot: '15:00-15:20' },
+  { day: 'cuma', slot: '15:00-15:20' }
+]);
 
 const failedTeacherLogin = await handler(new Request('http://localhost:4173/api/bia-applications', {
   method: 'POST', headers: { 'Content-Type': 'application/json', 'Origin': 'http://localhost:4173' },

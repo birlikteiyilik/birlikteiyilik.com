@@ -169,13 +169,30 @@
     else { content.classList.add('detail-value'); wrap.append(content); }
     return wrap;
   }
-  function studentCard(item, showTeachers = true) {
+  function lessonTimes(schedule) {
+    const wrap = node('div', 'lesson-times');
+    wrap.append(node('span', 'lesson-times__label', 'Ders saatleri'));
+    const entries = node('div', 'lesson-times__entries');
+    for (const lesson of schedule || []) {
+      const slot = node('span', 'lesson-time');
+      slot.append(node('strong', '', DAYS[lesson.day] || lesson.day), document.createTextNode((lesson.slot || '').replace('-', '–')));
+      entries.append(slot);
+    }
+    if (!entries.childElementCount) entries.append(node('span', 'lesson-times__empty', 'Henüz saat atanmadı'));
+    wrap.append(entries);
+    return wrap;
+  }
+  function studentCard(item, showTeachers = true, selectedTeacherId = '') {
     const article = node('article', 'result-card');
     const top = node('div', 'result-card__top');
     top.append(node('h3', '', item.studentName), node('span', 'grade-badge', item.grade ? `${item.grade}. sınıf` : 'Sınıf yok'));
     const grid = node('div', 'detail-grid');
     grid.append(detail('Okul', item.school), detail('Veli telefonu', phoneLine(item.guardianPhone, 'Veli')));
     article.append(top, grid);
+    if (selectedTeacherId) {
+      const teacher = item.teachers.find((entry) => entry.id === selectedTeacherId);
+      article.append(lessonTimes(teacher?.schedule));
+    }
     if (showTeachers) {
       const list = node('div', 'teacher-list');
       list.append(node('div', 'teacher-list__heading', item.teachers.length > 1 ? 'Atanan öğretmenler' : 'Atanan öğretmen'));
@@ -183,7 +200,7 @@
         const row = node('div', 'teacher-row');
         const label = node('div');
         label.append(node('strong', '', teacher.name));
-        if (teacher.days?.length) label.append(node('small', '', teacher.days.map((day) => DAYS[day] || day).join(' · ')));
+        label.append(lessonTimes(teacher.schedule));
         row.append(label, phoneLine(teacher.phone, 'Öğretmen'));
         list.append(row);
       }
@@ -208,7 +225,7 @@
         name.append(node('span', 'detail-label', 'Öğretmen'), node('h3', '', group.teacher.name));
         head.append(name, detail('Telefon', phoneLine(group.teacher.phone, 'Öğretmen')));
         section.append(head);
-        for (const student of group.students) section.append(studentCard(student, false));
+        for (const student of group.students) section.append(studentCard(student, false, group.teacher.id));
         ui.results.append(section);
       }
     } else {
