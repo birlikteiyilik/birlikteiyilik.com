@@ -140,7 +140,7 @@
         (!previousTraining || item.previousTraining === previousTraining) &&
         (!status || item.status === status) &&
         (!planState || (planState === 'planned' ? Boolean(placement) : !placement)) &&
-        (!teacherId || placement?.schedule?.some((entry) => entry.teacherId === teacherId)) &&
+        (!teacherId || placement?.teacherId === teacherId || placement?.schedule?.some((entry) => entry.teacherId === teacherId)) &&
         (!from || date >= from) && (!to || date <= to);
     });
   }
@@ -154,11 +154,13 @@
     el('appsTotal').textContent = modeApplications.length;
     el('appsNew').textContent = modeApplications.filter((item) => item.status === 'yeni').length;
     el('appsPlanned').textContent = modePlacements.length;
+    el('appsPlanned').previousElementSibling.textContent = activeApplicationType === 'online' ? 'Öğretmen atandı' : 'Programı hazır';
     el('appsRegistered').textContent = modeApplications.filter((item) => item.status === 'kayit-tamamlandi').length;
     el('appsTabApplicationCount').textContent = modeApplications.length;
     el('appsTabTeacherCount').textContent = modeTeachers.length;
     el('appsTabScheduleCount').textContent = modePlacements.length;
     el('appsTabReportCount').textContent = modeAttendance.length;
+    el('appsTabSchedule').hidden = activeApplicationType === 'online';
     ['yuz-yuze', 'online'].forEach((type) => {
       const rows = applications.filter((item) => item.applicationType === type);
       const waiting = rows.filter((item) => !placementOf(item.id) && ['yeni', 'inceleniyor', 'uygun'].includes(item.status)).length;
@@ -189,6 +191,10 @@
 
   function compactProgram(item, placement) {
     if (!placement) return '<span class="program-state is-empty">Atama bekliyor</span>';
+    if (item.applicationType === 'online') {
+      const teacherName = placement.teacherName || teacherOf(placement.teacherId)?.name || 'Öğretmen bilgisi eksik';
+      return `<span class="program-state is-ready">Öğretmen atandı</span><span class="program-names">${escapeHtml(teacherName)}</span>`;
+    }
     const names = [...new Set((placement.schedule || []).map((entry) => entry.teacherName || teacherOf(entry.teacherId)?.name).filter(Boolean))];
     const dayCount = (placement.schedule || []).length;
     return `<span class="program-state is-ready">${dayCount} gün planlandı</span><span class="program-names">${escapeHtml(names.join(', '))}</span>`;
@@ -239,7 +245,7 @@
     el('appsTeacherGrid').innerHTML = filtered
       .slice().sort((a, b) => Number(b.active) - Number(a.active) || a.name.localeCompare(b.name, 'tr'))
       .map((teacher, index) => {
-        const assigned = scopedPlacements().filter((placement) => placement.schedule?.some((entry) => entry.teacherId === teacher.id)).length;
+        const assigned = scopedPlacements().filter((placement) => placement.teacherId === teacher.id || placement.schedule?.some((entry) => entry.teacherId === teacher.id)).length;
         return `<article class="teacher-card ${teacher.active ? '' : 'is-passive'}" style="--card-index:${index}">
           <div class="teacher-card-top"><span class="teacher-avatar">${escapeHtml(teacher.name.charAt(0).toLocaleUpperCase('tr-TR'))}</span><span class="teacher-status">${teacher.active ? 'Aktif' : 'Pasif'}</span></div>
           <h3>${escapeHtml(teacher.name)}</h3><a href="tel:${escapeHtml(teacher.phone)}">${escapeHtml(formatPhone(teacher.phone))}</a>
@@ -257,7 +263,7 @@
       const haystack = `${teacher.name} ${teacher.phone} ${teacher.username || ''}`.toLocaleLowerCase('tr-TR');
       return (!query || haystack.includes(query)) && (!state || (state === 'active' ? teacher.active : !teacher.active));
     }).map((teacher) => {
-      const assigned = scopedPlacements().filter((placement) => placement.schedule?.some((entry) => entry.teacherId === teacher.id)).length;
+      const assigned = scopedPlacements().filter((placement) => placement.teacherId === teacher.id || placement.schedule?.some((entry) => entry.teacherId === teacher.id)).length;
       return {
         'Öğretmen': teacher.name,
         'Telefon': formatPhone(teacher.phone),
@@ -648,6 +654,7 @@
     const item = applications.find((record) => record.id === id);
     if (!item) return;
     const isNewOnline = item.applicationVersion === 'online-2026-09';
+    const isOnline = item.applicationType === 'online';
     selectedId = id;
     const placement = placementOf(id);
     draftSchedule = Object.fromEntries(meta.weekdays.map((day) => {
@@ -698,12 +705,25 @@
     const availability = isNewOnline ? (item.availabilityRanges || []) :
       (Array.isArray(item.availabilitySlots) && item.availabilitySlots.length ? item.availabilitySlots : meta.timeSlots);
     el('appsAvailability').innerHTML = availability.map((slot) => `<span>${escapeHtml(slot)}</span>`).join('');
+    el('onlineTeacherAssignment').hidden = !isOnline;
+    el('faceToFaceAssignment').hidden = isOnline;
+    const assignedTeacherId = placement?.teacherId || placement?.schedule?.[0]?.teacherId || '';
+    el('appsOnlineTeacher').innerHTML = '<option value="">Öğretmen seçin</option>' + teachers
+      .filter((teacher) => (teacher.active || teacher.id === assignedTeacherId) && teacher.gender === (item.gender === 'kiz' ? 'kadin' : 'erkek') && teacher.modes.includes('online'))
+      .sort((a, b) => a.name.localeCompare(b.name, 'tr'))
+      .map((teacher) => `<option value="${escapeHtml(teacher.id)}" ${teacher.id === assignedTeacherId ? 'selected' : ''}>${escapeHtml(teacher.name)}${teacher.active ? '' : ' · Pasif'}</option>`).join('');
     el('appsAssignmentSection').hidden = false;
-    el('appsStartDate').value = placement?.startDate || '';
-    el('appsAssignmentState').textContent = placement ? 'Plan kaydedildi' : 'Planlanmadı';
+    el('appsAssignmentSection').querySelector('.apps-eyebrow').textContent = isOnline ? 'Öğretmen ataması' : 'Haftalık yerleştirme';
+    el('appsAssignmentSection').querySelector('.assignment-title h3').textContent = isOnline ? 'Öğrenciye öğretmen ata' : 'Öğretmen ve saat planı';
+    el('appsStartDate').value = isOnline ? '' : placement?.startDate || '';
+    el('appsAssignmentState').textContent = placement ? (isOnline ? 'Öğretmen atandı' : 'Plan kaydedildi') : 'Atama yapılmadı';
     el('appsAssignmentState').className = `assignment-state ${placement ? 'is-ready' : ''}`;
     el('appsRemoveAssignment').hidden = !placement;
-    renderScheduleRows(item);
+    if (isOnline) {
+      const teacher = teacherOf(assignedTeacherId);
+      el('appsAssignmentFeedback').className = `assignment-feedback ${teacher ? 'is-ready' : ''}`;
+      el('appsAssignmentFeedback').innerHTML = teacher ? `<strong>${escapeHtml(teacher.name)} öğrenciye atanmış.</strong><span>Atamayı değiştirebilir veya olduğu gibi bırakabilirsiniz.</span>` : '<span>Öğrenciye atanacak öğretmeni seçin.</span>';
+    } else renderScheduleRows(item);
     el('appsReviewStatus').value = item.status || 'yeni';
     el('appsAdminNote').value = item.adminNote || '';
     el('appsDeleteApplication').disabled = false;
@@ -722,6 +742,7 @@
   async function saveAssignment() {
     const item = applications.find((record) => record.id === selectedId);
     if (!item) return;
+    if (item.applicationType === 'online') return saveOnlineTeacherAssignment(item);
     const partialDays = meta.weekdays.filter((day) => Boolean(draftSchedule[day]?.teacherId) !== Boolean(draftSchedule[day]?.slot));
     const schedule = meta.weekdays.filter((day) => draftSchedule[day]?.teacherId && draftSchedule[day]?.slot)
       .map((day) => ({ day, ...draftSchedule[day] }));
@@ -752,21 +773,55 @@
     }
   }
 
+  async function saveOnlineTeacherAssignment(item) {
+    const teacherId = el('appsOnlineTeacher').value;
+    if (!teacherId) return toast('Öğrenciye atanacak öğretmeni seçin.', 'error');
+    const button = el('appsSaveAssignment');
+    button.disabled = true; button.textContent = 'Atama kaydediliyor...';
+    el('appsAssignmentFeedback').className = 'assignment-feedback is-saving';
+    el('appsAssignmentFeedback').innerHTML = '<strong>Öğretmen ataması kontrol ediliyor...</strong>';
+    try {
+      const result = await api('POST', { action: 'online-teacher-assign', applicationId: item.id, applicationCreatedAt: item.createdAt, teacherId });
+      const index = placements.findIndex((placement) => placement.applicationId === item.id);
+      if (index >= 0) placements[index] = result.data; else placements.push(result.data);
+      el('appsAssignmentState').textContent = 'Öğretmen atandı';
+      el('appsAssignmentState').className = 'assignment-state is-ready';
+      el('appsRemoveAssignment').hidden = false;
+      el('appsAssignmentFeedback').className = 'assignment-feedback is-ready';
+      el('appsAssignmentFeedback').innerHTML = `<strong>${escapeHtml(result.data.teacherName)} öğrenciye atandı.</strong><span>Online ders günü ve saati öğretmen ile veli tarafından ayrıca planlanabilir.</span>`;
+      renderStats(); renderTable(); renderTeacherGrid(); renderTeacherFilter();
+      toast(`${item.studentName} için ${result.data.teacherName} atandı.`);
+    } catch (error) {
+      el('appsAssignmentFeedback').className = 'assignment-feedback is-error';
+      el('appsAssignmentFeedback').innerHTML = `<strong>Atama kaydedilemedi</strong><span>${escapeHtml(error.message)}</span>`;
+      toast(error.message, 'error');
+    } finally { button.disabled = false; button.textContent = 'Öğretmen atamasını kaydet'; }
+  }
+
   async function removeAssignment() {
     const item = applications.find((record) => record.id === selectedId);
     if (!item) return;
-    const accepted = await confirmModal('Bu öğrencinin ders planı kaldırılacak. Başvuru kaydı korunur.', 'Ders planını kaldır', 'Programı kaldır');
+    const isOnline = item.applicationType === 'online';
+    const accepted = await confirmModal(
+      isOnline ? 'Bu öğrencinin öğretmen ataması kaldırılacak. Başvuru kaydı korunur.' : 'Bu öğrencinin ders planı kaldırılacak. Başvuru kaydı korunur.',
+      isOnline ? 'Öğretmen atamasını kaldır' : 'Ders planını kaldır', isOnline ? 'Atamayı kaldır' : 'Programı kaldır'
+    );
     if (!accepted) return;
     try {
       await api('POST', { action: 'placement-remove', applicationId: item.id });
       placements = placements.filter((placement) => placement.applicationId !== item.id);
       el('appsStartDate').value = '';
-      el('appsAssignmentState').textContent = 'Planlanmadı';
+      el('appsAssignmentState').textContent = isOnline ? 'Atama yapılmadı' : 'Planlanmadı';
       el('appsAssignmentState').className = 'assignment-state';
       el('appsRemoveAssignment').hidden = true;
       draftSchedule = Object.fromEntries(meta.weekdays.map((day) => [day, { teacherId: '', slot: '' }]));
-      renderStats(); renderTable(); renderTeacherGrid(); renderProgramFilters(); renderProgram(); renderScheduleRows(item);
-      toast('Ders planı kaldırıldı.');
+      renderStats(); renderTable(); renderTeacherGrid(); renderProgramFilters(); renderProgram();
+      if (isOnline) {
+        el('appsOnlineTeacher').value = '';
+        el('appsAssignmentFeedback').className = 'assignment-feedback';
+        el('appsAssignmentFeedback').innerHTML = '<span>Öğrenciye atanacak öğretmeni seçin.</span>';
+      } else renderScheduleRows(item);
+      toast(isOnline ? 'Öğretmen ataması kaldırıldı.' : 'Ders planı kaldırıldı.');
     } catch (error) { toast(error.message, 'error'); }
   }
 
@@ -797,7 +852,8 @@
   function messageFor(item, placement) {
     const schedule = placement.schedule || [];
     if (item.applicationType === 'online') {
-      const assignedTeachers = [...new Map(schedule.map((entry) => {
+      const teacherAssignments = placement.teacherId ? [{ teacherId: placement.teacherId, teacherName: placement.teacherName }] : schedule;
+      const assignedTeachers = [...new Map(teacherAssignments.map((entry) => {
         const teacher = teacherOf(entry.teacherId);
         return [entry.teacherId || entry.teacherName, {
           name: entry.teacherName || teacher?.name || 'Öğretmen bilgisi eksik',
@@ -956,7 +1012,7 @@
   }
 
   function teacherMessageFor(item, placement) {
-    const assignedTeacherNames = [...new Set((placement?.schedule || [])
+    const assignedTeacherNames = [...new Set((placement?.teacherId ? [{ teacherId: placement.teacherId, teacherName: placement.teacherName }] : placement?.schedule || [])
       .map((entry) => entry.teacherName || teacherOf(entry.teacherId)?.name)
       .filter(Boolean))];
     const teacherFirstName = assignedTeacherNames.length === 1
@@ -1014,6 +1070,7 @@
         'Önceki Program': item.previousTrainingDetail, 'Veli Notu': item.notes,
         'Bizi Nereden Duydu': labels.referral[item.referralSource] || item.referralSource || '', 'Diğer Kaynak': item.referralOther || '',
         'Görsel Paylaşım İzni': labels.media[item.consents?.mediaConsent] || item.consents?.mediaConsent,
+        'Atanan Öğretmen': placement?.teacherName || teacherOf(placement?.teacherId)?.name || [...new Set((placement?.schedule || []).map((entry) => entry.teacherName || teacherOf(entry.teacherId)?.name).filter(Boolean))].join(', '),
         'Başlangıç Günü': placement?.startDate || '', 'Yönetici Notu': item.adminNote
       };
       meta.weekdays.forEach((day) => {
@@ -1190,7 +1247,7 @@
   async function deleteTeacher() {
     const teacher = teacherOf(el('teacherId').value);
     if (!teacher) return;
-    const assigned = placements.filter((placement) =>
+    const assigned = placements.filter((placement) => placement.teacherId === teacher.id ||
       placement.schedule?.some((entry) => entry.teacherId === teacher.id)).length;
     const accepted = await confirmModal(
       `${teacher.name} silinecek.${assigned ? ` Öğretmene bağlı ${assigned} öğrenci programı da kaldırılacak; öğrenci başvuruları korunacak.` : ''}`,
@@ -1203,7 +1260,7 @@
       await api('POST', { action: 'teacher-delete', teacherId: teacher.id, removeAssignments: true });
       teachers = teachers.filter((item) => item.id !== teacher.id);
       placements = placements.filter((placement) =>
-        !placement.schedule?.some((entry) => entry.teacherId === teacher.id));
+        placement.teacherId !== teacher.id && !placement.schedule?.some((entry) => entry.teacherId === teacher.id));
       closeTeacherDialog();
       renderStats(); renderTeacherFilter(); renderProgramFilters(); renderTable(); renderTeacherGrid(); renderProgram();
       toast(`${teacher.name} ve ${assigned} bağlı program silindi.`);
@@ -1301,7 +1358,9 @@
     const modeName = isOnline ? 'Online eğitim' : 'Yüz yüze eğitim';
     el('appsHeaderEyebrow').textContent = isOnline ? 'Online öğrenci kabul merkezi' : 'Yüz yüze öğrenci kabul merkezi';
     el('appsHeaderTitle').textContent = `${modeName} yönetimi`;
-    el('appsHeaderCopy').textContent = `${modeName} başvurularını, öğretmen atamalarını ve ders programını ayrı yönetin.`;
+    el('appsHeaderCopy').textContent = isOnline
+      ? 'Online başvuruları inceleyin ve öğrencileri uygun öğretmenlere atayın.'
+      : `${modeName} başvurularını, öğretmen atamalarını ve ders programını ayrı yönetin.`;
     el('appsWorkspaceTitle').textContent = modeName;
     el('appsTeacherViewCopy').textContent = `${modeName} için görev alan öğretmenlerin günlerini ve kapasitesini yönetin.`;
     el('appsProgramViewCopy').textContent = `${modeName} öğretmen yükünü ve birebir derslerini tek bakışta takip edin.`;
@@ -1309,6 +1368,8 @@
     el('programModeDot').className = isOnline ? 'is-online' : 'is-face';
     el('programDemoSeed').hidden = isOnline;
     el('programDataTools').textContent = 'Tüm veri yönetimi';
+    el('appsSaveAssignment').textContent = isOnline ? 'Öğretmen atamasını kaydet' : 'Ders planını kaydet';
+    el('appsRemoveAssignment').textContent = isOnline ? 'Öğretmen atamasını kaldır' : 'Programı kaldır';
   }
 
   function selectApplicationType(type) {
@@ -1329,6 +1390,7 @@
   }
 
   function switchView(view) {
+    if (view === 'schedule' && activeApplicationType === 'online') view = 'applications';
     activeWorkspaceView = view;
     const views = { applications: 'appsApplicationsView', teachers: 'appsTeachersView', schedule: 'appsScheduleView', reports: 'appsReportsView' };
     const tabs = { applications: 'appsTabApplications', teachers: 'appsTabTeachers', schedule: 'appsTabSchedule', reports: 'appsTabReports' };
@@ -1473,6 +1535,12 @@
     el('appsDeleteApplication').addEventListener('click', deleteApplication);
     el('appsSaveAssignment').addEventListener('click', saveAssignment);
     el('appsRemoveAssignment').addEventListener('click', removeAssignment);
+    el('appsOnlineTeacher').addEventListener('change', () => {
+      const teacher = teacherOf(el('appsOnlineTeacher').value);
+      const feedback = el('appsAssignmentFeedback');
+      feedback.className = `assignment-feedback ${teacher ? 'is-ready' : ''}`;
+      feedback.innerHTML = teacher ? `<strong>${escapeHtml(teacher.name)} seçildi.</strong><span>Öğretmen atamasını kaydet düğmesiyle onaylayın.</span>` : '<span>Öğrenci için bir öğretmen seçin.</span>';
+    });
     el('appsScheduleRows').addEventListener('change', (event) => {
       const item = applications.find((record) => record.id === selectedId);
       if (!item) return;
