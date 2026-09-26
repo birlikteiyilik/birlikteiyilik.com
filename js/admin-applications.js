@@ -370,7 +370,7 @@
           </section>`;
         }).join('');
         const testTag = teacher.isDemo ? '<span class="program-demo-tag">Test</span>' : '';
-        const printButton = totalLessons ? `<button type="button" class="btn program-print-button" data-program-print="${escapeHtml(teacher.id)}">2 haftalık yoklamayı yazdır</button>` : '';
+        const printButton = totalLessons ? `<button type="button" class="btn program-print-button" data-program-print="${escapeHtml(teacher.id)}">4 haftalık yoklamayı yazdır</button>` : '';
         cards.push(`<article class="program-teacher-card ${teacher.active ? '' : 'is-passive'}" style="--program-index:${cards.length}">
           <header class="program-teacher-head">
             <div class="program-teacher-identity"><span class="teacher-avatar">${escapeHtml(teacher.name.charAt(0).toLocaleUpperCase('tr-TR'))}</span><div><div class="program-teacher-name"><h3>${escapeHtml(teacher.name)}</h3>${testTag}<span class="teacher-status">${teacher.active ? 'Aktif' : teacher.archived ? 'Arşiv' : 'Pasif'}</span></div><small>${escapeHtml((teacher.days || []).map((day) => labels.days[day]).join(', ') || 'Çalışma günü yok')}</small></div>${printButton}</div>
@@ -859,18 +859,22 @@
     const slots = slotsForType(activeApplicationType);
     const from = el('programRangeFrom').value;
     const to = el('programRangeTo').value;
-    if (!from || !to || to !== addDays(from, 13)) {
-      return toast('Yoklama dönemi 14 gün olmalı. Başlangıç tarihini yeniden seçin.', 'error');
+    if (!from || !to || to !== addDays(from, 27)) {
+      return toast('Yoklama dönemi 28 gün olmalı. Başlangıç tarihini yeniden seçin.', 'error');
     }
     const entries = programEntries().filter((entry) => entry.teacherId === teacherId)
       .sort((a, b) => meta.weekdays.indexOf(a.day) - meta.weekdays.indexOf(b.day) || slots.indexOf(a.slot) - slots.indexOf(b.slot));
     if (!entries.length) return toast('Yazdırılacak atanmış ders bulunmuyor.', 'error');
     const assignedDays = new Set(entries.map((entry) => entry.day));
-    const dates = [];
-    for (let date = from; date <= to; date = addDays(date, 1)) {
-      const day = dayForDate(date);
-      if (assignedDays.has(day)) dates.push({ value: date, day });
-    }
+    const periods = [
+      { start: from, end: addDays(from, 13), label: '1. ve 2. hafta' },
+      { start: addDays(from, 14), end: to, label: '3. ve 4. hafta' }
+    ].map((period) => ({
+      ...period,
+      dates: Array.from({ length: 14 }, (_, index) => addDays(period.start, index))
+        .map((value) => ({ value, day: dayForDate(value) }))
+        .filter((date) => assignedDays.has(date.day))
+    }));
     const studentsById = new Map();
     entries.forEach((entry) => {
       if (!studentsById.has(entry.applicationId)) {
@@ -883,19 +887,33 @@
     const students = [...studentsById.values()].sort((a, b) => a.name.localeCompare(b.name, 'tr'));
     const printableDate = (value) => new Intl.DateTimeFormat('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' })
       .format(new Date(`${value}T12:00:00`));
-    const rowFont = Math.max(4.8, Math.min(7.4, 185 / Math.max(students.length, 25)));
-    const rowPadding = Math.max(1, Math.min(3.2, rowFont * 0.42));
+    const rowFont = Math.max(3.6, Math.min(7.4, 140 / Math.max(students.length, 1)));
+    const rowPadding = Math.max(0.55, Math.min(1.4, rowFont * 0.18));
+    const renderPeriodTable = (period) => {
+      const firstWeekDates = period.dates.filter(({ value }) => value < addDays(period.start, 7));
+      const secondWeekDates = period.dates.filter(({ value }) => value >= addDays(period.start, 7));
+      const dates = [...firstWeekDates, ...secondWeekDates];
+      return `<section class="teacher-print-period-block">
+        <header class="teacher-print-period-heading"><h2>${escapeHtml(period.label)}</h2><span>${escapeHtml(printableDate(period.start))} – ${escapeHtml(printableDate(period.end))}</span></header>
+        <table class="teacher-print-table" style="--print-date-count:${dates.length}"><colgroup><col class="print-number-col"><col class="print-student-col"><col class="print-schedule-col">${dates.map(() => '<col class="print-date-col">').join('')}</colgroup>
+          <thead><tr><th rowspan="2">No</th><th rowspan="2">Öğrenci</th><th rowspan="2">Ders günü / saat</th><th class="print-week-group" colspan="${firstWeekDates.length}">1. hafta</th><th class="print-week-group print-week-two" colspan="${secondWeekDates.length}">2. hafta</th></tr><tr>${firstWeekDates.map(({ value }) => printDateHeading(value, false)).join('')}${secondWeekDates.map(({ value }) => printDateHeading(value, true)).join('')}</tr></thead>
+          <tbody>${students.map((student, index) => {
+            const scheduleText = student.schedule.slice().sort((a, b) => meta.weekdays.indexOf(a.day) - meta.weekdays.indexOf(b.day) || slots.indexOf(a.slot) - slots.indexOf(b.slot))
+              .map((entry) => `${labels.days[entry.day].slice(0, 2)} ${entry.slot.replace(/:/g, '.').replace('-', '–')}`).join(' · ');
+            return `<tr><td>${index + 1}</td><td class="print-student-name"><strong>${escapeHtml(student.name)}</strong><small>${escapeHtml(student.reference || '')}</small></td><td class="print-schedule-text">${escapeHtml(scheduleText)}</td>${firstWeekDates.map(({ day }) => printAttendanceCell(student, day, false)).join('')}${secondWeekDates.map(({ day }) => printAttendanceCell(student, day, true)).join('')}</tr>`;
+          }).join('')}</tbody>
+        </table>
+      </section>`;
+    };
+    const printDateHeading = (value, secondWeek) => {
+      const heading = new Intl.DateTimeFormat('tr-TR', { weekday: 'short' }).format(new Date(`${value}T12:00:00`));
+      return `<th class="print-date-heading${secondWeek ? ' print-week-two' : ''}"><span>${escapeHtml(heading)}</span><small>${escapeHtml(printableDate(value).slice(0, 5))}</small></th>`;
+    };
+    const printAttendanceCell = (student, day, secondWeek) => `<td class="print-attendance-cell${secondWeek ? ' print-week-two' : ''}">${student.schedule.some((entry) => entry.day === day) ? '<span class="attendance-box" aria-label="Yoklama işaretleme alanı"></span>' : ''}</td>`;
     const root = el('teacherPrintRoot');
-    root.innerHTML = `<article class="teacher-print-sheet" style="--print-font-size:${rowFont}pt;--print-cell-pad:${rowPadding}pt;--print-date-count:${dates.length}">
-      <header class="teacher-print-head"><img src="/images/logo.png" alt="Birlikte İyilik Akademi"><div><span>İKİ HAFTALIK YOKLAMA ÇİZELGESİ</span><h1>${escapeHtml(teacher.name)}</h1><p>${escapeHtml(labels.type[activeApplicationType] || activeApplicationType)} · ${escapeHtml(printableDate(from))} – ${escapeHtml(printableDate(to))}</p></div><strong>${students.length} öğrenci</strong></header>
-      <table class="teacher-print-table"><colgroup><col class="print-number-col"><col class="print-student-col"><col class="print-schedule-col">${dates.map(() => '<col class="print-date-col">').join('')}</colgroup><thead><tr><th>No</th><th>Öğrenci</th><th>Ders günü / saat</th>${dates.map(({ value }) => {
-        const heading = new Intl.DateTimeFormat('tr-TR', { weekday: 'short' }).format(new Date(`${value}T12:00:00`));
-        return `<th class="print-date-heading"><span>${escapeHtml(heading)}</span><small>${escapeHtml(printableDate(value).slice(0, 5))}</small></th>`;
-      }).join('')}</tr></thead><tbody>${students.map((student, index) => {
-        const scheduleText = student.schedule.sort((a, b) => meta.weekdays.indexOf(a.day) - meta.weekdays.indexOf(b.day) || slots.indexOf(a.slot) - slots.indexOf(b.slot))
-          .map((entry) => `${labels.days[entry.day].slice(0, 2)} ${entry.slot.replace(/:/g, '.').replace('-', '–')}`).join(' · ');
-        return `<tr><td>${index + 1}</td><td class="print-student-name"><strong>${escapeHtml(student.name)}</strong><small>${escapeHtml(student.reference || '')}</small></td><td class="print-schedule-text">${escapeHtml(scheduleText)}</td>${dates.map(({ day }) => `<td class="print-attendance-cell">${student.schedule.some((entry) => entry.day === day) ? '<span class="attendance-box" aria-label="Yoklama işaretleme alanı"></span>' : ''}</td>`).join('')}</tr>`;
-      }).join('')}</tbody></table>
+    root.innerHTML = `<article class="teacher-print-sheet" style="--print-font-size:${rowFont}pt;--print-cell-pad:${rowPadding}pt">
+      <header class="teacher-print-head"><img src="/images/logo.png" alt="Birlikte İyilik Akademi"><div><span>4 HAFTALIK YOKLAMA ÇİZELGESİ</span><h1>${escapeHtml(teacher.name)}</h1><p>${escapeHtml(labels.type[activeApplicationType] || activeApplicationType)} · ${escapeHtml(printableDate(from))} – ${escapeHtml(printableDate(to))}</p></div><strong>${students.length} öğrenci</strong></header>
+      <div class="teacher-print-periods">${periods.map(renderPeriodTable).join('')}</div>
       <footer><span>Her ders tarihinde öğrencinin katılımını ilgili kutucuğa işaretleyiniz.</span><span>Öğretmen imzası: ____________________</span></footer>
     </article>`;
     document.body.classList.add('printing-teacher-program');
@@ -1353,12 +1371,12 @@
   document.addEventListener('DOMContentLoaded', () => {
     const today = dateValue(new Date());
     el('programRangeFrom').value = today;
-    el('programRangeTo').value = addDays(today, 13);
+    el('programRangeTo').value = addDays(today, 27);
     el('programRangeFrom').addEventListener('change', () => {
-      if (el('programRangeFrom').value) el('programRangeTo').value = addDays(el('programRangeFrom').value, 13);
+      if (el('programRangeFrom').value) el('programRangeTo').value = addDays(el('programRangeFrom').value, 27);
     });
     el('programRangeTo').addEventListener('change', () => {
-      if (el('programRangeTo').value) el('programRangeFrom').value = addDays(el('programRangeTo').value, -13);
+      if (el('programRangeTo').value) el('programRangeFrom').value = addDays(el('programRangeTo').value, -27);
     });
     const filterIds = ['appsSearch', 'appsGender', 'appsGrade', 'appsLevel', 'appsPreviousTraining', 'appsStatus', 'appsPlanState', 'appsTeacher', 'appsFrom', 'appsTo'];
     filterIds.forEach((id) => el(id).addEventListener(id === 'appsSearch' ? 'input' : 'change', renderTable));
