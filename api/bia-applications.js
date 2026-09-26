@@ -993,6 +993,29 @@ export default async function handler(req) {
       }
     }
 
+    if (body.action === 'guardian-message-status') {
+      const id = cleanText(body.id, 80);
+      const createdAt = new Date(String(body.createdAt || ''));
+      if (!id || !Number.isFinite(createdAt.getTime()) || typeof body.sent !== 'boolean') {
+        return json({ error: 'Veli mesajı durumu geçersiz.' }, 400, cors);
+      }
+      try {
+        const updated = await mutateArchive(`${createdAt.toISOString().slice(0, 7)}.enc.json`, (records) => {
+          const index = records.findIndex((item) => item.id === id);
+          if (index < 0) throw new RequestError('Başvuru bulunamadı.', 404);
+          records[index] = {
+            ...records[index], guardianMessageSent: body.sent,
+            guardianMessageSentAt: body.sent ? new Date().toISOString() : null,
+            updatedAt: new Date().toISOString(), updatedBy: adminIdentity(admin)
+          };
+          return { records, value: records[index] };
+        }, `BIA: veli mesajı durumu ${body.sent ? 'gönderildi' : 'bekliyor'} olarak işaretlendi`);
+        return json({ ok: true, data: updated }, 200, cors);
+      } catch (error) {
+        return json({ error: error.message || 'Veli mesajı durumu kaydedilemedi.' }, error.status || 500, cors);
+      }
+    }
+
     if (body.action === 'update') {
       const id = cleanText(body.id, 80);
       const status = cleanText(body.status, 40);

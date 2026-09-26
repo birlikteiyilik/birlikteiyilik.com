@@ -203,10 +203,12 @@
     }
     body.innerHTML = filtered.map((item, index) => {
       const placement = placementOf(item.id);
+      const guardianPhone = item.guardianPhone || item.motherPhone || '';
       const messageButton = item.status === 'kayit-tamamlandi' && placement
         ? `<button type="button" class="btn app-copy" data-copy-id="${escapeHtml(item.id)}" aria-label="${item.applicationType === 'online' ? 'Online ders için veli bilgilendirme mesajını' : 'Veli bilgilendirme mesajını'} kopyala">${item.applicationType === 'online' ? 'Online veli mesajı' : 'Veli mesajı'}</button>` : '';
       const teacherMessageButton = item.applicationType === 'online'
         ? `<button type="button" class="btn app-copy-teacher" data-teacher-copy-id="${escapeHtml(item.id)}" aria-label="${escapeHtml(item.studentName)} için hocaya gönderilecek mesajı kopyala">Hocaya mesaj</button>` : '';
+      const guardianActions = `<button type="button" class="btn app-copy-phone" data-phone-copy-id="${escapeHtml(item.id)}" ${guardianPhone ? '' : 'disabled'} aria-label="${escapeHtml(item.studentName)} velisinin telefon numarasını kopyala">Veli numara</button><label class="guardian-sent-toggle"><input type="checkbox" data-guardian-sent-id="${escapeHtml(item.id)}" ${item.guardianMessageSent ? 'checked' : ''} aria-label="${escapeHtml(item.studentName)} velisine mesaj gönderildi"><span>Mesaj gönderildi</span></label>`;
       return `<tr data-id="${escapeHtml(item.id)}" tabindex="0" style="--row-index:${index}" aria-label="${escapeHtml(item.studentName)} başvurusunu aç">
         <td>${escapeHtml(formatDate(item.createdAt, false))}</td>
         <td><span class="app-student">${escapeHtml(item.studentName)}</span><span class="app-ref">${escapeHtml(item.reference)}</span></td>
@@ -216,7 +218,7 @@
         <td>${escapeHtml(labels.level[item.quranLevel] || item.quranLevel)}</td>
         <td>${compactProgram(item, placement)}</td>
         <td><span class="app-status app-status-${escapeHtml(item.status)}">${escapeHtml(labels.status[item.status] || item.status)}</span></td>
-        <td><div class="app-row-actions"><button type="button" class="btn btn-gray app-open" data-open-id="${escapeHtml(item.id)}">İncele</button>${teacherMessageButton}${messageButton}</div></td>
+        <td><div class="app-row-actions"><button type="button" class="btn btn-gray app-open" data-open-id="${escapeHtml(item.id)}">İncele</button>${teacherMessageButton}${messageButton}${guardianActions}</div></td>
       </tr>`;
     }).join('');
   }
@@ -304,16 +306,6 @@
     el('programBusiestSlot').textContent = busiest ? busiest[0].replace(/:/g, '.') : '—';
   }
 
-  function programLesson(entry, index) {
-    const start = entry.startDate ? formatDate(`${entry.startDate}T00:00:00`, false) : '';
-    const demo = entry.isDemo ? '<span class="program-demo-tag">Test</span>' : '';
-    return `<li class="program-lesson is-${escapeHtml(entry.applicationType)}" style="--lesson-index:${index}">
-      <time>${escapeHtml(entry.slot.replace('-', ' – '))}</time>
-      <div class="program-student"><strong>${escapeHtml(entry.studentName)} ${demo}</strong><small>${escapeHtml(labels.type[entry.applicationType] || entry.applicationType)}${start ? ` · Başlangıç ${escapeHtml(start)}` : ''}</small></div>
-      <button type="button" data-program-open="${escapeHtml(entry.applicationId)}" aria-label="${escapeHtml(entry.studentName)} başvurusunu incele">İncele</button>
-    </li>`;
-  }
-
   function renderProgram() {
     const entries = programEntries();
     const slots = slotsForType(activeApplicationType);
@@ -342,8 +334,7 @@
         const totalLessons = allTeacherEntries.length;
         const capacity = Math.max(1, (teacher.days || []).length * slots.length);
         const occupancy = Math.min(100, Math.round(totalLessons / capacity * 100));
-        const scheduledDays = new Set(allTeacherEntries.map((entry) => entry.day));
-        let displayDays = dayFilter ? [dayFilter] : meta.weekdays.filter((day) => (teacher.days || []).includes(day) || scheduledDays.has(day));
+        let displayDays = dayFilter ? [dayFilter] : meta.weekdays.slice();
         if ((query || slotFilter) && !dayFilter) {
           displayDays = meta.weekdays.filter((day) => visibleEntries.some((entry) => entry.day === day));
         }
@@ -351,17 +342,41 @@
         const dayColumns = displayDays.map((day, dayIndex) => {
           const dayEntries = visibleEntries.filter((entry) => entry.day === day)
             .sort((a, b) => slots.indexOf(a.slot) - slots.indexOf(b.slot) || a.studentName.localeCompare(b.studentName, 'tr'));
+          const allDayEntries = allTeacherEntries.filter((entry) => entry.day === day);
+          const slotBlocks = [];
+          let freeStart = -1;
+          const flushFree = (endIndex) => {
+            if (freeStart < 0) return;
+            const from = slots[freeStart].split('-')[0];
+            const to = slots[endIndex - 1].split('-')[1];
+            slotBlocks.push(`<li class="program-open-slot"><span class="program-slot-state">Müsait</span><time>${escapeHtml(from.replace(':', '.'))} – ${escapeHtml(to.replace(':', '.'))}</time></li>`);
+            freeStart = -1;
+          };
+          slots.forEach((slot, slotIndex) => {
+            const assigned = allDayEntries.find((entry) => entry.slot === slot);
+            if (!assigned) {
+              if (freeStart < 0) freeStart = slotIndex;
+              return;
+            }
+            flushFree(slotIndex);
+            const matchingVisible = visibleEntries.some((entry) => entry.applicationId === assigned.applicationId && entry.slot === slot && entry.day === day);
+            slotBlocks.push(`<li class="program-busy-slot"><span class="program-slot-state">Dolu${matchingVisible ? ` · ${escapeHtml(assigned.studentName)}` : ''}</span><time>${escapeHtml(slot.replace(/:/g, '.').replace('-', ' – '))}</time><button type="button" data-program-open="${escapeHtml(assigned.applicationId)}" aria-label="${escapeHtml(assigned.studentName)} başvurusunu incele">İncele</button></li>`);
+          });
+          flushFree(slots.length);
+          const workingDay = (teacher.days || []).includes(day);
           return `<section class="program-day-column" style="--day-index:${dayIndex}">
-            <header><div><span>${escapeHtml(labels.days[day].slice(0, 2).toLocaleUpperCase('tr-TR'))}</span><h4>${escapeHtml(labels.days[day])}</h4></div><em>${dayEntries.length} ders</em></header>
-            ${dayEntries.length ? `<ol>${dayEntries.map(programLesson).join('')}</ol>` : '<div class="program-day-empty"><span>＋</span> Henüz ders yok</div>'}
+            <header><div><span>${escapeHtml(labels.days[day].slice(0, 2).toLocaleUpperCase('tr-TR'))}</span><h4>${escapeHtml(labels.days[day])}</h4></div><em>${allDayEntries.length} ders</em></header>
+            ${workingDay ? `<ol class="program-day-slots">${slotBlocks.join('')}</ol>` : '<div class="program-day-empty">Bu gün çalışma günü değil</div>'}
           </section>`;
         }).join('');
         const testTag = teacher.isDemo ? '<span class="program-demo-tag">Test</span>' : '';
+        const printButton = totalLessons ? `<button type="button" class="btn program-print-button" data-program-print="${escapeHtml(teacher.id)}">Ders programını yazdır</button>` : '';
         cards.push(`<article class="program-teacher-card ${teacher.active ? '' : 'is-passive'}" style="--program-index:${cards.length}">
           <header class="program-teacher-head">
-            <div class="program-teacher-identity"><span class="teacher-avatar">${escapeHtml(teacher.name.charAt(0).toLocaleUpperCase('tr-TR'))}</span><div><div class="program-teacher-name"><h3>${escapeHtml(teacher.name)}</h3>${testTag}<span class="teacher-status">${teacher.active ? 'Aktif' : teacher.archived ? 'Arşiv' : 'Pasif'}</span></div><small>${escapeHtml((teacher.days || []).map((day) => labels.days[day]).join(', ') || 'Çalışma günü yok')}</small></div></div>
+            <div class="program-teacher-identity"><span class="teacher-avatar">${escapeHtml(teacher.name.charAt(0).toLocaleUpperCase('tr-TR'))}</span><div><div class="program-teacher-name"><h3>${escapeHtml(teacher.name)}</h3>${testTag}<span class="teacher-status">${teacher.active ? 'Aktif' : teacher.archived ? 'Arşiv' : 'Pasif'}</span></div><small>${escapeHtml((teacher.days || []).map((day) => labels.days[day]).join(', ') || 'Çalışma günü yok')}</small></div>${printButton}</div>
             <div class="program-load-summary"><div><span><strong>${totalStudents}</strong> öğrenci</span><span><strong>${totalLessons}</strong> ders / hafta</span></div><div class="program-load-meter" aria-label="Yüzde ${occupancy} doluluk"><i style="--load:${occupancy}%"></i></div><small>${occupancy}% haftalık doluluk</small></div>
           </header>
+          <div class="program-slot-legend"><span><i class="is-open"></i>Müsait saat</span><span><i class="is-busy"></i>Dolu ders saati</span></div>
           <div class="program-week" style="--day-count:${Math.max(1, displayDays.length)}">${dayColumns || '<div class="program-card-empty">Bu öğretmene henüz ders atanmamış.</div>'}</div>
         </article>`);
       });
@@ -805,6 +820,54 @@
       }
       toast(`${item.studentName} için mesaj panoya kopyalandı.`);
     } catch (_) { toast('Mesaj kopyalanamadı.', 'error'); }
+  }
+
+  async function copyGuardianPhone(id) {
+    const item = applications.find((record) => record.id === id);
+    const phone = item?.guardianPhone || item?.motherPhone || '';
+    if (!phone) return toast('Bu başvuruda veli telefonu bulunmuyor.', 'error');
+    const digits = String(phone).replace(/\D/g, '');
+    const copyValue = formatPhone(digits.length === 10 ? `0${digits}` : phone) || phone;
+    try {
+      if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(copyValue);
+      else {
+        const area = document.createElement('textarea');
+        area.value = copyValue; area.style.position = 'fixed'; area.style.opacity = '0';
+        document.body.appendChild(area); area.select(); document.execCommand('copy'); area.remove();
+      }
+      toast(`${item.studentName} velisinin numarası kopyalandı.`);
+    } catch (_) { toast('Veli numarası kopyalanamadı.', 'error'); }
+  }
+
+  async function setGuardianMessageSent(id, sent, input) {
+    const item = applications.find((record) => record.id === id);
+    if (!item) return;
+    input.disabled = true;
+    try {
+      const result = await api('POST', { action: 'guardian-message-status', id, createdAt: item.createdAt, sent });
+      Object.assign(item, result.data || { guardianMessageSent: sent });
+      toast(sent ? 'Veli mesajı gönderildi olarak işaretlendi.' : 'Veli mesajı işareti kaldırıldı.');
+    } catch (error) {
+      input.checked = !sent;
+      toast(error.message || 'Mesaj durumu kaydedilemedi.', 'error');
+    } finally { input.disabled = false; }
+  }
+
+  function printTeacherProgram(teacherId) {
+    const teacher = programTeachers(programEntries()).find((item) => item.id === teacherId);
+    if (!teacher) return toast('Öğretmen programı bulunamadı.', 'error');
+    const slots = slotsForType(activeApplicationType);
+    const entries = programEntries().filter((entry) => entry.teacherId === teacherId)
+      .sort((a, b) => meta.weekdays.indexOf(a.day) - meta.weekdays.indexOf(b.day) || slots.indexOf(a.slot) - slots.indexOf(b.slot));
+    if (!entries.length) return toast('Yazdırılacak atanmış ders bulunmuyor.', 'error');
+    const days = [...new Set(entries.map((entry) => entry.day))];
+    const root = el('teacherPrintRoot');
+    root.innerHTML = `<header class="teacher-print-head"><img src="/images/logo.png" alt="Birlikte İyilik Akademi"><div><span>HAFTALIK DERS PROGRAMI</span><h1>${escapeHtml(teacher.name)}</h1><p>${escapeHtml(labels.type[activeApplicationType] || activeApplicationType)} eğitim programı</p></div><strong>${entries.length} ders / hafta</strong></header><div class="teacher-print-days" style="--print-day-count:${days.length}">${days.map((day) => {
+      const dayEntries = entries.filter((entry) => entry.day === day);
+      return `<section class="teacher-print-day"><h2>${escapeHtml(labels.days[day])}<small>${dayEntries.length} ders</small></h2><table><thead><tr><th>Saat</th><th>Öğrenci</th><th>Eğitim</th></tr></thead><tbody>${dayEntries.map((entry) => `<tr><td>${escapeHtml(entry.slot.replace(/:/g, '.').replace('-', ' – '))}</td><td><strong>${escapeHtml(entry.studentName)}</strong><small>${escapeHtml(entry.applicationReference || '')}</small></td><td>${escapeHtml(labels.type[entry.applicationType] || entry.applicationType)}</td></tr>`).join('')}</tbody></table></section>`;
+    }).join('')}</div><footer>Birlikte İyilik Akademi · Öğretmen ders programı</footer>`;
+    document.body.classList.add('printing-teacher-program');
+    window.setTimeout(() => window.print(), 40);
   }
 
   function teacherMessageFor(item, placement) {
@@ -1322,6 +1385,9 @@
       }
     });
     el('appsTableBody').addEventListener('click', (event) => {
+      if (event.target.closest('.guardian-sent-toggle')) { event.stopPropagation(); return; }
+      const phoneCopy = event.target.closest('[data-phone-copy-id]');
+      if (phoneCopy) { event.stopPropagation(); copyGuardianPhone(phoneCopy.dataset.phoneCopyId); return; }
       const teacherCopy = event.target.closest('[data-teacher-copy-id]');
       if (teacherCopy) { event.stopPropagation(); copyTeacherMessage(teacherCopy.dataset.teacherCopyId); return; }
       const copy = event.target.closest('[data-copy-id]');
@@ -1331,6 +1397,17 @@
       const row = event.target.closest('tr[data-id]');
       if (row) openDetail(row.dataset.id);
     });
+    el('appsTableBody').addEventListener('change', (event) => {
+      const input = event.target.closest('[data-guardian-sent-id]');
+      if (input) { event.stopPropagation(); setGuardianMessageSent(input.dataset.guardianSentId, input.checked, input); }
+    });
+    el('programBoard').addEventListener('click', (event) => {
+      const button = event.target.closest('[data-program-print]');
+      if (button) { event.stopPropagation(); printTeacherProgram(button.dataset.programPrint); }
+      const open = event.target.closest('[data-program-open]');
+      if (open) { event.stopPropagation(); openDetail(open.dataset.programOpen); }
+    });
+    window.addEventListener('afterprint', () => document.body.classList.remove('printing-teacher-program'));
     el('appsTableBody').addEventListener('keydown', (event) => {
       if ((event.key === 'Enter' || event.key === ' ') && event.target.matches('tr[data-id]')) {
         event.preventDefault(); openDetail(event.target.dataset.id);
