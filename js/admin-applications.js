@@ -769,10 +769,10 @@
           phone: teacher?.phone || ''
         }];
       })).values()];
-      const teacherText = assignedTeachers.map((teacher) => `${teacher.name} ${formatTeacherPhone(teacher.phone)}`).join('\n');
+      const teacherText = assignedTeachers.map((teacher) => `*${teacher.name} ${formatTeacherPhone(teacher.phone)}*`).join('\n');
       const teacherCount = assignedTeachers.length;
       const teacherLabel = teacherCount > 1 ? 'Gönüllü Online Kuran-ı Kerim ve Güzel Ahlak Eğitmen bilgileri' : 'Gönüllü Online Kuran-ı Kerim ve Güzel Ahlak Eğitmen bilgisi';
-      return `Merhaba Efendim,\nÖğrenciniz ${item.studentName} için atanan ${teacherLabel} aşağıdaki gibidir.\nMüsait zamanınızda kendisi ile telefonla iletişim kurarak tanışma dersini planlayabilirsiniz.\n${teacherText || 'Öğretmen bilgisi belirtilmedi.'}\nİlginiz için teşekkür eder, Hayırlı Günler dileriz.\nBİRLİKTE İYİLİK AKADEMİ\nwww.birlikteiyilik.com`;
+      return `Merhaba Efendim,\n\nÖğrenciniz *${item.studentName}* için atanan ${teacherLabel} aşağıdaki gibidir. Müsait zamanınızda kendisi ile telefonla iletişim kurarak tanışma dersini planlayabilirsiniz.\n\n${teacherText || 'Öğretmen bilgisi belirtilmedi.'}\n\nİlginiz için teşekkür eder, Hayırlı Günler dileriz.\n\n*BİRLİKTE İYİLİK AKADEMİ*\nwww.birlikteiyilik.com`;
     }
     const groups = [];
     schedule.forEach((entry) => {
