@@ -537,7 +537,11 @@ export default async function handler(req) {
         .map((id) => teachers.get(id)).filter(Boolean)
         .map((teacher) => ({
           id: teacher.id, name: teacher.name, phone: teacher.phone,
-          days: WEEKDAYS.filter((day) => (placement.schedule || []).some((entry) => entry.teacherId === teacher.id && entry.day === day))
+          days: WEEKDAYS.filter((day) => (placement.schedule || []).some((entry) => entry.teacherId === teacher.id && entry.day === day)),
+          schedule: (placement.schedule || [])
+            .filter((entry) => entry.teacherId === teacher.id && WEEKDAYS.includes(entry.day) && TIME_SLOTS.includes(entry.slot))
+            .map((entry) => ({ day: entry.day, slot: entry.slot }))
+            .sort((a, b) => WEEKDAYS.indexOf(a.day) - WEEKDAYS.indexOf(b.day) || slotMinutes(a.slot) - slotMinutes(b.slot))
         }));
       if (!teacherDetails.length) return [];
       return [{

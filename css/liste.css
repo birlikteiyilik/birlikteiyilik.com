@@ -123,7 +123,13 @@ h1, h2, h3, p { margin-top: 0; }
 .teacher-list__heading { font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .09em; color: var(--color-muted); margin-bottom: .6rem; }
 .teacher-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .5rem 1rem; padding: .5rem 0; }
 .teacher-row strong { font-size: .88rem; }
-.teacher-row small { display: block; color: var(--color-ink-soft); font-size: .73rem; font-weight: 500; margin-top: .12rem; }
+.teacher-row > div:first-child { min-width: 0; flex: 1 1 16rem; }
+.lesson-times { margin-top: .9rem; }
+.lesson-times__label { display: block; margin-bottom: .4rem; color: var(--color-muted); font-size: .67rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.lesson-times__entries { display: flex; flex-wrap: wrap; gap: .4rem; }
+.lesson-time { display: inline-flex; align-items: baseline; gap: .4rem; max-width: 100%; padding: .28rem .52rem; border: 1px solid var(--color-rule); border-radius: .4rem; background: var(--color-paper-2); color: var(--color-ink-soft); font-size: .72rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.lesson-time strong { color: var(--color-ink); font-size: inherit; font-weight: 700; }
+.lesson-times__empty { color: var(--color-muted); font-size: .76rem; }
 .teacher-group { margin-bottom: 2rem; }
 .teacher-group__heading { display: flex; align-items: start; justify-content: space-between; flex-wrap: wrap; gap: .6rem; padding: .6rem 0 1rem; border-bottom: 2px solid var(--color-navy); }
 .teacher-group__heading h3 { font-family: var(--font-display); font-style: normal; font-size: 1.5rem; margin: .2rem 0 0; }
