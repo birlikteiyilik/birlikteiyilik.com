@@ -1,0 +1,28 @@
+{
+  "id": "/yoklama",
+  "name": "Birlikte İyilik Akademi E-Yoklama",
+  "short_name": "BİA E-Yoklama",
+  "description": "Öğretmen ders programı ve yoklama uygulaması.",
+  "lang": "tr-TR",
+  "start_url": "/yoklama",
+  "scope": "/yoklama",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "theme_color": "#111722",
+  "background_color": "#f3f5f8",
+  "icons": [
+    {
+      "src": "/images/favicon-square.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/yoklama-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

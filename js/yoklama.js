@@ -264,6 +264,10 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js', { scope: '/yoklama' })
+        .catch((error) => console.warn('E-Yoklama çevrimdışı önbelleği başlatılamadı.', error));
+    }
     setTheme(localStorage.getItem(THEME_KEY));
     el('loginTheme').addEventListener('click', toggleTheme);
     el('appTheme').addEventListener('click', toggleTheme);
