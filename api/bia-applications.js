@@ -26,6 +26,10 @@ const ONLINE_TIME_RANGES = [
 const REFERRAL_SOURCES = ['ogrenci-arkadasi', 'arkadas-tavsiyesi', 'bilgilendirme-mesaji', 'kendi-arastirmam', 'diger'];
 const ATTENDANCE_STATUSES = ['katildi', 'gelmedi', 'mazeretli'];
 const PASSWORD_ITERATIONS = 210000;
+function slotMinutes(slot) {
+  const match = /^(\d{2}):(\d{2})/.exec(String(slot || ''));
+  return match ? (Number(match[1]) * 60) + Number(match[2]) : Number.MAX_SAFE_INTEGER;
+}
 const ENUMS = {
   applicationType: ['yuz-yuze', 'online'],
   gender: ['erkek', 'kiz'],
