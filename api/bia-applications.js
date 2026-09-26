@@ -35,6 +35,7 @@ const DIRECTORY_PASSWORD_VERIFIER = {
 // Temporary, single-manifest import gate. Remove immediately after the one-time migration.
 const MANUAL_IMPORT_KEY_HASH = '6fc1332d8b62bc2dcf41855cb3dfc82cb89ca65d35651db09bbc13f1c045fd80';
 const MANUAL_IMPORT_MANIFEST_HASH = 'dbe90e2bac73ac21425d47f8e61f199a1901f09bfc85a1ca26b692449d64f9d1';
+const MANUAL_IMPORT_ALIASES_HASH = '4a335ec9dd57969f501b7faa97f6268f01c3e95aec8b5d98da7c82b06ef729d2';
 function slotMinutes(slot) {
   const match = /^(\d{2}):(\d{2})/.exec(String(slot || ''));
   return match ? (Number(match[1]) * 60) + Number(match[2]) : Number.MAX_SAFE_INTEGER;
@@ -448,7 +449,7 @@ function nearbyNames(name, records) {
     .slice(0, 3);
 }
 
-function planOneTimeFaceToFaceImport(manifest, applications, records) {
+function planOneTimeFaceToFaceImport(manifest, aliases, applications, records) {
   const issues = [];
   if (manifest?.startDate !== '2026-09-28' || !Array.isArray(manifest.teachers) ||
       manifest.teachers.length !== 5 || JSON.stringify(manifest.timeSlots) !== JSON.stringify(TIME_SLOTS)) {
@@ -470,9 +471,11 @@ function planOneTimeFaceToFaceImport(manifest, applications, records) {
   const planned = [];
   const statuses = {};
   for (const entry of requested) {
-    const teacherMatches = teachers.filter((teacher) => searchableName(teacher.name) === searchableName(entry.teacherName));
+    const teacherName = aliases.teachers?.[entry.teacherName] || entry.teacherName;
+    const studentName = aliases.students?.[entry.studentName] || entry.studentName;
+    const teacherMatches = teachers.filter((teacher) => searchableName(teacher.name) === searchableName(teacherName));
     const studentMatches = applications.filter((application) => application.applicationType === 'yuz-yuze' &&
-      searchableName(application.studentName) === searchableName(entry.studentName));
+      searchableName(application.studentName) === searchableName(studentName));
     if (teacherMatches.length !== 1) issues.push({ type: teacherMatches.length ? 'teacher-ambiguous' : 'teacher-missing',
       name: entry.teacherName, candidates: nearbyNames(entry.teacherName, teachers) });
     if (studentMatches.length !== 1) issues.push({ type: studentMatches.length ? 'student-ambiguous' : 'student-missing',
@@ -503,10 +506,15 @@ function planOneTimeFaceToFaceImport(manifest, applications, records) {
     planned.push({ application, schedule, existing });
   }
   const requestedSlots = new Set();
+  const requestedApplications = new Set();
   for (const item of planned) for (const lesson of item.schedule) {
     const key = `${lesson.teacherId}|${lesson.day}|${lesson.slot}`;
     if (requestedSlots.has(key)) issues.push({ type: 'import-conflict', name: lesson.teacherName, day: lesson.day, slot: lesson.slot });
     requestedSlots.add(key);
+  }
+  for (const item of planned) {
+    if (requestedApplications.has(item.application.id)) issues.push({ type: 'duplicate-student-match', name: item.application.studentName });
+    requestedApplications.add(item.application.id);
   }
   return {
     issues: [...new Map(issues.map((issue) => [JSON.stringify(issue), issue])).values()],
@@ -790,19 +798,23 @@ export default async function handler(req) {
     if (body.action === 'one-time-face-to-face-import') {
       const key = String(body.key || '');
       const manifestText = String(body.manifestText || '');
+      const aliasesText = String(body.aliasesText || '');
       if (!/^[0-9a-f]{64}$/.test(key) || !(await sameSecret(await sha256Hex(key), MANUAL_IMPORT_KEY_HASH)) ||
-          !(await sameSecret(await sha256Hex(manifestText), MANUAL_IMPORT_MANIFEST_HASH))) {
+          !(await sameSecret(await sha256Hex(manifestText), MANUAL_IMPORT_MANIFEST_HASH)) ||
+          (aliasesText && !(await sameSecret(await sha256Hex(aliasesText), MANUAL_IMPORT_ALIASES_HASH))) ||
+          (body.mode === 'apply' && !aliasesText)) {
         return json({ error: 'İçe aktarma yetkisi geçersiz.' }, 403, cors);
       }
       try {
         const manifest = JSON.parse(manifestText);
+        const aliases = aliasesText ? JSON.parse(aliasesText) : { teachers: {}, students: {} };
         const applications = await getAllApplications();
         const planning = await getArchive(PLANNING_FILE);
-        const preview = planOneTimeFaceToFaceImport(manifest, applications, planning.records);
+        const preview = planOneTimeFaceToFaceImport(manifest, aliases, applications, planning.records);
         if (body.mode !== 'apply') return json({ ok: true, mode: 'dry-run', ...preview.summary, issues: preview.issues }, 200, cors);
         if (preview.issues.length) return json({ error: 'Eşleşme veya çakışma var; hiçbir kayıt değiştirilmedi.', ...preview.summary, issues: preview.issues }, 409, cors);
         const imported = await mutateArchive(PLANNING_FILE, (records) => {
-          const fresh = planOneTimeFaceToFaceImport(manifest, applications, records);
+          const fresh = planOneTimeFaceToFaceImport(manifest, aliases, applications, records);
           if (fresh.issues.length) throw new RequestError('Atamalar kontrol sırasında değişti; hiçbir kayıt kaydedilmedi.', 409);
           let created = 0;
           const now = new Date().toISOString();
