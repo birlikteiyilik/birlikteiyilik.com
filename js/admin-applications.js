@@ -42,6 +42,7 @@
   let draftSchedule = {};
   let toastTimer = 0;
   let activeApplicationType = '';
+  let activeWorkspaceView = 'applications';
 
   function el(id) { return document.getElementById(id); }
   function escapeHtml(value) {
@@ -249,6 +250,27 @@
       }).join('');
   }
 
+  function filteredTeacherRows() {
+    const query = el('appsTeacherSearch').value.trim().toLocaleLowerCase('tr-TR');
+    const state = el('appsTeacherState').value;
+    return scopedTeachers().filter((teacher) => {
+      const haystack = `${teacher.name} ${teacher.phone} ${teacher.username || ''}`.toLocaleLowerCase('tr-TR');
+      return (!query || haystack.includes(query)) && (!state || (state === 'active' ? teacher.active : !teacher.active));
+    }).map((teacher) => {
+      const assigned = scopedPlacements().filter((placement) => placement.schedule?.some((entry) => entry.teacherId === teacher.id)).length;
+      return {
+        'Öğretmen': teacher.name,
+        'Telefon': formatPhone(teacher.phone),
+        'Cinsiyet': labels.gender[teacher.gender] || teacher.gender || '',
+        'Eğitim Türü': (teacher.modes || []).map((mode) => labels.type[mode] || mode).join(', '),
+        'Uygun Günler': (teacher.days || []).map((day) => labels.days[day] || day).join(', '),
+        'Durum': teacher.active ? 'Aktif' : 'Pasif',
+        'Kullanıcı Adı': teacher.username || '',
+        'Atanmış Öğrenci Sayısı': assigned
+      };
+    });
+  }
+
   function programEntries() {
     return scopedPlacements().flatMap((placement) => {
       const application = applications.find((item) => item.id === placement.applicationId);
@@ -263,6 +285,29 @@
         isDemo: placement.isDemo === true || application?.isDemo === true
       }));
     });
+  }
+
+  function filteredProgramEntries() {
+    const entries = programEntries();
+    const query = el('programSearch').value.trim().toLocaleLowerCase('tr-TR');
+    const dayFilter = el('programDay').value;
+    const teacherFilter = el('programTeacher').value;
+    const slotFilter = el('programSlot').value;
+    const teacherNames = new Map(programTeachers(entries).map((teacher) => [teacher.id, `${teacher.name} ${teacher.phone || ''}`.toLocaleLowerCase('tr-TR')]));
+    const matchingTeachers = new Set([...teacherNames.entries()].filter(([, name]) => query && name.includes(query)).map(([id]) => id));
+    return entries.filter((entry) => {
+      const searchMatch = !query || matchingTeachers.has(entry.teacherId) ||
+        `${entry.studentName} ${entry.applicationReference}`.toLocaleLowerCase('tr-TR').includes(query);
+      return searchMatch && (!dayFilter || entry.day === dayFilter) && (!teacherFilter || entry.teacherId === teacherFilter) && (!slotFilter || entry.slot === slotFilter);
+    }).map((entry) => ({
+      'Gün': labels.days[entry.day] || entry.day,
+      'Saat': entry.slot,
+      'Öğretmen': entry.teacherName,
+      'Öğrenci': entry.studentName,
+      'Başvuru No': entry.applicationReference,
+      'Eğitim Türü': labels.type[entry.applicationType] || entry.applicationType,
+      'Başlangıç Tarihi': entry.startDate || ''
+    }));
   }
 
   function programTeachers(entries) {
@@ -986,9 +1031,16 @@
     link.href = url; link.download = name; document.body.appendChild(link); link.click(); link.remove();
     URL.revokeObjectURL(url);
   }
+  function workspaceExport() {
+    if (activeWorkspaceView === 'teachers') return { rows: filteredTeacherRows(), label: 'ogretmenler', title: 'Öğretmenler' };
+    if (activeWorkspaceView === 'schedule') return { rows: filteredProgramEntries(), label: 'ders-programi', title: 'Ders Programı' };
+    if (activeWorkspaceView === 'reports') return { rows: reportExportRows(), label: 'yoklama-raporu', title: 'Yoklama Raporu' };
+    return { rows: exportRows(), label: 'basvurular', title: activeApplicationType === 'online' ? 'Online Başvurular' : 'Yüz Yüze Başvurular' };
+  }
+
   function exportCsv() {
-    const rows = exportRows();
-    if (!rows.length) return toast('Dışa aktarılacak başvuru bulunamadı.', 'error');
+    const { rows, label } = workspaceExport();
+    if (!rows.length) return toast('Seçili bölümde filtrelerle eşleşen kayıt bulunamadı.', 'error');
     const headers = Object.keys(rows[0]);
     const safe = (value) => {
       let text = String(value == null ? '' : value);
@@ -996,19 +1048,19 @@
       return `"${text.replace(/"/g, '""')}"`;
     };
     const csv = [headers.map(safe).join(';'), ...rows.map((row) => headers.map((key) => safe(row[key])).join(';'))].join('\r\n');
-    download(new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' }), `bia-${activeApplicationType}-basvurular-${new Date().toISOString().slice(0, 10)}.csv`);
-    toast('Filtrelenmiş başvurular CSV olarak indirildi.');
+    download(new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' }), `bia-${activeApplicationType}-${label}-${dateValue(new Date())}.csv`);
+    toast(`Filtrelenmiş ${label.replace(/-/g, ' ')} CSV olarak indirildi.`);
   }
   function exportExcel() {
-    const rows = exportRows();
-    if (!rows.length) return toast('Dışa aktarılacak başvuru bulunamadı.', 'error');
+    const { rows, label, title } = workspaceExport();
+    if (!rows.length) return toast('Seçili bölümde filtrelerle eşleşen kayıt bulunamadı.', 'error');
     if (!window.XLSX) return toast('Excel bileşeni yüklenemedi; CSV kullanabilirsiniz.', 'error');
     const sheet = XLSX.utils.json_to_sheet(rows);
     sheet['!cols'] = Object.keys(rows[0]).map((key) => ({ wch: Math.min(42, Math.max(13, key.length + 2)) }));
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, sheet, activeApplicationType === 'online' ? 'Online Başvurular' : 'Yüz Yüze Başvurular');
-    XLSX.writeFile(workbook, `bia-${activeApplicationType}-basvurular-${new Date().toISOString().slice(0, 10)}.xlsx`, { compression: true });
-    toast('Filtrelenmiş başvurular Excel olarak indirildi.');
+    XLSX.utils.book_append_sheet(workbook, sheet, title.slice(0, 31));
+    XLSX.writeFile(workbook, `bia-${activeApplicationType}-${label}-${dateValue(new Date())}.xlsx`, { compression: true });
+    toast(`Filtrelenmiş ${label.replace(/-/g, ' ')} Excel olarak indirildi.`);
   }
 
   function reportExportRows() {
@@ -1277,6 +1329,7 @@
   }
 
   function switchView(view) {
+    activeWorkspaceView = view;
     const views = { applications: 'appsApplicationsView', teachers: 'appsTeachersView', schedule: 'appsScheduleView', reports: 'appsReportsView' };
     const tabs = { applications: 'appsTabApplications', teachers: 'appsTabTeachers', schedule: 'appsTabSchedule', reports: 'appsTabReports' };
     Object.entries(views).forEach(([name, id]) => {
