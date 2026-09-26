@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/liste.css?v=1">
+  <link rel="stylesheet" href="/css/liste.css?v=3">
   <script defer src="/js/liste.js?v=1"></script>
 </head>
 <body>
@@ -29,37 +29,40 @@
 
   <main id="main">
     <section class="login-shell" id="loginView" aria-labelledby="loginTitle">
-      <div class="login-story">
-        <a class="brand brand--light" href="/" aria-label="Birlikte İyilik Akademi ana sayfa"><img src="/images/logo_icon_white.png" alt="" width="30" height="46"><span>birlikte iyilik <b>akademi</b></span></a>
-        <div class="story-center">
-          <div class="story-art" aria-hidden="true"><span class="story-art__circle"></span><span class="story-art__line story-art__line--one"></span><span class="story-art__line story-art__line--two"></span><span class="story-art__dot"></span></div>
-          <p class="story-index">Kayıt rehberi</p>
-          <h1>Aradığınız bilgi,<br>bir isim uzağınızda.</h1>
-          <p class="story-description">Öğrenci, veli ve öğretmen bilgilerine girişte hızlıca ulaşın.</p>
-        </div>
-        <p class="story-foot">Birlikte İyilik Akademi <span>·</span> Kurum içi kullanım</p>
+      <div class="motion-field" aria-hidden="true">
+        <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+          <g class="motion-field__near">
+            <path d="M-140 175C150 10 325 360 570 191S1040-35 1580 125"/>
+            <path d="M-140 220C160 55 335 408 585 238S1065 12 1580 170"/>
+            <path d="M-140 265C170 102 350 453 600 286S1090 58 1580 215"/>
+          </g>
+          <g class="motion-field__far">
+            <path d="M-160 760C175 588 350 890 620 686S1120 460 1600 670"/>
+            <path d="M-160 805C188 633 365 936 635 733S1135 505 1600 715"/>
+            <path d="M-160 850C200 678 378 981 650 778S1150 550 1600 760"/>
+          </g>
+          <path class="motion-field__accent" d="M-140 174C150 10 325 360 570 191S1040-35 1580 125"/>
+        </svg>
+        <span class="motion-node motion-node--one"></span><span class="motion-node motion-node--two"></span><span class="motion-node motion-node--three"></span>
       </div>
-      <div class="login-side">
-        <div class="login-mobile-brand"><img src="/images/logo_icon.png" alt="" width="26" height="40"><span>birlikte iyilik akademi</span></div>
+      <div class="login-center">
         <div class="login-form-wrap">
-          <span class="section-mark"><svg><use href="#i-lock"></use></svg> Yetkili erişimi</span>
-          <h2 id="loginTitle">Kayıt rehberine giriş</h2>
-          <p>Size verilen erişim şifresiyle devam edin.</p>
+          <a class="brand login-brand" href="/" aria-label="Birlikte İyilik Akademi ana sayfa"><img src="/images/logo_icon.png" alt="" width="34" height="52"><img class="brand-wordmark" src="/images/liste-wordmark.png" alt="Birlikte İyilik Akademi" width="177" height="30"></a>
+          <div class="login-heading"><span class="login-eyebrow"><svg><use href="#i-lock"></use></svg> Kurum içi erişim</span><h1 id="loginTitle">Kayıt rehberi</h1><p>Öğrenci ve öğretmen bilgilerine ulaşmak için erişim şifrenizi girin.</p></div>
           <form id="loginForm" novalidate>
             <label for="password">Erişim şifresi</label>
             <div class="password-wrap"><input id="password" name="password" type="password" autocomplete="current-password" maxlength="128" required aria-describedby="loginFeedback" placeholder="Şifrenizi yazın"><button id="showPassword" type="button" aria-label="Şifreyi göster" aria-pressed="false"><svg><use href="#i-eye"></use></svg></button></div>
             <p class="field-feedback" id="loginFeedback" role="alert"></p>
             <button class="primary-button" id="loginButton" type="submit"><span>Rehberi aç</span><svg><use href="#i-arrow"></use></svg></button>
           </form>
-          <p class="login-note">Erişim sorunu yaşıyorsanız kurum yöneticinizle iletişime geçin.</p>
         </div>
-        <p class="mobile-foot">Kurum içi kullanım</p>
+        <p class="login-footnote">Yalnızca yetkili personel için</p>
       </div>
     </section>
 
     <div class="directory" id="directoryView" hidden>
       <header class="app-header">
-        <div class="app-header__inner"><a class="brand" href="/" aria-label="Birlikte İyilik Akademi ana sayfa"><img src="/images/logo_icon.png" alt="" width="27" height="41"><span>birlikte iyilik <b>akademi</b></span></a><div class="header-right"><span class="private-label"><span></span> Kurum içi rehber</span><button id="logoutButton" class="logout-button" type="button">Çıkış yap <svg><use href="#i-arrow"></use></svg></button></div></div>
+        <div class="app-header__inner"><a class="brand" href="/" aria-label="Birlikte İyilik Akademi ana sayfa"><img src="/images/logo_icon.png" alt="" width="27" height="41"><img class="brand-wordmark" src="/images/liste-wordmark.png" alt="Birlikte İyilik Akademi" width="145" height="25"></a><div class="header-right"><span class="private-label"><span></span> Kurum içi rehber</span><button id="logoutButton" class="logout-button" type="button">Çıkış yap <svg><use href="#i-arrow"></use></svg></button></div></div>
       </header>
       <div class="app-layout">
         <aside class="search-panel" aria-labelledby="searchTitle">
