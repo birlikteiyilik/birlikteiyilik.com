@@ -428,6 +428,26 @@ function placementUsesTeacher(placement, teacherId) {
   return placement?.teacherId === teacherId || (placement?.schedule || []).some((entry) => entry.teacherId === teacherId);
 }
 
+function nearbyNames(name, records) {
+  const source = searchableName(name);
+  const distance = (left, right) => {
+    const previous = Array.from({ length: right.length + 1 }, (_, index) => index);
+    for (let row = 1; row <= left.length; row += 1) {
+      const current = [row];
+      for (let column = 1; column <= right.length; column += 1) {
+        current[column] = Math.min(current[column - 1] + 1, previous[column] + 1,
+          previous[column - 1] + (left[row - 1] === right[column - 1] ? 0 : 1));
+      }
+      previous.splice(0, previous.length, ...current);
+    }
+    return previous[right.length];
+  };
+  return records.map((record) => ({ name: record.name || record.studentName,
+    difference: distance(source, searchableName(record.name || record.studentName)) }))
+    .sort((a, b) => a.difference - b.difference)
+    .slice(0, 3);
+}
+
 function planOneTimeFaceToFaceImport(manifest, applications, records) {
   const issues = [];
   if (manifest?.startDate !== '2026-09-28' || !Array.isArray(manifest.teachers) ||
@@ -453,8 +473,10 @@ function planOneTimeFaceToFaceImport(manifest, applications, records) {
     const teacherMatches = teachers.filter((teacher) => searchableName(teacher.name) === searchableName(entry.teacherName));
     const studentMatches = applications.filter((application) => application.applicationType === 'yuz-yuze' &&
       searchableName(application.studentName) === searchableName(entry.studentName));
-    if (teacherMatches.length !== 1) issues.push({ type: teacherMatches.length ? 'teacher-ambiguous' : 'teacher-missing', name: entry.teacherName });
-    if (studentMatches.length !== 1) issues.push({ type: studentMatches.length ? 'student-ambiguous' : 'student-missing', name: entry.studentName });
+    if (teacherMatches.length !== 1) issues.push({ type: teacherMatches.length ? 'teacher-ambiguous' : 'teacher-missing',
+      name: entry.teacherName, candidates: nearbyNames(entry.teacherName, teachers) });
+    if (studentMatches.length !== 1) issues.push({ type: studentMatches.length ? 'student-ambiguous' : 'student-missing',
+      name: entry.studentName, candidates: nearbyNames(entry.studentName, applications.filter((item) => item.applicationType === 'yuz-yuze')) });
     if (teacherMatches.length !== 1 || studentMatches.length !== 1) continue;
     const teacher = teacherMatches[0];
     const application = studentMatches[0];
