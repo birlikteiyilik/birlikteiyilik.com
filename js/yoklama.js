@@ -286,8 +286,7 @@
     el('nextWeek').addEventListener('click', () => {
       if (el('nextWeek').disabled) return;
       if (dirty.size && !window.confirm('Kaydedilmemiş değişiklikler var. Sonraki haftaya geçilsin mi?')) return;
-      const next = addDays(mondayFor(selectedDate), 7);
-      selectedDate = next > dateValue(new Date()) ? initialDate() : next;
+      selectedDate = addDays(mondayFor(selectedDate), 7);
       loadDay();
     });
     el('lessonList').addEventListener('click', (event) => {
