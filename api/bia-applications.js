@@ -395,6 +395,10 @@ function placementFor(records, applicationId) {
   return records.find((item) => item.kind === 'placement' && item.applicationId === applicationId);
 }
 
+function placementUsesTeacher(placement, teacherId) {
+  return placement?.teacherId === teacherId || (placement?.schedule || []).some((entry) => entry.teacherId === teacherId);
+}
+
 function demoTckn(index) {
   const firstNine = String(900000000 + index).split('').map(Number);
   const odd = firstNine[0] + firstNine[2] + firstNine[4] + firstNine[6] + firstNine[8];
@@ -808,14 +812,13 @@ export default async function handler(req) {
         const deleted = await mutateArchive(PLANNING_FILE, (records) => {
           const teacher = records.find((item) => item.kind === 'teacher' && item.id === teacherId);
           if (!teacher) throw new RequestError('Öğretmen bulunamadı.', 404);
-          const assignments = records.filter((item) => item.kind === 'placement' &&
-            (item.schedule || []).some((entry) => entry.teacherId === teacherId));
+          const assignments = records.filter((item) => item.kind === 'placement' && placementUsesTeacher(item, teacherId));
           if (assignments.length && body.removeAssignments !== true) {
             throw new RequestError(`${teacher.name} için ${assignments.length} öğrenci programı var. Önce atamaları kaldırın.`, 409);
           }
           return {
             records: records.filter((item) => !(item.kind === 'teacher' && item.id === teacherId) &&
-              !(item.kind === 'placement' && (item.schedule || []).some((entry) => entry.teacherId === teacherId))),
+              !(item.kind === 'placement' && placementUsesTeacher(item, teacherId))),
             value: { teacher, removedAssignments: assignments.length }
           };
         }, 'BIA: öğretmen ve bağlı ders atamaları silindi');
@@ -875,7 +878,7 @@ export default async function handler(req) {
           const demoTeacherIds = new Set(records.filter((item) => item.kind === 'teacher' && item.isDemo === true).map((item) => item.id));
           const shouldRemovePlacement = (item) => item.kind === 'placement' &&
             (item.isDemo === true || demoApplicationIds.has(item.applicationId) ||
-              (item.schedule || []).some((entry) => demoTeacherIds.has(entry.teacherId)));
+              demoTeacherIds.has(item.teacherId) || (item.schedule || []).some((entry) => demoTeacherIds.has(entry.teacherId)));
           const shouldRemoveAttendance = (item) => item.kind === 'attendance' &&
             (item.isDemo === true || demoApplicationIds.has(item.applicationId) || demoTeacherIds.has(item.teacherId));
           const removedTeachers = records.filter((item) => item.kind === 'teacher' && item.isDemo === true).length;
@@ -915,14 +918,19 @@ export default async function handler(req) {
             throw new RequestError('Öğretmen hesabı için en az 8 karakterli bir şifre belirleyin.');
           }
           if (existing) {
-            const assignedEntries = records.filter((item) => item.kind === 'placement')
+            const assignedPlacements = records.filter((item) => item.kind === 'placement' && placementUsesTeacher(item, input.id));
+            const assignedEntries = assignedPlacements
               .flatMap((item) => (item.schedule || []).map((entry) => ({ ...entry, mode: item.applicationType })))
               .filter((entry) => entry.teacherId === input.id);
-            if (assignedEntries.length && input.gender !== existing.gender) {
+            const hasDirectOnlineAssignment = assignedPlacements.some((item) => item.teacherId === input.id && item.applicationType === 'online');
+            if ((assignedEntries.length || hasDirectOnlineAssignment) && input.gender !== existing.gender) {
               throw new RequestError('Mevcut dersleri olan öğretmenin cinsiyet bilgisi değiştirilemez.', 409);
             }
             const used = assignedEntries.find((entry) => !input.days.includes(entry.day) || !input.modes.includes(entry.mode));
             if (used) throw new RequestError('Bu öğretmenin mevcut dersleri var. Kullanılan gün veya eğitim türü kaldırılamaz.', 409);
+            if (hasDirectOnlineAssignment && !input.modes.includes('online')) {
+              throw new RequestError('Bu öğretmene online öğrenci atanmış. Online eğitim türü kaldırılamaz.', 409);
+            }
           }
           const teacher = {
             kind: 'teacher', id: existing?.id || crypto.randomUUID(), name: input.name, gender: input.gender,
@@ -942,10 +950,44 @@ export default async function handler(req) {
       }
     }
 
+    if (body.action === 'online-teacher-assign') {
+      try {
+        const applicationId = cleanText(body.applicationId, 80);
+        const application = await requireApplication(applicationId, body.applicationCreatedAt);
+        if (application.applicationType !== 'online') throw new RequestError('Bu işlem yalnızca online başvurular için kullanılabilir.', 409);
+        const teacherId = cleanText(body.teacherId, 80);
+        if (!teacherId) throw new RequestError('Atanacak öğretmeni seçin.');
+        const saved = await mutateArchive(PLANNING_FILE, (records) => {
+          const teacher = records.find((item) => item.kind === 'teacher' && item.id === teacherId);
+          if (!teacher) throw new RequestError('Öğretmen bulunamadı.', 404);
+          if (!teacher.active) throw new RequestError(`${teacher.name} pasif durumda; yeni öğrenci atanamaz.`, 409);
+          const expectedGender = application.gender === 'kiz' ? 'kadin' : 'erkek';
+          if (teacher.gender !== expectedGender) throw new RequestError(`${application.studentName} için ${application.gender === 'kiz' ? 'kadın' : 'erkek'} öğretmen seçin.`, 409);
+          if (!teacher.modes.includes('online')) throw new RequestError(`${teacher.name}, online eğitim türünde ders vermiyor.`, 409);
+          const existing = placementFor(records, applicationId);
+          const now = new Date().toISOString();
+          const placement = {
+            kind: 'placement', id: existing?.id || crypto.randomUUID(), applicationId,
+            applicationCreatedAt: application.createdAt, applicationReference: application.reference,
+            studentName: application.studentName, applicationType: 'online', teacherId, teacherName: teacher.name,
+            startDate: '', schedule: [], createdAt: existing?.createdAt || now, updatedAt: now,
+            updatedBy: adminIdentity(admin)
+          };
+          const index = existing ? records.findIndex((item) => item.kind === 'placement' && item.applicationId === applicationId) : -1;
+          if (index >= 0) records[index] = placement; else records.push(placement);
+          return { records, value: placement };
+        }, `BIA: online öğrencisine öğretmen atandı`);
+        return json({ ok: true, data: saved }, 200, cors);
+      } catch (error) {
+        return json({ error: error.message || 'Öğretmen ataması kaydedilemedi.' }, error.status || 500, cors);
+      }
+    }
+
     if (body.action === 'placement-save') {
       try {
         const applicationId = cleanText(body.applicationId, 80);
         const application = await requireApplication(applicationId, body.applicationCreatedAt);
+        if (application.applicationType === 'online') throw new RequestError('Online öğrenciler için yalnızca öğretmen ataması yapılabilir.', 409);
         if (!validDate(body.startDate)) throw new RequestError('Başlangıç tarihi seçin.');
         const schedule = normalizeSchedule(body.schedule);
         const allowedSlots = application.applicationType === 'online' ? ONLINE_TIME_SLOTS : TIME_SLOTS;
@@ -1041,8 +1083,11 @@ export default async function handler(req) {
         if (status === 'kayit-tamamlandi') {
           const planning = await getArchive(PLANNING_FILE);
           const placement = placementFor(planning.records, id);
-          if (!placement || !validDate(placement.startDate) || !Array.isArray(placement.schedule) || !placement.schedule.length) {
-            throw new RequestError('Kayıt tamamlanmadan önce başlangıç tarihiyle birlikte en az bir ders günü planlayın.', 409);
+          const onlineAssigned = placement?.applicationType === 'online' && placement.teacherId;
+          if (!placement || (!onlineAssigned && (!validDate(placement.startDate) || !Array.isArray(placement.schedule) || !placement.schedule.length))) {
+            throw new RequestError(placement?.applicationType === 'online'
+              ? 'Kayıt tamamlanmadan önce öğrenciye bir öğretmen atayın.'
+              : 'Kayıt tamamlanmadan önce başlangıç tarihiyle birlikte en az bir ders günü planlayın.', 409);
           }
         }
         const updated = await mutateArchive(`${createdAt.toISOString().slice(0, 7)}.enc.json`, (records) => {

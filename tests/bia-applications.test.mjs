@@ -318,19 +318,21 @@ const onlineOutsideRangeResponse = await adminPost({
   startDate: '2026-09-14', schedule: onlineOutsideRangeSchedule
 });
 assert.equal(onlineOutsideRangeResponse.status, 409);
-assert.match((await onlineOutsideRangeResponse.json()).error, /müsait saatler/);
-
-const onlineAutoPlanResponse = await adminPost({
-  action: 'auto-plan', applicationIds: [onlineApplication.id], startDate: '2026-09-14'
+assert.match((await onlineOutsideRangeResponse.json()).error, /yalnızca öğretmen ataması/);
+const onlineTeacherAssignmentResponse = await adminPost({
+  action: 'online-teacher-assign', applicationId: onlineApplication.id,
+  applicationCreatedAt: onlineApplication.createdAt, teacherId: onlineMaleTeacher.id
 });
-assert.equal(onlineAutoPlanResponse.status, 200);
-const onlineAutoPlan = await onlineAutoPlanResponse.json();
-assert.equal(onlineAutoPlan.data.length, 1);
-assert.ok(onlineAutoPlan.data[0].schedule.every((entry) => entry.teacherId === onlineMaleTeacher.id));
-assert.ok(onlineAutoPlan.data[0].schedule.every((entry) => {
-  const hour = Number(entry.slot.slice(0, 2));
-  return hour >= 17 && hour < 21;
-}));
+assert.equal(onlineTeacherAssignmentResponse.status, 200);
+const onlineTeacherAssignment = (await onlineTeacherAssignmentResponse.json()).data;
+assert.equal(onlineTeacherAssignment.teacherId, onlineMaleTeacher.id);
+assert.equal(onlineTeacherAssignment.schedule.length, 0);
+assert.equal(onlineTeacherAssignment.startDate, '');
+const onlineCompleteResponse = await adminPost({
+  action: 'update', id: onlineApplication.id, createdAt: onlineApplication.createdAt,
+  status: 'kayit-tamamlandi', adminNote: 'Öğretmen atandı.'
+});
+assert.equal(onlineCompleteResponse.status, 200);
 
 const maleSubmission = {
   ...validSubmission, studentName: 'Erkek Test Öğrenci', gender: 'erkek',
@@ -355,55 +357,21 @@ const wrongGenderResponse = await adminPost({
 assert.equal(wrongGenderResponse.status, 409);
 assert.match((await wrongGenderResponse.json()).error, /erkek öğretmen/);
 
-const unavailableSchedule = ['pazartesi', 'sali', 'carsamba', 'persembe', 'cuma']
+const scheduleOutsideRequestedTimes = ['pazartesi', 'sali', 'carsamba', 'persembe', 'cuma']
   .map((day) => ({ day, teacherId: maleTeacher.id, slot: '15:00-15:20' }));
-const unavailableResponse = await adminPost({
+const outsidePreferencesResponse = await adminPost({
   action: 'placement-save', applicationId: maleApplication.id, applicationCreatedAt: maleApplication.createdAt,
-  startDate: '2026-09-14', schedule: unavailableSchedule
+  startDate: '2026-09-14', schedule: scheduleOutsideRequestedTimes
 });
-assert.equal(unavailableResponse.status, 409);
-assert.match((await unavailableResponse.json()).error, /müsait saatler/);
-
-const autoPlanResponse = await adminPost({
-  action: 'auto-plan', applicationIds: [maleApplication.id], startDate: '2026-09-14'
-});
-assert.equal(autoPlanResponse.status, 200);
-const autoPlan = await autoPlanResponse.json();
-assert.equal(autoPlan.data.length, 1);
-assert.equal(new Set(autoPlan.data[0].schedule.map((entry) => entry.teacherId)).size, 1);
-assert.equal(new Set(autoPlan.data[0].schedule.map((entry) => entry.slot)).size, 1);
-assert.ok(autoPlan.data[0].schedule.every((entry) => entry.teacherId === maleTeacher.id));
-assert.ok(autoPlan.data[0].schedule.every((entry) => maleSubmission.availabilitySlots.includes(entry.slot)));
-
-const reserveSubmission = {
-  ...validSubmission, applicationType: 'online', studentName: 'Yedek Test Öğrenci',
-  tckn: makeTckn('400000007'), availabilitySlots: ['17:40-18:00'], startedAt: Date.now() - 5000
-};
-const reserveSubmitResponse = await handler(new Request('http://localhost:4173/api/bia-applications', {
-  method: 'POST', headers: { 'Content-Type': 'application/json', 'Origin': 'http://localhost:4173' },
-  body: JSON.stringify(reserveSubmission)
-}));
-assert.equal(reserveSubmitResponse.status, 201);
-const reserveBeforePlan = await (await handler(new Request('http://localhost:4173/api/bia-applications', {
-  method: 'GET', headers: adminHeaders
-}))).json();
-const reserveApplication = reserveBeforePlan.data.find((item) => item.studentName === reserveSubmission.studentName);
-const reservePlanResponse = await adminPost({ action: 'auto-plan', applicationIds: [reserveApplication.id], startDate: '2026-09-14' });
-assert.equal(reservePlanResponse.status, 200);
-const reservePlan = await reservePlanResponse.json();
-assert.equal(reservePlan.data.length, 0);
-assert.equal(reservePlan.reserved, 1);
-const reserveAfterPlan = await (await handler(new Request('http://localhost:4173/api/bia-applications', {
-  method: 'GET', headers: adminHeaders
-}))).json();
-assert.equal(reserveAfterPlan.data.find((item) => item.id === reserveApplication.id).status, 'yedek');
+assert.equal(outsidePreferencesResponse.status, 200);
+assert.equal((await outsidePreferencesResponse.json()).data.schedule.length, 5);
 
 const demoSeedResponse = await adminPost({ action: 'demo-seed', startDate: '2026-09-14' });
 assert.equal(demoSeedResponse.status, 200);
 const demoSeed = await demoSeedResponse.json();
 assert.equal(demoSeed.data.applications.length, 10);
 assert.equal(demoSeed.data.teachers.length, 5);
-assert.equal(demoSeed.data.placements.length, 10);
+assert.equal(demoSeed.data.placements.length, 0);
 assert.ok(demoSeed.data.applications.some((item) => item.availabilitySlots.length === 1 && item.availabilitySlots[0] === '17:40-18:00'));
 assert.ok(new Set(demoSeed.data.applications.map((item) => item.availabilitySlots.join('|'))).size >= 5);
 
@@ -411,7 +379,7 @@ const demoRefreshResponse = await adminPost({ action: 'demo-seed', startDate: '2
 assert.equal(demoRefreshResponse.status, 200);
 const demoRefresh = await demoRefreshResponse.json();
 assert.equal(demoRefresh.data.applications.length, 10);
-assert.equal(demoRefresh.data.placements.length, 10);
+assert.equal(demoRefresh.data.placements.length, 0);
 
 const demoList = await (await handler(new Request('http://localhost:4173/api/bia-applications', {
   method: 'GET', headers: adminHeaders
@@ -429,13 +397,11 @@ const deleteApplicationResponse = await adminPost({
 assert.equal(deleteApplicationResponse.status, 200);
 assert.equal((await deleteApplicationResponse.json()).removedAssignments, 1);
 
-const demoTeacherWithLessons = demoList.teachers.find((teacher) => teacher.isDemo &&
-  demoList.placements.some((placement) => placement.schedule.some((entry) => entry.teacherId === teacher.id)));
 const deleteTeacherResponse = await adminPost({
-  action: 'teacher-delete', teacherId: demoTeacherWithLessons.id, removeAssignments: true
+  action: 'teacher-delete', teacherId: onlineMaleTeacher.id, removeAssignments: true
 });
 assert.equal(deleteTeacherResponse.status, 200);
-assert.ok((await deleteTeacherResponse.json()).data.removedAssignments > 0);
+assert.equal((await deleteTeacherResponse.json()).data.removedAssignments, 1);
 
 const deleteAssignmentsResponse = await adminPost({ action: 'bulk-delete', scope: 'assignments' });
 assert.equal(deleteAssignmentsResponse.status, 200);
@@ -445,7 +411,7 @@ const deleteDemoResponse = await adminPost({ action: 'bulk-delete', scope: 'demo
 assert.equal(deleteDemoResponse.status, 200);
 const deletedDemo = await deleteDemoResponse.json();
 assert.equal(deletedDemo.data.removedApplications, 10);
-assert.equal(deletedDemo.data.removedTeachers, 4);
+assert.equal(deletedDemo.data.removedTeachers, 5);
 
 const deleteAllApplicationsResponse = await adminPost({ action: 'bulk-delete', scope: 'applications' });
 assert.equal(deleteAllApplicationsResponse.status, 200);

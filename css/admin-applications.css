@@ -167,7 +167,7 @@ html, body { max-width: 100%; overflow-x: hidden; }
 }
 .apps-search-field { grid-column: span 2; }
 .apps-filter-grid input, .apps-filter-grid select, .teacher-toolbar input, .teacher-toolbar select,
-.apps-review-grid select, .apps-review-grid textarea, .assignment-controls input,
+.apps-review-grid select, .apps-review-grid textarea, .assignment-controls input, .online-teacher-select select,
 .schedule-row select, .teacher-form-grid input {
   background: var(--app-soft);
   border: 1px solid #d8dee7;
@@ -181,7 +181,7 @@ html, body { max-width: 100%; overflow-x: hidden; }
   transition: background .15s ease, border-color .15s ease, box-shadow .15s ease;
 }
 .apps-filter-grid :is(input,select):focus, .teacher-toolbar :is(input,select):focus,
-.apps-review-grid :is(select,textarea):focus, .assignment-controls input:focus,
+.apps-review-grid :is(select,textarea):focus, .assignment-controls input:focus, .online-teacher-select select:focus,
 .schedule-row select:focus, .teacher-form-grid input:focus {
   background: #fff;
   border-color: var(--app-red);
@@ -431,6 +431,8 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .assignment-controls { align-items: end; display: grid; gap: 14px; grid-template-columns: 220px 1fr; margin-bottom: 12px; }
 .assignment-controls label { color: var(--app-muted); display: grid; font-size: .68rem; font-weight: 750; gap: 5px; }
 .assignment-controls p { color: var(--app-muted); font-size: .7rem; line-height: 1.45; margin: 0 0 4px; }
+.online-teacher-select { color: var(--app-muted); display: grid; font-size: .7rem; font-weight: 750; gap: 6px; max-width: 520px; }
+.online-assignment-hint { color: var(--app-muted); font-size: .7rem; line-height: 1.5; margin: 9px 0 0; }
 .schedule-table { background: #fff; border: 1px solid #e1e6ed; border-radius: 10px; overflow: hidden; }
 .schedule-row { align-items: end; border-top: 1px solid #edf0f4; display: grid; gap: 9px; grid-template-columns: 115px 1.2fr 1fr 24px; padding: 10px; animation: scheduleIn .28s calc(var(--day-index, 0) * 40ms) ease both; }
 .schedule-row:first-child { border-top: 0; }
