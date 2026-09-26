@@ -32,9 +32,6 @@ const DIRECTORY_PASSWORD_VERIFIER = {
   passwordSalt: 'drZhAtuCsj+yEQS4KEAOqw==',
   passwordHash: 'Qn1nf3Ufv65gmOIh4+nY7z7P9K+nqVg6NXRx7j3UDDQ='
 };
-// Temporary, read-only, short-lived diagnostic gate. Remove after analysis.
-const SCHEDULE_ANALYSIS_KEY_HASH = '6fc1332d8b62bc2dcf41855cb3dfc82cb89ca65d35651db09bbc13f1c045fd80';
-const SCHEDULE_ANALYSIS_EXPIRES_AT = '2026-09-26T15:00:00Z';
 function slotMinutes(slot) {
   const match = /^(\d{2}):(\d{2})/.exec(String(slot || ''));
   return match ? (Number(match[1]) * 60) + Number(match[2]) : Number.MAX_SAFE_INTEGER;
@@ -94,11 +91,6 @@ function base64UrlToBytes(value) {
 
 function base64UrlFromBytes(bytes) {
   return base64FromBytes(bytes).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
-}
-
-async function sha256Hex(value) {
-  const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', encoder.encode(value)));
-  return [...digest].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
 async function signJwt(payload, secret) {
@@ -695,34 +687,6 @@ export default async function handler(req) {
         return json({ ok: true, ...(await directoryResults(query, mode)) }, 200, cors);
       } catch (error) {
         return json({ error: error.message || 'Arama şu anda yapılamıyor.' }, error.status || 500, cors);
-      }
-    }
-
-    if (body.action === 'one-time-schedule-analysis') {
-      const key = String(body.key || '');
-      if (new Date().toISOString() > SCHEDULE_ANALYSIS_EXPIRES_AT ||
-          !/^[0-9a-f]{64}$/.test(key) || !(await sameSecret(await sha256Hex(key), SCHEDULE_ANALYSIS_KEY_HASH))) {
-        return json({ error: 'Analiz erişimi geçersiz.' }, 403, cors);
-      }
-      try {
-        const [applications, planning] = await Promise.all([getAllApplications(), getArchive(PLANNING_FILE)]);
-        const maleApplications = applications.filter((item) => item.applicationType === 'yuz-yuze' && item.gender === 'erkek');
-        const maleIds = new Set(maleApplications.map((item) => item.id));
-        return json({
-          ok: true,
-          capturedAt: new Date().toISOString(),
-          weekdays: WEEKDAYS,
-          timeSlots: TIME_SLOTS,
-          teachers: planning.records.filter((item) => item.kind === 'teacher' && item.gender === 'erkek')
-            .map((item) => ({ id: item.id, name: item.name, active: item.active, days: item.days, modes: item.modes })),
-          applications: maleApplications.map((item) => ({ id: item.id, name: item.studentName,
-            status: item.status, availabilitySlots: item.availabilitySlots || [] })),
-          placements: planning.records.filter((item) => item.kind === 'placement' && maleIds.has(item.applicationId))
-            .map((item) => ({ applicationId: item.applicationId, studentName: item.studentName,
-              startDate: item.startDate, schedule: item.schedule || [] }))
-        }, 200, cors);
-      } catch (error) {
-        return json({ error: error.message || 'Analiz verisi okunamadı.' }, error.status || 500, cors);
       }
     }
 
