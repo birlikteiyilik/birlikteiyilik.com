@@ -788,15 +788,15 @@
     let programText = '';
     if (groups.length === 1) {
       const group = groups[0];
-      programText = `${group.days.join(', ')} günleri ${group.slot.replace(':', '.').replace('-', ' - ').replace(':', '.')} saatleri arasında ${place} gerçekleşecektir.\n\nHoca Adı: ${group.teacher.toLocaleUpperCase('tr-TR')}`;
+      programText = `*${group.days.join(', ')} günleri ${group.slot.replace(':', '.').replace('-', ' - ').replace(':', '.')} saatleri* arasında ${place} gerçekleşecektir.\n\nHoca Adı: *${group.teacher.toLocaleUpperCase('tr-TR')}*`;
     } else {
-      programText = `haftalık olarak ${place} gerçekleşecektir.\n\nDers programı:\n${groups.map((group) => `• ${group.days.join(', ')}: ${group.slot.replace(':', '.').replace('-', ' - ').replace(':', '.')} — Hoca Adı: ${group.teacher.toLocaleUpperCase('tr-TR')}`).join('\n')}`;
+      programText = `haftalık olarak ${place} gerçekleşecektir.\n\n*Ders programı:*\n${groups.map((group) => `• *${group.days.join(', ')}: ${group.slot.replace(':', '.').replace('-', ' - ').replace(':', '.')}* — Hoca Adı: *${group.teacher.toLocaleUpperCase('tr-TR')}*`).join('\n')}`;
     }
     const start = new Date(`${placement.startDate}T00:00:00`);
     const startText = Number.isFinite(start.getTime())
       ? new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'long', weekday: 'long' }).format(start).toLocaleUpperCase('tr-TR')
       : placement.startDate;
-    return `🌸 BİRLİKTE İYİLİK AKADEMİ BİLGİLENDİRME 🌸\n\nDeğerli Velimiz,\n\n${item.studentName}'ın Kur'an-ı Kerim ve Güzel Ahlak Kursu'ndaki programı ${programText}\n\nKursumuza ${startText} günü itibariyle başlayabilir.\n\nEğitimlerimizin verimli geçebilmesi için öğrencimizin ders saatlerine riayet etmesi, ders saatinden 5 dakika önce sınıfında bulunması konusunda sizlerin de hassasiyet göstermenizi rica ederiz.\n\nTeşekkür eder, hayırlı günler dileriz. 😊\n\nBİRLİKTE İYİLİK AKADEMİ`;
+    return `🌸 *BİRLİKTE İYİLİK AKADEMİ BİLGİLENDİRME* 🌸\n\nDeğerli Velimiz,\n\n*${item.studentName}*'ın Kur'an-ı Kerim ve Güzel Ahlak Kursu'ndaki programı ${programText}\n\nKursumuza *${startText}* günü itibariyle başlayabilir.\n\nEğitimlerimizin verimli geçebilmesi için öğrencimizin ders saatlerine riayet etmesi, ders saatinden 5 dakika önce sınıfında bulunması konusunda sizlerin de hassasiyet göstermenizi rica ederiz.\n\nTeşekkür eder, hayırlı günler dileriz. 😊\n\n*BİRLİKTE İYİLİK AKADEMİ*`;
   }
 
   function formatTeacherPhone(value) {
