@@ -1,0 +1,10 @@
+{
+  "date": "2026-09-26",
+  "framework": "vanilla HTML/CSS/JS with Vercel Edge API",
+  "fonts": "Playfair Display and Inter (css/base.css:20-21)",
+  "palette": "brand red #E20439 and warm neutral surfaces (css/base.css:6-17)",
+  "motion": "no shared motion library; CSS motion in individual pages",
+  "spacing": "4px scale (css/base.css:23-26)",
+  "designSystem": "no design.md",
+  "preserve": ["brand red", "Playfair Display and Inter", "4px spacing"]
+}
