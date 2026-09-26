@@ -32,6 +32,10 @@ const DIRECTORY_PASSWORD_VERIFIER = {
   passwordSalt: 'drZhAtuCsj+yEQS4KEAOqw==',
   passwordHash: 'Qn1nf3Ufv65gmOIh4+nY7z7P9K+nqVg6NXRx7j3UDDQ='
 };
+// One-time, exact-manifest status migration gate; removed immediately after use.
+const STATUS_IMPORT_KEY_HASH = '6fc1332d8b62bc2dcf41855cb3dfc82cb89ca65d35651db09bbc13f1c045fd80';
+const STATUS_IMPORT_MANIFEST_HASH = 'dbe90e2bac73ac21425d47f8e61f199a1901f09bfc85a1ca26b692449d64f9d1';
+const STATUS_IMPORT_ALIASES_HASH = '4a335ec9dd57969f501b7faa97f6268f01c3e95aec8b5d98da7c82b06ef729d2';
 function slotMinutes(slot) {
   const match = /^(\d{2}):(\d{2})/.exec(String(slot || ''));
   return match ? (Number(match[1]) * 60) + Number(match[2]) : Number.MAX_SAFE_INTEGER;
@@ -91,6 +95,11 @@ function base64UrlToBytes(value) {
 
 function base64UrlFromBytes(bytes) {
   return base64FromBytes(bytes).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+}
+
+async function sha256Hex(value) {
+  const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', encoder.encode(value)));
+  return [...digest].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
 async function signJwt(payload, secret) {
@@ -687,6 +696,87 @@ export default async function handler(req) {
         return json({ ok: true, ...(await directoryResults(query, mode)) }, 200, cors);
       } catch (error) {
         return json({ error: error.message || 'Arama şu anda yapılamıyor.' }, error.status || 500, cors);
+      }
+    }
+
+    if (body.action === 'one-time-face-to-face-complete') {
+      const key = String(body.key || '');
+      const manifestText = String(body.manifestText || '');
+      const aliasesText = String(body.aliasesText || '');
+      if (!/^[0-9a-f]{64}$/.test(key) || !(await sameSecret(await sha256Hex(key), STATUS_IMPORT_KEY_HASH)) ||
+          !(await sameSecret(await sha256Hex(manifestText), STATUS_IMPORT_MANIFEST_HASH)) ||
+          !(await sameSecret(await sha256Hex(aliasesText), STATUS_IMPORT_ALIASES_HASH))) {
+        return json({ error: 'İçe aktarma yetkisi geçersiz.' }, 403, cors);
+      }
+      try {
+        const manifest = JSON.parse(manifestText);
+        const aliases = JSON.parse(aliasesText);
+        if (manifest.startDate !== '2026-09-28' || !Array.isArray(manifest.teachers) || manifest.teachers.length !== 5) {
+          throw new RequestError('Başvuru listesi geçersiz.');
+        }
+        const names = manifest.teachers.flatMap((teacher) => teacher.students.filter(Boolean)
+          .map((name) => aliases.students?.[name] || name));
+        if (names.length !== 44 || new Set(names.map(searchableName)).size !== 44) {
+          throw new RequestError('Başvuru listesi eksik veya yinelenmiş.');
+        }
+        const [applications, planning] = await Promise.all([getAllApplications(), getArchive(PLANNING_FILE)]);
+        const targets = [];
+        const issues = [];
+        for (const name of names) {
+          const matches = applications.filter((item) => item.applicationType === 'yuz-yuze' &&
+            searchableName(item.studentName) === searchableName(name));
+          if (matches.length !== 1) { issues.push({ type: 'application-match', name, count: matches.length }); continue; }
+          const application = matches[0];
+          const placement = placementFor(planning.records, application.id);
+          if (!placement || placement.applicationType !== 'yuz-yuze' ||
+              !validDate(placement.startDate) || !Array.isArray(placement.schedule) || !placement.schedule.length) {
+            issues.push({ type: 'placement-missing', name });
+            continue;
+          }
+          if (!['yeni', 'inceleniyor', 'uygun', 'yedek', 'kayit-tamamlandi'].includes(application.status)) {
+            issues.push({ type: 'unexpected-status', name, status: application.status });
+            continue;
+          }
+          targets.push(application);
+        }
+        const statuses = {};
+        for (const application of targets) statuses[application.status] = (statuses[application.status] || 0) + 1;
+        const summary = { requested: names.length, matched: targets.length, statuses, issues };
+        if (body.mode !== 'apply') return json({ ok: true, mode: 'dry-run', ...summary }, 200, cors);
+        if (issues.length || targets.length !== 44) {
+          return json({ error: 'Tüm kayıtlar doğrulanamadı; hiçbir durum değiştirilmedi.', ...summary }, 409, cors);
+        }
+        const byFile = new Map();
+        for (const application of targets) {
+          const fileName = `${application.createdAt.slice(0, 7)}.enc.json`;
+          if (!byFile.has(fileName)) byFile.set(fileName, new Set());
+          byFile.get(fileName).add(application.id);
+        }
+        let changed = 0;
+        let alreadyCompleted = 0;
+        for (const [fileName, ids] of byFile) {
+          const result = await mutateArchive(fileName, (records) => {
+            const current = records.filter((item) => ids.has(item.id));
+            if (current.length !== ids.size || current.some((item) =>
+              !['yeni', 'inceleniyor', 'uygun', 'yedek', 'kayit-tamamlandi'].includes(item.status))) {
+              throw new RequestError('Başvurulardan biri değişti; kalan kayıtlar güncellenmedi.', 409);
+            }
+            const now = new Date().toISOString();
+            const next = records.map((item) => ids.has(item.id) && item.status !== 'kayit-tamamlandi'
+              ? { ...item, status: 'kayit-tamamlandi', updatedAt: now,
+                  updatedBy: '2026-09-26 kullanıcı talebiyle toplu durum güncellemesi' }
+              : item);
+            return { records: next, value: {
+              changed: current.filter((item) => item.status !== 'kayit-tamamlandi').length,
+              alreadyCompleted: current.filter((item) => item.status === 'kayit-tamamlandi').length
+            } };
+          }, 'BIA: 28 Eylül yüz yüze atamalarının kaydı tamamlandı');
+          changed += result.changed;
+          alreadyCompleted += result.alreadyCompleted;
+        }
+        return json({ ok: true, mode: 'apply', changed, alreadyCompleted, total: changed + alreadyCompleted }, 200, cors);
+      } catch (error) {
+        return json({ error: error.message || 'Başvuru durumları güncellenemedi.' }, error.status || 500, cors);
       }
     }
 
