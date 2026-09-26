@@ -138,6 +138,9 @@ svg { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: 
 .week-day > small { color: var(--faint); font-size: .55rem; font-variant-numeric: tabular-nums; }
 .week-day.is-active { background: var(--ink); border-color: var(--ink); color: var(--surface); }
 .week-day.is-active > strong, .week-day.is-active > small { color: var(--surface); }
+.week-day.is-future { border-style: dashed; border-color: color-mix(in srgb, var(--accent) 24%, var(--line)); }
+.week-day.is-future > span { color: var(--accent); }
+.week-day.is-active.is-future > span { color: var(--surface); }
 .week-day.is-complete::after { background: var(--success); border: 2px solid var(--surface); border-radius: 50%; content: ""; height: 7px; position: absolute; right: 7px; top: 7px; width: 7px; }
 .week-day:disabled { cursor: not-allowed; opacity: .38; }
 
@@ -167,6 +170,7 @@ svg { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: 
 .status-action[data-status="katildi"].is-active { background: var(--success-soft); border-color: color-mix(in srgb, var(--success) 36%, transparent); color: var(--success); }
 .status-action[data-status="gelmedi"].is-active { background: var(--danger-soft); border-color: color-mix(in srgb, var(--danger) 36%, transparent); color: var(--danger); }
 .status-action[data-status="mazeretli"].is-active { background: var(--warning-soft); border-color: color-mix(in srgb, var(--warning) 36%, transparent); color: var(--warning); }
+.status-action:disabled { cursor: not-allowed; opacity: .48; }
 .lesson-note { border-top: 1px solid var(--line); margin-top: 13px; padding-top: 11px; }
 .lesson-note summary { align-items: center; color: var(--muted); cursor: pointer; display: inline-flex; font-size: .65rem; font-weight: 750; gap: 6px; list-style: none; min-height: 32px; }
 .lesson-note summary::-webkit-details-marker { display: none; }
