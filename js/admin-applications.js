@@ -370,7 +370,7 @@
           </section>`;
         }).join('');
         const testTag = teacher.isDemo ? '<span class="program-demo-tag">Test</span>' : '';
-        const printButton = totalLessons ? `<button type="button" class="btn program-print-button" data-program-print="${escapeHtml(teacher.id)}">Ders programını yazdır</button>` : '';
+        const printButton = totalLessons ? `<button type="button" class="btn program-print-button" data-program-print="${escapeHtml(teacher.id)}">2 haftalık yoklamayı yazdır</button>` : '';
         cards.push(`<article class="program-teacher-card ${teacher.active ? '' : 'is-passive'}" style="--program-index:${cards.length}">
           <header class="program-teacher-head">
             <div class="program-teacher-identity"><span class="teacher-avatar">${escapeHtml(teacher.name.charAt(0).toLocaleUpperCase('tr-TR'))}</span><div><div class="program-teacher-name"><h3>${escapeHtml(teacher.name)}</h3>${testTag}<span class="teacher-status">${teacher.active ? 'Aktif' : teacher.archived ? 'Arşiv' : 'Pasif'}</span></div><small>${escapeHtml((teacher.days || []).map((day) => labels.days[day]).join(', ') || 'Çalışma günü yok')}</small></div>${printButton}</div>
@@ -857,15 +857,47 @@
     const teacher = programTeachers(programEntries()).find((item) => item.id === teacherId);
     if (!teacher) return toast('Öğretmen programı bulunamadı.', 'error');
     const slots = slotsForType(activeApplicationType);
+    const from = el('programRangeFrom').value;
+    const to = el('programRangeTo').value;
+    if (!from || !to || to !== addDays(from, 13)) {
+      return toast('Yoklama dönemi 14 gün olmalı. Başlangıç tarihini yeniden seçin.', 'error');
+    }
     const entries = programEntries().filter((entry) => entry.teacherId === teacherId)
       .sort((a, b) => meta.weekdays.indexOf(a.day) - meta.weekdays.indexOf(b.day) || slots.indexOf(a.slot) - slots.indexOf(b.slot));
     if (!entries.length) return toast('Yazdırılacak atanmış ders bulunmuyor.', 'error');
-    const days = [...new Set(entries.map((entry) => entry.day))];
+    const assignedDays = new Set(entries.map((entry) => entry.day));
+    const dates = [];
+    for (let date = from; date <= to; date = addDays(date, 1)) {
+      const day = dayForDate(date);
+      if (assignedDays.has(day)) dates.push({ value: date, day });
+    }
+    const studentsById = new Map();
+    entries.forEach((entry) => {
+      if (!studentsById.has(entry.applicationId)) {
+        studentsById.set(entry.applicationId, {
+          id: entry.applicationId, name: entry.studentName, reference: entry.applicationReference, schedule: []
+        });
+      }
+      studentsById.get(entry.applicationId).schedule.push(entry);
+    });
+    const students = [...studentsById.values()].sort((a, b) => a.name.localeCompare(b.name, 'tr'));
+    const printableDate = (value) => new Intl.DateTimeFormat('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+      .format(new Date(`${value}T12:00:00`));
+    const rowFont = Math.max(4.8, Math.min(7.4, 185 / Math.max(students.length, 25)));
+    const rowPadding = Math.max(1, Math.min(3.2, rowFont * 0.42));
     const root = el('teacherPrintRoot');
-    root.innerHTML = `<header class="teacher-print-head"><img src="/images/logo.png" alt="Birlikte İyilik Akademi"><div><span>HAFTALIK DERS PROGRAMI</span><h1>${escapeHtml(teacher.name)}</h1><p>${escapeHtml(labels.type[activeApplicationType] || activeApplicationType)} eğitim programı</p></div><strong>${entries.length} ders / hafta</strong></header><div class="teacher-print-days" style="--print-day-count:${days.length}">${days.map((day) => {
-      const dayEntries = entries.filter((entry) => entry.day === day);
-      return `<section class="teacher-print-day"><h2>${escapeHtml(labels.days[day])}<small>${dayEntries.length} ders</small></h2><table><thead><tr><th>Saat</th><th>Öğrenci</th><th>Eğitim</th></tr></thead><tbody>${dayEntries.map((entry) => `<tr><td>${escapeHtml(entry.slot.replace(/:/g, '.').replace('-', ' – '))}</td><td><strong>${escapeHtml(entry.studentName)}</strong><small>${escapeHtml(entry.applicationReference || '')}</small></td><td>${escapeHtml(labels.type[entry.applicationType] || entry.applicationType)}</td></tr>`).join('')}</tbody></table></section>`;
-    }).join('')}</div><footer>Birlikte İyilik Akademi · Öğretmen ders programı</footer>`;
+    root.innerHTML = `<article class="teacher-print-sheet" style="--print-font-size:${rowFont}pt;--print-cell-pad:${rowPadding}pt;--print-date-count:${dates.length}">
+      <header class="teacher-print-head"><img src="/images/logo.png" alt="Birlikte İyilik Akademi"><div><span>İKİ HAFTALIK YOKLAMA ÇİZELGESİ</span><h1>${escapeHtml(teacher.name)}</h1><p>${escapeHtml(labels.type[activeApplicationType] || activeApplicationType)} · ${escapeHtml(printableDate(from))} – ${escapeHtml(printableDate(to))}</p></div><strong>${students.length} öğrenci</strong></header>
+      <table class="teacher-print-table"><colgroup><col class="print-number-col"><col class="print-student-col"><col class="print-schedule-col">${dates.map(() => '<col class="print-date-col">').join('')}</colgroup><thead><tr><th>No</th><th>Öğrenci</th><th>Ders günü / saat</th>${dates.map(({ value }) => {
+        const heading = new Intl.DateTimeFormat('tr-TR', { weekday: 'short' }).format(new Date(`${value}T12:00:00`));
+        return `<th class="print-date-heading"><span>${escapeHtml(heading)}</span><small>${escapeHtml(printableDate(value).slice(0, 5))}</small></th>`;
+      }).join('')}</tr></thead><tbody>${students.map((student, index) => {
+        const scheduleText = student.schedule.sort((a, b) => meta.weekdays.indexOf(a.day) - meta.weekdays.indexOf(b.day) || slots.indexOf(a.slot) - slots.indexOf(b.slot))
+          .map((entry) => `${labels.days[entry.day].slice(0, 2)} ${entry.slot.replace(/:/g, '.').replace('-', '–')}`).join(' · ');
+        return `<tr><td>${index + 1}</td><td class="print-student-name"><strong>${escapeHtml(student.name)}</strong><small>${escapeHtml(student.reference || '')}</small></td><td class="print-schedule-text">${escapeHtml(scheduleText)}</td>${dates.map(({ day }) => `<td class="print-attendance-cell">${student.schedule.some((entry) => entry.day === day) ? '<span class="attendance-box" aria-label="Yoklama işaretleme alanı"></span>' : ''}</td>`).join('')}</tr>`;
+      }).join('')}</tbody></table>
+      <footer><span>Her ders tarihinde öğrencinin katılımını ilgili kutucuğa işaretleyiniz.</span><span>Öğretmen imzası: ____________________</span></footer>
+    </article>`;
     document.body.classList.add('printing-teacher-program');
     window.setTimeout(() => window.print(), 40);
   }
@@ -1319,6 +1351,15 @@
   window.showApplications = function () { showScreen('applicationsScreen'); showTypeChooser(); load(false); };
 
   document.addEventListener('DOMContentLoaded', () => {
+    const today = dateValue(new Date());
+    el('programRangeFrom').value = today;
+    el('programRangeTo').value = addDays(today, 13);
+    el('programRangeFrom').addEventListener('change', () => {
+      if (el('programRangeFrom').value) el('programRangeTo').value = addDays(el('programRangeFrom').value, 13);
+    });
+    el('programRangeTo').addEventListener('change', () => {
+      if (el('programRangeTo').value) el('programRangeFrom').value = addDays(el('programRangeTo').value, -13);
+    });
     const filterIds = ['appsSearch', 'appsGender', 'appsGrade', 'appsLevel', 'appsPreviousTraining', 'appsStatus', 'appsPlanState', 'appsTeacher', 'appsFrom', 'appsTo'];
     filterIds.forEach((id) => el(id).addEventListener(id === 'appsSearch' ? 'input' : 'change', renderTable));
     el('appsReset').addEventListener('click', resetFilters);
