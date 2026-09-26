@@ -344,25 +344,15 @@
             .sort((a, b) => slots.indexOf(a.slot) - slots.indexOf(b.slot) || a.studentName.localeCompare(b.studentName, 'tr'));
           const allDayEntries = allTeacherEntries.filter((entry) => entry.day === day);
           const slotBlocks = [];
-          let freeStart = -1;
-          const flushFree = (endIndex) => {
-            if (freeStart < 0) return;
-            const from = slots[freeStart].split('-')[0];
-            const to = slots[endIndex - 1].split('-')[1];
-            slotBlocks.push(`<li class="program-open-slot"><span class="program-slot-state">Müsait</span><time>${escapeHtml(from.replace(':', '.'))} – ${escapeHtml(to.replace(':', '.'))}</time></li>`);
-            freeStart = -1;
-          };
-          slots.forEach((slot, slotIndex) => {
+          slots.forEach((slot) => {
             const assigned = allDayEntries.find((entry) => entry.slot === slot);
             if (!assigned) {
-              if (freeStart < 0) freeStart = slotIndex;
+              slotBlocks.push(`<li class="program-open-slot"><span class="program-slot-state">Müsait</span><time>${escapeHtml(slot.replace(/:/g, '.').replace('-', ' – '))}</time></li>`);
               return;
             }
-            flushFree(slotIndex);
             const matchingVisible = visibleEntries.some((entry) => entry.applicationId === assigned.applicationId && entry.slot === slot && entry.day === day);
             slotBlocks.push(`<li class="program-busy-slot"><span class="program-slot-state">Dolu${matchingVisible ? ` · ${escapeHtml(assigned.studentName)}` : ''}</span><time>${escapeHtml(slot.replace(/:/g, '.').replace('-', ' – '))}</time><button type="button" data-program-open="${escapeHtml(assigned.applicationId)}" aria-label="${escapeHtml(assigned.studentName)} başvurusunu incele">İncele</button></li>`);
           });
-          flushFree(slots.length);
           const workingDay = (teacher.days || []).includes(day);
           return `<section class="program-day-column" style="--day-index:${dayIndex}">
             <header><div><span>${escapeHtml(labels.days[day].slice(0, 2).toLocaleUpperCase('tr-TR'))}</span><h4>${escapeHtml(labels.days[day])}</h4></div><em>${allDayEntries.length} ders</em></header>
