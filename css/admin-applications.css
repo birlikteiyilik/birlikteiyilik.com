@@ -314,6 +314,16 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .program-teacher-identity { align-items: center; display: flex; gap: 11px; min-width: 0; }
 .program-print-button { background: #fff; border: 1px solid #d6dee8; color: var(--app-ink); flex: 0 0 auto; font-size: .65rem; margin-left: 7px; padding: 8px 10px; }
 .program-print-button:hover { background: #f2f6fa; border-color: #aebdce; }
+.program-print-period { align-items: center; background: linear-gradient(110deg, #fff, #fafbfd); border: 1px solid var(--app-line); border-radius: 13px; box-shadow: 0 4px 16px rgba(19,35,58,.035); display: flex; gap: 22px; justify-content: space-between; margin: 0 0 14px; padding: 14px 16px; }
+.program-print-period-copy h3 { color: var(--app-ink); font-size: .86rem; margin: 0 0 3px; }
+.program-print-period-copy p { color: var(--app-muted); font-size: .64rem; margin: 0; }
+.program-print-period-copy .apps-eyebrow { font-size: .54rem; margin-bottom: 3px; }
+.program-period-fields { align-items: end; display: flex; gap: 9px; }
+.program-period-fields label { color: var(--app-muted); display: grid; font-size: .58rem; font-weight: 650; gap: 4px; }
+.program-period-fields input { background: #fff; border: 1px solid #dce2e9; border-radius: 7px; color: var(--app-ink); font: inherit; font-size: .69rem; min-height: 36px; padding: 6px 9px; }
+.program-period-fields input:focus { border-color: var(--app-red); box-shadow: 0 0 0 3px rgba(215,25,63,.09); outline: none; }
+.program-period-fields > span:not(.program-period-badge) { color: #8b95a3; font-size: .8rem; padding-bottom: 9px; }
+.program-period-badge { background: #eff4f1; border: 1px solid #dce9e0; border-radius: 999px; color: #25633e; font-size: .59rem; font-weight: 700; margin-bottom: 3px; padding: 6px 9px; white-space: nowrap; }
 .program-teacher-name { align-items: center; display: flex; flex-wrap: wrap; gap: 7px; }
 .program-teacher-name h3 { color: var(--app-ink); font-size: .9rem; margin: 0; }
 .program-teacher-identity small { color: var(--app-muted); display: block; font-size: .62rem; margin-top: 3px; }
@@ -340,12 +350,12 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .program-day-column ol { display: grid; gap: 6px; list-style: none; margin: 0; padding: 0; }
 .program-day-column ol.program-day-slots { align-content: start; }
 .program-open-slot, .program-busy-slot { align-items: center; border: 1px solid; border-radius: 8px; display: flex; flex-wrap: wrap; gap: 6px 9px; justify-content: space-between; min-height: 35px; padding: 7px 8px; }
-.program-open-slot { background: #f2f7f4; border-color: #e0eae3; color: #446451; }
-.program-busy-slot { background: #f0f2f5; border-color: #e2e5ea; color: #576273; }
-.program-slot-state { font-size: .57rem; font-weight: 800; }
-.program-open-slot time, .program-busy-slot time { font-size: .56rem; font-weight: 750; white-space: nowrap; }
-.program-busy-slot button { background: transparent; border: 0; color: #46556a; cursor: pointer; font: inherit; font-size: .54rem; font-weight: 800; padding: 2px; }
-.program-busy-slot button:hover { color: var(--app-red-dark); text-decoration: underline; }
+.program-open-slot { background: #20824f; border-color: #176b3f; color: #fff; font-weight: 600; }
+.program-busy-slot { background: #c72243; border-color: #aa1735; color: #fff; font-weight: 600; }
+.program-slot-state { font-size: .57rem; font-weight: 650; }
+.program-open-slot time, .program-busy-slot time { font-size: .56rem; font-weight: 600; white-space: nowrap; }
+.program-busy-slot button { background: transparent; border: 0; color: #fff; cursor: pointer; font: inherit; font-size: .54rem; font-weight: 600; opacity: .94; padding: 2px; }
+.program-busy-slot button:hover { opacity: 1; text-decoration: underline; }
 .program-lesson { align-items: center; animation: lessonIn .28s calc(var(--lesson-index, 0) * 32ms) ease both; background: #fff7f9; border: 1px solid #f3dce2; border-left: 3px solid var(--app-red); border-radius: 8px; display: grid; gap: 7px; grid-template-columns: auto minmax(0, 1fr) auto; padding: 8px; transition: box-shadow .16s ease, transform .16s ease; }
 .program-lesson.is-online { background: #f3f8fd; border-color: #d9e8f5; border-left-color: #1d65a6; }
 .program-lesson:hover { box-shadow: 0 5px 14px rgba(19,35,58,.09); transform: translateY(-1px); }
@@ -573,32 +583,38 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .apps-toast.is-visible { opacity: 1; transform: translate(-50%, 0); }
 
 #teacherPrintRoot { display: none; }
-@page { size: A4 landscape; margin: 10mm; }
+@page { size: A4 landscape; margin: 7mm; }
 @media print {
   body.printing-teacher-program { background: #fff !important; }
   body.printing-teacher-program > :not(#teacherPrintRoot) { display: none !important; }
   body.printing-teacher-program #teacherPrintRoot { color: #17283e; display: block !important; font-family: Arial, sans-serif; }
-  .teacher-print-head { align-items: center; border-bottom: 2px solid #17385c; display: flex; gap: 16px; padding: 0 0 12px; }
-  .teacher-print-head img { height: 54px; object-fit: contain; width: 150px; }
+  .teacher-print-sheet { color: #17283e; width: 100%; }
+  .teacher-print-head { align-items: center; border-bottom: 2px solid #17385c; display: flex; gap: 12px; padding: 0 0 7px; }
+  .teacher-print-head img { height: 42px; object-fit: contain; width: 86px; }
   .teacher-print-head > div { flex: 1; }
-  .teacher-print-head span { color: #a71735; font-size: 9pt; font-weight: 800; letter-spacing: .12em; }
-  .teacher-print-head h1 { font-size: 21pt; margin: 4px 0 2px; }
-  .teacher-print-head p { color: #667386; font-size: 10pt; margin: 0; }
-  .teacher-print-head > strong { background: #f0f3f6; border-radius: 8px; font-size: 11pt; padding: 10px 14px; }
-  .teacher-print-days { align-items: start; display: grid; gap: 10px; grid-template-columns: repeat(var(--print-day-count), minmax(0, 1fr)); margin-top: 14px; }
-  .teacher-print-day { border: 1px solid #dce2e9; border-radius: 8px; break-inside: avoid; overflow: hidden; }
-  .teacher-print-day h2 { align-items: center; background: #17385c; color: #fff; display: flex; font-size: 11pt; justify-content: space-between; margin: 0; padding: 9px 10px; }
-  .teacher-print-day h2 small { color: #e3eaf1; font-size: 8pt; font-weight: 500; }
-  .teacher-print-day table { border-collapse: collapse; font-size: 8.5pt; width: 100%; }
-  .teacher-print-day th { background: #f2f5f8; color: #586679; font-size: 7.5pt; text-align: left; }
-  .teacher-print-day th, .teacher-print-day td { border-bottom: 1px solid #e8ecf0; padding: 7px 8px; vertical-align: top; }
-  .teacher-print-day tbody tr:last-child td { border-bottom: 0; }
-  .teacher-print-day td:first-child { font-weight: 800; white-space: nowrap; }
-  .teacher-print-day td strong, .teacher-print-day td small { display: block; }
-  .teacher-print-day td small { color: #7b8695; font-size: 7pt; margin-top: 2px; }
-  .teacher-print-day:only-child { grid-column: span 1; }
-  .teacher-print-head, .teacher-print-day h2 { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-  #teacherPrintRoot footer { border-top: 1px solid #dce2e9; color: #7b8695; font-size: 8pt; margin-top: 12px; padding-top: 7px; }
+  .teacher-print-head span { color: #a71735; font-size: 8pt; font-weight: 700; letter-spacing: .08em; }
+  .teacher-print-head h1 { font-size: 17pt; margin: 2px 0; }
+  .teacher-print-head p { color: #586679; font-size: 8pt; margin: 0; }
+  .teacher-print-head > strong { background: #f0f3f6; border-radius: 6px; font-size: 8pt; padding: 7px 10px; }
+  .teacher-print-table { border-collapse: collapse; font-size: var(--print-font-size); line-height: 1.08; margin-top: 7px; table-layout: fixed; width: 100%; }
+  .teacher-print-table .print-number-col { width: 6mm; }
+  .teacher-print-table .print-student-col { width: 39mm; }
+  .teacher-print-table .print-schedule-col { width: 54mm; }
+  .teacher-print-table .print-date-col { width: calc((100% - 99mm) / var(--print-date-count)); }
+  .teacher-print-table th, .teacher-print-table td { border: 1px solid #cfd7e0; padding: var(--print-cell-pad) 2px; vertical-align: middle; }
+  .teacher-print-table th { background: #edf1f5; color: #34455b; font-size: .92em; font-weight: 700; text-align: left; }
+  .teacher-print-table .print-date-heading { text-align: center; }
+  .print-date-heading span, .print-date-heading small { display: block; }
+  .print-date-heading small { font-size: .85em; font-weight: 600; margin-top: 1px; }
+  .print-student-name strong, .print-student-name small { display: block; }
+  .print-student-name strong { font-weight: 600; }
+  .print-student-name small { color: #6b7787; font-size: .8em; margin-top: 1px; }
+  .print-schedule-text { color: #4f5e70; font-size: .85em; font-weight: 550; }
+  .print-attendance-cell { text-align: center; }
+  .attendance-box { border: 1px solid #64748b; display: inline-block; height: 4mm; width: 4mm; }
+  .teacher-print-table tbody tr { break-inside: avoid; }
+  .teacher-print-head, .teacher-print-table th { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  #teacherPrintRoot footer { align-items: center; border-top: 1px solid #cfd7e0; color: #5d6876; display: flex; font-size: 7pt; justify-content: space-between; margin-top: 7px; padding-top: 5px; }
 }
 
 @keyframes appsViewIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
@@ -655,6 +671,10 @@ html, body { max-width: 100%; overflow-x: hidden; }
   .program-filter-grid { grid-template-columns: 1fr 1fr; }
   .program-search { grid-column: 1 / -1; }
   .program-teacher-head { align-items: stretch; flex-direction: column; }
+  .program-print-period { align-items: flex-start; flex-direction: column; gap: 12px; }
+  .program-period-fields { flex-wrap: wrap; width: 100%; }
+  .program-period-fields label { flex: 1; min-width: 130px; }
+  .program-period-fields input { width: 100%; }
   .program-teacher-identity { flex-wrap: wrap; }
   .program-print-button { margin-left: auto; }
   .program-load-summary { min-width: 0; }
