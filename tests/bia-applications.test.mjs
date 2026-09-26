@@ -4,6 +4,7 @@ import handler from '../api/bia-applications.js';
 process.env.BIA_GITHUB_TOKEN = 'test-token';
 process.env.BIA_JWT_SECRET = 'test-jwt-secret-with-enough-entropy';
 process.env.BIA_APPLICATIONS_ENCRYPTION_KEY = 'test-encryption-secret-with-enough-entropy';
+process.env.BIA_LISTE_PASSWORD = 'test-directory-password-2026';
 
 let putPayload = null;
 let shaCounter = 0;
@@ -138,7 +139,7 @@ function base64url(value) {
 
 async function adminToken() {
   const header = base64url(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
-  const payload = base64url(JSON.stringify({ name: 'Test Admin', exp: Math.floor(Date.now() / 1000) + 3600 }));
+  const payload = base64url(JSON.stringify({ name: 'Test Admin', role: 'admin', exp: Math.floor(Date.now() / 1000) + 3600 }));
   const key = await crypto.subtle.importKey(
     'raw', new TextEncoder().encode(process.env.BIA_JWT_SECRET), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
   );
@@ -222,6 +223,48 @@ const completeResponse = await adminPost({
   status: 'kayit-tamamlandi', adminNote: 'Plan hazır.'
 });
 assert.equal(completeResponse.status, 200);
+
+const directoryUnauthorized = await handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'POST', headers: { 'Content-Type': 'application/json', 'Origin': 'http://localhost:4173' },
+  body: JSON.stringify({ action: 'directory-search', mode: 'student', query: 'Test' })
+}));
+assert.equal(directoryUnauthorized.status, 401);
+
+const directoryBadPassword = await handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'POST', headers: { 'Content-Type': 'application/json', 'Origin': 'http://localhost:4173' },
+  body: JSON.stringify({ action: 'directory-login', password: 'wrong-password' })
+}));
+assert.equal(directoryBadPassword.status, 401);
+
+const directoryLoginResponse = await handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'POST', headers: { 'Content-Type': 'application/json', 'Origin': 'http://localhost:4173' },
+  body: JSON.stringify({ action: 'directory-login', password: process.env.BIA_LISTE_PASSWORD })
+}));
+assert.equal(directoryLoginResponse.status, 200);
+const directoryToken = (await directoryLoginResponse.json()).token;
+const directoryHeaders = { 'Content-Type': 'application/json', 'Origin': 'http://localhost:4173', 'Authorization': `Bearer ${directoryToken}` };
+const directoryAdminAttempt = await handler(new Request('http://localhost:4173/api/bia-applications', { method: 'GET', headers: directoryHeaders }));
+assert.equal(directoryAdminAttempt.status, 401);
+const directoryStudentResponse = await handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'POST', headers: directoryHeaders,
+  body: JSON.stringify({ action: 'directory-search', mode: 'student', query: 'öğrenci' })
+}));
+assert.equal(directoryStudentResponse.status, 200);
+const directoryStudentData = await directoryStudentResponse.json();
+const directoryStudent = directoryStudentData.items.find((item) => item.studentName === validSubmission.studentName);
+assert.ok(directoryStudent);
+assert.equal(directoryStudent.school, validSubmission.school);
+assert.equal(directoryStudent.guardianPhone, validSubmission.guardianPhone);
+assert.equal(directoryStudent.teachers.length, 2);
+assert.ok(!('tckn' in directoryStudent));
+const directoryTeacherResponse = await handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'POST', headers: directoryHeaders,
+  body: JSON.stringify({ action: 'directory-search', mode: 'teacher', query: 'Meryem' })
+}));
+assert.equal(directoryTeacherResponse.status, 200);
+const directoryTeacherData = await directoryTeacherResponse.json();
+assert.equal(directoryTeacherData.groups[0].teacher.name, 'Meryem Kaplan');
+assert.equal(directoryTeacherData.groups[0].students[0].studentName, validSubmission.studentName);
 
 const failedTeacherLogin = await handler(new Request('http://localhost:4173/api/bia-applications', {
   method: 'POST', headers: { 'Content-Type': 'application/json', 'Origin': 'http://localhost:4173' },

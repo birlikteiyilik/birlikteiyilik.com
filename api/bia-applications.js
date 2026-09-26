@@ -181,6 +181,21 @@ function cleanPassword(value) {
   return String(value == null ? '' : value).replace(/[\u0000-\u001F\u007F]/g, '').slice(0, 128);
 }
 
+function searchableName(value) {
+  return cleanText(value, 100).toLocaleLowerCase('tr-TR').replace(/ı/g, 'i')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+async function sameSecret(candidate, expected) {
+  const [left, right] = await Promise.all([candidate, expected].map((value) =>
+    crypto.subtle.digest('SHA-256', encoder.encode(value))));
+  const a = new Uint8Array(left);
+  const b = new Uint8Array(right);
+  let difference = 0;
+  for (let index = 0; index < a.length; index += 1) difference |= a[index] ^ b[index];
+  return difference === 0;
+}
+
 function normalizeUsername(value) {
   return cleanText(value, 40).toLowerCase().replace(/ı/g, 'i').normalize('NFKD').replace(/[\u0300-\u036f]/g, '');
 }
@@ -410,6 +425,8 @@ function demoTckn(index) {
 export default async function handler(req) {
   const githubToken = process.env.BIA_GITHUB_TOKEN || '';
   const jwtSecret = process.env.BIA_JWT_SECRET || process.env.BIA_ADMIN_PASSWORD || '';
+  const directoryPassword = process.env.BIA_LISTE_PASSWORD || '';
+  const directoryJwtSecret = `${jwtSecret}:liste:v1`;
   const encryptionSecret = process.env.BIA_APPLICATIONS_ENCRYPTION_KEY || jwtSecret;
   const dataRepo = process.env.BIA_APPLICATIONS_REPO || DEFAULT_REPO;
   const dataBranch = process.env.BIA_APPLICATIONS_BRANCH || 'main';
@@ -480,7 +497,56 @@ export default async function handler(req) {
 
   async function checkAdmin() {
     const payload = await bearerPayload();
-    return payload && payload.role !== 'teacher' ? payload : null;
+    return payload && payload.role !== 'teacher' && payload.role !== 'directory' ? payload : null;
+  }
+
+  async function directorySession() {
+    const header = req.headers.get('authorization') || '';
+    const payload = header.startsWith('Bearer ')
+      ? await verifyJwt(header.slice(7), directoryJwtSecret) : null;
+    if (!payload || payload.role !== 'directory') throw new RequestError('Oturum sona erdi. Yeniden giriş yapın.', 401);
+    return payload;
+  }
+
+  async function directoryResults(query, mode) {
+    const planning = await getArchive(PLANNING_FILE);
+    const teachers = new Map(planning.records.filter((item) => item.kind === 'teacher')
+      .map((item) => [item.id, item]));
+    const needle = searchableName(query);
+    const matchingTeachers = [...teachers.values()].filter((item) => searchableName(item.name).includes(needle));
+    const matchingIds = new Set(matchingTeachers.map((item) => item.id));
+    const placements = planning.records.filter((item) => item.kind === 'placement' && item.applicationType === 'yuz-yuze' &&
+      (mode === 'teacher'
+        ? (item.schedule || []).some((entry) => matchingIds.has(entry.teacherId))
+        : searchableName(item.studentName).includes(needle)));
+    const limited = placements.slice(0, 60);
+    const months = [...new Set(limited.map((item) => String(item.applicationCreatedAt || '').slice(0, 7))
+      .filter((item) => /^\d{4}-\d{2}$/.test(item)))];
+    const archives = await Promise.all(months.map((month) => getArchive(`${month}.enc.json`)));
+    const applications = new Map(archives.flatMap((archive) => archive.records).map((item) => [item.id, item]));
+    const items = limited.flatMap((placement) => {
+      const application = applications.get(placement.applicationId);
+      if (!application || application.status !== 'kayit-tamamlandi') return [];
+      const teacherDetails = [...new Set((placement.schedule || []).map((entry) => entry.teacherId))]
+        .map((id) => teachers.get(id)).filter(Boolean)
+        .map((teacher) => ({
+          id: teacher.id, name: teacher.name, phone: teacher.phone,
+          days: WEEKDAYS.filter((day) => (placement.schedule || []).some((entry) => entry.teacherId === teacher.id && entry.day === day))
+        }));
+      if (!teacherDetails.length) return [];
+      return [{
+        id: application.id, studentName: application.studentName,
+        grade: application.grade, school: application.school,
+        guardianPhone: application.guardianPhone, teachers: teacherDetails
+      }];
+    });
+    items.sort((a, b) => a.studentName.localeCompare(b.studentName, 'tr'));
+    const visible = items.slice(0, 40);
+    const groups = mode === 'teacher' ? matchingTeachers.map((teacher) => ({
+      teacher: { id: teacher.id, name: teacher.name, phone: teacher.phone },
+      students: visible.filter((item) => item.teachers.some((entry) => entry.id === teacher.id))
+    })).filter((group) => group.students.length) : [];
+    return { items: visible, groups, hasMore: placements.length > 60 || items.length > 40 };
   }
 
   async function requireTeacherSession() {
@@ -585,6 +651,29 @@ export default async function handler(req) {
   if (req.method === 'POST') {
     let body = {};
     try { body = await req.json(); } catch (_) { return json({ error: 'İstek biçimi geçersiz.' }, 400, cors); }
+
+    if (body.action === 'directory-login') {
+      if (directoryPassword.length < 12) return json({ error: 'Liste girişi henüz yapılandırılmadı.' }, 503, cors);
+      const password = cleanPassword(body.password);
+      if (!password || !(await sameSecret(password, directoryPassword))) {
+        return json({ error: 'Şifre eşleşmedi. Yeniden deneyin.' }, 401, cors);
+      }
+      const now = Math.floor(Date.now() / 1000);
+      const token = await signJwt({ role: 'directory', iat: now, exp: now + (2 * 60 * 60) }, directoryJwtSecret);
+      return json({ ok: true, token, expiresAt: (now + (2 * 60 * 60)) * 1000 }, 200, cors);
+    }
+
+    if (body.action === 'directory-search') {
+      try {
+        await directorySession();
+        const query = cleanText(body.query, 100);
+        const mode = body.mode === 'teacher' ? 'teacher' : body.mode === 'student' ? 'student' : '';
+        if (!mode || searchableName(query).length < 2) throw new RequestError('En az iki harfli bir ad yazın.');
+        return json({ ok: true, ...(await directoryResults(query, mode)) }, 200, cors);
+      } catch (error) {
+        return json({ error: error.message || 'Arama şu anda yapılamıyor.' }, error.status || 500, cors);
+      }
+    }
 
     if (body.action === 'submit') {
       if (cleanText(body.website, 200)) return json({ ok: true, reference: referenceFor(new Date()) }, 200, cors);
