@@ -26,6 +26,12 @@ const ONLINE_TIME_RANGES = [
 const REFERRAL_SOURCES = ['ogrenci-arkadasi', 'arkadas-tavsiyesi', 'bilgilendirme-mesaji', 'kendi-arastirmam', 'diger'];
 const ATTENDANCE_STATUSES = ['katildi', 'gelmedi', 'mazeretli'];
 const PASSWORD_ITERATIONS = 210000;
+const DIRECTORY_PASSWORD_ITERATIONS = 600000;
+// The directory access code is never stored in plaintext in this public repository.
+const DIRECTORY_PASSWORD_VERIFIER = {
+  passwordSalt: 'drZhAtuCsj+yEQS4KEAOqw==',
+  passwordHash: 'Qn1nf3Ufv65gmOIh4+nY7z7P9K+nqVg6NXRx7j3UDDQ='
+};
 function slotMinutes(slot) {
   const match = /^(\d{2}):(\d{2})/.exec(String(slot || ''));
   return match ? (Number(match[1]) * 60) + Number(match[2]) : Number.MAX_SAFE_INTEGER;
@@ -97,18 +103,18 @@ async function signJwt(payload, secret) {
   return `${header}.${body}.${base64UrlFromBytes(new Uint8Array(signature))}`;
 }
 
-async function hashPassword(password, saltValue) {
+async function hashPassword(password, saltValue, iterations = PASSWORD_ITERATIONS) {
   const salt = saltValue ? bytesFromBase64(saltValue) : crypto.getRandomValues(new Uint8Array(16));
   const material = await crypto.subtle.importKey('raw', encoder.encode(password), 'PBKDF2', false, ['deriveBits']);
   const bits = await crypto.subtle.deriveBits(
-    { name: 'PBKDF2', hash: 'SHA-256', salt, iterations: PASSWORD_ITERATIONS }, material, 256
+    { name: 'PBKDF2', hash: 'SHA-256', salt, iterations }, material, 256
   );
   return { passwordSalt: base64FromBytes(salt), passwordHash: base64FromBytes(new Uint8Array(bits)) };
 }
 
-async function passwordMatches(password, teacher) {
+async function passwordMatches(password, teacher, iterations = PASSWORD_ITERATIONS) {
   if (!teacher?.passwordHash || !teacher?.passwordSalt) return false;
-  const candidate = await hashPassword(password, teacher.passwordSalt);
+  const candidate = await hashPassword(password, teacher.passwordSalt, iterations);
   const expected = bytesFromBase64(teacher.passwordHash);
   const actual = bytesFromBase64(candidate.passwordHash);
   if (expected.length !== actual.length) return false;
@@ -653,9 +659,14 @@ export default async function handler(req) {
     try { body = await req.json(); } catch (_) { return json({ error: 'İstek biçimi geçersiz.' }, 400, cors); }
 
     if (body.action === 'directory-login') {
-      if (directoryPassword.length < 12) return json({ error: 'Liste girişi henüz yapılandırılmadı.' }, 503, cors);
+      if (directoryPassword && directoryPassword.length < 12) {
+        return json({ error: 'Liste şifresi yapılandırması geçersiz.' }, 503, cors);
+      }
       const password = cleanPassword(body.password);
-      if (!password || !(await sameSecret(password, directoryPassword))) {
+      const matches = password && (directoryPassword
+        ? await sameSecret(password, directoryPassword)
+        : await passwordMatches(password, DIRECTORY_PASSWORD_VERIFIER, DIRECTORY_PASSWORD_ITERATIONS));
+      if (!matches) {
         return json({ error: 'Şifre eşleşmedi. Yeniden deneyin.' }, 401, cors);
       }
       const now = Math.floor(Date.now() / 1000);

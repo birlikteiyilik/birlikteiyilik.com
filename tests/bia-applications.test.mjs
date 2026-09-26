@@ -236,6 +236,15 @@ const directoryBadPassword = await handler(new Request('http://localhost:4173/ap
 }));
 assert.equal(directoryBadPassword.status, 401);
 
+const testDirectoryPassword = process.env.BIA_LISTE_PASSWORD;
+delete process.env.BIA_LISTE_PASSWORD;
+const directoryWithoutEnv = await handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'POST', headers: { 'Content-Type': 'application/json', 'Origin': 'http://localhost:4173' },
+  body: JSON.stringify({ action: 'directory-login', password: 'wrong-password' })
+}));
+assert.equal(directoryWithoutEnv.status, 401);
+process.env.BIA_LISTE_PASSWORD = testDirectoryPassword;
+
 const directoryLoginResponse = await handler(new Request('http://localhost:4173/api/bia-applications', {
   method: 'POST', headers: { 'Content-Type': 'application/json', 'Origin': 'http://localhost:4173' },
   body: JSON.stringify({ action: 'directory-login', password: process.env.BIA_LISTE_PASSWORD })
