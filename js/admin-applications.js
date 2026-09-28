@@ -982,8 +982,8 @@
     if (!entries.length) return toast('Yazdırılacak atanmış ders bulunmuyor.', 'error');
     const assignedDays = new Set(entries.map((entry) => entry.day));
     const periods = [
-      { start: from, end: addDays(from, 13), label: '1. ve 2. hafta' },
-      { start: addDays(from, 14), end: to, label: '3. ve 4. hafta' }
+      { start: from, end: addDays(from, 13), label: '1. ve 2. hafta', weekLabels: [1, 2] },
+      { start: addDays(from, 14), end: to, label: '3. ve 4. hafta', weekLabels: [3, 4] }
     ].map((period) => ({
       ...period,
       dates: Array.from({ length: 14 }, (_, index) => addDays(period.start, index))
@@ -1011,7 +1011,7 @@
       return `<section class="teacher-print-period-block">
         <header class="teacher-print-period-heading"><h2>${escapeHtml(period.label)}</h2><span>${escapeHtml(printableDate(period.start))} – ${escapeHtml(printableDate(period.end))}</span></header>
         <table class="teacher-print-table" style="--print-date-count:${dates.length}"><colgroup><col class="print-number-col"><col class="print-student-col"><col class="print-schedule-col">${dates.map(() => '<col class="print-date-col">').join('')}</colgroup>
-          <thead><tr><th rowspan="2">No</th><th rowspan="2">Öğrenci</th><th rowspan="2">Ders günü / saat</th><th class="print-week-group" colspan="${firstWeekDates.length}">1. hafta</th><th class="print-week-group print-week-two" colspan="${secondWeekDates.length}">2. hafta</th></tr><tr>${firstWeekDates.map(({ value }) => printDateHeading(value, false)).join('')}${secondWeekDates.map(({ value }) => printDateHeading(value, true)).join('')}</tr></thead>
+          <thead><tr><th rowspan="2">No</th><th rowspan="2">Öğrenci</th><th rowspan="2">Ders günü / saat</th><th class="print-week-group" colspan="${firstWeekDates.length}">${period.weekLabels[0]}. hafta</th><th class="print-week-group print-week-two" colspan="${secondWeekDates.length}">${period.weekLabels[1]}. hafta</th></tr><tr>${firstWeekDates.map(({ value }) => printDateHeading(value, false)).join('')}${secondWeekDates.map(({ value }) => printDateHeading(value, true)).join('')}</tr></thead>
           <tbody>${students.map((student, index) => {
             const scheduleText = student.schedule.slice().sort((a, b) => meta.weekdays.indexOf(a.day) - meta.weekdays.indexOf(b.day) || slots.indexOf(a.slot) - slots.indexOf(b.slot))
               .map((entry) => `${labels.days[entry.day].slice(0, 2)} ${entry.slot.replace(/:/g, '.').replace('-', '–')}`).join(' · ');
