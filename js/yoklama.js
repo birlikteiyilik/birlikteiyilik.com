@@ -12,7 +12,7 @@
   };
   const icon = { katildi: 'icon-check', gelmedi: 'icon-close', mazeretli: 'icon-minus' };
 
-  let token = sessionStorage.getItem(TOKEN_KEY) || '';
+  let token = sessionStorage.getItem(TOKEN_KEY) || localStorage.getItem(TOKEN_KEY) || '';
   let teacher = null;
   let selectedDate = initialDate();
   let week = [];
@@ -90,6 +90,7 @@
     token = '';
     teacher = null;
     sessionStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(TOKEN_KEY);
     el('appView').hidden = true;
     el('loginView').hidden = false;
     el('loginTheme').hidden = false;
@@ -228,7 +229,13 @@
       const result = await api({ action: 'teacher-login', username, password }, '');
       token = result.token;
       teacher = result.teacher;
-      sessionStorage.setItem(TOKEN_KEY, token);
+      if (el('rememberSession').checked) {
+        localStorage.setItem(TOKEN_KEY, token);
+        sessionStorage.removeItem(TOKEN_KEY);
+      } else {
+        sessionStorage.setItem(TOKEN_KEY, token);
+        localStorage.removeItem(TOKEN_KEY);
+      }
       await loadDay();
     } catch (error) {
       el('loginFeedback').textContent = error.message;

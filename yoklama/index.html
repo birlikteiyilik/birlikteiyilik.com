@@ -12,7 +12,7 @@
   <title>BİA E-Yoklama</title>
   <link rel="icon" type="image/png" sizes="192x192" href="/images/favicon-square.png">
   <link rel="apple-touch-icon" href="/images/favicon-square.png">
-  <link rel="stylesheet" href="/css/yoklama.css?v=2">
+  <link rel="stylesheet" href="/css/yoklama.css?v=3">
 </head>
 <body>
   <svg class="symbol-library" aria-hidden="true">
@@ -63,6 +63,7 @@
           <label>Şifre
             <span class="password-field"><input id="password" name="password" type="password" autocomplete="current-password" minlength="8" maxlength="128" required placeholder="Şifreniz"><button type="button" id="passwordToggle" aria-label="Şifreyi göster"><svg><use href="#icon-eye"></use></svg></button></span>
           </label>
+          <label class="remember-session" for="rememberSession"><input id="rememberSession" type="checkbox"><span class="remember-session-box" aria-hidden="true"><svg><use href="#icon-check"></use></svg></span><span class="remember-session-copy"><strong>Oturum açık kalsın</strong><small>Yalnızca bu cihazda seçerseniz hatırlanır.</small></span></label>
           <div class="login-feedback" id="loginFeedback" role="alert"></div>
           <button class="primary-action" id="loginSubmit" type="submit"><span>Giriş yap</span><svg><use href="#icon-arrow"></use></svg></button>
           <small class="login-help">Giriş sorunu yaşıyorsanız yöneticinizden hesabınızı kontrol etmesini isteyin.</small>
@@ -115,6 +116,6 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"><svg><use href="#icon-check"></use></svg><span></span></div>
-  <script src="/js/yoklama.js?v=4"></script>
+  <script src="/js/yoklama.js?v=5"></script>
 </body>
 </html>

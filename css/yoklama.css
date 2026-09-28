@@ -55,7 +55,7 @@ svg { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: 
 .login-view { align-items: center; display: flex; min-height: 100vh; min-height: 100dvh; padding: max(24px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left)); }
 .login-stage { background: var(--surface); border: 1px solid var(--line); border-radius: 28px; box-shadow: var(--shadow); display: grid; grid-template-columns: minmax(380px, .92fr) minmax(420px, 1.08fr); margin: auto; max-width: 1060px; min-height: 650px; overflow: hidden; width: 100%; }
 .login-context { background: #111722; color: #fff; display: flex; flex-direction: column; justify-content: space-between; padding: 46px; position: relative; }
-.login-context::after { border: 1px solid rgba(255,255,255,.08); border-radius: 50%; content: ""; height: 360px; position: absolute; right: -230px; top: 120px; width: 360px; }
+.login-context::after { border: 1px solid rgba(255,255,255,.08); border-radius: 50%; content: ""; height: 360px; pointer-events: none; position: absolute; right: -230px; top: 120px; width: 360px; }
 .login-brand, .app-brand { align-items: center; display: flex; gap: 11px; }
 .login-brand > span, .app-brand > span { align-items: center; background: var(--accent); border-radius: 12px; color: #fff; display: inline-flex; font-size: .76rem; font-weight: 900; height: 42px; justify-content: center; letter-spacing: .02em; width: 42px; }
 .login-brand > div, .app-brand > div { display: grid; gap: 1px; }
@@ -86,6 +86,16 @@ svg { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: 
 .password-field input { border-radius: 12px 0 0 12px; }
 .password-field button { background: var(--surface-2); border: 1px solid var(--line); border-left: 0; border-radius: 0 12px 12px 0; color: var(--muted); cursor: pointer; min-width: 50px; }
 .password-field button svg { height: 19px; width: 19px; }
+.remember-session { align-items: center; cursor: pointer; display: flex; gap: 10px; margin-top: -4px; min-height: 44px; position: relative; }
+.remember-session > input { border: 0; cursor: pointer; height: 20px; left: 0; margin: 0; min-height: 0; opacity: 0; padding: 0; position: absolute; top: 50%; transform: translateY(-50%); width: 20px; z-index: 1; }
+.remember-session-box { align-items: center; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; color: #fff; display: inline-flex; flex: 0 0 20px; height: 20px; justify-content: center; transition: background 140ms ease, border-color 140ms ease, box-shadow 140ms ease; width: 20px; }
+.remember-session-box svg { height: 14px; opacity: 0; stroke-width: 2.5; width: 14px; }
+.remember-session > input:checked + .remember-session-box { background: var(--accent); border-color: var(--accent); }
+.remember-session > input:checked + .remember-session-box svg { opacity: 1; }
+.remember-session > input:focus-visible + .remember-session-box { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 20%, transparent); }
+.remember-session-copy { display: grid; gap: 2px; }
+.remember-session-copy strong { color: var(--ink); font-size: .76rem; font-weight: 700; }
+.remember-session-copy small { color: var(--muted); font-size: .65rem; font-weight: 500; }
 .login-feedback { background: var(--danger-soft); border-radius: 10px; color: var(--danger); display: none; font-size: .72rem; line-height: 1.45; padding: 10px 12px; }
 .login-feedback.is-visible { animation: feedbackIn 220ms cubic-bezier(.23,1,.32,1) both; display: block; }
 .primary-action { align-items: center; background: var(--accent); border: 0; border-radius: 12px; color: #fff; cursor: pointer; display: inline-flex; font-weight: 800; gap: 12px; justify-content: center; min-height: 50px; padding: 12px 17px; transition: background 120ms ease, transform 120ms ease; }

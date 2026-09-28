@@ -211,8 +211,10 @@
     body.innerHTML = filtered.map((item, index) => {
       const placement = placementOf(item.id);
       const guardianPhone = item.guardianPhone || item.motherPhone || '';
-      const messageButton = item.status === 'kayit-tamamlandi' && placement
-        ? `<button type="button" class="btn app-copy" data-copy-id="${escapeHtml(item.id)}" aria-label="${item.applicationType === 'online' ? 'Online ders için veli bilgilendirme mesajını' : 'Veli bilgilendirme mesajını'} kopyala">${item.applicationType === 'online' ? 'Online veli mesajı' : 'Veli mesajı'}</button>` : '';
+      const messageButton = item.status === 'uygun-degil'
+        ? `<button type="button" class="btn app-copy" data-copy-id="${escapeHtml(item.id)}" aria-label="${escapeHtml(item.studentName)} için uygun değil veli mesajını kopyala">Uygun değil mesajı</button>`
+        : item.status === 'kayit-tamamlandi' && placement
+          ? `<button type="button" class="btn app-copy" data-copy-id="${escapeHtml(item.id)}" aria-label="${item.applicationType === 'online' ? 'Online ders için veli bilgilendirme mesajını' : 'Veli bilgilendirme mesajını'} kopyala">${item.applicationType === 'online' ? 'Online veli mesajı' : 'Veli mesajı'}</button>` : '';
       const teacherMessageButton = item.applicationType === 'online'
         ? `<button type="button" class="btn app-copy-teacher" data-teacher-copy-id="${escapeHtml(item.id)}" aria-label="${escapeHtml(item.studentName)} için hocaya gönderilecek mesajı kopyala">Hocaya mesaj</button>` : '';
       const guardianActions = `<button type="button" class="btn app-copy-phone" data-phone-copy-id="${escapeHtml(item.id)}" ${guardianPhone ? '' : 'disabled'} aria-label="${escapeHtml(item.studentName)} velisinin telefon numarasını kopyala">Veli numara</button><label class="guardian-sent-toggle"><input type="checkbox" data-guardian-sent-id="${escapeHtml(item.id)}" ${item.guardianMessageSent ? 'checked' : ''} aria-label="${escapeHtml(item.studentName)} velisine mesaj gönderildi"><span>Mesaj gönderildi</span></label>`;
@@ -850,6 +852,7 @@
   }
 
   function messageFor(item, placement) {
+    if (item.status === 'uygun-degil') return unsuitableApplicationMessage(item);
     const schedule = placement.schedule || [];
     if (item.applicationType === 'online') {
       const teacherAssignments = placement.teacherId ? [{ teacherId: placement.teacherId, teacherName: placement.teacherName }] : schedule;
@@ -890,6 +893,26 @@
     return `🌸 *BİRLİKTE İYİLİK AKADEMİ BİLGİLENDİRME* 🌸\n\nDeğerli Velimiz,\n\n*${item.studentName}*'ın Kur'an-ı Kerim ve Güzel Ahlak Kursu'ndaki programı ${programText}\n\nKursumuza *${startText}* günü itibariyle başlayabilir.\n\nEğitimlerimizin verimli geçebilmesi için öğrencimizin ders saatlerine riayet etmesi, ders saatinden 5 dakika önce sınıfında bulunması konusunda sizlerin de hassasiyet göstermenizi rica ederiz.\n\nTeşekkür eder, hayırlı günler dileriz. 😊\n\n*BİRLİKTE İYİLİK AKADEMİ*`;
   }
 
+  function nameWithCase(name, grammaticalCase) {
+    const cleanName = String(name || '').trim().replace(/[’']+$/u, '');
+    const chars = Array.from(cleanName.toLocaleLowerCase('tr-TR'));
+    const last = chars[chars.length - 1] || '';
+    const lastVowel = [...chars].reverse().find((char) => 'aeıioöuü'.includes(char)) || 'i';
+    const suffix = grammaticalCase === 'genitive'
+      ? ({ a: 'ın', ı: 'ın', o: 'un', u: 'un', e: 'in', i: 'in', ö: 'ün', ü: 'ün' }[lastVowel] || 'in')
+      : 'aıou'.includes(lastVowel) ? 'a' : 'e';
+    const buffer = grammaticalCase === 'genitive'
+      ? ('aeıioöuü'.includes(last) ? 'n' : '')
+      : ('aeıioöuü'.includes(last) ? 'y' : '');
+    return `${cleanName}’${buffer}${suffix}`;
+  }
+
+  function unsuitableApplicationMessage(item) {
+    const name = String(item.studentName || 'öğrencimiz').trim();
+    const preferredName = name.split(/\s+/u).slice(0, 2).join(' ');
+    return `Kıymetli Velimiz,\n\n${nameWithCase(name, 'genitive')} 2026–2027 eğitim dönemi başvurusuyla ilgili değerlendirme sürecimiz tamamlanmıştır.\n\nÖğrencimizin geçtiğimiz eğitim yılı ve yaz dönemi sürecine ait takip ve değerlendirme raporları birlikte incelenmiş; yapılan genel değerlendirme neticesinde maalesef bu dönem için kayıt oluşturulamamıştır.\n\nBu kararın öğrencimizin şahsına yönelik olmadığını, önceki dönemlerdeki eğitim süreci, devam durumu, uyum ve genel değerlendirmeler dikkate alınarak alındığını özellikle belirtmek isteriz.\n\nAnlayışınız için teşekkür eder, ${nameWithCase(preferredName, 'dative')} eğitim hayatında başarılar dileriz.\n\nBİRLİKTE İYİLİK AKADEMİ`;
+  }
+
   function formatTeacherPhone(value) {
     let digits = String(value || '').replace(/\D/g, '').replace(/^90/, '');
     if (digits.length === 11 && digits.startsWith('0')) digits = digits.slice(1);
@@ -900,7 +923,8 @@
   async function copyMessage(id) {
     const item = applications.find((record) => record.id === id);
     const placement = placementOf(id);
-    if (!item || !placement) return toast('Önce ders planını tamamlayın.', 'error');
+    if (!item) return;
+    if (item.status !== 'uygun-degil' && !placement) return toast('Önce ders planını tamamlayın.', 'error');
     const message = messageFor(item, placement);
     try {
       if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(message);
