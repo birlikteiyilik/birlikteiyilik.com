@@ -7,7 +7,7 @@
   const ui = {
     loginView: $('loginView'), directory: $('directoryView'), loginForm: $('loginForm'),
     password: $('password'), loginButton: $('loginButton'), loginFeedback: $('loginFeedback'),
-    showPassword: $('showPassword'), logout: $('logoutButton'),
+    showPassword: $('showPassword'), remember: $('rememberSession'), logout: $('logoutButton'),
     studentMode: $('studentMode'), teacherMode: $('teacherMode'), searchLabel: $('searchLabel'),
     input: $('searchInput'), clear: $('clearSearch'), hint: $('searchHint'),
     results: $('results'), count: $('resultCount'), eyebrow: $('resultsEyebrow'), title: $('resultsTitle')
@@ -39,6 +39,7 @@
   function showLogin() {
     token = '';
     sessionStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(STORAGE_KEY);
     clearTimeout(timer);
     clearTimeout(pendingSkeleton);
     if (controller) controller.abort();
@@ -78,9 +79,13 @@
     ui.loginButton.dataset.loading = 'true';
     ui.loginButton.querySelector('span').textContent = 'Giriş yapılıyor…';
     try {
-      const data = await api({ action: 'directory-login', password });
+      const remember = ui.remember.checked;
+      const data = await api({ action: 'directory-login', password, remember });
       token = data.token;
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ token, expiresAt: data.expiresAt }));
+      const storage = remember ? localStorage : sessionStorage;
+      sessionStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(STORAGE_KEY);
+      storage.setItem(STORAGE_KEY, JSON.stringify({ token, expiresAt: data.expiresAt }));
       showDirectory();
     } catch (error) {
       setLoginError(error.message);
@@ -292,8 +297,17 @@
   ui.clear.addEventListener('click', () => { ui.input.value = ''; scheduleSearch(); ui.input.focus(); });
 
   try {
-    const saved = JSON.parse(sessionStorage.getItem(STORAGE_KEY) || 'null');
-    if (saved?.token && saved.expiresAt > Date.now()) { token = saved.token; showDirectory(); }
-    else sessionStorage.removeItem(STORAGE_KEY);
-  } catch (_) { sessionStorage.removeItem(STORAGE_KEY); }
+    for (const storage of [localStorage, sessionStorage]) {
+      const saved = JSON.parse(storage.getItem(STORAGE_KEY) || 'null');
+      if (saved?.token && saved.expiresAt > Date.now()) {
+        token = saved.token;
+        if (storage === localStorage) sessionStorage.removeItem(STORAGE_KEY);
+        showDirectory();
+        break;
+      }
+      storage.removeItem(STORAGE_KEY);
+    }
+  } catch (_) {
+    sessionStorage.removeItem(STORAGE_KEY);
+  }
 })();

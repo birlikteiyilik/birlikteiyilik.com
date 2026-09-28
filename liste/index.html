@@ -10,8 +10,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/liste.css?v=4">
-  <script defer src="/js/liste.js?v=2"></script>
+  <link rel="stylesheet" href="/css/liste.css?v=5">
+  <script defer src="/js/liste.js?v=3"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">İçeriğe geç</a>
@@ -52,6 +52,7 @@
           <form id="loginForm" novalidate>
             <label for="password">Erişim şifresi</label>
             <div class="password-wrap"><input id="password" name="password" type="password" autocomplete="current-password" maxlength="128" required aria-describedby="loginFeedback" placeholder="Şifrenizi yazın"><button id="showPassword" type="button" aria-label="Şifreyi göster" aria-pressed="false"><svg><use href="#i-eye"></use></svg></button></div>
+            <div class="remember-row"><label class="remember-option" for="rememberSession"><input id="rememberSession" name="rememberSession" type="checkbox"><span>Oturumu açık bırak</span></label><span class="remember-note">Bu cihazda 14 gün</span></div>
             <p class="field-feedback" id="loginFeedback" role="alert"></p>
             <button class="primary-button" id="loginButton" type="submit"><span>Rehberi aç</span><svg><use href="#i-arrow"></use></svg></button>
           </form>

@@ -57,6 +57,10 @@ h1, h2, h3, p { margin-top: 0; }
 .password-wrap input[aria-invalid="true"] { border-color: var(--color-error); }
 .password-wrap > button, .search-field > button { position: absolute; inset: 0 .35rem 0 auto; width: 2.9rem; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--color-muted); display: grid; place-items: center; }
 .password-wrap > button:hover, .search-field > button:hover { color: var(--color-accent-deep); }
+.remember-row { display: flex; align-items: center; justify-content: space-between; gap: .75rem; margin: .9rem 0 .1rem; }
+.login-form-wrap .remember-option { display: inline-flex; align-items: center; gap: .55rem; margin: 0; color: var(--color-ink-soft); cursor: pointer; font-size: .81rem; font-weight: 600; }
+.remember-option input { width: 1rem; height: 1rem; margin: 0; accent-color: var(--color-accent-deep); cursor: pointer; }
+.remember-note { color: var(--color-muted); font-size: .7rem; font-weight: 500; white-space: nowrap; }
 .field-feedback { min-height: 1.5rem; margin: .4rem 0 .8rem; font-size: .83rem; color: var(--color-error); }
 .primary-button { width: 100%; min-height: 3.6rem; padding: .9rem 1rem; border: 1px solid var(--color-navy); border-radius: var(--radius-sm); background: var(--color-navy); color: var(--color-on-dark); display: flex; align-items: center; justify-content: space-between; gap: 1rem; font-weight: 800; white-space: nowrap; transition: background-color var(--dur-control) var(--ease-out), transform var(--dur-fast) var(--ease-out); }
 .primary-button svg { transition: transform var(--dur-control) var(--ease-out); }

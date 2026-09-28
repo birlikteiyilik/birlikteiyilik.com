@@ -674,8 +674,9 @@ export default async function handler(req) {
         return json({ error: 'Şifre eşleşmedi. Yeniden deneyin.' }, 401, cors);
       }
       const now = Math.floor(Date.now() / 1000);
-      const token = await signJwt({ role: 'directory', iat: now, exp: now + (2 * 60 * 60) }, directoryJwtSecret);
-      return json({ ok: true, token, expiresAt: (now + (2 * 60 * 60)) * 1000 }, 200, cors);
+      const ttl = body.remember === true ? 14 * 24 * 60 * 60 : 2 * 60 * 60;
+      const token = await signJwt({ role: 'directory', iat: now, exp: now + ttl }, directoryJwtSecret);
+      return json({ ok: true, token, expiresAt: (now + ttl) * 1000 }, 200, cors);
     }
 
     if (body.action === 'directory-search') {
