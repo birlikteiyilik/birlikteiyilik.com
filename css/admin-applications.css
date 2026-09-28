@@ -600,7 +600,6 @@ html, body { max-width: 100%; overflow-x: hidden; }
   .teacher-print-head > strong { background: #f0f3f6; border-radius: 6px; font-size: 8pt; padding: 7px 10px; }
   .teacher-print-periods { display: grid; gap: 5px; }
   .teacher-print-period-block { break-inside: avoid; }
-  .teacher-print-period-block + .teacher-print-period-block { border-top: 3px solid #17385c; margin-top: 3px; padding-top: 6px; }
   .teacher-print-period-heading { align-items: baseline; display: flex; justify-content: space-between; margin: 3px 0 0; }
   .teacher-print-period-heading h2 { color: #17385c; font-size: 8pt; font-weight: 700; margin: 0; }
   .teacher-print-period-heading span { color: #586679; font-size: 7pt; font-weight: 600; }
@@ -624,7 +623,7 @@ html, body { max-width: 100%; overflow-x: hidden; }
   .attendance-box { border: 1px solid #64748b; display: inline-block; height: 4mm; width: 4mm; }
   .teacher-print-table tbody tr { break-inside: avoid; }
   .teacher-print-head, .teacher-print-table th { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-  .teacher-print-period-block + .teacher-print-period-block { break-before: auto; }
+  .teacher-print-period-block + .teacher-print-period-block { border-top: 0; break-before: auto; margin-top: 0; padding-top: 0; }
   #teacherPrintRoot footer { align-items: center; border-top: 1px solid #cfd7e0; color: #5d6876; display: flex; font-size: 7pt; justify-content: space-between; margin-top: 7px; padding-top: 5px; }
 }
 
