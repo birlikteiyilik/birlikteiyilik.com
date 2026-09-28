@@ -585,11 +585,11 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .apps-toast.is-visible { opacity: 1; transform: translate(-50%, 0); }
 
 #teacherPrintRoot { display: none; }
-@page { size: A4 landscape; margin: 7mm; }
+@page { size: A4 landscape; margin: 0; }
 @media print {
   body.printing-teacher-program { background: #fff !important; }
   body.printing-teacher-program > :not(#teacherPrintRoot) { display: none !important; }
-  body.printing-teacher-program #teacherPrintRoot { color: #17283e; display: block !important; font-family: Arial, sans-serif; }
+  body.printing-teacher-program #teacherPrintRoot { color: #17283e; display: block !important; font-family: Arial, sans-serif; padding: 7mm; }
   .teacher-print-sheet { color: #17283e; width: 100%; }
   .teacher-print-head { align-items: center; border-bottom: 2px solid #17385c; display: flex; gap: 12px; padding: 0 0 7px; }
   .teacher-print-head img { height: 42px; object-fit: contain; width: 86px; }
