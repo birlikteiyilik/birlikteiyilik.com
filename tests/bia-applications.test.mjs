@@ -332,11 +332,31 @@ assert.equal(attendanceSaveResponse.status, 200);
 const savedAttendance = (await attendanceSaveResponse.json()).data[0];
 assert.equal(savedAttendance.status, 'katildi');
 
+const nextAttendanceDate = new Date(`${attendanceDate}T12:00:00Z`);
+nextAttendanceDate.setUTCDate(nextAttendanceDate.getUTCDate() + 1);
+const nextDayDataResponse = await handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'POST', headers: teacherHeaders,
+  body: JSON.stringify({ action: 'teacher-data', date: nextAttendanceDate.toISOString().slice(0, 10) })
+}));
+assert.equal(nextDayDataResponse.status, 200);
+const nextDayLessons = (await nextDayDataResponse.json()).lessons;
+assert.equal(nextDayLessons[0].status, '');
+assert.equal(nextDayLessons[0].note, 'Derse zamanında katıldı.');
+assert.equal(nextDayLessons[0].noteDate, attendanceDate);
+
+const attendanceClearResponse = await handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'POST', headers: teacherHeaders, body: JSON.stringify({
+    action: 'attendance-save', date: attendanceDate,
+    entries: [{ applicationId: firstApplication.id, slot: '15:00-15:20', status: '', note: '' }]
+  })
+}));
+assert.equal(attendanceClearResponse.status, 200);
+assert.equal((await attendanceClearResponse.json()).data[0].cleared, true);
+
 const attendanceList = await (await handler(new Request('http://localhost:4173/api/bia-applications', {
   method: 'GET', headers: adminHeaders
 }))).json();
-assert.equal(attendanceList.attendance.length, 1);
-assert.equal(attendanceList.attendance[0].studentName, validSubmission.studentName);
+assert.equal(attendanceList.attendance.length, 0);
 
 const secondSubmission = { ...validSubmission, studentName: 'İkinci Öğrenci', tckn: makeTckn('200000003'), startedAt: Date.now() - 5000 };
 const secondResponse = await handler(new Request('http://localhost:4173/api/bia-applications', {

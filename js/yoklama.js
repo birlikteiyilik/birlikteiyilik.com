@@ -17,7 +17,8 @@
   let selectedDate = initialDate();
   let week = [];
   let lessons = [];
-  let dirty = new Map();
+  const saving = new Set();
+  const noteTimers = new Map();
   let toastTimer = 0;
 
   function el(id) { return document.getElementById(id); }
@@ -52,6 +53,7 @@
     return new Intl.DateTimeFormat('tr-TR', options).format(new Date(`${value}T12:00:00`));
   }
   function lessonKey(lesson) { return `${lesson.applicationId}|${lesson.slot}`; }
+  function attendanceKey(lesson, date) { return `${date}|${lessonKey(lesson)}`; }
 
   async function api(body, authToken) {
     const response = await fetch(API_URL, {
@@ -131,22 +133,6 @@
     el('nextWeek').disabled = addDays(start, 7) > mondayFor(latest);
   }
 
-  function dirtyState(lesson) {
-    return lesson.status !== lesson.originalStatus || lesson.note !== lesson.originalNote;
-  }
-
-  function syncDirty(lesson) {
-    const key = lessonKey(lesson);
-    if (dirtyState(lesson)) dirty.set(key, lesson);
-    else dirty.delete(key);
-    renderSaveDock();
-  }
-
-  function renderSaveDock() {
-    el('saveDock').hidden = dirty.size === 0;
-    el('dirtyCount').textContent = `${dirty.size} değişiklik`;
-  }
-
   function renderLessons() {
     const list = el('lessonList');
     const isFuture = selectedDate > dateValue(new Date());
@@ -163,19 +149,20 @@
       ? lessons.length ? 'İleri tarihli ders programınızı önceden görüntülüyorsunuz. Yoklama, ders günü açılacaktır.' : 'Bu tarih için atanmış bir ders görünmüyor.'
       : lessons.length ? `${lessons.length} birebir ders planlandı. Yoklamayı ders sonrasında tamamlayın.` : 'Bu gün için planlanmış bir ders bulunmuyor.';
     list.innerHTML = lessons.map((lesson, index) => {
+      const isSaving = saving.has(attendanceKey(lesson, selectedDate));
+      const noteIsFromPreviousDay = Boolean(lesson.note && lesson.noteDate && lesson.noteDate < selectedDate);
       const active = (status) => lesson.status === status ? ' is-active' : '';
-      return `<article class="lesson-card${dirtyState(lesson) ? ' is-dirty' : ''}" style="--index:${index}">
+      return `<article class="lesson-card${isSaving ? ' is-saving' : ''}" style="--index:${index}" aria-busy="${isSaving}">
         <time class="lesson-time">${escapeHtml(lesson.slot.split('-')[0])}</time>
         <div class="lesson-surface">
           <header class="lesson-summary"><div class="student-info"><strong>${escapeHtml(lesson.studentName)}</strong><span>${escapeHtml(lesson.applicationReference || '')}</span></div><span class="lesson-mode">${escapeHtml(labels.type[lesson.applicationType] || lesson.applicationType)}</span></header>
           <div class="attendance-controls" role="group" aria-label="${escapeHtml(lesson.studentName)} yoklama durumu">
-            ${['katildi', 'gelmedi', 'mazeretli'].map((status) => `<button type="button" class="status-action${active(status)}" data-lesson-key="${escapeHtml(lessonKey(lesson))}" data-status="${status}" aria-pressed="${lesson.status === status}" ${isFuture ? 'disabled' : ''}><svg><use href="#${icon[status]}"></use></svg>${labels.status[status]}</button>`).join('')}
+            ${['katildi', 'gelmedi', 'mazeretli'].map((status) => `<button type="button" class="status-action${active(status)}" data-lesson-key="${escapeHtml(lessonKey(lesson))}" data-status="${status}" aria-pressed="${lesson.status === status}" ${isFuture || isSaving ? 'disabled' : ''}><svg><use href="#${icon[status]}"></use></svg>${labels.status[status]}</button>`).join('')}
           </div>
-          <details class="lesson-note" ${lesson.note ? 'open' : ''}><summary><svg><use href="#icon-note"></use></svg>Ders notu ${lesson.note ? '· eklendi' : 'ekle'}</summary><textarea data-note-key="${escapeHtml(lessonKey(lesson))}" maxlength="300" ${lesson.status && !isFuture ? '' : 'disabled'} placeholder="Yalnızca gerekli kısa notu yazın...">${escapeHtml(lesson.note)}</textarea></details>
+          <details class="lesson-note" ${lesson.note ? 'open' : ''}><summary><svg><use href="#icon-note"></use></svg>Ders notu ${lesson.note ? noteIsFromPreviousDay ? `· önceki dersten, ${formatDate(lesson.noteDate, { day: 'numeric', month: 'short' })}` : '· eklendi' : 'ekle'}</summary><textarea data-note-key="${escapeHtml(lessonKey(lesson))}" maxlength="300" ${lesson.status && !isFuture && !isSaving ? '' : 'disabled'} placeholder="Yalnızca gerekli kısa notu yazın...">${escapeHtml(lesson.note)}</textarea></details>
         </div>
       </article>`;
     }).join('');
-    renderSaveDock();
   }
 
   function showLoading() {
@@ -196,7 +183,6 @@
       lessons = (result.lessons || []).map((lesson) => ({
         ...lesson, originalStatus: lesson.status || '', originalNote: lesson.note || ''
       }));
-      dirty.clear();
       showApp();
       renderWeek();
       renderLessons();
@@ -246,23 +232,55 @@
     }
   }
 
-  async function saveAttendance() {
-    if (!dirty.size) return;
-    const button = el('saveButton');
-    button.disabled = true;
-    button.querySelector('span').textContent = 'Kaydediliyor…';
+  async function saveAttendance(lesson, date, previous) {
+    const key = attendanceKey(lesson, date);
+    if (saving.has(key)) return;
+    saving.add(key);
+    if (date === selectedDate) renderLessons();
+    toast('Yoklama kaydediliyor…');
     try {
-      await api({ action: 'attendance-save', date: selectedDate, entries: [...dirty.values()].map((lesson) => ({
+      await api({ action: 'attendance-save', date, entries: [{
         applicationId: lesson.applicationId, slot: lesson.slot, status: lesson.status, note: lesson.note
-      })) });
-      toast('Yoklama güvenle kaydedildi.');
+      }] });
+      lesson.originalStatus = lesson.status;
+      lesson.originalNote = lesson.note;
+      toast(lesson.status ? 'Yoklama kaydedildi.' : 'Yoklama seçimi kaldırıldı.');
       await loadDay({ quiet: true });
     } catch (error) {
+      lesson.status = previous.status;
+      lesson.note = previous.note;
+      if (date === selectedDate) renderLessons();
       toast(error.message, 'error');
     } finally {
-      button.disabled = false;
-      button.querySelector('span').textContent = 'Yoklamayı kaydet';
+      saving.delete(key);
+      if (date === selectedDate) renderLessons();
     }
+  }
+
+  function clearNoteTimer(key) {
+    const pending = noteTimers.get(key);
+    if (!pending) return null;
+    clearTimeout(pending.timer);
+    noteTimers.delete(key);
+    return pending;
+  }
+
+  function queueNoteSave(lesson) {
+    const date = selectedDate;
+    const key = attendanceKey(lesson, date);
+    const existing = noteTimers.get(key);
+    const previous = existing?.previous || { status: lesson.originalStatus, note: lesson.originalNote };
+    if (existing) clearTimeout(existing.timer);
+    const timer = setTimeout(() => {
+      noteTimers.delete(key);
+      saveAttendance(lesson, date, previous);
+    }, 650);
+    noteTimers.set(key, { timer, lesson, date, previous });
+  }
+
+  async function flushNoteSaves() {
+    const pending = [...noteTimers.keys()].map((key) => clearNoteTimer(key)).filter(Boolean);
+    await Promise.all(pending.map(({ lesson, date, previous }) => saveAttendance(lesson, date, previous)));
   }
 
   function closeAccountMenu() {
@@ -285,38 +303,44 @@
     el('weekDays').addEventListener('click', (event) => {
       const button = event.target.closest('[data-date]');
       if (!button || button.disabled || button.dataset.date === selectedDate) return;
-      if (dirty.size && !window.confirm('Kaydedilmemiş yoklama değişiklikleri var. Başka güne geçilsin mi?')) return;
-      selectedDate = button.dataset.date;
-      loadDay();
+      flushNoteSaves().then(() => {
+        selectedDate = button.dataset.date;
+        loadDay();
+      });
     });
     el('previousWeek').addEventListener('click', () => {
-      if (dirty.size && !window.confirm('Kaydedilmemiş değişiklikler var. Önceki haftaya geçilsin mi?')) return;
-      selectedDate = addDays(mondayFor(selectedDate), -7);
-      loadDay();
+      flushNoteSaves().then(() => {
+        selectedDate = addDays(mondayFor(selectedDate), -7);
+        loadDay();
+      });
     });
     el('nextWeek').addEventListener('click', () => {
       if (el('nextWeek').disabled) return;
-      if (dirty.size && !window.confirm('Kaydedilmemiş değişiklikler var. Sonraki haftaya geçilsin mi?')) return;
-      selectedDate = addDays(mondayFor(selectedDate), 7);
-      loadDay();
+      flushNoteSaves().then(() => {
+        selectedDate = addDays(mondayFor(selectedDate), 7);
+        loadDay();
+      });
     });
     el('lessonList').addEventListener('click', (event) => {
       const button = event.target.closest('[data-status]');
       if (!button) return;
       const lesson = lessons.find((item) => lessonKey(item) === button.dataset.lessonKey);
       if (!lesson) return;
-      lesson.status = button.dataset.status;
-      syncDirty(lesson);
-      renderLessons();
+      const date = selectedDate;
+      const key = attendanceKey(lesson, date);
+      const pending = clearNoteTimer(key);
+      const previous = pending?.previous || { status: lesson.status, note: lesson.note };
+      lesson.status = lesson.status === button.dataset.status ? '' : button.dataset.status;
+      if (!lesson.status) lesson.note = '';
+      saveAttendance(lesson, date, previous);
     });
     el('lessonList').addEventListener('input', (event) => {
       if (!event.target.matches('[data-note-key]')) return;
       const lesson = lessons.find((item) => lessonKey(item) === event.target.dataset.noteKey);
-      if (!lesson) return;
+      if (!lesson || saving.has(attendanceKey(lesson, selectedDate))) return;
       lesson.note = event.target.value;
-      syncDirty(lesson);
+      queueNoteSave(lesson);
     });
-    el('saveButton').addEventListener('click', saveAttendance);
     el('refreshButton').addEventListener('click', () => loadDay({ quiet: true }));
     el('retryButton').addEventListener('click', () => loadDay());
     el('accountButton').addEventListener('click', () => {

@@ -573,16 +573,21 @@ export default async function handler(req) {
     if (!day) return [];
     const saved = new Map(records.filter((item) => item.kind === 'attendance' && item.teacherId === teacher.id && item.lessonDate === date)
       .map((item) => [`${item.applicationId}|${item.slot}`, item]));
+    const previousNotes = new Map();
+    records.filter((item) => item.kind === 'attendance' && item.teacherId === teacher.id && item.lessonDate < date)
+      .sort((a, b) => a.lessonDate.localeCompare(b.lessonDate) || String(a.updatedAt || '').localeCompare(String(b.updatedAt || '')))
+      .forEach((item) => previousNotes.set(item.applicationId, item));
     return records.filter((item) => item.kind === 'placement' && (!item.startDate || item.startDate <= date))
       .flatMap((placement) => (placement.schedule || [])
         .filter((entry) => entry.teacherId === teacher.id && entry.day === day)
         .map((entry) => {
           const attendance = saved.get(`${placement.applicationId}|${entry.slot}`);
+          const noteRecord = attendance || previousNotes.get(placement.applicationId);
           return {
             applicationId: placement.applicationId, applicationReference: placement.applicationReference,
             studentName: placement.studentName, applicationType: placement.applicationType,
             startDate: placement.startDate, day, slot: entry.slot,
-            status: attendance?.status || '', note: attendance?.note || '',
+            status: attendance?.status || '', note: noteRecord?.note || '', noteDate: noteRecord?.lessonDate || '',
             attendanceId: attendance?.id || '', updatedAt: attendance?.updatedAt || ''
           };
         }))
@@ -783,10 +788,15 @@ export default async function handler(req) {
             const key = `${applicationId}|${slot}`;
             const lesson = available.get(key);
             if (!lesson || seen.has(key)) throw new RequestError('Ders ataması değişti. Programı yenileyip tekrar deneyin.', 409);
-            if (!ATTENDANCE_STATUSES.includes(status)) throw new RequestError(`${lesson.studentName} için yoklama durumu seçin.`);
             seen.add(key);
             const index = records.findIndex((item) => item.kind === 'attendance' && item.teacherId === teacher.id &&
               item.applicationId === applicationId && item.lessonDate === date && item.slot === slot);
+            if (!status) {
+              if (index >= 0) records.splice(index, 1);
+              result.push({ applicationId, slot, cleared: true });
+              return;
+            }
+            if (!ATTENDANCE_STATUSES.includes(status)) throw new RequestError(`${lesson.studentName} için yoklama durumu seçin.`);
             const existing = index >= 0 ? records[index] : null;
             const attendance = {
               kind: 'attendance', id: existing?.id || crypto.randomUUID(), teacherId: teacher.id,
