@@ -24,7 +24,7 @@ export async function ensureArchiveSchema() {
 }
 
 export async function readArchiveEnvelope(name) {
-  const rows = await neonSql()(
+  const rows = await neonSql().query(
     'SELECT envelope, version FROM bia_encrypted_archives WHERE archive_name = $1 LIMIT 1',
     [name]
   );
@@ -32,18 +32,18 @@ export async function readArchiveEnvelope(name) {
 }
 
 export async function listArchiveEnvelopes() {
-  return neonSql()('SELECT archive_name, envelope, version FROM bia_encrypted_archives ORDER BY archive_name', []);
+  return neonSql().query('SELECT archive_name, envelope, version FROM bia_encrypted_archives ORDER BY archive_name', []);
 }
 
 export async function insertArchiveEnvelope(name, envelope) {
-  return neonSql()(
+  return neonSql().query(
     'INSERT INTO bia_encrypted_archives (archive_name, envelope, version) VALUES ($1, $2::jsonb, 1) ON CONFLICT (archive_name) DO NOTHING RETURNING version',
     [name, JSON.stringify(envelope)]
   );
 }
 
 export async function updateArchiveEnvelope(name, envelope, expectedVersion) {
-  return neonSql()(
+  return neonSql().query(
     'UPDATE bia_encrypted_archives SET envelope = $2::jsonb, version = version + 1, updated_at = now() WHERE archive_name = $1 AND version = $3 RETURNING version',
     [name, JSON.stringify(envelope), expectedVersion]
   );
