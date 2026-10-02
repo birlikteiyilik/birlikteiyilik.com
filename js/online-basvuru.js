@@ -18,12 +18,18 @@
   let sending = false;
 
   document.getElementById('startedAt').value = String(Date.now());
+  form.querySelector('[name="birthDate"]').max = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 
   function digits(value) { return String(value || '').replace(/\D/g, ''); }
   function validPhone(value, optional) {
     const phone = digits(value);
     if (optional && !phone) return true;
     return /^(?:90)?5\d{9}$/.test(phone) || /^05\d{9}$/.test(phone);
+  }
+  function validBirthDate(value, max) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+    const parsed = new Date(`${value}T00:00:00Z`);
+    return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value && value <= max;
   }
   function setError(control, message) {
     const holder = control.closest('.field, .choice-field, .consent');
@@ -77,8 +83,8 @@
     });
 
     const birth = step.querySelector('[name="birthDate"]');
-    if (birth && birth.value && new Date(`${birth.value}T00:00:00`) > new Date()) {
-      setError(birth, 'Doğum tarihi gelecekte olamaz.');
+    if (birth && birth.value && !validBirthDate(birth.value, birth.max)) {
+      setError(birth, 'Geçerli ve gelecekte olmayan bir doğum tarihi girin.');
       firstInvalid = firstInvalid || birth;
     }
 
@@ -126,6 +132,7 @@
   }
 
   function labelFor(name, value) {
+    if (name === 'guardianRelation') return form.elements.guardianRelation.selectedOptions[0]?.textContent || value;
     const control = form.querySelector(`[name="${name}"][value="${CSS.escape(value)}"]`);
     return control?.nextElementSibling?.textContent.trim() || value;
   }
@@ -135,9 +142,9 @@
       ['Öğrenci', form.elements.studentName.value],
       ['Sınıf / cinsiyet', `${form.elements.grade.value}. sınıf · ${labelFor('gender', form.elements.gender.value)}`],
       ['Kur’an seviyesi', labelFor('quranLevel', form.elements.quranLevel.value)],
-      ['Veli', `${form.elements.motherName.value} / ${form.elements.fatherName.value}`],
-      ['İletişim', form.elements.motherPhone.value],
-      ['İlçe / şehir', form.elements.location.value],
+      ['Veli', `${form.elements.guardianName.value} (${labelFor('guardianRelation', form.elements.guardianRelation.value)})${form.elements.secondGuardianName.value ? ` · ${form.elements.secondGuardianName.value}` : ''}`],
+      ['İletişim', form.elements.guardianPhone.value],
+      ['İlçe / şehir', `${form.elements.district.value} / ${form.elements.province.value}`],
       ['Uygun saatler', selectedTimes.join(', '), true],
       ['Daha önce eğitim', labelFor('previousTraining', form.elements.previousTraining.value)]
     ];
@@ -151,8 +158,8 @@
     return {
       action: 'submit', applicationType: 'online', applicationVersion: 'online-2026-09', startedAt: data.get('startedAt'), website: data.get('website'),
       studentName: data.get('studentName'), birthDate: data.get('birthDate'), gender: data.get('gender'), grade: data.get('grade'),
-      quranLevel: data.get('quranLevel'), studentPhone: data.get('studentPhone'), motherName: data.get('motherName'), motherPhone: data.get('motherPhone'),
-      fatherName: data.get('fatherName'), fatherPhone: data.get('fatherPhone'), location: data.get('location'), availabilityRanges: data.getAll('availabilityRanges'),
+      quranLevel: data.get('quranLevel'), studentPhone: data.get('studentPhone'), guardianName: data.get('guardianName'), guardianRelation: data.get('guardianRelation'), guardianPhone: data.get('guardianPhone'),
+      secondGuardianName: data.get('secondGuardianName'), secondGuardianPhone: data.get('secondGuardianPhone'), province: data.get('province'), district: data.get('district'), availabilityRanges: data.getAll('availabilityRanges'),
       previousTraining: data.get('previousTraining'), previousTrainingDetail: data.get('previousTrainingDetail'), referralSource: data.get('referralSource'),
       referralOther: data.get('referralOther'), privacyAcknowledged: data.get('privacyAcknowledged') === 'on', termsAccepted: data.get('termsAccepted') === 'on'
     };
@@ -168,6 +175,17 @@
   });
   backButton.addEventListener('click', () => updateStep(activeStep - 1));
   form.addEventListener('input', (event) => setError(event.target, ''));
+
+  const secondGuardianToggle = form.elements.addSecondGuardian;
+  secondGuardianToggle.addEventListener('change', () => {
+    const fields = document.getElementById('secondGuardianFields');
+    fields.hidden = !secondGuardianToggle.checked;
+    fields.querySelectorAll('input').forEach((control) => {
+      control.disabled = !secondGuardianToggle.checked;
+      control.required = secondGuardianToggle.checked;
+    });
+  });
+  document.getElementById('secondGuardianFields').querySelectorAll('input').forEach((control) => { control.disabled = true; });
 
   form.querySelectorAll('[name="previousTraining"]').forEach((radio) => radio.addEventListener('change', () => {
     const show = form.elements.previousTraining.value === 'evet';

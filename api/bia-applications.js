@@ -23,7 +23,7 @@ const ONLINE_TIME_RANGES = [
   '10:00-13:00', '13:00-15:00', '15:00-17:00',
   '17:00-19:00', '19:00-21:00', '21:00-23:00'
 ];
-const REFERRAL_SOURCES = ['ogrenci-arkadasi', 'arkadas-tavsiyesi', 'bilgilendirme-mesaji', 'kendi-arastirmam', 'diger'];
+const REFERRAL_SOURCES = ['arkadas', 'aile', 'bilgilendirme-mesaji', 'sosyal-medya', 'diger', 'ogrenci-arkadasi', 'arkadas-tavsiyesi', 'kendi-arastirmam'];
 const ATTENDANCE_STATUSES = ['katildi', 'gelmedi', 'mazeretli'];
 const PASSWORD_ITERATIONS = 210000;
 const DIRECTORY_PASSWORD_ITERATIONS = 600000;
@@ -234,25 +234,46 @@ function orderedUnique(values, allowed) {
 
 function validDate(value) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(String(value || ''))) return false;
-  return Number.isFinite(new Date(`${value}T00:00:00Z`).getTime());
+  const parsed = new Date(`${value}T00:00:00Z`);
+  return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+}
+
+function isFutureDate(value) {
+  const todayInTurkey = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Istanbul' }).format(new Date());
+  return String(value) > todayInTurkey;
 }
 
 function validateSubmission(body) {
   const isNewOnlineForm = body.applicationType === 'online' && body.applicationVersion === 'online-2026-09';
   if (isNewOnlineForm) {
     if (cleanText(body.studentName, 100).length < 3) return 'Öğrenci adı soyadı eksik.';
-    if (!validDate(body.birthDate) || new Date(`${body.birthDate}T00:00:00Z`) > new Date()) return 'Doğum tarihi geçersiz.';
+    if (!validDate(body.birthDate) || isFutureDate(body.birthDate)) return 'Doğum tarihi geçersiz.';
     if (!ENUMS.gender.includes(String(body.gender || '')) || !ENUMS.grade.includes(String(body.grade || '')) ||
       !ENUMS.quranLevel.includes(String(body.quranLevel || '')) || !ENUMS.previousTraining.includes(String(body.previousTraining || ''))) {
       return 'Öğrenci veya eğitim bilgilerinden biri geçersiz.';
     }
-    for (const [key, label] of [['motherName', 'Anne'], ['fatherName', 'Baba']]) {
-      if (cleanText(body[key], 100).length < 3) return `${label} adı soyadı eksik.`;
+    const legacyGuardians = !body.guardianName;
+    if (legacyGuardians) {
+      for (const [key, label] of [['motherName', 'Anne'], ['fatherName', 'Baba']]) {
+        if (cleanText(body[key], 100).length < 3) return `${label} adı soyadı eksik.`;
+      }
+    } else if (cleanText(body.guardianName, 100).length < 3 || !ENUMS.guardianRelation.includes(String(body.guardianRelation || ''))) {
+      return 'Veli bilgileri eksik veya geçersiz.';
     }
-    if (!isValidPhone(body.motherPhone, false) || !isValidPhone(body.fatherPhone, false) || !isValidPhone(body.studentPhone, true)) {
+    const primaryPhone = legacyGuardians ? body.motherPhone : body.guardianPhone;
+    const secondPhone = legacyGuardians ? body.fatherPhone : body.secondGuardianPhone;
+    if (!isValidPhone(primaryPhone, false) || !isValidPhone(secondPhone, legacyGuardians ? false : true) || !isValidPhone(body.studentPhone, true)) {
       return 'Telefon numaralarından biri geçersiz.';
     }
-    if (cleanText(body.location, 140).length < 2) return 'İlçe / şehir bilgisi eksik.';
+    if (legacyGuardians) {
+      if (cleanText(body.location, 140).length < 2) return 'İlçe / şehir bilgisi eksik.';
+    } else if (cleanText(body.province, 80).length < 2 || cleanText(body.district, 80).length < 2) {
+      return 'İl ve ilçe seçin.';
+    }
+    if ((cleanText(body.secondGuardianName, 100) || digits(body.secondGuardianPhone)) &&
+      (cleanText(body.secondGuardianName, 100).length < 3 || !isValidPhone(body.secondGuardianPhone, false))) {
+      return 'İkinci veli adı ve telefon numarasını birlikte girin.';
+    }
     const ranges = orderedUnique(body.availabilityRanges, ONLINE_TIME_RANGES);
     if (!Array.isArray(body.availabilityRanges) || !ranges.length || ranges.length !== body.availabilityRanges.length) {
       return 'En az bir geçerli müsait saat aralığı seçin.';
@@ -267,12 +288,13 @@ function validateSubmission(body) {
     if (cleanText(body[key], 200).length < min) return `${key} alanı eksik.`;
   }
   if (!isValidTckn(body.tckn)) return 'T.C. kimlik numarası geçersiz.';
-  if (!validDate(body.birthDate) || new Date(`${body.birthDate}T00:00:00Z`) > new Date()) return 'Doğum tarihi geçersiz.';
+  if (!validDate(body.birthDate) || isFutureDate(body.birthDate)) return 'Doğum tarihi geçersiz.';
   for (const key of Object.keys(ENUMS)) if (!requireEnum(body, key)) return `${key} seçimi geçersiz.`;
   if (!isValidPhone(body.guardianPhone, false)) return 'Veli telefon numarası geçersiz.';
   if (!isValidPhone(body.studentPhone, true) || !isValidPhone(body.secondGuardianPhone, true)) {
     return 'Telefon numaralarından biri geçersiz.';
   }
+  if (cleanText(body.province, 80).length < 2 || cleanText(body.district, 80).length < 2) return 'İl ve ilçe seçin.';
   const availability = orderedUnique(body.availabilitySlots, TIME_SLOTS);
   if (!Array.isArray(body.availabilitySlots) || !availability.length || availability.length !== body.availabilitySlots.length) {
     return 'En az bir geçerli müsait saat aralığı seçin.';
@@ -285,16 +307,26 @@ function validateSubmission(body) {
 
 function normalizeSubmission(body) {
   if (body.applicationType === 'online' && body.applicationVersion === 'online-2026-09') {
+    const legacyGuardians = !body.guardianName;
+    const guardianName = cleanText(legacyGuardians ? body.motherName : body.guardianName, 100);
+    const guardianRelation = legacyGuardians ? 'anne' : String(body.guardianRelation);
+    const guardianPhone = digits(legacyGuardians ? body.motherPhone : body.guardianPhone).slice(0, 12);
+    const secondGuardianName = cleanText(legacyGuardians ? body.fatherName : body.secondGuardianName, 100);
+    const secondGuardianPhone = digits(legacyGuardians ? body.fatherPhone : body.secondGuardianPhone).slice(0, 12);
+    const province = cleanText(body.province, 80);
+    const district = cleanText(body.district, 80);
+    const location = legacyGuardians ? cleanText(body.location, 140) : `${district} / ${province}`;
+    const motherName = guardianRelation === 'anne' ? guardianName : legacyGuardians ? guardianName : '';
+    const motherPhone = guardianRelation === 'anne' ? guardianPhone : legacyGuardians ? guardianPhone : '';
+    const fatherName = guardianRelation === 'baba' ? guardianName : legacyGuardians ? secondGuardianName : '';
+    const fatherPhone = guardianRelation === 'baba' ? guardianPhone : legacyGuardians ? secondGuardianPhone : '';
     return {
       applicationType: 'online', applicationVersion: 'online-2026-09',
       studentName: cleanText(body.studentName, 100), tckn: '', birthDate: String(body.birthDate),
       gender: String(body.gender), school: '', grade: String(body.grade),
-      guardianName: cleanText(body.motherName, 100), guardianRelation: 'anne',
-      guardianPhone: digits(body.motherPhone).slice(0, 12), studentPhone: digits(body.studentPhone).slice(0, 12),
-      address: cleanText(body.location, 140), secondGuardianName: cleanText(body.fatherName, 100),
-      secondGuardianPhone: digits(body.fatherPhone).slice(0, 12), motherName: cleanText(body.motherName, 100),
-      motherPhone: digits(body.motherPhone).slice(0, 12), fatherName: cleanText(body.fatherName, 100),
-      fatherPhone: digits(body.fatherPhone).slice(0, 12), location: cleanText(body.location, 140),
+      guardianName, guardianRelation, guardianPhone, studentPhone: digits(body.studentPhone).slice(0, 12),
+      address: location, province, district, secondGuardianName, secondGuardianPhone,
+      motherName, motherPhone, fatherName, fatherPhone, location,
       quranLevel: String(body.quranLevel), previousTraining: String(body.previousTraining),
       previousTrainingDetail: cleanText(body.previousTrainingDetail, 180), availabilitySlots: [],
       availabilityRanges: orderedUnique(body.availabilityRanges, ONLINE_TIME_RANGES),
@@ -308,6 +340,7 @@ function normalizeSubmission(body) {
     school: cleanText(body.school, 140), grade: String(body.grade), guardianName: cleanText(body.guardianName, 100),
     guardianRelation: String(body.guardianRelation), guardianPhone: digits(body.guardianPhone).slice(0, 12),
     studentPhone: digits(body.studentPhone).slice(0, 12), address: cleanText(body.address, 400),
+    province: cleanText(body.province, 80), district: cleanText(body.district, 80), location: `${cleanText(body.district, 80)} / ${cleanText(body.province, 80)}`,
     secondGuardianName: cleanText(body.secondGuardianName, 100),
     secondGuardianPhone: digits(body.secondGuardianPhone).slice(0, 12), quranLevel: String(body.quranLevel),
     previousTraining: String(body.previousTraining), previousTrainingDetail: cleanText(body.previousTrainingDetail, 180),
@@ -819,6 +852,47 @@ export default async function handler(req) {
 
     const admin = await checkAdmin();
     if (!admin) return json({ error: 'Yetkisiz erişim.' }, 401, cors);
+
+    if (body.action === 'attendance-admin-save') {
+      try {
+        const date = assertAttendanceDate(body.date);
+        if (date > new Date().toISOString().slice(0, 10)) throw new RequestError('Gelecek bir dersin yoklaması değiştirilemez.', 409);
+        const teacherId = cleanText(body.teacherId, 80);
+        const applicationId = cleanText(body.applicationId, 80);
+        const slot = cleanText(body.slot, 20);
+        const status = cleanText(body.status, 20);
+        if (!teacherId || !applicationId || !slot) throw new RequestError('Yoklama kaydı bilgileri eksik.');
+        if (!['katildi', 'gelmedi', 'mazeretli', 'eksik'].includes(status)) throw new RequestError('Yoklama durumu geçersiz.');
+        const day = attendanceDay(date);
+        const now = new Date().toISOString();
+        const saved = await mutateArchive(PLANNING_FILE, (records) => {
+          const placement = records.find((item) => item.kind === 'placement' && item.applicationId === applicationId &&
+            (!item.startDate || item.startDate <= date) && (item.schedule || []).some((entry) =>
+              entry.teacherId === teacherId && entry.day === day && entry.slot === slot));
+          if (!placement) throw new RequestError('Bu öğretmen ve öğrenci için seçilen gün/saatte ders ataması bulunamadı.', 409);
+          const index = records.findIndex((item) => item.kind === 'attendance' && item.teacherId === teacherId &&
+            item.applicationId === applicationId && item.lessonDate === date && item.slot === slot);
+          if (status === 'eksik') {
+            if (index >= 0) records.splice(index, 1);
+            return { records, value: { cleared: true, applicationId, teacherId, lessonDate: date, slot } };
+          }
+          const existing = index >= 0 ? records[index] : null;
+          const attendance = {
+            kind: 'attendance', id: existing?.id || crypto.randomUUID(), teacherId,
+            teacherName: records.find((item) => item.kind === 'teacher' && item.id === teacherId)?.name || existing?.teacherName || 'Öğretmen',
+            applicationId, applicationReference: placement.applicationReference, studentName: placement.studentName,
+            applicationType: placement.applicationType, lessonDate: date, day, slot, status,
+            note: existing?.note || '', isDemo: Boolean(existing?.isDemo || placement.isDemo),
+            createdAt: existing?.createdAt || now, updatedAt: now, updatedBy: adminIdentity(admin)
+          };
+          if (index >= 0) records[index] = attendance; else records.push(attendance);
+          return { records, value: attendance };
+        }, `BIA: yönetici yoklama durumu güncellendi`);
+        return json({ ok: true, data: saved }, 200, cors);
+      } catch (error) {
+        return json({ error: error.message || 'Yoklama durumu güncellenemedi.' }, error.status || 500, cors);
+      }
+    }
 
     if (body.action === 'demo-seed') {
       try {

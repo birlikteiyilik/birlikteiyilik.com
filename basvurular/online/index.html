@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/online-basvuru.css?v=6">
+  <link rel="stylesheet" href="/css/online-basvuru.css?v=7">
 </head>
 <body>
   <a class="skip-link" href="#onlineForm">Forma geç</a>
@@ -77,11 +77,18 @@
           <div class="step-heading"><p>02</p><div><h2>İletişim bilgileri</h2><span>Size kolayca ulaşabilelim.</span></div></div>
           <div class="field-grid">
             <label class="field field--full"><span>Öğrencinin telefon numarası <i>(varsa)</i></span><input name="studentPhone" inputmode="tel" autocomplete="tel" placeholder="05__ ___ __ __"><small class="field-error"></small></label>
-            <label class="field"><span>Anne adı soyadı <b>*</b></span><input name="motherName" autocomplete="name" required placeholder="Adı ve soyadı"><small class="field-error"></small></label>
-            <label class="field"><span>Anne telefon numarası <b>*</b></span><input name="motherPhone" inputmode="tel" autocomplete="tel" required placeholder="05__ ___ __ __"><small class="field-error"></small></label>
-            <label class="field"><span>Baba adı soyadı <b>*</b></span><input name="fatherName" autocomplete="name" required placeholder="Adı ve soyadı"><small class="field-error"></small></label>
-            <label class="field"><span>Baba telefon numarası <b>*</b></span><input name="fatherPhone" inputmode="tel" autocomplete="tel" required placeholder="05__ ___ __ __"><small class="field-error"></small></label>
-            <label class="field field--full"><span>İlçe / şehir <b>*</b></span><input name="location" autocomplete="address-level2" required placeholder="Örn. Üsküdar / İstanbul"><small class="field-error"></small></label>
+            <label class="field"><span>Veli adı soyadı <b>*</b></span><input name="guardianName" autocomplete="name" required placeholder="Adı ve soyadı"><small class="field-error"></small></label>
+            <label class="field"><span>Yakınlık derecesi <b>*</b></span><select name="guardianRelation" required><option value="">Seçin</option><option value="anne">Anne</option><option value="baba">Baba</option><option value="yasal-vasi">Yasal vasi</option><option value="diger">Diğer</option></select><small class="field-error"></small></label>
+            <label class="field field--full"><span>Veli telefon numarası <b>*</b></span><input name="guardianPhone" inputmode="tel" autocomplete="tel" required placeholder="05__ ___ __ __"><small class="field-error"></small></label>
+            <div class="field field--full optional-block">
+              <label class="check-row"><input name="addSecondGuardian" type="checkbox"><span>İkinci bir veli bilgisi eklemek istiyorum</span></label>
+              <div class="field-grid second-guardian-fields" id="secondGuardianFields" hidden>
+                <label class="field"><span>İkinci veli adı soyadı</span><input name="secondGuardianName" autocomplete="name" placeholder="Adı ve soyadı"><small class="field-error"></small></label>
+                <label class="field"><span>İkinci veli telefon numarası</span><input name="secondGuardianPhone" inputmode="tel" autocomplete="tel" placeholder="05__ ___ __ __"><small class="field-error"></small></label>
+              </div>
+            </div>
+            <label class="field"><span>İl <b>*</b></span><select name="province" data-province required><option value="">İl seçin</option></select><small class="field-error"></small></label>
+            <label class="field"><span>İlçe <b>*</b></span><select name="district" data-district required disabled><option value="">Önce il seçin</option></select><small class="field-error"></small></label>
           </div>
         </section>
 
@@ -90,8 +97,8 @@
           <aside class="schedule-alert" role="note"><span class="alert-icon">!</span><div><b>Çakışma olmasın</b><p>Okul, kurs ve diğer düzenli programları düşünerek gerçekten müsait olduğunuz tüm aralıkları seçin.</p></div></aside>
           <fieldset class="choice-field"><legend>Uygun saat aralıkları <b>*</b> <i>Birden fazla seçebilirsiniz</i></legend><div class="time-grid"><label class="time-choice"><input type="checkbox" name="availabilityRanges" value="10:00-13:00"><span>10.00 – 13.00</span></label><label class="time-choice"><input type="checkbox" name="availabilityRanges" value="13:00-15:00"><span>13.00 – 15.00</span></label><label class="time-choice"><input type="checkbox" name="availabilityRanges" value="15:00-17:00"><span>15.00 – 17.00</span></label><label class="time-choice"><input type="checkbox" name="availabilityRanges" value="17:00-19:00"><span>17.00 – 19.00</span></label><label class="time-choice"><input type="checkbox" name="availabilityRanges" value="19:00-21:00"><span>19.00 – 21.00</span></label><label class="time-choice"><input type="checkbox" name="availabilityRanges" value="21:00-23:00"><span>21.00 – 23.00</span></label></div><div class="selection-feedback" id="selectionFeedback" aria-live="polite">Henüz saat seçilmedi.</div><small class="field-error"></small></fieldset>
           <fieldset class="choice-field"><legend>Daha önce kurumumuzdan eğitim aldı mı? <b>*</b></legend><div class="choice-grid choice-grid--2"><label class="choice"><input type="radio" name="previousTraining" value="evet" required><span>Evet</span></label><label class="choice"><input type="radio" name="previousTraining" value="hayir"><span>Hayır</span></label></div><small class="field-error"></small></fieldset>
-          <label class="field conditional" id="previousDetailField" hidden><span>Eğitim bilgisi</span><input name="previousTrainingDetail" placeholder="Dönem, öğretmen veya program bilgisi"><small class="field-error"></small></label>
-          <fieldset class="choice-field"><legend>Bizi nereden duydunuz? <b>*</b></legend><div class="choice-grid choice-grid--2"><label class="choice"><input type="radio" name="referralSource" value="ogrenci-arkadasi" required><span>Öğrenci arkadaşından</span></label><label class="choice"><input type="radio" name="referralSource" value="arkadas-tavsiyesi"><span>Arkadaş tavsiyesi</span></label><label class="choice"><input type="radio" name="referralSource" value="bilgilendirme-mesaji"><span>Bilgilendirme mesajı</span></label><label class="choice"><input type="radio" name="referralSource" value="kendi-arastirmam"><span>Kendi araştırmam</span></label><label class="choice"><input type="radio" name="referralSource" value="diger"><span>Diğer</span></label></div><small class="field-error"></small></fieldset>
+          <label class="field conditional" id="previousDetailField" hidden><span>Evet ise hangi dönem, program veya öğretmenimizden eğitim aldı?</span><input name="previousTrainingDetail" placeholder="Örn. 2025 yaz dönemi, yüz yüze program"><small class="field-error"></small></label>
+          <fieldset class="choice-field"><legend>Bizi nereden duydunuz? <b>*</b></legend><div class="choice-grid choice-grid--2"><label class="choice"><input type="radio" name="referralSource" value="arkadas" required><span>Arkadaş</span></label><label class="choice"><input type="radio" name="referralSource" value="aile"><span>Aile</span></label><label class="choice"><input type="radio" name="referralSource" value="bilgilendirme-mesaji"><span>Bilgilendirme Mesajı</span></label><label class="choice"><input type="radio" name="referralSource" value="sosyal-medya"><span>Sosyal Medya</span></label><label class="choice"><input type="radio" name="referralSource" value="diger"><span>Diğer</span></label></div><small class="field-error"></small></fieldset>
           <label class="field conditional" id="referralOtherField" hidden><span>Lütfen belirtin <b>*</b></span><input name="referralOther" placeholder="Kısaca yazın"><small class="field-error"></small></label>
         </section>
 
@@ -125,6 +132,7 @@
   </main>
 
   <footer class="online-footer"><p>Birlikte İyilik Akademi · <a href="/kvkk">KVKK</a> · <a href="https://wa.me/905348117757">0534 811 77 57</a></p></footer>
-  <script src="/js/online-basvuru.js?v=4" defer></script>
+  <script src="/js/locations.js?v=1" defer></script>
+  <script src="/js/online-basvuru.js?v=5" defer></script>
 </body>
 </html>

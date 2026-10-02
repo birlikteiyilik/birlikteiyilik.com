@@ -23,7 +23,7 @@
     relation: { anne: 'Anne', baba: 'Baba', 'yasal-vasi': 'Yasal vasi', diger: 'Diğer' },
     previous: { evet: 'Evet', hayir: 'Hayır' },
     media: { 'izin-veriyorum': 'İzin veriyor', 'izin-vermiyorum': 'İzin vermiyor', uygulanmiyor: 'Uygulanmıyor' },
-    referral: { 'ogrenci-arkadasi': 'Öğrenci arkadaşından', 'arkadas-tavsiyesi': 'Arkadaş tavsiyesi', 'bilgilendirme-mesaji': 'Bilgilendirme mesajı', 'kendi-arastirmam': 'Kendi araştırmam', diger: 'Diğer' },
+    referral: { arkadas: 'Arkadaş', aile: 'Aile', 'bilgilendirme-mesaji': 'Bilgilendirme Mesajı', 'sosyal-medya': 'Sosyal Medya', 'ogrenci-arkadasi': 'Öğrenci arkadaşından', 'arkadas-tavsiyesi': 'Arkadaş tavsiyesi', 'kendi-arastirmam': 'Kendi araştırmam', diger: 'Diğer' },
     days: { pazartesi: 'Pazartesi', sali: 'Salı', carsamba: 'Çarşamba', persembe: 'Perşembe', cuma: 'Cuma' },
     attendance: { katildi: 'Katıldı', gelmedi: 'Gelmedi', mazeretli: 'Mazeretli', eksik: 'Yoklama bekliyor' },
     status: {
@@ -131,7 +131,7 @@
     return scopedApplications().filter((item) => {
       const placement = placementOf(item.id);
       const haystack = [item.studentName, item.guardianName, item.guardianPhone, item.reference, item.school,
-        item.motherName, item.motherPhone, item.fatherName, item.fatherPhone, item.location]
+        item.secondGuardianName, item.secondGuardianPhone, item.motherName, item.motherPhone, item.fatherName, item.fatherPhone, item.location, item.province, item.district]
         .join(' ').toLocaleLowerCase('tr-TR');
       const date = String(item.createdAt || '').slice(0, 10);
       return (!query || haystack.includes(query)) &&
@@ -210,14 +210,13 @@
     }
     body.innerHTML = filtered.map((item, index) => {
       const placement = placementOf(item.id);
-      const guardianPhone = item.guardianPhone || item.motherPhone || '';
       const messageButton = item.status === 'uygun-degil'
-        ? `<button type="button" class="btn app-copy" data-copy-id="${escapeHtml(item.id)}" aria-label="${escapeHtml(item.studentName)} için uygun değil veli mesajını kopyala">Uygun değil mesajı</button>`
+        ? `<button type="button" class="btn app-copy" data-copy-id="${escapeHtml(item.id)}" aria-label="${escapeHtml(item.studentName)} için WhatsApp'ta uygun değil mesajını aç">Uygun Değil Mesajı</button>`
         : item.status === 'kayit-tamamlandi' && placement
-          ? `<button type="button" class="btn app-copy" data-copy-id="${escapeHtml(item.id)}" aria-label="${item.applicationType === 'online' ? 'Online ders için veli bilgilendirme mesajını' : 'Veli bilgilendirme mesajını'} kopyala">${item.applicationType === 'online' ? 'Online veli mesajı' : 'Veli mesajı'}</button>` : '';
+          ? `<button type="button" class="btn app-copy" data-copy-id="${escapeHtml(item.id)}" aria-label="${escapeHtml(item.studentName)} için WhatsApp'ta kayıt tamamlandı mesajını aç">${item.applicationType === 'online' ? 'Online Kayıt Tamamlandı Mesajı' : 'Kayıt Tamamlandı Mesajı'}</button>` : '';
       const teacherMessageButton = item.applicationType === 'online'
         ? `<button type="button" class="btn app-copy-teacher" data-teacher-copy-id="${escapeHtml(item.id)}" aria-label="${escapeHtml(item.studentName)} için hocaya gönderilecek mesajı kopyala">Hocaya mesaj</button>` : '';
-      const guardianActions = `<button type="button" class="btn app-copy-phone" data-phone-copy-id="${escapeHtml(item.id)}" ${guardianPhone ? '' : 'disabled'} aria-label="${escapeHtml(item.studentName)} velisinin telefon numarasını kopyala">Veli numara</button><label class="guardian-sent-toggle"><input type="checkbox" data-guardian-sent-id="${escapeHtml(item.id)}" ${item.guardianMessageSent ? 'checked' : ''} aria-label="${escapeHtml(item.studentName)} velisine mesaj gönderildi"><span>Mesaj gönderildi</span></label>`;
+      const guardianActions = `<label class="guardian-sent-toggle"><input type="checkbox" data-guardian-sent-id="${escapeHtml(item.id)}" ${item.guardianMessageSent ? 'checked' : ''} aria-label="${escapeHtml(item.studentName)} velisine mesaj gönderildi"><span>Mesaj gönderildi</span></label>`;
       return `<tr data-id="${escapeHtml(item.id)}" tabindex="0" style="--row-index:${index}" aria-label="${escapeHtml(item.studentName)} başvurusunu aç">
         <td>${escapeHtml(formatDate(item.createdAt, false))}</td>
         <td><span class="app-student">${escapeHtml(item.studentName)}</span><span class="app-ref">${escapeHtml(item.reference)}</span></td>
@@ -456,6 +455,68 @@
     return meta.weekdays[(new Date(`${value}T12:00:00`).getDay() || 7) - 1] || '';
   }
 
+  function consecutiveAbsenceCounts() {
+    const today = dateValue(new Date());
+    const lowerBound = addDays(today, -365);
+    const saved = new Map(attendanceRecords.map((item) => [
+      `${item.teacherId}|${item.applicationId}|${item.lessonDate}|${item.slot}`, item
+    ]));
+    const timelines = new Map();
+    scopedPlacements().forEach((placement) => {
+      const schedule = Array.isArray(placement.schedule) ? placement.schedule : [];
+      if (!schedule.length) return;
+      const earliestSaved = attendanceRecords.filter((item) => item.applicationId === placement.applicationId)
+        .map((item) => item.lessonDate).filter(Boolean).sort()[0];
+      const start = [placement.startDate || earliestSaved || lowerBound, lowerBound].sort().at(-1);
+      let date = start;
+      let guard = 0;
+      while (date <= today && guard < 370) {
+        const day = dayForDate(date);
+        schedule.filter((entry) => entry.day === day).forEach((entry) => {
+          const key = `${placement.applicationId}|${placement.studentName || ''}`;
+          if (!timelines.has(key)) timelines.set(key, []);
+          const record = saved.get(`${entry.teacherId}|${placement.applicationId}|${date}|${entry.slot}`);
+          timelines.get(key).push({ date, slot: entry.slot, status: record?.status || 'eksik' });
+        });
+        date = addDays(date, 1);
+        guard += 1;
+      }
+    });
+    const result = new Map();
+    timelines.forEach((lessons, key) => {
+      lessons.sort((a, b) => a.date.localeCompare(b.date) || a.slot.localeCompare(b.slot));
+      let count = 0;
+      for (let index = lessons.length - 1; index >= 0 && lessons[index].status === 'gelmedi'; index -= 1) count += 1;
+      result.set(key, count);
+    });
+    return result;
+  }
+
+  function guardianPhoneFor(application) {
+    return application.guardianPhone || application.secondGuardianPhone || application.motherPhone || application.fatherPhone || '';
+  }
+
+  function whatsappPhone(value) {
+    let digits = String(value || '').replace(/\D/g, '');
+    if (digits.startsWith('0090')) digits = digits.slice(2);
+    if (digits.startsWith('0')) digits = `90${digits.slice(1)}`;
+    else if (digits.length === 10) digits = `90${digits}`;
+    return /^90\d{10}$/.test(digits) ? digits : '';
+  }
+
+  function openAttendanceMessage(studentName, type, phone) {
+    const name = `*${studentName}*`;
+    const warning = `🌿 *Kıymetli Velimiz,*\n\nÖğrencimiz ${name} derslere düzenli katılım göstermediği görülmüştür.\n\nBaşvuru sırasında tarafınızca onaylanan kurallar gereğince, öğrencilerimizin derslere düzenli ve zamanında devam etmeleri önem arz etmektedir.\n\nDevamsızlığın devam etmesi hâlinde öğrencimizin programa devam durumu yeniden değerlendirilecektir.\n\nGerekli hassasiyetin gösterilmesini rica eder, anlayışınız için teşekkür ederiz.\n\n*BİRLİKTE İYİLİK AKADEMİ*`;
+    const removal = `🌿 *Kıymetli Velimiz,*\n\nDaha önce yapılan uyarılara rağmen öğrencimiz ${name} devamsızlığının devam ettiği tespit edilmiştir.\n\nBaşvuru sırasında kabul edilen devam şartları gereğince, öğrencimizin eğitim programındaki kaydı devamsızlık nedeniyle silinmiştir.\n\nBilginize sunar, anlayışınız için teşekkür ederiz.\n\n*BİRLİKTE İYİLİK AKADEMİ*`;
+    const target = whatsappPhone(phone);
+    if (!target) {
+      toast('Velinin geçerli telefon numarası bulunamadı.', 'error');
+      return;
+    }
+    const message = type === 'removal' ? removal : warning;
+    window.open(`https://api.whatsapp.com/send/?phone=${target}&text=${encodeURIComponent(message)}&type=phone_number&app_absent=0`, '_blank', 'noopener');
+  }
+
   function renderReportFilters() {
     const value = el('reportsTeacher').value;
     const attendanceTeachers = attendanceRecords.filter((item) => {
@@ -567,13 +628,65 @@
       return `<article class="report-missing-row"><span class="report-missing-date"><strong>${date.getDate()}</strong>${new Intl.DateTimeFormat('tr-TR', { month: 'short' }).format(date)}</span><span class="report-missing-copy"><strong>${escapeHtml(row.studentName)}</strong><small>${escapeHtml(row.teacherName)} · ${escapeHtml(labels.days[row.day] || row.day)}</small></span><time>${escapeHtml(row.slot)}</time></article>`;
     }).join('') : '<div class="report-empty">Harika—seçilen aralıkta eksik yoklama yok.</div>';
 
+    const streaks = consecutiveAbsenceCounts();
+    const studentGroups = new Map();
+    all.forEach((row) => {
+      const key = row.applicationId || `${row.studentName}|${row.applicationReference}`;
+      if (!studentGroups.has(key)) studentGroups.set(key, {
+        applicationId: row.applicationId, name: row.studentName || 'İsimsiz öğrenci', reference: row.applicationReference || '',
+        expected: 0, attended: 0, marked: 0, absent: 0, excused: 0
+      });
+      const group = studentGroups.get(key);
+      group.expected += 1;
+      if (row.status === 'katildi') { group.attended += 1; group.marked += 1; }
+      if (row.status === 'gelmedi') { group.absent += 1; group.marked += 1; }
+      if (row.status === 'mazeretli') { group.excused += 1; group.marked += 1; }
+    });
+    const studentRows = [...studentGroups.values()].sort((a, b) => a.name.localeCompare(b.name, 'tr'));
+    el('reportsStudentResult').textContent = `${studentRows.length} öğrenci`;
+    el('reportsStudentTableBody').innerHTML = studentRows.length ? studentRows.map((student) => {
+      const rate = student.marked ? Math.round(student.attended / student.marked * 100) : 0;
+      const streak = streaks.get(`${student.applicationId}|${student.name}`) || 0;
+      const application = applications.find((item) => item.id === student.applicationId);
+      const phone = whatsappPhone(guardianPhoneFor(application || {}));
+      const action = student.absent ? `<button type="button" class="report-message-button ${streak >= 3 ? 'is-removal' : ''}" data-attendance-message="${streak >= 3 ? 'removal' : 'warning'}" data-student-name="${escapeHtml(student.name)}" data-guardian-phone="${escapeHtml(guardianPhoneFor(application || {}))}" ${phone ? '' : 'disabled'}>${streak >= 3 ? 'Kayıt Silme Mesajı' : 'Uyarı Mesajı'}</button>` : '<span class="report-no-action">İşlem gerekmiyor</span>';
+      return `<tr><td><span class="app-student">${escapeHtml(student.name)}</span><span class="app-ref">${escapeHtml(student.reference)}</span></td>
+        <td><div class="report-attendance-rate"><strong>%${rate}</strong><span>${student.attended}/${student.marked} katılım</span></div><span class="report-mini-meter"><i style="--value:${rate}%"></i></span></td>
+        <td><span class="report-student-counts"><b>${student.attended} katıldı</b><b>${student.absent} gelmedi</b><b>${student.excused} mazeretli</b></span></td>
+        <td><div class="report-student-action">${action}${streak ? `<small>Son ${streak} planlı ders üst üste devamsız</small>` : student.absent ? '<small>Seçili aralıkta devamsızlık var</small>' : ''}</div></td></tr>`;
+    }).join('') : '<tr><td colspan="4" class="apps-empty">Bu aralıkta öğrenci yoklama verisi bulunamadı.</td></tr>';
+
     el('reportsResultCount').textContent = `${filtered.length} kayıt`;
-    el('reportsTableBody').innerHTML = filtered.length ? filtered.map((row) => `<tr>
+    el('reportsTableBody').innerHTML = filtered.length ? filtered.map((row) => {
+      const today = dateValue(new Date());
+      const editable = row.lessonDate <= today && row.lessonDate >= addDays(today, -120);
+      const statusControl = editable
+        ? `<select class="report-status-select" data-attendance-edit data-previous="${escapeHtml(row.status)}" data-teacher-id="${escapeHtml(row.teacherId)}" data-application-id="${escapeHtml(row.applicationId)}" data-date="${escapeHtml(row.lessonDate)}" data-slot="${escapeHtml(row.slot)}" aria-label="${escapeHtml(row.studentName)} yoklama durumu"><option value="eksik" ${row.status === 'eksik' ? 'selected' : ''}>Yoklama bekliyor</option><option value="katildi" ${row.status === 'katildi' ? 'selected' : ''}>Katıldı</option><option value="gelmedi" ${row.status === 'gelmedi' ? 'selected' : ''}>Gelmedi</option><option value="mazeretli" ${row.status === 'mazeretli' ? 'selected' : ''}>Mazeretli</option></select>`
+        : `<span class="report-status report-status-${escapeHtml(row.status)}">${escapeHtml(labels.attendance[row.status] || row.status)}</span>`;
+      return `<tr>
       <td>${escapeHtml(formatDate(`${row.lessonDate}T12:00:00`, false))}</td><td>${escapeHtml(row.teacherName)}</td>
       <td><span class="app-student">${escapeHtml(row.studentName)}</span><span class="app-ref">${escapeHtml(row.applicationReference)}</span></td>
       <td>${escapeHtml(row.slot)}</td><td>${escapeHtml(labels.type[row.applicationType] || row.applicationType)}</td>
-      <td><span class="report-status report-status-${escapeHtml(row.status)}">${escapeHtml(labels.attendance[row.status] || row.status)}</span></td><td>${escapeHtml(row.note || '—')}</td>
-    </tr>`).join('') : '<tr><td colspan="7" class="apps-empty">Filtrelerle eşleşen yoklama kaydı bulunamadı.</td></tr>';
+      <td>${statusControl}</td><td>${escapeHtml(row.note || '—')}</td>
+    </tr>`;
+    }).join('') : '<tr><td colspan="7" class="apps-empty">Filtrelerle eşleşen yoklama kaydı bulunamadı.</td></tr>';
+  }
+
+  async function updateAttendanceFromReport(select) {
+    const previous = select.dataset.previous || select.value;
+    select.disabled = true;
+    try {
+      await api('POST', {
+        action: 'attendance-admin-save', date: select.dataset.date, teacherId: select.dataset.teacherId,
+        applicationId: select.dataset.applicationId, slot: select.dataset.slot, status: select.value
+      });
+      await load(true);
+      toast('Yoklama durumu güncellendi.');
+    } catch (error) {
+      select.value = previous;
+      select.disabled = false;
+      toast(error.message, 'error');
+    }
   }
 
   async function load(force) {
@@ -671,9 +784,10 @@
         ${detail('Sınıf', `${item.grade}. sınıf`)}${detail('Kur’an seviyesi', labels.level[item.quranLevel])}
       </dl></section>
       <section class="apps-detail-section"><h3>Veli ve iletişim</h3><dl class="apps-detail-grid">
-        ${detail('Anne', item.motherName || item.guardianName)}${detail('Anne telefonu', formatPhone(item.motherPhone || item.guardianPhone))}
-        ${detail('Baba', item.fatherName || item.secondGuardianName)}${detail('Baba telefonu', formatPhone(item.fatherPhone || item.secondGuardianPhone))}
-        ${detail('Öğrenci telefonu', formatPhone(item.studentPhone))}${detail('İlçe / şehir', item.location || item.address)}
+        ${detail('Veli', item.guardianName || item.motherName)}${detail('Yakınlık', labels.relation[item.guardianRelation] || 'Belirtilmedi')}
+        ${detail('Veli telefonu', formatPhone(item.guardianPhone || item.motherPhone))}${detail('İkinci veli', item.secondGuardianName || item.fatherName)}
+        ${detail('İkinci veli telefonu', formatPhone(item.secondGuardianPhone || item.fatherPhone))}${detail('Öğrenci telefonu', formatPhone(item.studentPhone))}
+        ${detail('İl', item.province)}${detail('İlçe', item.district)}
       </dl></section>
       <section class="apps-detail-section"><h3>Online eğitim tercihleri</h3><dl class="apps-detail-grid">
         ${detail('Başvuru türü', 'Online eğitim')}${detail('Daha önce eğitim aldı', labels.previous[item.previousTraining])}
@@ -691,7 +805,8 @@
       <section class="apps-detail-section"><h3>Veli ve iletişim</h3><dl class="apps-detail-grid">
         ${detail('Veli', item.guardianName)}${detail('Yakınlık', labels.relation[item.guardianRelation])}
         ${detail('Veli telefonu', formatPhone(item.guardianPhone))}${detail('Öğrenci telefonu', formatPhone(item.studentPhone))}
-        ${detail('İkinci veli', item.secondGuardianName)}${detail('İkinci veli telefonu', formatPhone(item.secondGuardianPhone))}${detail('Adres', item.address, true)}
+        ${detail('İkinci veli', item.secondGuardianName)}${detail('İkinci veli telefonu', formatPhone(item.secondGuardianPhone))}
+        ${detail('İl', item.province)}${detail('İlçe', item.district)}${detail('Açık adres', item.address, true)}
       </dl></section>
       <section class="apps-detail-section"><h3>Eğitim bilgileri</h3><dl class="apps-detail-grid">
         ${detail('Başvuru türü', labels.type[item.applicationType])}${detail('Kur’an seviyesi', labels.level[item.quranLevel])}
@@ -842,7 +957,7 @@
       renderStats(); renderTable();
       el('appsModalNotice').textContent = 'Değişiklikler kaydedildi.';
       el('appsModalNotice').className = 'apps-modal-notice is-success';
-      toast(item.status === 'kayit-tamamlandi' ? 'Kayıt tamamlandı; mesaj kopyalanmaya hazır.' : 'Başvuru durumu güncellendi.');
+      toast(item.status === 'kayit-tamamlandi' ? 'Kayıt tamamlandı. Veli mesajı WhatsApp üzerinden açılabilir.' : 'Başvuru durumu güncellendi.');
     } catch (error) {
       el('appsModalNotice').textContent = error.message;
       el('appsModalNotice').className = 'apps-modal-notice is-error';
@@ -920,38 +1035,20 @@
     return value || 'Telefon belirtilmedi';
   }
 
-  async function copyMessage(id) {
+  function openGuardianMessage(id) {
     const item = applications.find((record) => record.id === id);
     const placement = placementOf(id);
     if (!item) return;
     if (item.status !== 'uygun-degil' && !placement) return toast('Önce ders planını tamamlayın.', 'error');
     const message = messageFor(item, placement);
-    try {
-      if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(message);
-      else {
-        const area = document.createElement('textarea');
-        area.value = message; area.style.position = 'fixed'; area.style.opacity = '0';
-        document.body.appendChild(area); area.select(); document.execCommand('copy'); area.remove();
-      }
-      toast(`${item.studentName} için mesaj panoya kopyalandı.`);
-    } catch (_) { toast('Mesaj kopyalanamadı.', 'error'); }
-  }
-
-  async function copyGuardianPhone(id) {
-    const item = applications.find((record) => record.id === id);
-    const phone = item?.guardianPhone || item?.motherPhone || '';
-    if (!phone) return toast('Bu başvuruda veli telefonu bulunmuyor.', 'error');
-    const digits = String(phone).replace(/\D/g, '');
-    const copyValue = formatPhone(digits.length === 10 ? `0${digits}` : phone) || phone;
-    try {
-      if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(copyValue);
-      else {
-        const area = document.createElement('textarea');
-        area.value = copyValue; area.style.position = 'fixed'; area.style.opacity = '0';
-        document.body.appendChild(area); area.select(); document.execCommand('copy'); area.remove();
-      }
-      toast(`${item.studentName} velisinin numarası kopyalandı.`);
-    } catch (_) { toast('Veli numarası kopyalanamadı.', 'error'); }
+    const rawPhone = item.guardianPhone || item.motherPhone || item.secondGuardianPhone || item.fatherPhone || '';
+    let phone = String(rawPhone).replace(/\D/g, '');
+    if (phone.length === 10) phone = `90${phone}`;
+    else if (phone.length === 11 && phone.startsWith('0')) phone = `90${phone.slice(1)}`;
+    if (!/^90\d{10}$/.test(phone)) return toast('Geçerli veli telefonu bulunamadı.', 'error');
+    const query = new URLSearchParams({ phone, text: message, type: 'phone_number', app_absent: '0' });
+    window.open(`https://api.whatsapp.com/send/?${query.toString()}`, '_blank', 'noopener,noreferrer');
+    toast('WhatsApp açılıyor. Mesajı kontrol edip Gönder’e basın.');
   }
 
   async function setGuardianMessageSent(id, sent, input) {
@@ -1050,13 +1147,12 @@
       'gelistirmek-istiyor': 'Kur’an-ı Kerim okuyor fakat ilerletmek istiyor',
       tecvid: 'Tecvid öğrenmek istiyor'
     }[item.quranLevel] || labels.level[item.quranLevel] || item.quranLevel || 'Belirtilmedi';
-    const motherName = item.motherName || item.guardianName || 'Belirtilmedi';
-    const motherPhone = formatPhone(item.motherPhone || item.guardianPhone) || 'Belirtilmedi';
-    const fatherName = item.fatherName || item.secondGuardianName || 'Belirtilmedi';
-    const fatherPhone = formatPhone(item.fatherPhone || item.secondGuardianPhone) || 'Belirtilmedi';
+    const guardianName = item.guardianName || item.motherName || 'Belirtilmedi';
+    const guardianPhone = formatPhone(item.guardianPhone || item.motherPhone) || 'Belirtilmedi';
+    const secondGuardian = item.secondGuardianName ? `\nİkinci Veli Bilgisi: ${item.secondGuardianName} ${formatPhone(item.secondGuardianPhone)}` : '';
     const location = item.location || item.address || 'Belirtilmedi';
 
-    return `${greeting}\n\nAşağıdaki bilgileri bulunan öğrencimiz Online Kur’an-ı Kerim ve Güzel Ahlak eğitimi almak istemektedir. Telefon numaranız, onayınızın ardından öğrencimizin velisiyle paylaşılacaktır. Onayınızı rica ederiz.\n\nÖğrenci: ${item.studentName || 'Belirtilmedi'}\nDoğum Tarihi: ${formatNumericDate(item.birthDate)}\nSeviyesi: ${levelText}\nSınıfı: ${item.grade ? `${item.grade}. Sınıf` : 'Belirtilmedi'}\nBaba Bilgisi: ${fatherName} ${fatherPhone}\nAnne Bilgisi: ${motherName} ${motherPhone}\nİkamet: ${location}\n\nTeşekkür eder, hayırlı günler dileriz.\nBİRLİKTE İYİLİK AKADEMİ\nwww.birlikteiyilik.com\n0534 811 77 57`;
+    return `${greeting}\n\nAşağıdaki bilgileri bulunan öğrencimiz Online Kur’an-ı Kerim ve Güzel Ahlak eğitimi almak istemektedir. Telefon numaranız, onayınızın ardından öğrencimizin velisiyle paylaşılacaktır. Onayınızı rica ederiz.\n\nÖğrenci: ${item.studentName || 'Belirtilmedi'}\nDoğum Tarihi: ${formatNumericDate(item.birthDate)}\nSeviyesi: ${levelText}\nSınıfı: ${item.grade ? `${item.grade}. Sınıf` : 'Belirtilmedi'}\nVeli Bilgisi: ${guardianName} ${guardianPhone}${secondGuardian}\nİkamet: ${location}\n\nTeşekkür eder, hayırlı günler dileriz.\nBİRLİKTE İYİLİK AKADEMİ\nwww.birlikteiyilik.com\n0534 811 77 57`;
   }
 
   async function copyTeacherMessage(id) {
@@ -1090,7 +1186,7 @@
         'İkinci Veli': item.secondGuardianName, 'İkinci Veli Telefonu': formatPhone(item.secondGuardianPhone),
         'Anne Adı': item.motherName || '', 'Anne Telefonu': formatPhone(item.motherPhone),
         'Baba Adı': item.fatherName || '', 'Baba Telefonu': formatPhone(item.fatherPhone),
-        'Adres': item.address, 'İlçe / Şehir': item.location || '', 'Daha Önce Eğitim': labels.previous[item.previousTraining] || item.previousTraining,
+        'Adres': item.address, 'İl': item.province || '', 'İlçe': item.district || '', 'İlçe / Şehir': item.location || '', 'Daha Önce Eğitim': labels.previous[item.previousTraining] || item.previousTraining,
         'Önceki Program': item.previousTrainingDetail, 'Veli Notu': item.notes,
         'Bizi Nereden Duydu': labels.referral[item.referralSource] || item.referralSource || '', 'Diğer Kaynak': item.referralOther || '',
         'Görsel Paylaşım İzni': labels.media[item.consents?.mediaConsent] || item.consents?.mediaConsent,
@@ -1525,6 +1621,14 @@
     el('reportsReset').addEventListener('click', resetReportFilters);
     el('reportsCsv').addEventListener('click', exportReportCsv);
     el('reportsExcel').addEventListener('click', exportReportExcel);
+    el('reportsTableBody').addEventListener('change', (event) => {
+      const select = event.target.closest('[data-attendance-edit]');
+      if (select) updateAttendanceFromReport(select);
+    });
+    el('reportsStudentTableBody').addEventListener('click', (event) => {
+      const button = event.target.closest('[data-attendance-message]');
+      if (button) openAttendanceMessage(button.dataset.studentName, button.dataset.attendanceMessage, button.dataset.guardianPhone);
+    });
     ['programSearch', 'programDay', 'programTeacher', 'programSlot'].forEach((id) => {
       el(id).addEventListener(id === 'programSearch' ? 'input' : 'change', renderProgram);
     });
@@ -1580,12 +1684,10 @@
     });
     el('appsTableBody').addEventListener('click', (event) => {
       if (event.target.closest('.guardian-sent-toggle')) { event.stopPropagation(); return; }
-      const phoneCopy = event.target.closest('[data-phone-copy-id]');
-      if (phoneCopy) { event.stopPropagation(); copyGuardianPhone(phoneCopy.dataset.phoneCopyId); return; }
       const teacherCopy = event.target.closest('[data-teacher-copy-id]');
       if (teacherCopy) { event.stopPropagation(); copyTeacherMessage(teacherCopy.dataset.teacherCopyId); return; }
       const copy = event.target.closest('[data-copy-id]');
-      if (copy) { event.stopPropagation(); copyMessage(copy.dataset.copyId); return; }
+      if (copy) { event.stopPropagation(); openGuardianMessage(copy.dataset.copyId); return; }
       const open = event.target.closest('[data-open-id]');
       if (open) { event.stopPropagation(); openDetail(open.dataset.openId); return; }
       const row = event.target.closest('tr[data-id]');

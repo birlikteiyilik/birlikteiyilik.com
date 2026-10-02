@@ -15,7 +15,7 @@
   <meta property="og:locale" content="tr_TR">
   <link rel="icon" type="image/png" sizes="192x192" href="/images/favicon-square.png">
   <link rel="apple-touch-icon" href="/images/favicon-square.png">
-  <link rel="stylesheet" href="/css/basvuru.css?v=4">
+  <link rel="stylesheet" href="/css/basvuru.css?v=5">
 </head>
 <body>
   <a class="skip-link" href="#applicationForm">Forma geç</a>
@@ -164,9 +164,21 @@
               <p class="field-error" id="studentPhoneError"></p>
             </div>
 
+            <div class="field-grid field-grid-2 field-span-2">
+              <div class="field">
+                <label for="province">İl <b>*</b></label>
+                <select id="province" name="province" data-province required><option value="">İl seçin</option></select>
+                <p class="field-error" id="provinceError"></p>
+              </div>
+              <div class="field">
+                <label for="district">İlçe <b>*</b></label>
+                <select id="district" name="district" data-district required disabled><option value="">Önce il seçin</option></select>
+                <p class="field-error" id="districtError"></p>
+              </div>
+            </div>
             <div class="field field-span-2">
-              <label for="address">İkamet adresi</label>
-              <textarea id="address" name="address" rows="3" autocomplete="street-address" maxlength="400" placeholder="Mahalle, ilçe ve il bilgisi yeterlidir."></textarea>
+              <label for="address">Mahalle / açık adres <i>(isteğe bağlı)</i></label>
+              <textarea id="address" name="address" rows="3" autocomplete="street-address" maxlength="400" placeholder="Mahalle, cadde ve bina bilgisi"></textarea>
               <p class="field-error" id="addressError"></p>
             </div>
 
@@ -331,6 +343,7 @@
     <a href="/hakkimizda/seffaflik-belgeler">Şeffaflık ve belgeler</a>
   </footer>
 
-  <script src="/js/basvuru.js?v=5" defer></script>
+  <script src="/js/locations.js?v=1" defer></script>
+  <script src="/js/basvuru.js?v=6" defer></script>
 </body>
 </html>

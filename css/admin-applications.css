@@ -200,7 +200,7 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .apps-table tbody tr:hover { background: #fff8fa; box-shadow: inset 3px 0 var(--app-red); }
 .apps-table .app-student { font-weight: 750; }
 .apps-table .app-ref, .program-names { color: var(--app-muted); display: block; font-size: .64rem; margin-top: 2px; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.app-row-actions { align-items: center; display: flex; gap: 6px; }
+.app-row-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 6px; }
 .app-row-actions .btn { font-size: .67rem; padding: 6px 9px; white-space: nowrap; }
 .app-copy { background: #e9f7f0; border: 0; color: #116a44; }
 .app-copy:hover { background: #d7f0e4; }
@@ -547,8 +547,12 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .report-missing-row time { color: var(--app-red-dark); font-size: .62rem; font-weight: 850; white-space: nowrap; }
 .report-empty { color: var(--app-muted); font-size: .68rem; line-height: 1.5; padding: 36px 18px; text-align: center; }
 .reports-table-card { overflow: hidden; }
+.reports-student-card { margin-bottom: 13px; }
+.reports-student-card > header > div { display: grid; gap: 3px; }
+.reports-student-card > header small { color: var(--app-muted); font-size: .62rem; }
 .reports-table-wrap { overflow-x: auto; }
 .reports-table { border-collapse: collapse; min-width: 900px; width: 100%; }
+.reports-student-table { min-width: 760px; }
 .reports-table th { background: #fafbfc; color: #657084; font-size: .61rem; letter-spacing: .04em; padding: 10px 12px; text-align: left; text-transform: uppercase; }
 .reports-table td { border-top: 1px solid #f0f2f5; color: var(--app-ink); font-size: .69rem; padding: 10px 12px; vertical-align: middle; }
 .reports-table .app-student { display: block; font-weight: 750; }
@@ -558,6 +562,25 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .report-status-gelmedi { background: #fff0f3; color: var(--app-red-dark); }
 .report-status-mazeretli { background: #fff6db; color: #805b00; }
 .report-status-eksik { background: #eef1f5; color: #657084; }
+.report-status-select { appearance: auto; background: #fff; border: 1px solid #d8dee7; border-radius: 999px; color: var(--app-ink); cursor: pointer; font: inherit; font-size: .61rem; font-weight: 750; max-width: 154px; min-height: 31px; padding: 5px 8px; }
+.report-status-select:focus { border-color: var(--app-red); box-shadow: 0 0 0 3px rgba(215,25,63,.09); outline: none; }
+.report-status-select:disabled { cursor: progress; opacity: .65; }
+.report-attendance-rate { align-items: baseline; display: flex; gap: 8px; white-space: nowrap; }
+.report-attendance-rate strong { color: var(--app-ink); font-size: .86rem; font-variant-numeric: tabular-nums; }
+.report-attendance-rate span { color: var(--app-muted); font-size: .59rem; }
+.report-student-table .report-mini-meter { display: block; margin-top: 6px; max-width: 150px; }
+.report-student-counts { display: flex; flex-wrap: wrap; gap: 5px; }
+.report-student-counts b { background: #f1f3f6; border-radius: 999px; color: #546074; font-size: .56rem; font-weight: 750; padding: 5px 7px; white-space: nowrap; }
+.report-student-counts b:first-child { background: #e8f7ef; color: var(--app-green); }
+.report-student-counts b:nth-child(2) { background: #fff0f3; color: var(--app-red-dark); }
+.report-student-action { align-items: flex-start; display: flex; flex-direction: column; gap: 4px; }
+.report-student-action small { color: var(--app-muted); font-size: .56rem; }
+.report-message-button { background: #fff7e7; border: 1px solid #f0d59b; border-radius: 8px; color: #765000; cursor: pointer; font: inherit; font-size: .61rem; font-weight: 800; min-height: 32px; padding: 6px 9px; transition: background .16s ease, transform .16s ease; white-space: nowrap; }
+.report-message-button:hover:not(:disabled) { background: #ffefc8; transform: translateY(-1px); }
+.report-message-button.is-removal { background: #fff0f3; border-color: #edbdc8; color: var(--app-red-dark); }
+.report-message-button.is-removal:hover:not(:disabled) { background: #ffe2e8; }
+.report-message-button:disabled { cursor: not-allowed; opacity: .52; }
+.report-no-action { color: #8c95a3; font-size: .61rem; }
 
 .data-management-dialog { max-width: 720px; }
 .data-ledger { background: var(--app-navy); border-radius: 11px; color: #fff; display: grid; gap: 1px; grid-template-columns: repeat(4, 1fr); overflow: hidden; }

@@ -60,6 +60,8 @@ const validSubmission = {
   guardianPhone: '05321112233',
   studentPhone: '',
   address: 'Test adresi',
+  province: 'İstanbul',
+  district: 'Üsküdar',
   secondGuardianName: '',
   secondGuardianPhone: '',
   quranLevel: 'elif-ba',
@@ -126,6 +128,26 @@ const onlineResponse = await handler(new Request('http://localhost:4173/api/bia-
 }));
 assert.equal(onlineResponse.status, 201);
 assert.equal((await onlineResponse.json()).ok, true);
+
+const currentOnlineSubmission = {
+  ...onlineSubmission, startedAt: Date.now() - 5000, studentName: 'Güncel Online Öğrenci',
+  guardianName: 'Birinci Veli', guardianRelation: 'yasal-vasi', guardianPhone: '05321112236',
+  motherName: undefined, motherPhone: undefined, fatherName: undefined, fatherPhone: undefined,
+  secondGuardianName: '', secondGuardianPhone: '', province: 'İstanbul', district: 'Kadıköy',
+  referralSource: 'aile', location: undefined
+};
+const currentOnlineResponse = await handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'POST', headers: { 'Content-Type': 'application/json', 'Origin': 'http://localhost:4173' },
+  body: JSON.stringify(currentOnlineSubmission)
+}));
+assert.equal(currentOnlineResponse.status, 201);
+assert.equal((await currentOnlineResponse.json()).ok, true);
+
+const invalidBirthDateResponse = await handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'POST', headers: { 'Content-Type': 'application/json', 'Origin': 'http://localhost:4173' },
+  body: JSON.stringify({ ...validSubmission, startedAt: Date.now() - 5000, birthDate: '2015-02-31' })
+}));
+assert.equal(invalidBirthDateResponse.status, 400);
 
 const invalidOnlineResponse = await handler(new Request('http://localhost:4173/api/bia-applications', {
   method: 'POST', headers: { 'Content-Type': 'application/json', 'Origin': 'http://localhost:4173' },
@@ -352,6 +374,32 @@ const attendanceClearResponse = await handler(new Request('http://localhost:4173
 }));
 assert.equal(attendanceClearResponse.status, 200);
 assert.equal((await attendanceClearResponse.json()).data[0].cleared, true);
+
+const adminAttendanceEdit = await handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'POST', headers: adminHeaders, body: JSON.stringify({
+    action: 'attendance-admin-save', date: attendanceDate, teacherId: mondayTeacher.id,
+    applicationId: firstApplication.id, slot: '15:00-15:20', status: 'gelmedi'
+  })
+}));
+assert.equal(adminAttendanceEdit.status, 200);
+assert.equal((await adminAttendanceEdit.json()).data.status, 'gelmedi');
+
+const teacherAdminAttendanceEdit = await handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'POST', headers: teacherHeaders, body: JSON.stringify({
+    action: 'attendance-admin-save', date: attendanceDate, teacherId: mondayTeacher.id,
+    applicationId: firstApplication.id, slot: '15:00-15:20', status: 'katildi'
+  })
+}));
+assert.equal(teacherAdminAttendanceEdit.status, 401);
+
+const adminAttendanceClear = await handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'POST', headers: adminHeaders, body: JSON.stringify({
+    action: 'attendance-admin-save', date: attendanceDate, teacherId: mondayTeacher.id,
+    applicationId: firstApplication.id, slot: '15:00-15:20', status: 'eksik'
+  })
+}));
+assert.equal(adminAttendanceClear.status, 200);
+assert.equal((await adminAttendanceClear.json()).data.cleared, true);
 
 const attendanceList = await (await handler(new Request('http://localhost:4173/api/bia-applications', {
   method: 'GET', headers: adminHeaders

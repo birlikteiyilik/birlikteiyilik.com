@@ -17,11 +17,15 @@
   let currentStep = 0;
 
   startedAt.value = String(Date.now());
+  const birthDateControl = form.querySelector('[name="birthDate"]');
+  if (birthDateControl) birthDateControl.max = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 
   const messages = {
     studentName: 'Öğrencinin adını ve soyadını yazın.',
     tckn: 'Geçerli bir T.C. kimlik numarası yazın.',
     birthDate: 'Doğum tarihini seçin.',
+    province: 'İl seçin.',
+    district: 'İlçe seçin.',
     gender: 'Cinsiyet seçimi yapın.',
     school: 'Öğrencinin okulunu yazın.',
     grade: 'Sınıf seçimi yapın.',
@@ -227,6 +231,8 @@
       guardianPhone: digits(data.guardianPhone),
       studentPhone: digits(data.studentPhone),
       address: data.address,
+      province: data.province,
+      district: data.district,
       secondGuardianName: data.secondGuardianName,
       secondGuardianPhone: digits(data.secondGuardianPhone),
       quranLevel: data.quranLevel,

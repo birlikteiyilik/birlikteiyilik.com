@@ -187,6 +187,11 @@ svg { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: 
 .lesson-note summary svg { height: 15px; width: 15px; }
 .lesson-note textarea { background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px; color: var(--ink); display: block; font-size: .74rem; line-height: 1.5; margin-top: 7px; min-height: 82px; padding: 10px 12px; resize: vertical; width: 100%; }
 .lesson-note textarea:disabled { opacity: .5; }
+.lesson-note-actions { align-items: center; display: flex; gap: 12px; justify-content: space-between; margin-top: 8px; }
+.lesson-note-actions span { color: var(--muted); font-size: .66rem; }
+.lesson-note-actions button { background: var(--ink); border: 0; border-radius: 9px; color: #fff; cursor: pointer; font-size: .68rem; font-weight: 800; min-height: 34px; padding: 0 12px; transition: opacity .18s, transform .18s; }
+.lesson-note-actions button:hover:not(:disabled) { transform: translateY(-1px); }
+.lesson-note-actions button:disabled { cursor: not-allowed; opacity: .45; }
 
 .state-panel { border-radius: 18px; min-height: 240px; }
 .loading-state { display: grid; gap: 12px; grid-template-columns: 72px minmax(0,1fr); }

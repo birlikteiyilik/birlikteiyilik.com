@@ -1,8 +1,8 @@
-const CACHE_NAME = 'bia-yoklama-shell-v3';
+const CACHE_NAME = 'bia-yoklama-shell-v4';
 const APP_SHELL = [
   '/yoklama',
-  '/css/yoklama.css?v=4',
-  '/js/yoklama.js?v=6',
+  '/css/yoklama.css?v=5',
+  '/js/yoklama.js?v=7',
   '/images/favicon-square.png',
   '/images/yoklama-icon-512.png'
 ];

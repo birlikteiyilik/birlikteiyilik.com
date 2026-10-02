@@ -18,7 +18,6 @@
   let week = [];
   let lessons = [];
   const saving = new Set();
-  const noteTimers = new Map();
   let toastTimer = 0;
 
   function el(id) { return document.getElementById(id); }
@@ -159,7 +158,7 @@
           <div class="attendance-controls" role="group" aria-label="${escapeHtml(lesson.studentName)} yoklama durumu">
             ${['katildi', 'gelmedi', 'mazeretli'].map((status) => `<button type="button" class="status-action${active(status)}" data-lesson-key="${escapeHtml(lessonKey(lesson))}" data-status="${status}" aria-pressed="${lesson.status === status}" ${isFuture || isSaving ? 'disabled' : ''}><svg><use href="#${icon[status]}"></use></svg>${labels.status[status]}</button>`).join('')}
           </div>
-          <details class="lesson-note" ${lesson.note ? 'open' : ''}><summary><svg><use href="#icon-note"></use></svg>Ders notu ${lesson.note ? noteIsFromPreviousDay ? `· önceki dersten, ${formatDate(lesson.noteDate, { day: 'numeric', month: 'short' })}` : '· eklendi' : 'ekle'}</summary><textarea data-note-key="${escapeHtml(lessonKey(lesson))}" maxlength="300" ${lesson.status && !isFuture && !isSaving ? '' : 'disabled'} placeholder="Yalnızca gerekli kısa notu yazın...">${escapeHtml(lesson.note)}</textarea></details>
+          <details class="lesson-note" ${lesson.note ? 'open' : ''}><summary><svg><use href="#icon-note"></use></svg>Ders notu ${lesson.note ? noteIsFromPreviousDay ? `· önceki dersten, ${formatDate(lesson.noteDate, { day: 'numeric', month: 'short' })}` : '· eklendi' : 'ekle'}</summary><textarea data-note-key="${escapeHtml(lessonKey(lesson))}" maxlength="300" ${lesson.status && !isFuture && !isSaving ? '' : 'disabled'} placeholder="Yalnızca gerekli kısa notu yazın...">${escapeHtml(lesson.note)}</textarea><div class="lesson-note-actions"><span aria-live="polite" data-note-state="${escapeHtml(lessonKey(lesson))}">${lesson.note !== lesson.originalNote ? 'Kaydedilmemiş değişiklik' : 'Notlar sonraki ders gününde de görünür.'}</span><button type="button" data-note-save-key="${escapeHtml(lessonKey(lesson))}" ${lesson.status && !isFuture && !isSaving && lesson.note !== lesson.originalNote ? '' : 'disabled'}>${isSaving ? 'Kaydediliyor…' : 'Notu kaydet'}</button></div></details>
         </div>
       </article>`;
     }).join('');
@@ -257,30 +256,10 @@
     }
   }
 
-  function clearNoteTimer(key) {
-    const pending = noteTimers.get(key);
-    if (!pending) return null;
-    clearTimeout(pending.timer);
-    noteTimers.delete(key);
-    return pending;
-  }
-
-  function queueNoteSave(lesson) {
+  function saveLessonNote(lesson) {
+    if (!lesson || lesson.note === lesson.originalNote) return;
     const date = selectedDate;
-    const key = attendanceKey(lesson, date);
-    const existing = noteTimers.get(key);
-    const previous = existing?.previous || { status: lesson.originalStatus, note: lesson.originalNote };
-    if (existing) clearTimeout(existing.timer);
-    const timer = setTimeout(() => {
-      noteTimers.delete(key);
-      saveAttendance(lesson, date, previous);
-    }, 650);
-    noteTimers.set(key, { timer, lesson, date, previous });
-  }
-
-  async function flushNoteSaves() {
-    const pending = [...noteTimers.keys()].map((key) => clearNoteTimer(key)).filter(Boolean);
-    await Promise.all(pending.map(({ lesson, date, previous }) => saveAttendance(lesson, date, previous)));
+    saveAttendance(lesson, date, { status: lesson.status, note: lesson.originalNote });
   }
 
   function closeAccountMenu() {
@@ -303,33 +282,26 @@
     el('weekDays').addEventListener('click', (event) => {
       const button = event.target.closest('[data-date]');
       if (!button || button.disabled || button.dataset.date === selectedDate) return;
-      flushNoteSaves().then(() => {
-        selectedDate = button.dataset.date;
-        loadDay();
-      });
+      selectedDate = button.dataset.date;
+      loadDay();
     });
     el('previousWeek').addEventListener('click', () => {
-      flushNoteSaves().then(() => {
-        selectedDate = addDays(mondayFor(selectedDate), -7);
-        loadDay();
-      });
+      selectedDate = addDays(mondayFor(selectedDate), -7);
+      loadDay();
     });
     el('nextWeek').addEventListener('click', () => {
       if (el('nextWeek').disabled) return;
-      flushNoteSaves().then(() => {
-        selectedDate = addDays(mondayFor(selectedDate), 7);
-        loadDay();
-      });
+      selectedDate = addDays(mondayFor(selectedDate), 7);
+      loadDay();
     });
     el('lessonList').addEventListener('click', (event) => {
       const button = event.target.closest('[data-status]');
       if (!button) return;
       const lesson = lessons.find((item) => lessonKey(item) === button.dataset.lessonKey);
       if (!lesson) return;
+      if (lesson.note !== lesson.originalNote) return toast('Önce ders notunu kaydedin.', 'error');
       const date = selectedDate;
-      const key = attendanceKey(lesson, date);
-      const pending = clearNoteTimer(key);
-      const previous = pending?.previous || { status: lesson.status, note: lesson.note };
+      const previous = { status: lesson.status, note: lesson.note };
       lesson.status = lesson.status === button.dataset.status ? '' : button.dataset.status;
       if (!lesson.status) lesson.note = '';
       saveAttendance(lesson, date, previous);
@@ -339,7 +311,16 @@
       const lesson = lessons.find((item) => lessonKey(item) === event.target.dataset.noteKey);
       if (!lesson || saving.has(attendanceKey(lesson, selectedDate))) return;
       lesson.note = event.target.value;
-      queueNoteSave(lesson);
+      const button = document.querySelector(`[data-note-save-key="${CSS.escape(lessonKey(lesson))}"]`);
+      const state = document.querySelector(`[data-note-state="${CSS.escape(lessonKey(lesson))}"]`);
+      if (button) button.disabled = !lesson.status || selectedDate > dateValue(new Date()) || lesson.note === lesson.originalNote;
+      if (state) state.textContent = lesson.note === lesson.originalNote ? 'Notlar sonraki ders gününde de görünür.' : 'Kaydedilmemiş değişiklik';
+    });
+    el('lessonList').addEventListener('click', (event) => {
+      const button = event.target.closest('[data-note-save-key]');
+      if (!button || button.disabled) return;
+      const lesson = lessons.find((item) => lessonKey(item) === button.dataset.noteSaveKey);
+      saveLessonNote(lesson);
     });
     el('refreshButton').addEventListener('click', () => loadDay({ quiet: true }));
     el('retryButton').addEventListener('click', () => loadDay());
