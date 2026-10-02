@@ -1,3 +1,12 @@
+import {
+  ensureArchiveSchema,
+  insertArchiveEnvelope,
+  listArchiveEnvelopes,
+  neonSql,
+  readArchiveEnvelope,
+  updateArchiveEnvelope
+} from './_bia-neon-store.js';
+
 export const config = { runtime: 'edge' };
 
 const DEFAULT_REPO = 'birlikteiyilik/birlikteiyilik.com';
@@ -461,6 +470,11 @@ function demoTckn(index) {
   return [...firstNine, tenth, ([...firstNine, tenth].reduce((sum, digit) => sum + digit, 0) % 10)].join('');
 }
 
+function sameEncryptedEnvelope(left, right) {
+  return Boolean(left && right && left.v === right.v && left.alg === right.alg &&
+    left.iv === right.iv && left.data === right.data);
+}
+
 export default async function handler(req) {
   const githubToken = process.env.BIA_GITHUB_TOKEN || '';
   const jwtSecret = process.env.BIA_JWT_SECRET || process.env.BIA_ADMIN_PASSWORD || '';
@@ -470,6 +484,7 @@ export default async function handler(req) {
   const dataRepo = process.env.BIA_APPLICATIONS_REPO || DEFAULT_REPO;
   const dataBranch = process.env.BIA_APPLICATIONS_BRANCH || 'main';
   const dataPath = (process.env.BIA_APPLICATIONS_PATH || 'content/applications').replace(/^\/+|\/+$/g, '');
+  const useNeonStorage = process.env.BIA_APPLICATIONS_STORAGE === 'neon';
 
   const requestOrigin = req.headers.get('origin') || '';
   const allowedOrigin = requestOrigin === 'https://birlikteiyilik.com' || requestOrigin === 'https://www.birlikteiyilik.com' ||
@@ -481,7 +496,7 @@ export default async function handler(req) {
 
   if (req.method === 'OPTIONS') return new Response(null, { status: allowedOrigin ? 204 : 403, headers: cors });
   if (requestOrigin && !allowedOrigin) return json({ error: 'İzin verilmeyen istek kaynağı.' }, 403, cors);
-  if (!githubToken || !jwtSecret || !encryptionSecret) {
+  if ((!useNeonStorage && !githubToken) || (useNeonStorage && !process.env.DATABASE_URL) || !jwtSecret || !encryptionSecret) {
     return json({ error: 'Başvuru sistemi henüz yapılandırılmadı.' }, 503, cors);
   }
 
@@ -501,20 +516,42 @@ export default async function handler(req) {
     return { status: response.status, ok: response.ok, data };
   }
 
-  async function getArchive(fileName) {
+  async function getGithubArchiveEnvelope(fileName) {
     const path = `/repos/${dataRepo}/contents/${dataPath}/${fileName}?ref=${encodeURIComponent(dataBranch)}`;
     const response = await github(path);
-    if (response.status === 404) return { records: [], sha: '' };
+    if (response.status === 404) return { envelope: null, sha: '' };
     if (!response.ok || !response.data.content) throw new Error('Başvuru arşivi okunamadı.');
     const envelopeText = decoder.decode(bytesFromBase64(response.data.content));
-    return { records: await decryptRecords(JSON.parse(envelopeText), encryptionSecret), sha: response.data.sha || '' };
+    return { envelope: JSON.parse(envelopeText), sha: response.data.sha || '' };
   }
 
-  async function putArchive(fileName, records, sha, message) {
+  async function getArchive(fileName) {
+    if (useNeonStorage) {
+      const stored = await readArchiveEnvelope(fileName);
+      if (!stored) return { records: [], version: 0 };
+      return {
+        records: await decryptRecords(stored.envelope, encryptionSecret),
+        version: Number(stored.version)
+      };
+    }
+    const stored = await getGithubArchiveEnvelope(fileName);
+    if (!stored.envelope) return { records: [], sha: '' };
+    return { records: await decryptRecords(stored.envelope, encryptionSecret), sha: stored.sha };
+  }
+
+  async function putArchive(fileName, records, current, message) {
     const envelope = await encryptRecords(records, encryptionSecret);
+    if (useNeonStorage) {
+      const savedRows = current.version
+        ? await updateArchiveEnvelope(fileName, envelope, current.version)
+        : await insertArchiveEnvelope(fileName, envelope);
+      return savedRows.length
+        ? { ok: true, status: 200, data: { content: { sha: `neon-${savedRows[0].version}` } } }
+        : { ok: false, status: 409, data: {} };
+    }
     const content = base64FromBytes(encoder.encode(JSON.stringify(envelope)));
     return github(`/repos/${dataRepo}/contents/${dataPath}/${fileName}`, 'PUT', {
-      message, content, branch: dataBranch, ...(sha ? { sha } : {})
+      message, content, branch: dataBranch, ...(current.sha ? { sha: current.sha } : {})
     });
   }
 
@@ -522,7 +559,7 @@ export default async function handler(req) {
     for (let attempt = 0; attempt < 3; attempt += 1) {
       const current = await getArchive(fileName);
       const result = await mutator([...current.records]);
-      const saved = await putArchive(fileName, result.records, current.sha, message);
+      const saved = await putArchive(fileName, result.records, current, message);
       if (saved.ok && saved.data.content?.sha) return result.value;
       if (saved.status !== 409 && saved.status !== 422) throw new Error('Başvuru arşivi kaydedilemedi.');
     }
@@ -649,12 +686,78 @@ export default async function handler(req) {
   }
 
   async function getApplicationFiles() {
+    if (useNeonStorage) {
+      const rows = await listArchiveEnvelopes();
+      return rows.map((row) => row.archive_name)
+        .filter((fileName) => /^\d{4}-\d{2}\.enc\.json$/.test(fileName))
+        .sort((a, b) => b.localeCompare(a));
+    }
+    return getGithubApplicationFiles();
+  }
+
+  async function getGithubApplicationFiles() {
     const listing = await github(`/repos/${dataRepo}/contents/${dataPath}?ref=${encodeURIComponent(dataBranch)}`);
     if (listing.status !== 404 && (!listing.ok || !Array.isArray(listing.data))) throw new Error('Arşiv listelenemedi.');
     return listing.status === 404 ? [] : listing.data
       .filter((entry) => entry.type === 'file' && /^\d{4}-\d{2}\.enc\.json$/.test(entry.name))
       .map((entry) => entry.name)
       .sort((a, b) => b.localeCompare(a));
+  }
+
+  async function migrateEncryptedArchivesToNeon() {
+    if (useNeonStorage) throw new RequestError('Veritabanı zaten etkin. Taşıma işlemi reddedildi.', 409);
+    if (!process.env.DATABASE_URL) throw new RequestError('Neon bağlantısı yapılandırılmamış.', 503);
+    await ensureArchiveSchema();
+
+    const sourceNames = [...new Set([PLANNING_FILE, ...(await getGithubApplicationFiles())])].sort();
+    const initialRows = await listArchiveEnvelopes();
+    const sourceNameSet = new Set(sourceNames);
+    const unexpected = initialRows.filter((row) => !sourceNameSet.has(row.archive_name));
+    if (unexpected.length) {
+      throw new RequestError('Neon veritabanında kaynak arşivlerde bulunmayan kayıtlar var; taşıma güvenlik için durduruldu.', 409);
+    }
+
+    const initialByName = new Map(initialRows.map((row) => [row.archive_name, row]));
+    const summary = [];
+    for (const archiveName of sourceNames) {
+      const source = await getGithubArchiveEnvelope(archiveName);
+      if (!source.envelope) throw new RequestError(`Kaynak arşiv bulunamadı: ${archiveName}`, 409);
+      const existing = initialByName.get(archiveName);
+      if (existing && !sameEncryptedEnvelope(existing.envelope, source.envelope)) {
+        throw new RequestError(`Kaynak ve Neon arşivi farklı: ${archiveName}. Hiçbir mevcut Neon verisi üzerine yazılmadı.`, 409);
+      }
+      if (!existing) await insertArchiveEnvelope(archiveName, source.envelope);
+
+      const saved = await readArchiveEnvelope(archiveName);
+      if (!saved || !sameEncryptedEnvelope(saved.envelope, source.envelope)) {
+        throw new RequestError(`Neon arşiv doğrulaması başarısız: ${archiveName}`, 500);
+      }
+      const records = await decryptRecords(saved.envelope, encryptionSecret);
+      summary.push({ name: archiveName, records: records.length, encryptedBytes: JSON.stringify(saved.envelope).length });
+    }
+
+    // Re-read both stores immediately before cutover so a concurrent GitHub update
+    // cannot silently leave Neon with a stale copy.
+    const finalSourceNames = [...new Set([PLANNING_FILE, ...(await getGithubApplicationFiles())])].sort();
+    const finalRows = await listArchiveEnvelopes();
+    const finalByName = new Map(finalRows.map((row) => [row.archive_name, row]));
+    if (JSON.stringify(finalSourceNames) !== JSON.stringify(sourceNames) ||
+      JSON.stringify([...finalByName.keys()].sort()) !== JSON.stringify(sourceNames)) {
+      throw new RequestError('Arşiv listesi taşıma sırasında değişti; kesim yapılmadı. İşlemi yeniden deneyin.', 409);
+    }
+    for (const archiveName of sourceNames) {
+      const source = await getGithubArchiveEnvelope(archiveName);
+      if (!source.envelope || !sameEncryptedEnvelope(finalByName.get(archiveName)?.envelope, source.envelope)) {
+        throw new RequestError(`Taşıma sırasında arşiv değişti: ${archiveName}. Kesim yapılmadı; işlemi yeniden deneyin.`, 409);
+      }
+    }
+
+    return {
+      ok: true, verified: true, storage: 'neon', archiveCount: summary.length,
+      recordCount: summary.reduce((total, archive) => total + archive.records, 0),
+      encryptedBytes: summary.reduce((total, archive) => total + archive.encryptedBytes, 0),
+      archives: summary.map(({ name, records }) => ({ name, records }))
+    };
   }
 
   async function getAllApplications() {
@@ -852,6 +955,14 @@ export default async function handler(req) {
 
     const admin = await checkAdmin();
     if (!admin) return json({ error: 'Yetkisiz erişim.' }, 401, cors);
+
+    if (body.action === 'applications-storage-migrate') {
+      try {
+        return json(await migrateEncryptedArchivesToNeon(), 200, cors);
+      } catch (error) {
+        return json({ error: error.message || 'Şifreli arşivler Neon veritabanına taşınamadı.' }, error.status || 500, cors);
+      }
+    }
 
     if (body.action === 'attendance-warning-message-update') {
       try {

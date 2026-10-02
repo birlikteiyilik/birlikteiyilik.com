@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta name="theme-color" content="#e20439">
+  <title>Arşiv Taşıma | BİA Yönetim</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px; color: #20232b; background: #f5f5f5; font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    main { width: min(100%, 620px); padding: clamp(24px, 5vw, 42px); border: 1px solid #e5e7eb; border-radius: 20px; background: white; box-shadow: 0 20px 70px #19203112; }
+    .eyebrow { color: #c70032; font-size: .78rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    h1 { margin: 10px 0; font-size: clamp(1.65rem, 4vw, 2.1rem); line-height: 1.14; }
+    p { color: #606775; }
+    .notice { margin: 20px 0; padding: 14px 16px; border: 1px solid #f0dfb2; border-radius: 12px; background: #fffaf0; color: #69521c; font-size: .92rem; }
+    button, a { min-height: 48px; display: inline-flex; align-items: center; justify-content: center; border-radius: 11px; font: inherit; font-weight: 700; }
+    button { width: 100%; border: 0; color: white; background: #e20439; cursor: pointer; }
+    button:disabled { opacity: .65; cursor: wait; }
+    #result { margin-top: 18px; white-space: pre-wrap; font-size: .92rem; }
+    #result[data-kind="error"] { color: #b4233c; }
+    #result[data-kind="success"] { color: #126c46; }
+    a { margin-top: 14px; color: #606775; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="eyebrow">Yetkili bakım aracı</div>
+    <h1>Şifreli arşivleri Neon’a aktar</h1>
+    <p>Başvuru ve planlama arşivleri çözülmeden aktarılır. Sistem, her arşivin şifreli içeriğini ve kayıt adetlerini karşılaştırır; eşleşme yoksa kesime izin vermez.</p>
+    <div class="notice">Önceki şifreli GitHub arşivleri bu adımda silinmez. Kopya doğrulandıktan sonra canlı depolama ayrı bir adımda değiştirilecektir.</div>
+    <button id="migrate" type="button">Yedek kopyayı Neon’a taşı ve doğrula</button>
+    <div id="result" role="status" aria-live="polite"></div>
+    <a href="/yonetim/panel.html">Yönetim paneline dön</a>
+  </main>
+  <script>
+    const button = document.getElementById('migrate');
+    const result = document.getElementById('result');
+    button.addEventListener('click', async () => {
+      const token = sessionStorage.getItem('biaToken');
+      if (!token) {
+        result.dataset.kind = 'error';
+        result.textContent = 'Yönetici oturumu bulunamadı. Yönetim paneline giriş yapıp yeniden deneyin.';
+        return;
+      }
+      button.disabled = true;
+      button.textContent = 'Şifreli arşivler aktarılıyor…';
+      result.dataset.kind = '';
+      result.textContent = '';
+      try {
+        const response = await fetch('/api/bia-applications', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ action: 'applications-storage-migrate' })
+        });
+        const data = await response.json();
+        if (!response.ok || !data.verified) throw new Error(data.error || 'Aktarım doğrulanamadı.');
+        result.dataset.kind = 'success';
+        result.textContent = `Kopya ve bütünlük doğrulandı.\n${data.archiveCount} arşiv · ${data.recordCount} şifreli kayıt · ${data.encryptedBytes.toLocaleString('tr-TR')} bayt\nCanlı depolama henüz değiştirilmedi.`;
+        button.textContent = 'Aktarım doğrulandı';
+      } catch (error) {
+        result.dataset.kind = 'error';
+        result.textContent = error.message || 'Aktarım başarısız. Kaynak arşivler değiştirilmedi.';
+        button.disabled = false;
+        button.textContent = 'Yedek kopyayı Neon’a taşı ve doğrula';
+      }
+    });
+  </script>
+</body>
+</html>
