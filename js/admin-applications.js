@@ -669,7 +669,7 @@
       const streak = streaks.get(`${student.applicationId}|${student.name}`) || 0;
       const application = applications.find((item) => item.id === student.applicationId);
       const phone = whatsappPhone(guardianPhoneFor(application || {}));
-      const action = student.absent ? `<button type="button" class="report-message-button ${streak >= 3 ? 'is-removal' : ''}" data-attendance-message="${streak >= 3 ? 'removal' : 'warning'}" data-student-name="${escapeHtml(student.name)}" data-guardian-phone="${escapeHtml(guardianPhoneFor(application || {}))}" ${phone ? '' : 'disabled'}>${streak >= 3 ? 'Kayıt Silme Mesajı' : 'Uyarı Mesajı'}</button>` : '<span class="report-no-action">İşlem gerekmiyor</span>';
+      const action = student.absent ? `<div class="report-followup-actions"><button type="button" class="report-message-button ${streak >= 3 ? 'is-removal' : ''}" data-attendance-message="${streak >= 3 ? 'removal' : 'warning'}" data-student-name="${escapeHtml(student.name)}" data-guardian-phone="${escapeHtml(guardianPhoneFor(application || {}))}" ${phone ? '' : 'disabled'}>${streak >= 3 ? 'Kayıt Silme Mesajı' : 'Uyarı Mesajı'}</button><label class="report-sent-toggle ${application?.warningMessageSentAt ? 'is-sent' : ''}" title="WhatsApp'ta mesajı gönderdikten sonra işaretleyin"><input type="checkbox" data-warning-sent data-application-id="${escapeHtml(student.applicationId)}" data-application-created-at="${escapeHtml(application?.createdAt || '')}" aria-label="${escapeHtml(student.name)} için uyarı mesajını gönderildi olarak işaretle" ${application?.warningMessageSentAt ? 'checked' : ''}><span class="report-sent-check" aria-hidden="true">✓</span><span>${application?.warningMessageSentAt ? 'Mesaj gönderildi' : 'Gönderildi olarak işaretle'}</span></label></div>` : '<span class="report-no-action">İşlem gerekmiyor</span>';
       return `<tr><td><span class="app-student">${escapeHtml(student.name)}</span><span class="app-ref">${escapeHtml(student.reference)}</span></td>
         <td><div class="report-attendance-rate"><strong>%${rate}</strong><span>${student.attended}/${student.marked} katılım</span></div><span class="report-mini-meter"><i style="--value:${rate}%"></i></span></td>
         <td><span class="report-student-counts"><b>${student.attended} katıldı</b><b>${student.absent} gelmedi</b><b>${student.excused} mazeretli</b></span></td>
@@ -717,6 +717,32 @@
     } catch (error) {
       select.value = previous;
       select.disabled = false;
+      toast(error.message, 'error');
+    }
+  }
+
+  async function updateWarningMessageStatus(input) {
+    const application = applications.find((item) => item.id === input.dataset.applicationId);
+    if (!application) return;
+    const sent = input.checked;
+    input.disabled = true;
+    try {
+      const result = await api('POST', {
+        action: 'attendance-warning-message-update', applicationId: application.id,
+        applicationCreatedAt: application.createdAt, sent
+      });
+      if (result.data.sent) {
+        application.warningMessageSentAt = result.data.sentAt;
+        application.warningMessageSentBy = result.data.sentBy;
+      } else {
+        delete application.warningMessageSentAt;
+        delete application.warningMessageSentBy;
+      }
+      renderReports();
+      toast(sent ? 'Uyarı mesajı gönderildi olarak işaretlendi.' : 'Gönderildi işareti kaldırıldı.');
+    } catch (error) {
+      input.checked = !sent;
+      input.disabled = false;
       toast(error.message, 'error');
     }
   }
@@ -1664,6 +1690,10 @@
     el('reportsStudentTableBody').addEventListener('click', (event) => {
       const button = event.target.closest('[data-attendance-message]');
       if (button) openAttendanceMessage(button.dataset.studentName, button.dataset.attendanceMessage, button.dataset.guardianPhone);
+    });
+    el('reportsStudentTableBody').addEventListener('change', (event) => {
+      const input = event.target.closest('[data-warning-sent]');
+      if (input) updateWarningMessageStatus(input);
     });
     ['programSearch', 'programDay', 'programTeacher', 'programSlot'].forEach((id) => {
       el(id).addEventListener(id === 'programSearch' ? 'input' : 'change', renderProgram);

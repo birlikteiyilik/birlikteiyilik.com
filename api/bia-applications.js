@@ -853,6 +853,33 @@ export default async function handler(req) {
     const admin = await checkAdmin();
     if (!admin) return json({ error: 'Yetkisiz erişim.' }, 401, cors);
 
+    if (body.action === 'attendance-warning-message-update') {
+      try {
+        const applicationId = cleanText(body.applicationId, 80);
+        if (typeof body.sent !== 'boolean') throw new RequestError('Mesaj gönderim durumu geçersiz.');
+        const application = await requireApplication(applicationId, body.applicationCreatedAt);
+        const monthFile = `${new Date(application.createdAt).toISOString().slice(0, 7)}.enc.json`;
+        const sent = body.sent;
+        const sentAt = sent ? new Date().toISOString() : '';
+        const sentBy = sent ? adminIdentity(admin) : '';
+        const saved = await mutateArchive(monthFile, (records) => {
+          const target = records.find((item) => item.id === applicationId);
+          if (!target) throw new RequestError('Başvuru bulunamadı.', 404);
+          if (sent) {
+            target.warningMessageSentAt = sentAt;
+            target.warningMessageSentBy = sentBy;
+          } else {
+            delete target.warningMessageSentAt;
+            delete target.warningMessageSentBy;
+          }
+          return { records, value: { applicationId, sent, sentAt, sentBy } };
+        }, `BIA: uyarı mesajı ${sent ? 'gönderildi olarak işaretlendi' : 'işareti kaldırıldı'}`);
+        return json({ ok: true, data: saved }, 200, cors);
+      } catch (error) {
+        return json({ error: error.message || 'Uyarı mesajı durumu kaydedilemedi.' }, error.status || 500, cors);
+      }
+    }
+
     if (body.action === 'attendance-admin-save') {
       try {
         const date = assertAttendanceDate(body.date);

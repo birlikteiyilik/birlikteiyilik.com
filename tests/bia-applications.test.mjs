@@ -246,6 +246,28 @@ const completeResponse = await adminPost({
 });
 assert.equal(completeResponse.status, 200);
 
+const warningMessageSent = await adminPost({
+  action: 'attendance-warning-message-update', applicationId: firstApplication.id,
+  applicationCreatedAt: firstApplication.createdAt, sent: true
+});
+assert.equal(warningMessageSent.status, 200);
+const warningMessageSentData = (await warningMessageSent.json()).data;
+assert.equal(warningMessageSentData.sent, true);
+assert.ok(warningMessageSentData.sentAt);
+const persistedWarningList = await handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'GET', headers: adminHeaders
+}));
+assert.equal(persistedWarningList.status, 200);
+const persistedWarningApplication = (await persistedWarningList.json()).data.find((item) => item.id === firstApplication.id);
+assert.equal(persistedWarningApplication.warningMessageSentAt, warningMessageSentData.sentAt);
+
+const warningMessageUnsent = await adminPost({
+  action: 'attendance-warning-message-update', applicationId: firstApplication.id,
+  applicationCreatedAt: firstApplication.createdAt, sent: false
+});
+assert.equal(warningMessageUnsent.status, 200);
+assert.equal((await warningMessageUnsent.json()).data.sent, false);
+
 const directoryUnauthorized = await handler(new Request('http://localhost:4173/api/bia-applications', {
   method: 'POST', headers: { 'Content-Type': 'application/json', 'Origin': 'http://localhost:4173' },
   body: JSON.stringify({ action: 'directory-search', mode: 'student', query: 'Test' })

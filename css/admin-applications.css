@@ -574,6 +574,15 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .report-student-counts b:first-child { background: #e8f7ef; color: var(--app-green); }
 .report-student-counts b:nth-child(2) { background: #fff0f3; color: var(--app-red-dark); }
 .report-student-action { align-items: flex-start; display: flex; flex-direction: column; gap: 4px; }
+.report-followup-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 7px 9px; }
+.report-sent-toggle { align-items: center; color: #758093; cursor: pointer; display: inline-flex; font-size: .59rem; font-weight: 700; gap: 5px; min-height: 36px; padding: 3px 2px; transition: color .16s ease; }
+.report-sent-toggle input { height: 1px; opacity: 0; position: absolute; width: 1px; }
+.report-sent-check { align-items: center; background: #fff; border: 1px solid #cbd2dc; border-radius: 5px; color: transparent; display: inline-flex; font-size: .63rem; height: 20px; justify-content: center; transition: background .16s ease, border-color .16s ease, transform .16s ease; width: 20px; }
+.report-sent-toggle:hover .report-sent-check { border-color: #26845c; }
+.report-sent-toggle input:focus-visible + .report-sent-check { outline: 3px solid rgba(38,132,92,.2); outline-offset: 2px; }
+.report-sent-toggle input:checked + .report-sent-check { animation: checkPop .2s ease; background: #e8f7ef; border-color: #26845c; color: #17734a; }
+.report-sent-toggle.is-sent { color: #17734a; }
+.report-sent-toggle input:disabled + .report-sent-check { cursor: progress; opacity: .6; }
 .report-student-action small { color: var(--app-muted); font-size: .56rem; }
 .report-message-button { background: #fff7e7; border: 1px solid #f0d59b; border-radius: 8px; color: #765000; cursor: pointer; font: inherit; font-size: .61rem; font-weight: 800; min-height: 32px; padding: 6px 9px; transition: background .16s ease, transform .16s ease; white-space: nowrap; }
 .report-message-button:hover:not(:disabled) { background: #ffefc8; transform: translateY(-1px); }
@@ -649,7 +658,8 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .reports-student-card > header { min-height: 76px; }
 .reports-student-card > header > span { background: #f2f4f7; border-radius: 999px; padding: 7px 10px; white-space: nowrap; }
 @media (prefers-reduced-motion: reduce) {
-  .report-donut .donut-arc, .reports-view-switch button, .reports-ledger > summary > b { transition: none !important; }
+  .report-donut .donut-arc, .reports-view-switch button, .reports-ledger > summary > b, .report-sent-check { transition: none !important; }
+  .report-sent-toggle input:checked + .report-sent-check { animation: none !important; }
   .reports-overview-view, .reports-student-card { animation: none !important; }
 }
 
