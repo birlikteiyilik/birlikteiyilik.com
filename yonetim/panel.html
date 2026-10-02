@@ -8,7 +8,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="/images/favicon-square.png">
 <link rel="apple-touch-icon" href="/images/favicon-square.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
-<link rel="stylesheet" href="/css/admin-applications.css?v=19">
+<link rel="stylesheet" href="/css/admin-applications.css?v=20">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; color: #222; min-height: 100vh; }
@@ -546,37 +546,63 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
       </div>
     </section>
 
-    <section class="reports-summary" aria-label="Yoklama özeti">
-      <article><span>Beklenen ders</span><strong id="reportsExpected">0</strong><small>Seçilen tarih aralığında</small></article>
-      <article class="is-complete"><span>Yoklaması tamamlanan</span><strong id="reportsCompleted">0</strong><small id="reportsCompletionText">%0 tamamlama</small></article>
-      <article class="is-present"><span>Katılım</span><strong id="reportsPresent">0</strong><small id="reportsAttendanceText">%0 katılım</small></article>
-      <article class="is-missing"><span>Takip bekleyen</span><strong id="reportsMissing">0</strong><small>Eksik yoklama</small></article>
-    </section>
-
-    <section class="reports-progress" aria-label="Yoklama tamamlama oranı">
-      <div><span>Yoklama tamamlama</span><strong id="reportsProgressValue">%0</strong></div>
-      <div class="reports-progress-track"><i id="reportsProgressBar"></i></div>
-    </section>
-
-    <div class="reports-dashboard-grid">
-      <section class="report-panel">
-        <header><div><span class="apps-eyebrow">Ekip görünümü</span><h3>Öğretmen özeti</h3></div><span id="reportsTeacherResult">0 öğretmen</span></header>
-        <div id="reportsTeacherSummary" class="reports-teacher-list"></div>
-      </section>
-      <section class="report-panel is-alerts">
-        <header><div><span class="apps-eyebrow">Takip listesi</span><h3>Eksik yoklamalar</h3></div><span id="reportsMissingResult">0 kayıt</span></header>
-        <div id="reportsMissingList" class="reports-missing-list"></div>
-      </section>
+    <div id="reportsViewSwitch" class="reports-view-switch" role="group" aria-label="Rapor görünümü">
+      <button type="button" class="is-active" data-report-view="overview" aria-pressed="true">Genel Bakış</button>
+      <button type="button" data-report-view="students" aria-pressed="false">Öğrenci Listesi <span id="reportsStudentResult">0</span></button>
     </div>
 
-    <section class="reports-table-card reports-student-card">
-      <header><div><span class="apps-eyebrow">Öğrenci takibi</span><h3>Öğrenci katılımı</h3><small>Katılım oranı, işaretlenmiş yoklamalar üzerinden hesaplanır.</small></div><span id="reportsStudentResult">0 öğrenci</span></header>
-      <div class="reports-table-wrap"><table class="reports-table reports-student-table"><thead><tr><th>Öğrenci</th><th>Katılım</th><th>Durum özeti</th><th>Devamsızlık takibi</th></tr></thead><tbody id="reportsStudentTableBody"><tr><td colspan="4" class="apps-empty">Henüz öğrenci yoklama verisi yok.</td></tr></tbody></table></div>
-    </section>
+    <div id="reportsOverviewView" class="reports-overview-view">
+      <section class="reports-summary" aria-label="Yoklama özeti">
+        <article><span>Planlanan ders</span><strong id="reportsExpected">0</strong><small>Seçili tarih aralığı</small></article>
+        <article class="is-complete"><span>Yoklama alınan</span><strong id="reportsCompleted">0</strong><small id="reportsCompletionText">%0 tamamlama</small></article>
+        <article class="is-present"><span>Katılım</span><strong id="reportsPresent">0</strong><small id="reportsAttendanceText">%0 katılım</small></article>
+        <article class="is-missing"><span>Yoklama bekleyen</span><strong id="reportsMissing">0</strong><small>Öğretmen takibi</small></article>
+      </section>
 
-    <section class="reports-table-card">
-      <header><div><span class="apps-eyebrow">Kayıt dökümü</span><h3>Yoklama hareketleri</h3></div><span id="reportsResultCount">0 kayıt</span></header>
-      <div class="reports-table-wrap"><table class="reports-table"><thead><tr><th>Tarih</th><th>Öğretmen</th><th>Öğrenci</th><th>Saat</th><th>Tür</th><th>Durum</th><th>Not</th></tr></thead><tbody id="reportsTableBody"><tr><td colspan="7" class="apps-empty">Henüz yoklama kaydı yok.</td></tr></tbody></table></div>
+      <section class="reports-insight-grid" aria-label="Katılım analizi">
+        <section class="report-panel report-donut-panel">
+          <header><div><span class="apps-eyebrow">Seçili dönem</span><h3>Katılım dağılımı</h3></div><span id="reportsDonutTotal">0 ders</span></header>
+          <div class="report-donut-layout">
+            <div class="report-donut" role="img" aria-label="Yoklama durumu dağılım grafiği">
+              <svg viewBox="0 0 100 100" aria-hidden="true">
+                <circle class="donut-track" cx="50" cy="50" r="42" pathLength="100"></circle>
+                <circle id="reportsDonutPresentArc" class="donut-arc is-present" cx="50" cy="50" r="42" pathLength="100"></circle>
+                <circle id="reportsDonutAbsentArc" class="donut-arc is-absent" cx="50" cy="50" r="42" pathLength="100"></circle>
+                <circle id="reportsDonutExcusedArc" class="donut-arc is-excused" cx="50" cy="50" r="42" pathLength="100"></circle>
+                <circle id="reportsDonutPendingArc" class="donut-arc is-pending" cx="50" cy="50" r="42" pathLength="100"></circle>
+              </svg>
+              <div><strong id="reportsDonutRate">%0</strong><span>katılım</span></div>
+            </div>
+            <div class="report-donut-legend">
+              <div><i class="is-present"></i><span>Katıldı</span><strong id="reportsDonutPresent">0</strong></div>
+              <div><i class="is-absent"></i><span>Gelmedi</span><strong id="reportsDonutAbsent">0</strong></div>
+              <div><i class="is-excused"></i><span>Mazeretli</span><strong id="reportsDonutExcused">0</strong></div>
+              <div><i class="is-pending"></i><span>Bekleyen</span><strong id="reportsDonutPending">0</strong></div>
+              <div class="report-completion"><span>Yoklama tamamlama</span><strong id="reportsProgressValue">%0</strong><div class="reports-progress-track"><i id="reportsProgressBar"></i></div></div>
+            </div>
+          </div>
+        </section>
+        <section class="reports-dashboard-grid">
+          <section class="report-panel">
+            <header><div><span class="apps-eyebrow">Ekip</span><h3>Öğretmen özeti</h3></div><span id="reportsTeacherResult">0 öğretmen</span></header>
+            <div id="reportsTeacherSummary" class="reports-teacher-list"></div>
+          </section>
+          <section class="report-panel is-alerts">
+            <header><div><span class="apps-eyebrow">Takip</span><h3>Eksik yoklamalar</h3></div><span id="reportsMissingResult">0 kayıt</span></header>
+            <div id="reportsMissingList" class="reports-missing-list"></div>
+          </section>
+        </section>
+      </section>
+
+      <details class="reports-ledger">
+        <summary><span><strong>Yoklama hareketleri</strong><small>Günlük kayıtları inceleyin ve gerekirse durumu düzenleyin.</small></span><span id="reportsResultCount">0 kayıt</span><b aria-hidden="true">⌄</b></summary>
+        <div class="reports-table-wrap"><table class="reports-table"><thead><tr><th>Tarih</th><th>Öğretmen</th><th>Öğrenci</th><th>Saat</th><th>Tür</th><th>Durum</th><th>Not</th></tr></thead><tbody id="reportsTableBody"><tr><td colspan="7" class="apps-empty">Henüz yoklama kaydı yok.</td></tr></tbody></table></div>
+      </details>
+    </div>
+
+    <section id="reportsStudentView" class="reports-table-card reports-student-card" hidden>
+      <header><div><span class="apps-eyebrow">Öğrenci analizi</span><h3>Katılım ve devamsızlık takibi</h3><small>Oran, işaretlenmiş yoklamalar üzerinden hesaplanır. Arama ve öğretmen filtresi yukarıdaki alanlardan yapılır.</small></div><span id="reportsStudentResultLabel">0 öğrenci</span></header>
+      <div class="reports-table-wrap"><table class="reports-table reports-student-table"><thead><tr><th>Öğrenci</th><th>Katılım oranı</th><th>Yoklama özeti</th><th>Devamsızlık işlemi</th></tr></thead><tbody id="reportsStudentTableBody"><tr><td colspan="4" class="apps-empty">Henüz öğrenci yoklama verisi yok.</td></tr></tbody></table></div>
     </section>
   </div>
   </section>
@@ -1436,6 +1462,6 @@ function logout() {
 loadNews();
 </script>
 <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="/js/admin-applications.js?v=22"></script>
+<script src="/js/admin-applications.js?v=23"></script>
 </body>
 </html>

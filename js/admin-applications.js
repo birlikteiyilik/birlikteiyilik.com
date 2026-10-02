@@ -43,6 +43,7 @@
   let toastTimer = 0;
   let activeApplicationType = '';
   let activeWorkspaceView = 'applications';
+  let activeReportView = 'overview';
 
   function el(id) { return document.getElementById(id); }
   function escapeHtml(value) {
@@ -596,6 +597,8 @@
     const completed = all.filter((row) => row.status !== 'eksik');
     const present = all.filter((row) => row.status === 'katildi').length;
     const missing = all.filter((row) => row.status === 'eksik');
+    const absent = all.filter((row) => row.status === 'gelmedi').length;
+    const excused = all.filter((row) => row.status === 'mazeretli').length;
     const completionRate = all.length ? Math.round(completed.length / all.length * 100) : 0;
     const attendanceRate = completed.length ? Math.round(present / completed.length * 100) : 0;
     el('reportsExpected').textContent = all.length;
@@ -606,6 +609,22 @@
     el('reportsAttendanceText').textContent = `%${attendanceRate} katılım`;
     el('reportsProgressValue').textContent = `%${completionRate}`;
     el('reportsProgressBar').style.transform = `scaleX(${completionRate / 100})`;
+    el('reportsDonutTotal').textContent = `${all.length} ders`;
+    el('reportsDonutRate').textContent = `%${attendanceRate}`;
+    el('reportsDonutRate').parentElement.parentElement.setAttribute('aria-label',
+      `Yoklama dağılımı: ${present} katıldı, ${absent} gelmedi, ${excused} mazeretli, ${missing.length} bekliyor.`);
+    el('reportsDonutPresent').textContent = present;
+    el('reportsDonutAbsent').textContent = absent;
+    el('reportsDonutExcused').textContent = excused;
+    el('reportsDonutPending').textContent = missing.length;
+    let donutOffset = 0;
+    [['reportsDonutPresentArc', present], ['reportsDonutAbsentArc', absent],
+      ['reportsDonutExcusedArc', excused], ['reportsDonutPendingArc', missing.length]].forEach(([id, count]) => {
+      const share = all.length ? count / all.length * 100 : 0;
+      el(id).style.strokeDasharray = `${share} ${100 - share}`;
+      el(id).style.strokeDashoffset = `${-donutOffset}`;
+      donutOffset += share;
+    });
     const grouped = new Map();
     all.forEach((row) => {
       const key = row.teacherId || row.teacherName;
@@ -643,7 +662,8 @@
       if (row.status === 'mazeretli') { group.excused += 1; group.marked += 1; }
     });
     const studentRows = [...studentGroups.values()].sort((a, b) => a.name.localeCompare(b.name, 'tr'));
-    el('reportsStudentResult').textContent = `${studentRows.length} öğrenci`;
+    el('reportsStudentResult').textContent = studentRows.length;
+    el('reportsStudentResultLabel').textContent = `${studentRows.length} öğrenci`;
     el('reportsStudentTableBody').innerHTML = studentRows.length ? studentRows.map((student) => {
       const rate = student.marked ? Math.round(student.attended / student.marked * 100) : 0;
       const streak = streaks.get(`${student.applicationId}|${student.name}`) || 0;
@@ -670,6 +690,18 @@
       <td>${statusControl}</td><td>${escapeHtml(row.note || '—')}</td>
     </tr>`;
     }).join('') : '<tr><td colspan="7" class="apps-empty">Filtrelerle eşleşen yoklama kaydı bulunamadı.</td></tr>';
+  }
+
+  function switchReportView(view) {
+    activeReportView = view === 'students' ? 'students' : 'overview';
+    const showStudents = activeReportView === 'students';
+    el('reportsOverviewView').hidden = showStudents;
+    el('reportsStudentView').hidden = !showStudents;
+    document.querySelectorAll('[data-report-view]').forEach((button) => {
+      const active = button.dataset.reportView === activeReportView;
+      button.classList.toggle('is-active', active);
+      button.setAttribute('aria-pressed', String(active));
+    });
   }
 
   async function updateAttendanceFromReport(select) {
@@ -1619,6 +1651,10 @@
     ['reportsFrom', 'reportsTo', 'reportsTeacher', 'reportsStatus'].forEach((id) => el(id).addEventListener('change', renderReports));
     el('reportsSearch').addEventListener('input', renderReports);
     el('reportsReset').addEventListener('click', resetReportFilters);
+    el('reportsViewSwitch').addEventListener('click', (event) => {
+      const button = event.target.closest('[data-report-view]');
+      if (button) switchReportView(button.dataset.reportView);
+    });
     el('reportsCsv').addEventListener('click', exportReportCsv);
     el('reportsExcel').addEventListener('click', exportReportExcel);
     el('reportsTableBody').addEventListener('change', (event) => {
