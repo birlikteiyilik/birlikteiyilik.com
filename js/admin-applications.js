@@ -413,7 +413,7 @@
           </section>`;
         }).join('');
         const testTag = teacher.isDemo ? '<span class="program-demo-tag">Test</span>' : '';
-        const printButton = totalLessons ? `<button type="button" class="btn program-print-button" data-program-print="${escapeHtml(teacher.id)}">4 haftalık yoklamayı yazdır</button>` : '';
+        const printButton = totalLessons ? `<button type="button" class="btn program-print-button" data-program-print="${escapeHtml(teacher.id)}">Not kağıdı yazdır</button>` : '';
         cards.push(`<article class="program-teacher-card ${teacher.active ? '' : 'is-passive'}" style="--program-index:${cards.length}">
           <header class="program-teacher-head">
             <div class="program-teacher-identity"><span class="teacher-avatar">${escapeHtml(teacher.name.charAt(0).toLocaleUpperCase('tr-TR'))}</span><div><div class="program-teacher-name"><h3>${escapeHtml(teacher.name)}</h3>${testTag}<span class="teacher-status">${teacher.active ? 'Aktif' : teacher.archived ? 'Arşiv' : 'Pasif'}</span></div><small>${escapeHtml((teacher.days || []).map((day) => labels.days[day]).join(', ') || 'Çalışma günü yok')}</small></div>${printButton}</div>
@@ -1154,7 +1154,8 @@
       }
       studentsById.get(entry.applicationId).schedule.push(entry);
     });
-    const students = [...studentsById.values()].sort((a, b) => a.name.localeCompare(b.name, 'tr'));
+    const firstLessonStart = (student) => Math.min(...student.schedule.map((entry) => rangeMinutes(entry.slot).start));
+    const students = [...studentsById.values()].sort((a, b) => firstLessonStart(a) - firstLessonStart(b) || a.name.localeCompare(b.name, 'tr'));
     const printableDate = (value) => new Intl.DateTimeFormat('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' })
       .format(new Date(`${value}T12:00:00`));
     const rowFont = Math.max(3.6, Math.min(7.4, 140 / Math.max(students.length, 1)));
