@@ -697,37 +697,31 @@ html, body { max-width: 100%; overflow-x: hidden; }
   .teacher-print-sheet { color: #17283e; width: 100%; }
   .teacher-print-head { align-items: center; border-bottom: 2px solid #17385c; display: flex; gap: 12px; padding: 0 0 7px; }
   .teacher-print-head img { height: 42px; object-fit: contain; width: 86px; }
-  .teacher-print-head > div { flex: 1; }
+  .teacher-print-head > div:not(.print-note-meta) { flex: 1; }
   .teacher-print-head span { color: #a71735; font-size: 8pt; font-weight: 700; letter-spacing: .08em; }
   .teacher-print-head h1 { font-size: 17pt; margin: 2px 0; }
   .teacher-print-head p { color: #586679; font-size: 8pt; margin: 0; }
-  .teacher-print-head > strong { background: #f0f3f6; border-radius: 6px; font-size: 8pt; padding: 7px 10px; }
-  .teacher-print-periods { display: grid; gap: 5px; }
-  .teacher-print-period-block { break-inside: avoid; }
-  .teacher-print-period-heading { align-items: baseline; display: flex; justify-content: space-between; margin: 3px 0 0; }
-  .teacher-print-period-heading h2 { color: #17385c; font-size: 8pt; font-weight: 700; margin: 0; }
-  .teacher-print-period-heading span { color: #586679; font-size: 7pt; font-weight: 600; }
-  .teacher-print-table { border-collapse: collapse; font-size: var(--print-font-size); line-height: 1.08; margin-top: 3px; table-layout: fixed; width: 100%; }
-  .teacher-print-table .print-number-col { width: 6mm; }
-  .teacher-print-table .print-student-col { width: 39mm; }
-  .teacher-print-table .print-schedule-col { width: 54mm; }
-  .teacher-print-table .print-date-col { width: calc((100% - 99mm) / var(--print-date-count)); }
-  .teacher-print-table th, .teacher-print-table td { border: 1px solid #cfd7e0; padding: var(--print-cell-pad) 2px; vertical-align: middle; }
-  .teacher-print-table th { background: #edf1f5; color: #34455b; font-size: .92em; font-weight: 700; text-align: left; }
-  .teacher-print-table .print-week-group { background: #dfe8f0; text-align: center; }
-  .teacher-print-table .print-week-two { border-left: 3px solid #17385c !important; }
-  .teacher-print-table .print-date-heading { text-align: center; }
-  .print-date-heading span, .print-date-heading small { display: block; }
-  .print-date-heading small { font-size: .85em; font-weight: 600; margin-top: 1px; }
-  .print-student-name strong, .print-student-name small { display: block; }
-  .print-student-name strong { font-weight: 600; }
-  .print-student-name small { color: #6b7787; font-size: .8em; margin-top: 1px; }
-  .print-schedule-text { color: #4f5e70; font-size: .85em; font-weight: 550; }
-  .print-attendance-cell { text-align: center; }
-  .attendance-box { border: 1px solid #64748b; display: inline-block; height: 4mm; width: 4mm; }
-  .teacher-print-table tbody tr { break-inside: avoid; }
-  .teacher-print-head, .teacher-print-table th { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-  .teacher-print-period-block + .teacher-print-period-block { border-top: 0; break-before: auto; margin-top: 0; padding-top: 0; }
+  .print-note-meta { align-items: flex-end; display: flex; flex-direction: column; gap: 3mm; }
+  .print-note-meta strong { background: #f0f3f6; border-radius: 6px; font-size: 8pt; padding: 7px 10px; }
+  .print-note-meta span { color: #586679; font-size: 8pt; letter-spacing: 0; }
+  .teacher-note-table { border-collapse: collapse; font-size: 9pt; line-height: 1.25; margin-top: 4mm; table-layout: fixed; width: 100%; }
+  .teacher-note-table .print-number-col { width: 7mm; }
+  .teacher-note-table .print-student-col { width: 46mm; }
+  .teacher-note-table .print-note-col { width: calc((100% - 53mm) / 5); }
+  .teacher-note-table th, .teacher-note-table td { border: 1px solid #cfd7e0; padding: 2mm; }
+  .teacher-note-table th { background: #edf1f5; color: #17385c; font-weight: 700; text-align: left; }
+  .teacher-note-table thead { display: table-header-group; }
+  .teacher-note-table tbody tr { break-inside: avoid; height: var(--print-row-height); }
+  .teacher-note-table .print-note-day { text-align: center; }
+  .print-note-day small { color: #6b7787; display: block; font-size: 7pt; font-weight: 400; margin-top: 1mm; }
+  .print-row-number { color: #6b7787; font-size: 8pt; text-align: center; vertical-align: middle; }
+  .print-student-name { overflow-wrap: anywhere; vertical-align: middle; }
+  .print-student-name strong { display: block; font-weight: 600; }
+  .print-note-cell { vertical-align: top; }
+  .print-note-time { color: #4f5e70; display: block; font-size: 7pt; font-weight: 600; }
+  .print-note-space { height: max(5mm, calc(var(--print-row-height) - 7mm)); }
+  .print-note-cell.is-off { background: #f5f6f8; color: #a0a8b1; font-size: 7pt; text-align: center; vertical-align: middle; }
+  .teacher-print-head, .teacher-note-table th, .print-note-cell.is-off { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   #teacherPrintRoot footer { align-items: center; border-top: 1px solid #cfd7e0; color: #5d6876; display: flex; font-size: 7pt; justify-content: space-between; margin-top: 7px; padding-top: 5px; }
 }
 
