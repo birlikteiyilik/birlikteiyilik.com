@@ -1130,33 +1130,28 @@
     const entries = programEntries().filter((entry) => entry.teacherId === teacherId)
       .sort((a, b) => meta.weekdays.indexOf(a.day) - meta.weekdays.indexOf(b.day) || slots.indexOf(a.slot) - slots.indexOf(b.slot));
     if (!entries.length) return toast('Yazdırılacak atanmış ders bulunmuyor.', 'error');
-    const studentsById = new Map();
+    const rowsByStudentAndTime = new Map();
     entries.forEach((entry) => {
-      if (!studentsById.has(entry.applicationId)) {
-        studentsById.set(entry.applicationId, {
-          id: entry.applicationId, name: entry.studentName, reference: entry.applicationReference, schedule: []
-        });
+      const key = `${entry.applicationId}:${entry.slot}`;
+      if (!rowsByStudentAndTime.has(key)) {
+        rowsByStudentAndTime.set(key, { name: entry.studentName, slot: entry.slot, days: [] });
       }
-      studentsById.get(entry.applicationId).schedule.push(entry);
+      const row = rowsByStudentAndTime.get(key);
+      if (!row.days.includes(entry.day)) row.days.push(entry.day);
     });
-    const firstLessonStart = (student) => Math.min(...student.schedule.map((entry) => rangeMinutes(entry.slot).start));
-    const students = [...studentsById.values()].sort((a, b) => firstLessonStart(a) - firstLessonStart(b) || a.name.localeCompare(b.name, 'tr'));
-    const rowHeight = Math.max(10, Math.min(16, 142 / students.length));
-    const printNoteCell = (student, day) => {
-      const lessons = student.schedule.filter((entry) => entry.day === day)
-        .sort((a, b) => rangeMinutes(a.slot).start - rangeMinutes(b.slot).start);
-      if (!lessons.length) return '<td class="print-note-cell is-off"><span>Ders yok</span></td>';
-      return `<td class="print-note-cell"><span class="print-note-time">${lessons.map((entry) => escapeHtml(entry.slot.replace(/:/g, '.').replace('-', ' – '))).join(' / ')}</span><div class="print-note-space" aria-label="${escapeHtml(labels.days[day])} ders notu alanı"></div></td>`;
-    };
+    const rows = [...rowsByStudentAndTime.values()].sort((a, b) => rangeMinutes(a.slot).start - rangeMinutes(b.slot).start || a.name.localeCompare(b.name, 'tr'));
+    const studentCount = new Set(entries.map((entry) => entry.applicationId)).size;
+    const rowsPerPage = 8;
+    const pageCount = Math.ceil(rows.length / rowsPerPage);
     const root = el('teacherPrintRoot');
-    root.innerHTML = `<article class="teacher-print-sheet" style="--print-row-height:${rowHeight}mm">
-      <header class="teacher-print-head"><img src="/images/logo.png" alt="Birlikte İyilik Akademi"><div><span>HAFTALIK DERS NOTLARI</span><h1>${escapeHtml(teacher.name)}</h1><p>${escapeHtml(labels.type[activeApplicationType] || activeApplicationType)} · Öğretmen not kağıdı</p></div><div class="print-note-meta"><strong>${students.length} öğrenci</strong><span>Hafta: ____ / ____ – ____ / ____</span></div></header>
-      <table class="teacher-note-table"><colgroup><col class="print-number-col"><col class="print-student-col">${meta.weekdays.map(() => '<col class="print-note-col">').join('')}</colgroup>
-        <thead><tr><th>No</th><th>Öğrenci</th>${meta.weekdays.map((day) => `<th class="print-note-day">${escapeHtml(labels.days[day])}<small>Ders notu</small></th>`).join('')}</tr></thead>
-        <tbody>${students.map((student, index) => `<tr><td class="print-row-number">${index + 1}</td><td class="print-student-name"><strong>${escapeHtml(student.name)}</strong></td>${meta.weekdays.map((day) => printNoteCell(student, day)).join('')}</tr>`).join('')}</tbody>
+    root.innerHTML = Array.from({ length: pageCount }, (_, pageIndex) => `<article class="teacher-print-sheet">
+      <header class="teacher-print-head"><img src="/images/logo.png" alt="Birlikte İyilik Akademi"><div><span>HAFTALIK DERS NOTLARI</span><h1>${escapeHtml(teacher.name)}</h1><p>${escapeHtml(labels.type[activeApplicationType] || activeApplicationType)} · Saat sıralı öğrenci listesi</p></div><div class="print-note-meta"><strong>${studentCount} öğrenci</strong><span>Hafta: ____ / ____ - ____ / ____</span></div></header>
+      <table class="teacher-note-table"><colgroup><col class="print-number-col"><col class="print-time-col"><col class="print-student-col"><col class="print-days-col"><col class="print-note-col"></colgroup>
+        <thead><tr><th>No</th><th>Saat</th><th>Öğrenci</th><th>Ders günleri</th><th>Ders notları / ödev / takip</th></tr></thead>
+        <tbody>${rows.slice(pageIndex * rowsPerPage, (pageIndex + 1) * rowsPerPage).map((row, index) => `<tr><td class="print-row-number">${pageIndex * rowsPerPage + index + 1}</td><td class="print-note-time">${escapeHtml(row.slot.replace(/:/g, '.').replace('-', ' - '))}</td><td class="print-student-name"><strong>${escapeHtml(row.name)}</strong></td><td class="print-note-days">${row.days.map((day) => `<span>${escapeHtml(labels.days[day])}</span>`).join(', ')}</td><td class="print-note-cell"><div class="print-note-space" aria-label="${escapeHtml(row.name)} için not alanı"></div></td></tr>`).join('')}</tbody>
       </table>
-      <footer><span>İlgili günün alanına işlenen konu, ödev ve öğrenciye ilişkin notlarınızı yazabilirsiniz.</span><span>Birlikte İyilik Akademi</span></footer>
-    </article>`;
+      <footer><span>Not alanına tarih, işlenen konu, ödev ve öğrenciye ilişkin gözlemlerinizi yazabilirsiniz.</span><span>Sayfa ${pageIndex + 1} / ${pageCount}</span></footer>
+    </article>`).join('');
     document.body.classList.add('printing-teacher-program');
     window.setTimeout(() => window.print(), 40);
   }

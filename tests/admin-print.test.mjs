@@ -32,7 +32,7 @@ export function renderNoteSheet(records) {
   return { html: root.innerHTML, printed };
 }
 
-test('teacher note sheet has chronological students, five daily note columns, and no attendance grid', () => {
+test('teacher note sheet lists chronological time groups with days and a wide blank note column', () => {
   const records = [
     { applicationId: 'a', studentName: 'Ali Geç', day: 'pazartesi', slot: '17:40-18:00' },
     { applicationId: 'z', studentName: 'Zeynep Erken', day: 'cuma', slot: '15:00-15:20' },
@@ -43,14 +43,29 @@ test('teacher note sheet has chronological students, five daily note columns, an
   ].map((entry) => ({ teacherId: 'teacher', ...entry }));
   const { html, printed } = renderNoteSheet(records);
   assert.deepEqual([...html.matchAll(/class="print-student-name"><strong>(.*?)<\/strong>/g)].map((match) => match[1]),
-    ['Zeynep Erken', 'Buse Aynı Saat', 'Mehmet Çok Gün', 'Ali Geç']);
+    ['Zeynep Erken', 'Buse Aynı Saat', 'Mehmet Çok Gün', 'Mehmet Çok Gün', 'Ali Geç']);
   assert.equal((html.match(/<table /g) || []).length, 1);
-  assert.equal((html.match(/class="print-note-day"/g) || []).length, 5);
   assert.equal((html.match(/class="print-note-space"/g) || []).length, 5);
-  assert.equal((html.match(/class="print-note-cell is-off"/g) || []).length, 15);
-  assert.ok(html.includes('Pa') && html.includes('17.00 – 17.20') && html.includes('15.20 – 15.40'));
+  assert.ok(html.includes('<th>Saat</th>') && html.includes('<th>Ders günleri</th>'));
+  assert.ok(html.includes('Pazartesi') && html.includes('17.00 - 17.20') && html.includes('15.20 - 15.40'));
+  assert.ok(html.includes('4 öğrenci'));
   assert.ok(!/attendance-box|YOKLAMA|\. hafta|Başka Hoca/.test(html));
   assert.ok(printed);
+});
+
+test('same student and time groups days together; additional pages preserve all rows and teacher headings', () => {
+  const records = Array.from({ length: 12 }, (_, index) => ['pazartesi', 'sali'].map((day) => ({
+    teacherId: 'teacher', applicationId: String(index), studentName: `Öğrenci ${String(index).padStart(2, '0')}`, day, slot: '15:00-15:20'
+  }))).flat();
+  const { html } = renderNoteSheet([...records, records[0]]);
+  assert.equal((html.match(/class="teacher-print-sheet"/g) || []).length, 2);
+  assert.equal((html.match(/class="print-student-name"/g) || []).length, 12);
+  assert.equal((html.match(/class="print-note-space"/g) || []).length, 12);
+  assert.equal((html.match(/<h1>Örnek Öğretmen<\/h1>/g) || []).length, 2);
+  assert.equal((html.match(/<span>Pazartesi<\/span>/g) || []).length, 12);
+  assert.equal((html.match(/<span>Salı<\/span>/g) || []).length, 12);
+  assert.ok(html.includes('Sayfa 1 / 2') && html.includes('Sayfa 2 / 2'));
+  assert.ok(html.includes('class="print-row-number">12</td>'));
 });
 
 test('student and teacher content is escaped in the print document', () => {

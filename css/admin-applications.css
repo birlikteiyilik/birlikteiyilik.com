@@ -693,8 +693,9 @@ html, body { max-width: 100%; overflow-x: hidden; }
 @media print {
   body.printing-teacher-program { background: #fff !important; }
   body.printing-teacher-program > :not(#teacherPrintRoot) { display: none !important; }
-  body.printing-teacher-program #teacherPrintRoot { color: #17283e; display: block !important; font-family: Arial, sans-serif; padding: 7mm; }
-  .teacher-print-sheet { color: #17283e; width: 100%; }
+  body.printing-teacher-program #teacherPrintRoot { color: #17283e; display: block !important; font-family: Arial, sans-serif; }
+  .teacher-print-sheet { box-sizing: border-box; break-after: page; color: #17283e; padding: 7mm; width: 100%; }
+  .teacher-print-sheet:last-child { break-after: auto; }
   .teacher-print-head { align-items: center; border-bottom: 2px solid #17385c; display: flex; gap: 12px; padding: 0 0 7px; }
   .teacher-print-head img { height: 42px; object-fit: contain; width: 86px; }
   .teacher-print-head > div:not(.print-note-meta) { flex: 1; }
@@ -706,22 +707,23 @@ html, body { max-width: 100%; overflow-x: hidden; }
   .print-note-meta span { color: #586679; font-size: 8pt; letter-spacing: 0; }
   .teacher-note-table { border-collapse: collapse; font-size: 9pt; line-height: 1.25; margin-top: 4mm; table-layout: fixed; width: 100%; }
   .teacher-note-table .print-number-col { width: 7mm; }
-  .teacher-note-table .print-student-col { width: 46mm; }
-  .teacher-note-table .print-note-col { width: calc((100% - 53mm) / 5); }
+  .teacher-note-table .print-time-col { width: 28mm; }
+  .teacher-note-table .print-student-col { width: 49mm; }
+  .teacher-note-table .print-days-col { width: 38mm; }
+  .teacher-note-table .print-note-col { width: calc(100% - 122mm); }
   .teacher-note-table th, .teacher-note-table td { border: 1px solid #cfd7e0; padding: 2mm; }
   .teacher-note-table th { background: #edf1f5; color: #17385c; font-weight: 700; text-align: left; }
   .teacher-note-table thead { display: table-header-group; }
-  .teacher-note-table tbody tr { break-inside: avoid; height: var(--print-row-height); }
-  .teacher-note-table .print-note-day { text-align: center; }
-  .print-note-day small { color: #6b7787; display: block; font-size: 7pt; font-weight: 400; margin-top: 1mm; }
+  .teacher-note-table tbody tr { break-inside: avoid; height: 18mm; }
   .print-row-number { color: #6b7787; font-size: 8pt; text-align: center; vertical-align: middle; }
   .print-student-name { overflow-wrap: anywhere; vertical-align: middle; }
   .print-student-name strong { display: block; font-weight: 600; }
   .print-note-cell { vertical-align: top; }
-  .print-note-time { color: #4f5e70; display: block; font-size: 7pt; font-weight: 600; }
-  .print-note-space { height: max(5mm, calc(var(--print-row-height) - 7mm)); }
-  .print-note-cell.is-off { background: #f5f6f8; color: #a0a8b1; font-size: 7pt; text-align: center; vertical-align: middle; }
-  .teacher-print-head, .teacher-note-table th, .print-note-cell.is-off { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .print-note-time { color: #17385c; font-size: 9pt; font-weight: 600; vertical-align: middle; white-space: nowrap; }
+  .print-note-days { color: #4f5e70; font-size: 8pt; vertical-align: middle; }
+  .print-note-days span { white-space: nowrap; }
+  .print-note-space { height: 14mm; }
+  .teacher-print-head, .teacher-note-table th { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   #teacherPrintRoot footer { align-items: center; border-top: 1px solid #cfd7e0; color: #5d6876; display: flex; font-size: 7pt; justify-content: space-between; margin-top: 7px; padding-top: 5px; }
 }
 
