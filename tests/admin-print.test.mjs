@@ -13,14 +13,16 @@ const extract = (name) => {
 };
 
 test('portrait note sheet reserves more than half the printable width for notes', () => {
-  assert.match(styles, /teacher-print-sheet[^}]*padding: 5mm 4mm/);
+  assert.match(styles, /teacher-print-sheet[^}]*padding: 5mm 2mm/);
   const width = (column) => Number(styles.match(new RegExp(`\\.print-${column}-col \\{ width: (\\d+)mm;`))[1]);
   const infoWidth = ['number', 'time', 'student', 'days'].reduce((sum, column) => sum + width(column), 0);
   assert.equal(infoWidth, 87);
-  const noteWidth = 210 - 8 - infoWidth;
-  assert.equal(noteWidth, 115);
+  const noteWidth = 210 - 4 - infoWidth;
+  assert.equal(noteWidth, 119);
   assert.ok(noteWidth / 90 >= 1.27);
   assert.match(styles, /print-note-col[^}]*calc\(100% - 87mm\)/);
+  assert.match(styles, /@page teacher-notes \{ size: A4 portrait; margin: 0;/);
+  assert.match(styles, /teacher-print-page[^}]*page: teacher-notes/);
 });
 
 export function renderNoteSheet(records) {

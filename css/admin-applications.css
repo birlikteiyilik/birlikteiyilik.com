@@ -693,13 +693,14 @@ html, body { max-width: 100%; overflow-x: hidden; }
 #teacherPrintRoot { display: none; }
 #teacherPrintRoot.is-measuring { display: block; font-family: Arial, sans-serif; left: -10000px; position: fixed; top: 0; visibility: hidden; width: 210mm; }
 @page { size: A4 portrait; margin: 0; }
+@page teacher-notes { size: A4 portrait; margin: 0; }
 @media print {
-  body.printing-teacher-program { background: #fff !important; }
+  body.printing-teacher-program { background: #fff !important; margin: 0 !important; padding: 0 !important; width: 210mm !important; max-width: none !important; }
   body.printing-teacher-program > :not(#teacherPrintRoot) { display: none !important; }
-  body.printing-teacher-program #teacherPrintRoot { color: #17283e; display: block !important; font-family: Arial, sans-serif; }
+  body.printing-teacher-program #teacherPrintRoot { color: #17283e; display: block !important; font-family: Arial, sans-serif; margin: 0 !important; padding: 0 !important; width: 210mm !important; }
 }
-  .teacher-print-page { height: 296mm; overflow: hidden; position: relative; width: 210mm; }
-  .teacher-print-sheet { box-sizing: border-box; color: #17283e; left: 0; padding: 5mm 4mm; position: absolute; top: 0; transform-origin: top left; width: 210mm; }
+  .teacher-print-page { height: 296mm; overflow: hidden; page: teacher-notes; position: relative; width: 210mm; }
+  .teacher-print-sheet { box-sizing: border-box; color: #17283e; left: 0; padding: 5mm 2mm; position: absolute; top: 0; transform-origin: top left; width: 210mm; }
   .teacher-print-head { align-items: center; border-bottom: 2px solid #17385c; display: flex; gap: 12px; padding: 0 0 7px; }
   .teacher-print-head img { height: 42px; object-fit: contain; width: 86px; }
   .teacher-print-head > div:not(.print-note-meta) { flex: 1; }
