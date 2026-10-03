@@ -1141,19 +1141,31 @@
     });
     const rows = [...rowsByStudentAndTime.values()].sort((a, b) => rangeMinutes(a.slot).start - rangeMinutes(b.slot).start || a.name.localeCompare(b.name, 'tr'));
     const studentCount = new Set(entries.map((entry) => entry.applicationId)).size;
-    const rowsPerPage = 12;
-    const pageCount = Math.ceil(rows.length / rowsPerPage);
     const root = el('teacherPrintRoot');
-    root.innerHTML = Array.from({ length: pageCount }, (_, pageIndex) => `<article class="teacher-print-sheet">
+    root.innerHTML = `<div class="teacher-print-page"><article class="teacher-print-sheet">
       <header class="teacher-print-head"><img src="/images/logo.png" alt="Birlikte İyilik Akademi"><div><span>HAFTALIK DERS NOTLARI</span><h1>${escapeHtml(teacher.name)}</h1><p>${escapeHtml(labels.type[activeApplicationType] || activeApplicationType)} · Saat sıralı öğrenci listesi</p></div><div class="print-note-meta"><strong>${studentCount} öğrenci</strong><span>Hafta: ____ / ____ - ____ / ____</span></div></header>
       <table class="teacher-note-table"><colgroup><col class="print-number-col"><col class="print-time-col"><col class="print-student-col"><col class="print-days-col"><col class="print-note-col"></colgroup>
         <thead><tr><th>No</th><th>Saat</th><th>Öğrenci</th><th>Ders günleri</th><th>Ders notları / ödev / takip</th></tr></thead>
-        <tbody>${rows.slice(pageIndex * rowsPerPage, (pageIndex + 1) * rowsPerPage).map((row, index) => `<tr><td class="print-row-number">${pageIndex * rowsPerPage + index + 1}</td><td class="print-note-time">${escapeHtml(row.slot.replace(/:/g, '.').replace('-', ' - '))}</td><td class="print-student-name"><strong>${escapeHtml(row.name)}</strong></td><td class="print-note-days">${row.days.map((day) => `<span>${escapeHtml(labels.days[day])}</span>`).join(', ')}</td><td class="print-note-cell"><div class="print-note-space" aria-label="${escapeHtml(row.name)} için not alanı"></div></td></tr>`).join('')}</tbody>
+        <tbody>${rows.map((row, index) => `<tr><td class="print-row-number">${index + 1}</td><td class="print-note-time">${escapeHtml(row.slot.replace(/:/g, '.').replace('-', ' - '))}</td><td class="print-student-name"><strong>${escapeHtml(row.name)}</strong></td><td class="print-note-days">${row.days.map((day) => `<span>${escapeHtml(labels.days[day])}</span>`).join(', ')}</td><td class="print-note-cell"><div class="print-note-space" aria-label="${escapeHtml(row.name)} için not alanı"></div></td></tr>`).join('')}</tbody>
       </table>
-      <footer><span>Not alanına tarih, işlenen konu, ödev ve öğrenciye ilişkin gözlemlerinizi yazabilirsiniz.</span><span>Sayfa ${pageIndex + 1} / ${pageCount}</span></footer>
-    </article>`).join('');
+    </article></div>`;
     document.body.classList.add('printing-teacher-program');
-    window.setTimeout(() => window.print(), 40);
+    window.setTimeout(() => { fitTeacherNotePage(); window.print(); }, 40);
+  }
+
+  function fitTeacherNotePage() {
+    const root = el('teacherPrintRoot');
+    const page = root.querySelector('.teacher-print-page');
+    const sheet = root.querySelector('.teacher-print-sheet');
+    if (!page || !sheet) return;
+    root.classList.add('is-measuring');
+    try {
+      sheet.style.transform = 'none';
+      sheet.style.width = '210mm';
+      const scale = Math.min(1, (page.clientHeight - 2) / sheet.scrollHeight);
+      sheet.style.width = `${210 / scale}mm`;
+      sheet.style.transform = `scale(${scale})`;
+    } finally { root.classList.remove('is-measuring'); }
   }
 
   function teacherMessageFor(item, placement) {

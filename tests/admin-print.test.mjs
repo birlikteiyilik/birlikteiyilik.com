@@ -12,7 +12,7 @@ const extract = (name) => {
 };
 
 export function renderNoteSheet(records) {
-  const root = { innerHTML: '' };
+  const root = { innerHTML: '', querySelector: () => null };
   let printed = false;
   const context = {
     meta: { weekdays }, activeApplicationType: 'yuz-yuze',
@@ -27,7 +27,7 @@ export function renderNoteSheet(records) {
     window: { setTimeout: (callback) => callback(), print: () => { printed = true; } }
   };
   vm.createContext(context);
-  vm.runInContext(['rangeMinutes', 'printTeacherProgram'].map(extract).join('\n'), context);
+  vm.runInContext(['rangeMinutes', 'fitTeacherNotePage', 'printTeacherProgram'].map(extract).join('\n'), context);
   vm.runInContext("printTeacherProgram('teacher')", context);
   return { html: root.innerHTML, printed };
 }
@@ -53,18 +53,18 @@ test('teacher note sheet lists chronological time groups with days and a wide bl
   assert.ok(printed);
 });
 
-test('same student and time groups days together; additional pages preserve all rows and teacher headings', () => {
+test('same student and time groups days together; longer lists stay in one complete sheet without a footer', () => {
   const records = Array.from({ length: 13 }, (_, index) => ['pazartesi', 'sali'].map((day) => ({
     teacherId: 'teacher', applicationId: String(index), studentName: `Öğrenci ${String(index).padStart(2, '0')}`, day, slot: '15:00-15:20'
   }))).flat();
   const { html } = renderNoteSheet([...records, records[0]]);
-  assert.equal((html.match(/class="teacher-print-sheet"/g) || []).length, 2);
+  assert.equal((html.match(/class="teacher-print-sheet"/g) || []).length, 1);
   assert.equal((html.match(/class="print-student-name"/g) || []).length, 13);
   assert.equal((html.match(/class="print-note-space"/g) || []).length, 13);
-  assert.equal((html.match(/<h1>Örnek Öğretmen<\/h1>/g) || []).length, 2);
+  assert.equal((html.match(/<h1>Örnek Öğretmen<\/h1>/g) || []).length, 1);
   assert.equal((html.match(/<span>Pazartesi<\/span>/g) || []).length, 13);
   assert.equal((html.match(/<span>Salı<\/span>/g) || []).length, 13);
-  assert.ok(html.includes('Sayfa 1 / 2') && html.includes('Sayfa 2 / 2'));
+  assert.ok(!html.includes('Sayfa ') && !html.includes('<footer>'));
   assert.ok(html.includes('class="print-row-number">13</td>'));
 });
 
@@ -75,7 +75,20 @@ test('twelve lesson time groups stay on a single portrait sheet', () => {
   const { html } = renderNoteSheet(records);
   assert.equal((html.match(/class="teacher-print-sheet"/g) || []).length, 1);
   assert.equal((html.match(/class="print-note-space"/g) || []).length, 12);
-  assert.ok(html.includes('Sayfa 1 / 1'));
+  assert.ok(!html.includes('<footer>'));
+});
+
+test('one-page fitting uses the full sheet height and does not enlarge shorter lists', () => {
+  const sheet = { style: {}, scrollHeight: 2000 };
+  const root = { querySelector: (selector) => selector === '.teacher-print-page' ? { clientHeight: 1100 } : sheet, classList: { add() {}, remove() {} } };
+  const context = { el: () => root };
+  vm.createContext(context);
+  vm.runInContext(extract('fitTeacherNotePage'), context);
+  vm.runInContext('fitTeacherNotePage()', context);
+  assert.equal(sheet.style.transform, 'scale(0.549)');
+  sheet.scrollHeight = 800;
+  vm.runInContext('fitTeacherNotePage()', context);
+  assert.equal(sheet.style.transform, 'scale(1)');
 });
 
 test('student and teacher content is escaped in the print document', () => {
