@@ -292,7 +292,7 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .program-toolbar-head h3 { color: var(--app-ink); font-size: .9rem; margin: 0 0 2px; }
 .program-toolbar-head span { color: var(--app-muted); display: block; font-size: .65rem; }
 .program-toolbar-head button { background: none; border: 0; color: var(--app-red); cursor: pointer; font: inherit; font-size: .7rem; font-weight: 800; }
-.program-filter-grid { display: grid; gap: 9px; grid-template-columns: minmax(230px, 1.5fr) repeat(3, minmax(130px, 1fr)); }
+.program-filter-grid { display: grid; gap: 9px; grid-template-columns: minmax(210px, 1.5fr) repeat(4, minmax(110px, 1fr)); }
 .program-filter-grid label { color: var(--app-muted); display: grid; font-size: .65rem; font-weight: 750; gap: 5px; }
 .program-filter-grid input, .program-filter-grid select {
   background: var(--app-soft);
@@ -338,8 +338,9 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .program-week { display: grid; grid-template-columns: repeat(var(--day-count), minmax(185px, 1fr)); min-width: 0; }
 .program-slot-legend { align-items: center; border-bottom: 1px solid #edf0f4; display: flex; flex-wrap: wrap; gap: 14px; padding: 9px 13px 0; }
 .program-slot-legend span { align-items: center; color: var(--app-muted); display: inline-flex; font-size: .58rem; gap: 6px; }
-.program-slot-legend i { background: #eef4f1; border: 1px solid #d8e5dd; border-radius: 4px; height: 10px; width: 10px; }
-.program-slot-legend i.is-busy { background: #eef0f3; border-color: #d8dde4; }
+.program-slot-legend i { background: #20824f; border: 1px solid #176b3f; border-radius: 4px; height: 10px; width: 10px; }
+.program-slot-legend i.is-busy { background: #c72243; border-color: #aa1735; }
+.program-slot-legend i.is-off { background: #e9eef3; border-color: #d5dfe8; }
 .program-day-column { animation: scheduleIn .3s calc(var(--day-index, 0) * 45ms) ease both; border-left: 1px solid #edf0f4; min-width: 0; padding: 12px; }
 .program-day-column:first-child { border-left: 0; }
 .program-day-column > header { align-items: center; display: flex; justify-content: space-between; margin-bottom: 9px; }
@@ -349,11 +350,12 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .program-day-column em { color: var(--app-muted); font-size: .57rem; font-style: normal; }
 .program-day-column ol { display: grid; gap: 6px; list-style: none; margin: 0; padding: 0; }
 .program-day-column ol.program-day-slots { align-content: start; }
-.program-open-slot, .program-busy-slot { align-items: center; border: 1px solid; border-radius: 8px; display: flex; flex-wrap: wrap; gap: 6px 9px; justify-content: space-between; min-height: 35px; padding: 7px 8px; }
+.program-open-slot, .program-busy-slot, .program-off-slot { align-items: center; border: 1px solid; border-radius: 8px; display: flex; flex-wrap: wrap; gap: 6px 9px; justify-content: space-between; min-height: 35px; padding: 7px 8px; }
+.program-off-slot { background: #e9eef3; border-color: #d5dfe8; color: #586779; font-weight: 600; }
 .program-open-slot { background: #20824f; border-color: #176b3f; color: #fff; font-weight: 600; }
 .program-busy-slot { background: #c72243; border-color: #aa1735; color: #fff; font-weight: 600; }
 .program-slot-state { font-size: .57rem; font-weight: 650; }
-.program-open-slot time, .program-busy-slot time { font-size: .56rem; font-weight: 600; white-space: nowrap; }
+.program-open-slot time, .program-busy-slot time, .program-off-slot time { font-size: .56rem; font-weight: 600; white-space: nowrap; }
 .program-busy-slot button { background: transparent; border: 0; color: #fff; cursor: pointer; font: inherit; font-size: .54rem; font-weight: 600; opacity: .94; padding: 2px; }
 .program-busy-slot button:hover { opacity: 1; text-decoration: underline; }
 .program-lesson { align-items: center; animation: lessonIn .28s calc(var(--lesson-index, 0) * 32ms) ease both; background: #fff7f9; border: 1px solid #f3dce2; border-left: 3px solid var(--app-red); border-radius: 8px; display: grid; gap: 7px; grid-template-columns: auto minmax(0, 1fr) auto; padding: 8px; transition: box-shadow .16s ease, transform .16s ease; }
@@ -697,7 +699,7 @@ html, body { max-width: 100%; overflow-x: hidden; }
   body.printing-teacher-program #teacherPrintRoot { color: #17283e; display: block !important; font-family: Arial, sans-serif; }
 }
   .teacher-print-page { height: 296mm; overflow: hidden; position: relative; width: 210mm; }
-  .teacher-print-sheet { box-sizing: border-box; color: #17283e; left: 0; padding: 7mm; position: absolute; top: 0; transform-origin: top left; width: 210mm; }
+  .teacher-print-sheet { box-sizing: border-box; color: #17283e; left: 0; padding: 5mm 4mm; position: absolute; top: 0; transform-origin: top left; width: 210mm; }
   .teacher-print-head { align-items: center; border-bottom: 2px solid #17385c; display: flex; gap: 12px; padding: 0 0 7px; }
   .teacher-print-head img { height: 42px; object-fit: contain; width: 86px; }
   .teacher-print-head > div:not(.print-note-meta) { flex: 1; }
@@ -708,20 +710,21 @@ html, body { max-width: 100%; overflow-x: hidden; }
   .print-note-meta strong { background: #f0f3f6; border-radius: 6px; font-size: 8pt; padding: 7px 10px; }
   .print-note-meta span { color: #586679; font-size: 8pt; letter-spacing: 0; }
   .teacher-note-table { border-collapse: collapse; font-size: 9pt; line-height: 1.25; margin-top: 4mm; table-layout: fixed; width: 100%; }
-  .teacher-note-table .print-number-col { width: 7mm; }
-  .teacher-note-table .print-time-col { width: 26mm; }
-  .teacher-note-table .print-student-col { width: 42mm; }
-  .teacher-note-table .print-days-col { width: 31mm; }
-  .teacher-note-table .print-note-col { width: calc(100% - 106mm); }
-  .teacher-note-table th, .teacher-note-table td { border: 1px solid #cfd7e0; padding: 2mm; }
+  .teacher-note-table .print-number-col { width: 6mm; }
+  .teacher-note-table .print-time-col { width: 23mm; }
+  .teacher-note-table .print-student-col { width: 34mm; }
+  .teacher-note-table .print-days-col { width: 24mm; }
+  .teacher-note-table .print-note-col { width: calc(100% - 87mm); }
+  .teacher-note-table th, .teacher-note-table td { border: 1px solid #cfd7e0; padding: 1.5mm 1mm; }
+  .teacher-note-table th:first-child { font-size: 8pt; }
   .teacher-note-table th { background: #edf1f5; color: #17385c; font-weight: 700; text-align: left; }
   .teacher-note-table thead { display: table-header-group; }
   .teacher-note-table tbody tr { break-inside: avoid; height: 18mm; }
   .print-row-number { color: #6b7787; font-size: 8pt; text-align: center; vertical-align: middle; }
   .print-student-name { overflow-wrap: anywhere; vertical-align: middle; }
   .print-student-name strong { display: block; font-weight: 600; }
-  .print-note-cell { vertical-align: top; }
-  .print-note-time { color: #17385c; font-size: 9pt; font-weight: 600; vertical-align: middle; white-space: nowrap; }
+  .print-note-cell { padding-inline: 1.5mm !important; vertical-align: top; }
+  .print-note-time { color: #17385c; font-size: 8.5pt; font-weight: 600; vertical-align: middle; white-space: nowrap; }
   .print-note-days { color: #4f5e70; font-size: 8pt; vertical-align: middle; }
   .print-note-days span { white-space: nowrap; }
   .print-note-space { height: 14mm; }

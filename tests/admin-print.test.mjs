@@ -4,12 +4,24 @@ import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 
 const source = readFileSync(new URL('../js/admin-applications.js', import.meta.url), 'utf8');
+const styles = readFileSync(new URL('../css/admin-applications.css', import.meta.url), 'utf8');
 const weekdays = ['pazartesi', 'sali', 'carsamba', 'persembe', 'cuma'];
 const days = { pazartesi: 'Pazartesi', sali: 'Salı', carsamba: 'Çarşamba', persembe: 'Perşembe', cuma: 'Cuma' };
 const extract = (name) => {
   const start = source.indexOf(`  function ${name}(`);
   return source.slice(start, source.indexOf('\n  function ', start + 1));
 };
+
+test('portrait note sheet reserves more than half the printable width for notes', () => {
+  assert.match(styles, /teacher-print-sheet[^}]*padding: 5mm 4mm/);
+  const width = (column) => Number(styles.match(new RegExp(`\\.print-${column}-col \\{ width: (\\d+)mm;`))[1]);
+  const infoWidth = ['number', 'time', 'student', 'days'].reduce((sum, column) => sum + width(column), 0);
+  assert.equal(infoWidth, 87);
+  const noteWidth = 210 - 8 - infoWidth;
+  assert.equal(noteWidth, 115);
+  assert.ok(noteWidth / 90 >= 1.27);
+  assert.match(styles, /print-note-col[^}]*calc\(100% - 87mm\)/);
+});
 
 export function renderNoteSheet(records) {
   const root = { innerHTML: '', querySelector: () => null };

@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="/images/favicon-square.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 <script>if ('serviceWorker' in navigator) { window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js', { scope: '/yonetim' }).catch(() => {})); }</script>
-<link rel="stylesheet" href="/css/admin-applications.css?v=25">
+<link rel="stylesheet" href="/css/admin-applications.css?v=27">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; color: #222; min-height: 100vh; }
@@ -511,6 +511,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
         </label>
         <label>Gün
           <select id="programDay"><option value="">Tüm hafta</option><option value="pazartesi">Pazartesi</option><option value="sali">Salı</option><option value="carsamba">Çarşamba</option><option value="persembe">Perşembe</option><option value="cuma">Cuma</option></select>
+        </label>
+        <label>Hoca cinsiyeti
+          <select id="programGender"><option value="">Tüm hocalar</option><option value="erkek">Erkek</option><option value="kadin">Kadın</option></select>
         </label>
         <label>Öğretmen
           <select id="programTeacher"><option value="">Tüm öğretmenler</option></select>
@@ -1465,6 +1468,7 @@ function logout() {
 loadNews();
 </script>
 <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="/js/admin-applications.js?v=29"></script>
+<script src="/js/admin-program-excel.js?v=2"></script>
+<script src="/js/admin-applications.js?v=30"></script>
 </body>
 </html>

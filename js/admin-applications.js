@@ -296,18 +296,7 @@
   }
 
   function filteredProgramEntries() {
-    const entries = programEntries();
-    const query = el('programSearch').value.trim().toLocaleLowerCase('tr-TR');
-    const dayFilter = el('programDay').value;
-    const teacherFilter = el('programTeacher').value;
-    const slotFilter = el('programSlot').value;
-    const teacherNames = new Map(programTeachers(entries).map((teacher) => [teacher.id, `${teacher.name} ${teacher.phone || ''}`.toLocaleLowerCase('tr-TR')]));
-    const matchingTeachers = new Set([...teacherNames.entries()].filter(([, name]) => query && name.includes(query)).map(([id]) => id));
-    return entries.filter((entry) => {
-      const searchMatch = !query || matchingTeachers.has(entry.teacherId) ||
-        `${entry.studentName} ${entry.applicationReference}`.toLocaleLowerCase('tr-TR').includes(query);
-      return searchMatch && (!dayFilter || entry.day === dayFilter) && (!teacherFilter || entry.teacherId === teacherFilter) && (!slotFilter || entry.slot === slotFilter);
-    }).map((entry) => ({
+    return programViewData().entries.map((entry) => ({
       'Gün': labels.days[entry.day] || entry.day,
       'Saat': entry.slot,
       'Öğretmen': entry.teacherName,
@@ -316,6 +305,19 @@
       'Eğitim Türü': labels.type[entry.applicationType] || entry.applicationType,
       'Başlangıç Tarihi': entry.startDate || ''
     }));
+  }
+
+  function programViewData() {
+    const entries = programEntries();
+    return window.BIAProgramExcel.selectProgram({
+      entries, teachers: programTeachers(entries), days: meta.weekdays,
+      slots: slotsForType(activeApplicationType),
+      filters: {
+        query: el('programSearch').value, day: el('programDay').value,
+        teacher: el('programTeacher').value, slot: el('programSlot').value,
+        gender: el('programGender').value
+      }
+    });
   }
 
   function programTeachers(entries) {
@@ -340,6 +342,7 @@
     const teacherValue = el('programTeacher').value;
     const slotValue = el('programSlot').value;
     el('programTeacher').innerHTML = '<option value="">Tüm öğretmenler</option>' + programTeachers(entries)
+      .filter((teacher) => !el('programGender').value || teacher.gender === el('programGender').value)
       .slice().sort((a, b) => a.name.localeCompare(b.name, 'tr'))
       .map((teacher) => `<option value="${escapeHtml(teacher.id)}">${escapeHtml(teacher.name)}${teacher.active ? '' : ' · Pasif'}</option>`).join('');
     el('programTeacher').value = [...el('programTeacher').options].some((option) => option.value === teacherValue) ? teacherValue : '';
@@ -361,52 +364,36 @@
 
   function renderProgram() {
     const entries = programEntries();
-    const slots = slotsForType(activeApplicationType);
-    renderProgramSummary(entries);
-    const query = el('programSearch').value.trim().toLocaleLowerCase('tr-TR');
-    const dayFilter = el('programDay').value;
-    const teacherFilter = el('programTeacher').value;
-    const slotFilter = el('programSlot').value;
-    const hasEntryFilter = Boolean(dayFilter || slotFilter);
+    const view = programViewData();
+    const slots = view.slots;
+    renderProgramSummary(view.entries);
+    el('programActiveTeachers').textContent = view.teachers.filter((teacher) => teacher.active).length;
     const cards = [];
 
-    programTeachers(entries)
-      .slice().sort((a, b) => Number(b.active) - Number(a.active) || a.name.localeCompare(b.name, 'tr'))
-      .forEach((teacher) => {
-        if (teacherFilter && teacher.id !== teacherFilter) return;
-        const teacherQueryMatch = `${teacher.name} ${teacher.phone || ''}`.toLocaleLowerCase('tr-TR').includes(query);
+    view.teachers.forEach((teacher) => {
         const allTeacherEntries = entries.filter((entry) => entry.teacherId === teacher.id);
-        const visibleEntries = allTeacherEntries.filter((entry) => {
-          const studentQueryMatch = `${entry.studentName} ${entry.applicationReference}`.toLocaleLowerCase('tr-TR').includes(query);
-          return (!query || teacherQueryMatch || studentQueryMatch) && (!dayFilter || entry.day === dayFilter) &&
-            (!slotFilter || entry.slot === slotFilter);
-        });
-        if (!visibleEntries.length && (hasEntryFilter || (query && !teacherQueryMatch))) return;
-
         const totalStudents = new Set(allTeacherEntries.map((entry) => entry.applicationId)).size;
         const totalLessons = allTeacherEntries.length;
-        const capacity = Math.max(1, (teacher.days || []).length * slots.length);
+        const capacity = Math.max(1, (teacher.days || []).length * slotsForType(activeApplicationType).length);
         const occupancy = Math.min(100, Math.round(totalLessons / capacity * 100));
-        let displayDays = dayFilter ? [dayFilter] : meta.weekdays.slice();
-        if ((query || slotFilter) && !dayFilter) {
-          displayDays = meta.weekdays.filter((day) => visibleEntries.some((entry) => entry.day === day));
-        }
-        if (!displayDays.length && !hasEntryFilter && (!query || teacherQueryMatch)) displayDays = teacher.days || [];
+        const displayDays = view.days;
         const dayColumns = displayDays.map((day, dayIndex) => {
-          const dayEntries = visibleEntries.filter((entry) => entry.day === day)
-            .sort((a, b) => slots.indexOf(a.slot) - slots.indexOf(b.slot) || a.studentName.localeCompare(b.studentName, 'tr'));
           const allDayEntries = allTeacherEntries.filter((entry) => entry.day === day);
           const slotBlocks = [];
           slots.forEach((slot) => {
-            const assigned = allDayEntries.find((entry) => entry.slot === slot);
-            if (!assigned) {
+            const cell = view.cell(teacher, day, slot);
+            if (cell.state === 'off') {
+              slotBlocks.push(`<li class="program-off-slot"><span class="program-slot-state">${escapeHtml(cell.text)}</span><time>${escapeHtml(slot.replace(/:/g, '.').replace('-', ' – '))}</time></li>`);
+              return;
+            }
+            if (cell.state === 'open') {
               slotBlocks.push(`<li class="program-open-slot"><span class="program-slot-state">Müsait</span><time>${escapeHtml(slot.replace(/:/g, '.').replace('-', ' – '))}</time></li>`);
               return;
             }
-            const matchingVisible = visibleEntries.some((entry) => entry.applicationId === assigned.applicationId && entry.slot === slot && entry.day === day);
-            slotBlocks.push(`<li class="program-busy-slot"><span class="program-slot-state">Dolu${matchingVisible ? ` · ${escapeHtml(assigned.studentName)}` : ''}</span><time>${escapeHtml(slot.replace(/:/g, '.').replace('-', ' – '))}</time><button type="button" data-program-open="${escapeHtml(assigned.applicationId)}" aria-label="${escapeHtml(assigned.studentName)} başvurusunu incele">İncele</button></li>`);
+            const buttons = cell.assigned.map((assigned) => `<button type="button" data-program-open="${escapeHtml(assigned.applicationId)}" aria-label="${escapeHtml(assigned.studentName)} başvurusunu incele">İncele</button>`).join('');
+            slotBlocks.push(`<li class="program-busy-slot"><span class="program-slot-state">Dolu · ${escapeHtml(cell.text)}</span><time>${escapeHtml(slot.replace(/:/g, '.').replace('-', ' – '))}</time>${buttons}</li>`);
           });
-          const workingDay = (teacher.days || []).includes(day);
+          const workingDay = (teacher.days || []).includes(day) || allDayEntries.length > 0;
           return `<section class="program-day-column" style="--day-index:${dayIndex}">
             <header><div><span>${escapeHtml(labels.days[day].slice(0, 2).toLocaleUpperCase('tr-TR'))}</span><h4>${escapeHtml(labels.days[day])}</h4></div><em>${allDayEntries.length} ders</em></header>
             ${workingDay ? `<ol class="program-day-slots">${slotBlocks.join('')}</ol>` : '<div class="program-day-empty">Bu gün çalışma günü değil</div>'}
@@ -419,7 +406,7 @@
             <div class="program-teacher-identity"><span class="teacher-avatar">${escapeHtml(teacher.name.charAt(0).toLocaleUpperCase('tr-TR'))}</span><div><div class="program-teacher-name"><h3>${escapeHtml(teacher.name)}</h3>${testTag}<span class="teacher-status">${teacher.active ? 'Aktif' : teacher.archived ? 'Arşiv' : 'Pasif'}</span></div><small>${escapeHtml((teacher.days || []).map((day) => labels.days[day]).join(', ') || 'Çalışma günü yok')}</small></div>${printButton}</div>
             <div class="program-load-summary"><div><span><strong>${totalStudents}</strong> öğrenci</span><span><strong>${totalLessons}</strong> ders / hafta</span></div><div class="program-load-meter" aria-label="Yüzde ${occupancy} doluluk"><i style="--load:${occupancy}%"></i></div><small>${occupancy}% haftalık doluluk</small></div>
           </header>
-          <div class="program-slot-legend"><span><i class="is-open"></i>Müsait saat</span><span><i class="is-busy"></i>Dolu ders saati</span></div>
+          <div class="program-slot-legend"><span><i class="is-open"></i>Müsait saat</span><span><i class="is-busy"></i>Dolu ders saati</span><span><i class="is-off"></i>Çalışmıyor / Pasif</span></div>
           <div class="program-week" style="--day-count:${Math.max(1, displayDays.length)}">${dayColumns || '<div class="program-card-empty">Bu öğretmene henüz ders atanmamış.</div>'}</div>
         </article>`);
       });
@@ -1265,6 +1252,7 @@
     toast(`Filtrelenmiş ${label.replace(/-/g, ' ')} CSV olarak indirildi.`);
   }
   function exportExcel() {
+    if (activeWorkspaceView === 'schedule') return exportProgramExcel();
     const { rows, label, title } = workspaceExport();
     if (!rows.length) return toast('Seçili bölümde filtrelerle eşleşen kayıt bulunamadı.', 'error');
     if (!window.XLSX) return toast('Excel bileşeni yüklenemedi; CSV kullanabilirsiniz.', 'error');
@@ -1274,6 +1262,46 @@
     XLSX.utils.book_append_sheet(workbook, sheet, title.slice(0, 31));
     XLSX.writeFile(workbook, `bia-${activeApplicationType}-${label}-${dateValue(new Date())}.xlsx`, { compression: true });
     toast(`Filtrelenmiş ${label.replace(/-/g, ' ')} Excel olarak indirildi.`);
+  }
+
+  let programExcelLoading;
+  function loadProgramExcel() {
+    if (window.ExcelJS) return Promise.resolve(window.ExcelJS);
+    if (!programExcelLoading) programExcelLoading = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = '/js/vendor/exceljs-4.4.0.min.js';
+      script.onload = () => window.ExcelJS ? resolve(window.ExcelJS) : reject(new Error('Excel bileşeni yüklenemedi.'));
+      script.onerror = () => { script.remove(); reject(new Error('Excel bileşeni yüklenemedi; tekrar deneyin.')); };
+      document.head.appendChild(script);
+    }).catch((error) => { programExcelLoading = null; throw error; });
+    return programExcelLoading;
+  }
+
+  async function exportProgramExcel() {
+    const view = programViewData();
+    if (!view.teachers.length) return toast('Filtrelerle eşleşen öğretmen bulunamadı.', 'error');
+    const button = el('appsExcel');
+    if (button.disabled) return;
+    const originalText = button.textContent;
+    button.disabled = true;
+    button.textContent = 'Excel hazırlanıyor…';
+    try {
+      const filterLabel = ['programGender', 'programDay', 'programTeacher', 'programSlot']
+        .map((id) => el(id).selectedOptions[0].textContent).join(' · ') +
+        (el('programSearch').value.trim() ? ` · Arama: ${el('programSearch').value.trim()}` : '');
+      const model = { ...view, days: view.days.map((day) => ({ id: day, label: labels.days[day] || day })) };
+      const ExcelJS = await loadProgramExcel();
+      const workbook = window.BIAProgramExcel.buildWorkbook(ExcelJS, model, { date: dateValue(new Date()), filterLabel });
+      const buffer = await workbook.xlsx.writeBuffer();
+      download(new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }),
+        `bia-${activeApplicationType}-ders-programi-${dateValue(new Date())}.xlsx`);
+      toast('Genel program ve öğretmen tabloları renkli Excel olarak indirildi.');
+    } catch (error) {
+      toast(error.message || 'Excel hazırlanamadı. Tekrar deneyin.', 'error');
+    } finally {
+      button.disabled = false;
+      button.textContent = originalText;
+    }
   }
 
   function reportExportRows() {
@@ -1482,7 +1510,8 @@
   }
 
   function resetProgramFilters() {
-    ['programSearch', 'programDay', 'programTeacher', 'programSlot'].forEach((id) => { el(id).value = ''; });
+    ['programSearch', 'programDay', 'programTeacher', 'programSlot', 'programGender'].forEach((id) => { el(id).value = ''; });
+    renderProgramFilters();
     renderProgram();
   }
 
@@ -1664,8 +1693,11 @@
       const input = event.target.closest('[data-warning-sent]');
       if (input) updateWarningMessageStatus(input);
     });
-    ['programSearch', 'programDay', 'programTeacher', 'programSlot'].forEach((id) => {
-      el(id).addEventListener(id === 'programSearch' ? 'input' : 'change', renderProgram);
+    ['programSearch', 'programDay', 'programTeacher', 'programSlot', 'programGender'].forEach((id) => {
+      el(id).addEventListener(id === 'programSearch' ? 'input' : 'change', () => {
+        if (id === 'programGender') renderProgramFilters();
+        renderProgram();
+      });
     });
     el('programReset').addEventListener('click', resetProgramFilters);
     el('programDemoSeed').addEventListener('click', seedDemoData);
