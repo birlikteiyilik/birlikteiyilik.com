@@ -54,18 +54,28 @@ test('teacher note sheet lists chronological time groups with days and a wide bl
 });
 
 test('same student and time groups days together; additional pages preserve all rows and teacher headings', () => {
-  const records = Array.from({ length: 12 }, (_, index) => ['pazartesi', 'sali'].map((day) => ({
+  const records = Array.from({ length: 13 }, (_, index) => ['pazartesi', 'sali'].map((day) => ({
     teacherId: 'teacher', applicationId: String(index), studentName: `Öğrenci ${String(index).padStart(2, '0')}`, day, slot: '15:00-15:20'
   }))).flat();
   const { html } = renderNoteSheet([...records, records[0]]);
   assert.equal((html.match(/class="teacher-print-sheet"/g) || []).length, 2);
-  assert.equal((html.match(/class="print-student-name"/g) || []).length, 12);
-  assert.equal((html.match(/class="print-note-space"/g) || []).length, 12);
+  assert.equal((html.match(/class="print-student-name"/g) || []).length, 13);
+  assert.equal((html.match(/class="print-note-space"/g) || []).length, 13);
   assert.equal((html.match(/<h1>Örnek Öğretmen<\/h1>/g) || []).length, 2);
-  assert.equal((html.match(/<span>Pazartesi<\/span>/g) || []).length, 12);
-  assert.equal((html.match(/<span>Salı<\/span>/g) || []).length, 12);
+  assert.equal((html.match(/<span>Pazartesi<\/span>/g) || []).length, 13);
+  assert.equal((html.match(/<span>Salı<\/span>/g) || []).length, 13);
   assert.ok(html.includes('Sayfa 1 / 2') && html.includes('Sayfa 2 / 2'));
-  assert.ok(html.includes('class="print-row-number">12</td>'));
+  assert.ok(html.includes('class="print-row-number">13</td>'));
+});
+
+test('twelve lesson time groups stay on a single portrait sheet', () => {
+  const records = Array.from({ length: 12 }, (_, index) => ({
+    teacherId: 'teacher', applicationId: String(index), studentName: `Öğrenci ${index}`, day: 'pazartesi', slot: '15:00-15:20'
+  }));
+  const { html } = renderNoteSheet(records);
+  assert.equal((html.match(/class="teacher-print-sheet"/g) || []).length, 1);
+  assert.equal((html.match(/class="print-note-space"/g) || []).length, 12);
+  assert.ok(html.includes('Sayfa 1 / 1'));
 });
 
 test('student and teacher content is escaped in the print document', () => {

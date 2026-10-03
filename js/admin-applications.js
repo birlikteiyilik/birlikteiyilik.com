@@ -1141,7 +1141,7 @@
     });
     const rows = [...rowsByStudentAndTime.values()].sort((a, b) => rangeMinutes(a.slot).start - rangeMinutes(b.slot).start || a.name.localeCompare(b.name, 'tr'));
     const studentCount = new Set(entries.map((entry) => entry.applicationId)).size;
-    const rowsPerPage = 8;
+    const rowsPerPage = 12;
     const pageCount = Math.ceil(rows.length / rowsPerPage);
     const root = el('teacherPrintRoot');
     root.innerHTML = Array.from({ length: pageCount }, (_, pageIndex) => `<article class="teacher-print-sheet">

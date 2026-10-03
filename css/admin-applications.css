@@ -689,7 +689,7 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .apps-toast.is-visible { opacity: 1; transform: translate(-50%, 0); }
 
 #teacherPrintRoot { display: none; }
-@page { size: A4 landscape; margin: 0; }
+@page { size: A4 portrait; margin: 0; }
 @media print {
   body.printing-teacher-program { background: #fff !important; }
   body.printing-teacher-program > :not(#teacherPrintRoot) { display: none !important; }
@@ -707,10 +707,10 @@ html, body { max-width: 100%; overflow-x: hidden; }
   .print-note-meta span { color: #586679; font-size: 8pt; letter-spacing: 0; }
   .teacher-note-table { border-collapse: collapse; font-size: 9pt; line-height: 1.25; margin-top: 4mm; table-layout: fixed; width: 100%; }
   .teacher-note-table .print-number-col { width: 7mm; }
-  .teacher-note-table .print-time-col { width: 28mm; }
-  .teacher-note-table .print-student-col { width: 49mm; }
-  .teacher-note-table .print-days-col { width: 38mm; }
-  .teacher-note-table .print-note-col { width: calc(100% - 122mm); }
+  .teacher-note-table .print-time-col { width: 26mm; }
+  .teacher-note-table .print-student-col { width: 42mm; }
+  .teacher-note-table .print-days-col { width: 31mm; }
+  .teacher-note-table .print-note-col { width: calc(100% - 106mm); }
   .teacher-note-table th, .teacher-note-table td { border: 1px solid #cfd7e0; padding: 2mm; }
   .teacher-note-table th { background: #edf1f5; color: #17385c; font-weight: 700; text-align: left; }
   .teacher-note-table thead { display: table-header-group; }
