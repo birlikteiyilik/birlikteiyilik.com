@@ -6,6 +6,7 @@ import {
   readArchiveEnvelope,
   updateArchiveEnvelope
 } from './_bia-neon-store.js';
+import { applicationHistory, trackApplicationChanges } from './_bia-application-history.js';
 
 export const config = { runtime: 'edge' };
 
@@ -485,6 +486,8 @@ export default async function handler(req) {
   const dataBranch = process.env.BIA_APPLICATIONS_BRANCH || 'main';
   const dataPath = (process.env.BIA_APPLICATIONS_PATH || 'content/applications').replace(/^\/+|\/+$/g, '');
   const useNeonStorage = process.env.BIA_APPLICATIONS_STORAGE === 'neon';
+  let historyActor = 'Veli başvurusu';
+  let deletingApplications = false;
 
   const requestOrigin = req.headers.get('origin') || '';
   const allowedOrigin = requestOrigin === 'https://birlikteiyilik.com' || requestOrigin === 'https://www.birlikteiyilik.com' ||
@@ -558,7 +561,11 @@ export default async function handler(req) {
   async function mutateArchive(fileName, mutator, message) {
     for (let attempt = 0; attempt < 3; attempt += 1) {
       const current = await getArchive(fileName);
+      const before = structuredClone(current.records);
       const result = await mutator([...current.records]);
+      if (!deletingApplications) trackApplicationChanges(before, result.records, {
+        planning: fileName === PLANNING_FILE, actor: historyActor
+      });
       const saved = await putArchive(fileName, result.records, current, message);
       if (saved.ok && saved.data.content?.sha) return result.value;
       if (saved.status !== 409 && saved.status !== 422) throw new Error('Başvuru arşivi kaydedilemedi.');
@@ -788,7 +795,7 @@ export default async function handler(req) {
     try {
       const [records, planning] = await Promise.all([getAllApplications(), getArchive(PLANNING_FILE)]);
       return json({
-        data: records,
+        data: records.map(({ history, ...application }) => application),
         teachers: planning.records.filter((item) => item.kind === 'teacher').map(publicTeacher),
         placements: planning.records.filter((item) => item.kind === 'placement'),
         attendance: planning.records.filter((item) => item.kind === 'attendance'),
@@ -888,9 +895,25 @@ export default async function handler(req) {
       try {
         const date = assertTeacherViewDate(body.date);
         const { planning, teacher } = await requireTeacherSession();
+        const lessons = teacherDayLessons(planning.records, teacher, date);
+        // Read only archives needed for this teacher's assigned students. Never
+        // return the application, address, identity number, or other teachers' data.
+        const months = [...new Set(planning.records.filter((item) => item.kind === 'placement' &&
+          lessons.some((lesson) => lesson.applicationId === item.applicationId))
+          .map((item) => String(item.applicationCreatedAt || '').slice(0, 7)).filter((month) => /^\d{4}-\d{2}$/.test(month)))];
+        const archives = await Promise.all(months.map((month) => getArchive(`${month}.enc.json`)));
+        const assignedIds = new Set(lessons.map((lesson) => lesson.applicationId));
+        const contacts = new Map(archives.flatMap((archive) => archive.records).filter((item) => assignedIds.has(item.id))
+          .map((item) => [item.id, item.guardianPhone || item.motherPhone || item.secondGuardianPhone || item.fatherPhone || '']));
+        // Support imported older placements without applicationCreatedAt as well.
+        if (lessons.some((lesson) => !contacts.has(lesson.applicationId))) {
+          (await getAllApplications()).filter((item) => assignedIds.has(item.id)).forEach((item) => {
+            contacts.set(item.id, item.guardianPhone || item.motherPhone || item.secondGuardianPhone || item.fatherPhone || '');
+          });
+        }
         return json({
           ok: true, teacher: publicTeacher(teacher), date, day: attendanceDay(date),
-          lessons: teacherDayLessons(planning.records, teacher, date),
+          lessons: lessons.map((lesson) => ({ ...lesson, guardianPhone: contacts.get(lesson.applicationId) || '' })),
           week: teacherWeekSummary(planning.records, teacher, date),
           meta: { weekdays: WEEKDAYS, timeSlots: TIME_SLOTS, onlineTimeSlots: ONLINE_TIME_SLOTS, attendanceStatuses: ATTENDANCE_STATUSES }
         }, 200, cors);
@@ -955,6 +978,28 @@ export default async function handler(req) {
 
     const admin = await checkAdmin();
     if (!admin) return json({ error: 'Yetkisiz erişim.' }, 401, cors);
+    historyActor = adminIdentity(admin);
+    deletingApplications = body.action === 'application-delete' ||
+      (body.action === 'bulk-delete' && ['applications', 'demo'].includes(body.scope));
+
+    if (body.action === 'application-info') {
+      try {
+        const application = await requireApplication(cleanText(body.applicationId, 80), body.applicationCreatedAt);
+        const planning = await getArchive(PLANNING_FILE);
+        const { id, reference, createdAt, studentName, status, school, grade, gender, quranLevel,
+          applicationType, guardianName, guardianPhone, motherName, motherPhone,
+          availabilitySlots, availabilityRanges } = application;
+        return json({ ok: true, data: {
+          application: { id, reference, createdAt, studentName, status, school, grade, gender, quranLevel,
+            applicationType, guardianName: guardianName || motherName, guardianPhone: guardianPhone || motherPhone,
+            availabilitySlots, availabilityRanges },
+          placement: placementFor(planning.records, id) || null,
+          history: applicationHistory(application, planning.records)
+        } }, 200, cors);
+      } catch (error) {
+        return json({ error: error.message || 'Öğrenci geçmişi yüklenemedi.' }, error.status || 500, cors);
+      }
+    }
 
     if (body.action === 'applications-storage-migrate') {
       try {
@@ -1116,7 +1161,7 @@ export default async function handler(req) {
         const planningResult = await mutateArchive(PLANNING_FILE, (records) => {
           const assignments = records.filter((item) => item.kind === 'placement' && item.applicationId === applicationId);
           return {
-            records: records.filter((item) => !(['placement', 'attendance'].includes(item.kind) && item.applicationId === applicationId)),
+            records: records.filter((item) => !(['placement', 'attendance', 'application-event'].includes(item.kind) && item.applicationId === applicationId)),
             value: assignments.length
           };
         }, `BIA: ${application.reference} öğrenci ataması silindi`);
@@ -1187,7 +1232,7 @@ export default async function handler(req) {
             const removedAssignments = records.filter((item) => item.kind === 'placement').length;
             const removedAttendance = records.filter((item) => item.kind === 'attendance').length;
             return {
-              records: records.filter((item) => item.kind !== 'placement' && item.kind !== 'attendance'),
+              records: records.filter((item) => !['placement', 'attendance', 'application-event'].includes(item.kind)),
               value: { removedAssignments, removedAttendance }
             };
           }, 'BIA: tüm öğrenci ders atamaları silindi');
@@ -1213,7 +1258,8 @@ export default async function handler(req) {
           const removedAttendance = records.filter(shouldRemoveAttendance).length;
           return {
             records: records.filter((item) => !(item.kind === 'teacher' && item.isDemo === true) &&
-              !shouldRemovePlacement(item) && !shouldRemoveAttendance(item)),
+              !shouldRemovePlacement(item) && !shouldRemoveAttendance(item) &&
+              !(item.kind === 'application-event' && demoApplicationIds.has(item.applicationId))),
             value: { removedTeachers, removedAssignments, removedAttendance }
           };
         }, 'BIA: test öğretmenleri ve atamaları silindi');

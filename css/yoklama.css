@@ -173,6 +173,13 @@ svg { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: 
 .student-info { display: grid; gap: 3px; min-width: 0; }
 .student-info strong { font-size: .9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .student-info span { color: var(--muted); font-size: .63rem; }
+.lesson-student-name { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.lesson-student-name strong { white-space: normal; overflow-wrap: anywhere; }
+.lesson-whatsapp { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 44px; width: 44px; height: 44px; border-radius: 13px; background: #128c4e; transition: background .16s, transform .16s; }
+.lesson-whatsapp img { display: block; }
+.lesson-whatsapp:hover { background: #097a40; transform: translateY(-1px); }
+.lesson-whatsapp:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.lesson-whatsapp.is-unavailable { opacity: .35; cursor: not-allowed; }
 .lesson-mode { background: var(--surface-2); border-radius: 999px; color: var(--muted); flex: 0 0 auto; font-size: .58rem; font-weight: 800; padding: 5px 8px; }
 .attendance-controls { display: grid; gap: 7px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .status-action { align-items: center; background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px; color: var(--muted); cursor: pointer; display: flex; font-size: .67rem; font-weight: 780; gap: 7px; justify-content: center; min-height: 46px; padding: 8px; transition: background 120ms ease, border-color 120ms ease, color 120ms ease, transform 120ms ease; }

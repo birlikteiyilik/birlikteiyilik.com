@@ -8,6 +8,7 @@ process.env.BIA_LISTE_PASSWORD = 'test-directory-password-2026';
 
 let putPayload = null;
 let shaCounter = 0;
+let conflictNextPut = false;
 const remoteFiles = new Map();
 const originalFetch = globalThis.fetch;
 globalThis.fetch = async (url, options = {}) => {
@@ -32,6 +33,10 @@ globalThis.fetch = async (url, options = {}) => {
     });
   }
   putPayload = JSON.parse(options.body);
+  if (conflictNextPut) {
+    conflictNextPut = false;
+    return new Response(JSON.stringify({ message: 'Conflict' }), { status: 409 });
+  }
   const current = remoteFiles.get(fileName);
   if (current && putPayload.sha !== current.sha) {
     return new Response(JSON.stringify({ message: 'Conflict' }), { status: 409, headers: { 'Content-Type': 'application/json' } });
@@ -246,6 +251,36 @@ const completeResponse = await adminPost({
 });
 assert.equal(completeResponse.status, 200);
 
+const getHistory = async () => {
+  const response = await adminPost({ action: 'application-info', applicationId: firstApplication.id, applicationCreatedAt: firstApplication.createdAt });
+  assert.equal(response.status, 200);
+  return (await response.json()).data;
+};
+const initialHistory = await getHistory();
+assert.ok(initialHistory.history.some((e) => e.type === 'application-created'));
+assert.ok(initialHistory.history.some((e) => e.type === 'placement-created'));
+assert.ok(initialHistory.history.some((e) => e.type === 'status-changed' && e.after === 'kayit-tamamlandi' && e.actor === 'Test Admin'));
+assert.ok(!('tckn' in initialHistory.application));
+assert.equal((await adminPost({ action: 'update', id: firstApplication.id, createdAt: firstApplication.createdAt, status: 'kayit-tamamlandi', adminNote: 'Plan hazır.' })).status, 200);
+assert.equal((await getHistory()).history.length, initialHistory.history.length, 'no-op save must not duplicate history');
+conflictNextPut = true;
+assert.equal((await adminPost({ action: 'placement-save', applicationId: firstApplication.id, applicationCreatedAt: firstApplication.createdAt,
+  startDate: '2020-01-01', schedule: splitSchedule.map((entry) => ({ ...entry, slot: '15:20-15:40' })) })).status, 200);
+let changedHistory = await getHistory();
+assert.equal(changedHistory.history.filter((e) => e.type === 'placement-changed').length, 1, 'CAS retry must only persist one event');
+assert.equal(changedHistory.history.find((e) => e.type === 'placement-changed').before.schedule[0].slot, '15:00-15:20');
+assert.equal((await adminPost({ action: 'placement-remove', applicationId: firstApplication.id })).status, 200);
+changedHistory = await getHistory();
+assert.equal(changedHistory.history.filter((e) => e.type === 'placement-removed').length, 1);
+assert.equal(changedHistory.placement, null);
+assert.equal((await adminPost({ action: 'placement-save', applicationId: firstApplication.id, applicationCreatedAt: firstApplication.createdAt,
+  startDate: '2020-01-01', schedule: splitSchedule })).status, 200);
+assert.equal((await getHistory()).history.filter((e) => e.type === 'placement-created').length, 2);
+const unauthHistory = await handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'application-info', applicationId: firstApplication.id, applicationCreatedAt: firstApplication.createdAt })
+}));
+assert.equal(unauthHistory.status, 401);
+
 const warningMessageSent = await adminPost({
   action: 'attendance-warning-message-update', applicationId: firstApplication.id,
   applicationCreatedAt: firstApplication.createdAt, sent: true
@@ -365,6 +400,12 @@ const teacherData = await teacherDataResponse.json();
 assert.equal(teacherData.day, 'pazartesi');
 assert.equal(teacherData.lessons.length, 1);
 assert.equal(teacherData.lessons[0].studentName, validSubmission.studentName);
+assert.equal(teacherData.lessons[0].guardianPhone, validSubmission.guardianPhone);
+assert.equal(teacherData.lessons.every((lesson) => !('history' in lesson) && !('tckn' in lesson) && !('address' in lesson)), true);
+const teacherHistory = await handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'POST', headers: teacherHeaders, body: JSON.stringify({ action: 'application-info', applicationId: firstApplication.id, applicationCreatedAt: firstApplication.createdAt })
+}));
+assert.equal(teacherHistory.status, 401);
 
 const attendanceSaveResponse = await handler(new Request('http://localhost:4173/api/bia-applications', {
   method: 'POST', headers: teacherHeaders, body: JSON.stringify({

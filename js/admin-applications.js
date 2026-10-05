@@ -44,6 +44,8 @@
   let activeApplicationType = '';
   let activeWorkspaceView = 'applications';
   let activeReportView = 'overview';
+  let infoRequest = 0;
+  let infoStudentId = '';
 
   function el(id) { return document.getElementById(id); }
   function escapeHtml(value) {
@@ -220,7 +222,7 @@
       const guardianActions = `<label class="guardian-sent-toggle"><input type="checkbox" data-guardian-sent-id="${escapeHtml(item.id)}" ${item.guardianMessageSent ? 'checked' : ''} aria-label="${escapeHtml(item.studentName)} velisine mesaj gönderildi"><span>Mesaj gönderildi</span></label>`;
       return `<tr data-id="${escapeHtml(item.id)}" tabindex="0" style="--row-index:${index}" aria-label="${escapeHtml(item.studentName)} başvurusunu aç">
         <td>${escapeHtml(formatDate(item.createdAt, false))}</td>
-        <td><span class="app-student">${escapeHtml(item.studentName)}</span><span class="app-ref">${escapeHtml(item.reference)}</span></td>
+        <td><span class="student-name-with-info"><span class="app-student">${escapeHtml(item.studentName)}</span>${studentInfoButton(item.id, item.studentName)}</span><span class="app-ref">${escapeHtml(item.reference)}</span></td>
         <td>${escapeHtml(labels.type[item.applicationType] || item.applicationType)}</td>
         <td>${escapeHtml(labels.gender[item.gender] || item.gender)}</td>
         <td>${escapeHtml(item.grade)}. sınıf</td>
@@ -391,7 +393,7 @@
               return;
             }
             const buttons = cell.assigned.map((assigned) => `<button type="button" data-program-open="${escapeHtml(assigned.applicationId)}" aria-label="${escapeHtml(assigned.studentName)} başvurusunu incele">İncele</button>`).join('');
-            slotBlocks.push(`<li class="program-busy-slot"><span class="program-slot-state">Dolu · ${escapeHtml(cell.text)}</span><time>${escapeHtml(slot.replace(/:/g, '.').replace('-', ' – '))}</time>${buttons}</li>`);
+            slotBlocks.push(`<li class="program-busy-slot"><span class="program-slot-state">Dolu · ${cell.assigned.map((assigned) => `${escapeHtml(assigned.studentName)}${studentInfoButton(assigned.applicationId, assigned.studentName)}`).join(', ')}</span><time>${escapeHtml(slot.replace(/:/g, '.').replace('-', ' – '))}</time>${buttons}</li>`);
           });
           const workingDay = (teacher.days || []).includes(day) || allDayEntries.length > 0;
           return `<section class="program-day-column" style="--day-index:${dayIndex}">
@@ -657,7 +659,7 @@
       const application = applications.find((item) => item.id === student.applicationId);
       const phone = whatsappPhone(guardianPhoneFor(application || {}));
       const action = student.absent ? `<div class="report-followup-actions"><button type="button" class="report-message-button ${streak >= 3 ? 'is-removal' : ''}" data-attendance-message="${streak >= 3 ? 'removal' : 'warning'}" data-student-name="${escapeHtml(student.name)}" data-guardian-phone="${escapeHtml(guardianPhoneFor(application || {}))}" ${phone ? '' : 'disabled'}>${streak >= 3 ? 'Kayıt Silme Mesajı' : 'Uyarı Mesajı'}</button><label class="report-sent-toggle ${application?.warningMessageSentAt ? 'is-sent' : ''}" title="WhatsApp'ta mesajı gönderdikten sonra işaretleyin"><input type="checkbox" data-warning-sent data-application-id="${escapeHtml(student.applicationId)}" data-application-created-at="${escapeHtml(application?.createdAt || '')}" aria-label="${escapeHtml(student.name)} için uyarı mesajını gönderildi olarak işaretle" ${application?.warningMessageSentAt ? 'checked' : ''}><span class="report-sent-check" aria-hidden="true">✓</span><span>${application?.warningMessageSentAt ? 'Mesaj gönderildi' : 'Gönderildi olarak işaretle'}</span></label></div>` : '<span class="report-no-action">İşlem gerekmiyor</span>';
-      return `<tr><td><span class="app-student">${escapeHtml(student.name)}</span><span class="app-ref">${escapeHtml(student.reference)}</span></td>
+      return `<tr><td><span class="student-name-with-info"><span class="app-student">${escapeHtml(student.name)}</span>${application ? studentInfoButton(application.id, student.name) : ''}</span><span class="app-ref">${escapeHtml(student.reference)}</span></td>
         <td><div class="report-attendance-rate"><strong>%${rate}</strong><span>${student.attended}/${student.marked} katılım</span></div><span class="report-mini-meter"><i style="--value:${rate}%"></i></span></td>
         <td><span class="report-student-counts"><b>${student.attended} katıldı</b><b>${student.absent} gelmedi</b><b>${student.excused} mazeretli</b></span></td>
         <td><div class="report-student-action">${action}${streak ? `<small>Son ${streak} planlı ders üst üste devamsız</small>` : student.absent ? '<small>Seçili aralıkta devamsızlık var</small>' : ''}</div></td></tr>`;
@@ -672,7 +674,7 @@
         : `<span class="report-status report-status-${escapeHtml(row.status)}">${escapeHtml(labels.attendance[row.status] || row.status)}</span>`;
       return `<tr>
       <td>${escapeHtml(formatDate(`${row.lessonDate}T12:00:00`, false))}</td><td>${escapeHtml(row.teacherName)}</td>
-      <td><span class="app-student">${escapeHtml(row.studentName)}</span><span class="app-ref">${escapeHtml(row.applicationReference)}</span></td>
+      <td><span class="student-name-with-info"><span class="app-student">${escapeHtml(row.studentName)}</span>${applications.some((item) => item.id === row.applicationId) ? studentInfoButton(row.applicationId, row.studentName) : ''}</span><span class="app-ref">${escapeHtml(row.applicationReference)}</span></td>
       <td>${escapeHtml(row.slot)}</td><td>${escapeHtml(labels.type[row.applicationType] || row.applicationType)}</td>
       <td>${statusControl}</td><td>${escapeHtml(row.note || '—')}</td>
     </tr>`;
@@ -762,6 +764,77 @@
   function detail(label, value, wide) {
     return `<div class="apps-detail${wide ? ' is-wide' : ''}"><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value || 'Belirtilmedi')}</dd></div>`;
   }
+
+  function studentInfoButton(id, name) {
+    return `<button type="button" class="student-info-button" data-student-info-id="${escapeHtml(id)}" aria-label="${escapeHtml(name)} bilgileri ve işlem geçmişi" title="Bilgi ve işlem geçmişi"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle class="info-dot" cx="12" cy="7" r="1"/></svg></button>`;
+  }
+
+  function historyPlacement(snapshot) {
+    if (!snapshot) return 'Atama yok';
+    if (snapshot.teacherId) return snapshot.teacherName || 'Öğretmen';
+    const groups = new Map();
+    (snapshot.schedule || []).forEach((entry) => {
+      const key = `${entry.teacherName || 'Öğretmen'} · ${entry.slot}`;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(labels.days[entry.day] || entry.day);
+    });
+    return [...groups].map(([key, days]) => `${days.join(', ')} · ${key}`).join('\n') +
+      (snapshot.startDate ? `\nBaşlangıç: ${formatNumericDate(snapshot.startDate)}` : '');
+  }
+
+  function renderHistoryEvent(entry) {
+    const titles = {
+      'application-created': 'Başvuru alındı', 'demo-created': 'Test başvurusu oluşturuldu',
+      'placement-created': 'Öğretmen atandı', 'placement-changed': 'Atama değiştirildi',
+      'placement-removed': 'Atama kaldırıldı', 'legacy-placement': 'Eski arşivdeki son atama kaydı',
+      'status-changed': 'Başvuru durumu değiştirildi', 'admin-note-changed': 'Yönetici notu güncellendi',
+      'guardian-message-marked': entry.sent ? 'Veli mesajı gönderildi olarak işaretlendi' : 'Veli mesajı gönderildi işareti kaldırıldı',
+      'warning-message-marked': entry.sent ? 'Uyarı mesajı gönderildi olarak işaretlendi' : 'Uyarı mesajı gönderildi işareti kaldırıldı'
+    };
+    let content = '';
+    if (entry.type === 'status-changed') {
+      content = `<p class="student-history-status">${escapeHtml(labels.status[entry.before] || entry.before)} <span aria-label="yerine">→</span> <strong>${escapeHtml(labels.status[entry.after] || entry.after)}</strong></p>`;
+    } else if (entry.type === 'admin-note-changed') {
+      content = `<div class="student-history-change"><div><small>Önce</small><p>${escapeHtml(entry.before || 'Not yok')}</p></div><div><small>Sonra</small><p>${escapeHtml(entry.after || 'Not kaldırıldı')}</p></div></div>`;
+    } else if (['placement-created', 'placement-changed', 'placement-removed', 'legacy-placement'].includes(entry.type)) {
+      content = `<div class="student-history-change">${entry.before ? `<div><small>Önce</small><p>${escapeHtml(historyPlacement(entry.before))}</p></div>` : ''}<div><small>${entry.legacy ? 'Arşivde görünen program' : 'Sonra'}</small><p>${escapeHtml(historyPlacement(entry.after))}</p></div></div>`;
+    }
+    const date = new Date(entry.at);
+    const timestamp = Number.isFinite(date.getTime()) ? new Intl.DateTimeFormat('tr-TR', {
+      dateStyle: 'medium', timeStyle: 'short', timeZone: 'Europe/Istanbul'
+    }).format(date) : 'Tarih belirtilmemiş';
+    return `<li class="student-history-event${entry.legacy ? ' is-legacy' : ''}"><div class="student-history-meta"><time>${escapeHtml(timestamp)}</time><span>${escapeHtml(entry.actor || 'Sistem')}</span></div><h4>${escapeHtml(titles[entry.type] || 'Kayıt güncellendi')}</h4>${content}${entry.legacy ? '<small class="student-history-legacy">Mevcut eski kayıttan alınmıştır; ayrıntılı işlem geçmişi değildir.</small>' : ''}</li>`;
+  }
+
+  async function openStudentInfo(id) {
+    const item = applications.find((record) => record.id === id);
+    if (!item) { toast('Öğrenci kaydı bulunamadı. Listeyi yenileyin.', 'error'); return; }
+    infoStudentId = id;
+    const request = ++infoRequest;
+    el('studentInfoTitle').textContent = item.studentName;
+    el('studentInfoReference').textContent = item.reference || '';
+    el('studentInfoBody').innerHTML = '<div class="apps-loading" role="status"><span class="spin"></span>Bilgiler ve işlem geçmişi yükleniyor…</div>';
+    const dialog = el('studentInfoDialog');
+    if (!dialog.open) dialog.showModal();
+    try {
+      const result = await api('POST', { action: 'application-info', applicationId: id, applicationCreatedAt: item.createdAt });
+      if (request !== infoRequest || !dialog.open) return;
+      const { application, placement, history } = result.data;
+      el('studentInfoBody').innerHTML = `<section class="student-info-overview" aria-label="Öğrenci özeti"><span class="app-status app-status-${escapeHtml(application.status)}">${escapeHtml(labels.status[application.status] || application.status)}</span><dl class="apps-detail-grid">
+        ${detail('Eğitim', labels.type[application.applicationType])}${detail('Sınıf', application.grade ? `${application.grade}. sınıf` : '')}
+        ${detail('Okul', application.school)}${detail('Seviye', labels.level[application.quranLevel])}
+        ${detail('Veli', application.guardianName)}${detail('Veli telefonu', formatPhone(application.guardianPhone))}
+        ${detail('Güncel atama', historyPlacement(placement), true)}
+        ${detail('Talep edilen saatler', (application.availabilitySlots || application.availabilityRanges || []).join(', '), true)}
+      </dl></section><section class="student-history-section"><div class="student-history-heading"><h3>İşlem geçmişi</h3><span>${history.length} kayıt</span></div><p class="student-history-hint">Tarihler Türkiye saatidir. Eski arşivlerde yalnızca kayıtlı bilgiler gösterilir; yeni işlemler değişiklik ayrıntılarıyla tutulur.</p><ol class="student-history-list">${history.map(renderHistoryEvent).join('')}</ol></section>`;
+    } catch (error) {
+      if (request !== infoRequest || !dialog.open) return;
+      el('studentInfoBody').innerHTML = `<div class="student-info-error" role="alert"><p>${escapeHtml(error.message)}</p><button type="button" class="btn btn-gray" id="studentInfoRetry">Tekrar dene</button></div>`;
+      el('studentInfoRetry').addEventListener('click', () => openStudentInfo(id));
+    }
+  }
+
+  function closeStudentInfo() { infoRequest += 1; el('studentInfoDialog').close(); }
 
   function occupiedBy(applicationId, teacherId, day, slot) {
     if (!teacherId || !slot) return null;
@@ -1659,6 +1732,15 @@
   window.showApplications = function () { showScreen('applicationsScreen'); showTypeChooser(); load(false); };
 
   document.addEventListener('DOMContentLoaded', () => {
+    el('applicationsScreen').addEventListener('click', (event) => {
+      const button = event.target.closest('[data-student-info-id]');
+      if (button) { event.stopPropagation(); openStudentInfo(button.dataset.studentInfoId); }
+    }, true);
+    el('studentInfoClose').addEventListener('click', closeStudentInfo);
+    el('studentInfoDone').addEventListener('click', closeStudentInfo);
+    el('studentInfoReview').addEventListener('click', () => { const id = infoStudentId; closeStudentInfo(); openDetail(id); });
+    el('studentInfoDialog').addEventListener('click', (event) => { if (event.target === el('studentInfoDialog')) closeStudentInfo(); });
+    el('studentInfoDialog').addEventListener('close', () => { infoRequest += 1; });
     const filterIds = ['appsSearch', 'appsGender', 'appsGrade', 'appsLevel', 'appsPreviousTraining', 'appsStatus', 'appsPlanState', 'appsTeacher', 'appsFrom', 'appsTo'];
     filterIds.forEach((id) => el(id).addEventListener(id === 'appsSearch' ? 'input' : 'change', renderTable));
     el('appsReset').addEventListener('click', resetFilters);

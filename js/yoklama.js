@@ -53,6 +53,12 @@
   }
   function lessonKey(lesson) { return `${lesson.applicationId}|${lesson.slot}`; }
   function attendanceKey(lesson, date) { return `${date}|${lessonKey(lesson)}`; }
+  function guardianWhatsApp(value) {
+    let phone = String(value || '').replace(/\D/g, '').replace(/^00/, '');
+    if (phone.length === 11 && phone.startsWith('0')) phone = `90${phone.slice(1)}`;
+    else if (phone.length === 10) phone = `90${phone}`;
+    return /^90\d{10}$/.test(phone) ? `https://wa.me/${phone}` : '';
+  }
 
   async function api(body, authToken) {
     const response = await fetch(API_URL, {
@@ -151,10 +157,14 @@
       const isSaving = saving.has(attendanceKey(lesson, selectedDate));
       const noteIsFromPreviousDay = Boolean(lesson.note && lesson.noteDate && lesson.noteDate < selectedDate);
       const active = (status) => lesson.status === status ? ' is-active' : '';
+      const whatsapp = guardianWhatsApp(lesson.guardianPhone);
+      const contact = whatsapp
+        ? `<a class="lesson-whatsapp" href="${whatsapp}" target="_blank" rel="noopener noreferrer" aria-label="${escapeHtml(lesson.studentName)} velisine WhatsApp mesajı yaz" title="Veliye WhatsApp mesajı yaz"><img src="/images/qr/whatsapp.svg" width="21" height="21" alt=""></a>`
+        : '<span class="lesson-whatsapp is-unavailable" role="img" aria-label="Geçerli veli telefonu bulunamadı" title="Geçerli veli telefonu bulunamadı"><img src="/images/qr/whatsapp.svg" width="21" height="21" alt=""></span>';
       return `<article class="lesson-card${isSaving ? ' is-saving' : ''}" style="--index:${index}" aria-busy="${isSaving}">
         <time class="lesson-time">${escapeHtml(lesson.slot.split('-')[0])}</time>
         <div class="lesson-surface">
-          <header class="lesson-summary"><div class="student-info"><strong>${escapeHtml(lesson.studentName)}</strong><span>${escapeHtml(lesson.applicationReference || '')}</span></div><span class="lesson-mode">${escapeHtml(labels.type[lesson.applicationType] || lesson.applicationType)}</span></header>
+          <header class="lesson-summary"><div class="student-info"><div class="lesson-student-name"><strong>${escapeHtml(lesson.studentName)}</strong>${contact}</div><span>${escapeHtml(lesson.applicationReference || '')}</span></div><span class="lesson-mode">${escapeHtml(labels.type[lesson.applicationType] || lesson.applicationType)}</span></header>
           <div class="attendance-controls" role="group" aria-label="${escapeHtml(lesson.studentName)} yoklama durumu">
             ${['katildi', 'gelmedi', 'mazeretli'].map((status) => `<button type="button" class="status-action${active(status)}" data-lesson-key="${escapeHtml(lessonKey(lesson))}" data-status="${status}" aria-pressed="${lesson.status === status}" ${isFuture || isSaving ? 'disabled' : ''}><svg><use href="#${icon[status]}"></use></svg>${labels.status[status]}</button>`).join('')}
           </div>

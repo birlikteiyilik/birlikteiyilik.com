@@ -401,6 +401,39 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .apps-modal-head p { color: var(--app-muted); font-size: .73rem; margin: 0; }
 .apps-close { align-items: center; background: #f1f3f6; border: 0; border-radius: 50%; color: #3c4658; cursor: pointer; display: inline-flex; font-size: 1.25rem; height: 36px; justify-content: center; transition: background .15s ease, transform .15s ease; width: 36px; }
 .apps-close:hover { background: #e5e8ed; transform: rotate(6deg); }
+.student-name-with-info { display: inline-flex; align-items: center; gap: 5px; }
+.student-info-button { display: inline-flex; align-items: center; justify-content: center; width: 36px; min-width: 36px; height: 36px; padding: 7px; border: 0; border-radius: 50%; color: #315c83; background: #edf3f9; cursor: pointer; vertical-align: middle; transition: background .15s, transform .15s; }
+.student-info-button svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+.student-info-button .info-dot { fill: currentColor; stroke: none; }
+.student-info-button:hover { background: #dceaf7; transform: translateY(-1px); }
+.student-info-button:focus-visible { outline: 2px solid #1d65a6; outline-offset: 3px; }
+.program-day-slots .student-info-button { width: 28px; min-width: 28px; height: 28px; padding: 5px; margin-left: 3px; background: #fff; color: #315c83; }
+.student-info-dialog { width: min(680px, calc(100% - 24px)); }
+.student-info-overview { padding-bottom: 8px; }
+.student-info-overview .apps-detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.student-info-overview .apps-detail.is-wide { grid-column: 1 / -1; }
+.student-info-overview dd { white-space: pre-line; }
+.student-history-section { border-top: 1px solid var(--app-line); padding-top: 20px; }
+.student-history-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.student-history-heading h3 { margin: 0; font-size: 1rem; }
+.student-history-heading > span { color: var(--app-muted); font-size: .72rem; }
+.student-history-hint { font-size: .75rem; color: var(--app-muted); line-height: 1.6; margin: 8px 0 22px; }
+.student-history-list { list-style: none; margin: 0; padding: 0 0 0 22px; border-left: 2px solid #dce6ef; }
+.student-history-event { position: relative; margin: 0 0 24px; }
+.student-history-event:last-child { margin-bottom: 0; }
+.student-history-event::before { content: ''; position: absolute; top: 4px; left: -29px; width: 10px; height: 10px; border: 2px solid #fff; border-radius: 50%; background: #1d65a6; box-shadow: 0 0 0 2px #dce6ef; }
+.student-history-event.is-legacy::before { background: #8896a6; }
+.student-history-meta { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px 12px; color: var(--app-muted); font-size: .7rem; font-variant-numeric: tabular-nums; }
+.student-history-event h4 { margin: 7px 0 9px; font-size: .84rem; }
+.student-history-change { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; }
+.student-history-change > div { padding: 10px 12px; border-radius: 8px; background: var(--app-soft); min-width: 0; }
+.student-history-change small { font-size: .65rem; color: var(--app-muted); font-weight: 700; }
+.student-history-change p { margin: 4px 0 0; white-space: pre-line; overflow-wrap: anywhere; font-size: .75rem; line-height: 1.65; }
+.student-history-status { font-size: .78rem; margin: 0; }
+.student-history-status span { margin: 0 5px; color: var(--app-muted); }
+.student-history-legacy { display: block; margin-top: 7px; font-size: .68rem; color: var(--app-muted); }
+.student-info-error { padding: 24px 0; font-size: .85rem; }
+@media (pointer: coarse) { .student-info-button { width: 44px; min-width: 44px; height: 44px; } .program-day-slots .student-info-button { width: 44px; height: 44px; } }
 .apps-modal-body { max-height: calc(100vh - 177px); overflow-y: auto; padding: 20px 22px; }
 .apps-detail-section { border-bottom: 1px solid var(--app-line); margin-bottom: 18px; padding-bottom: 18px; }
 .apps-detail-section:last-child { border-bottom: 0; margin-bottom: 0; }
