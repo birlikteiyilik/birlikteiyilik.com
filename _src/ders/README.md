@@ -2,7 +2,7 @@
 
 Canlı adres: https://birlikteiyilik.com/ders
 
-Girişte Güzel Ahlak ders rehberi ve 56 sayfalık Elif Ba kitabı seçilir. Güzel Ahlak bölümündeki tüm ders, arşiv, sınıf sunumu ve yazdırma araçları korunmuştur. Elif Ba, sağdan sola okunan; dokunarak veya sürükleyerek sayfa çevrilebilen bir flipbook olarak açılır. Dar ekranlarda tek sayfa, geniş ekranlarda iki sayfa ekrana sığar. Sol ok sonraki, sağ ok önceki sayfaya götürür. Sayfa seçimi ve yakınlaştırma kullanılabilir; indirilen PDF, verilen özgün dosyanın aynısıdır.
+Girişte Güzel Ahlak ders rehberi ve 56 sayfalık Elif Ba kitabı seçilir. Güzel Ahlak bölümündeki tüm ders, arşiv, sınıf sunumu ve yazdırma araçları korunmuştur. Elif Ba, sağdan sola okunan; dokunarak veya sürükleyerek sayfa çevrilebilen bir flipbook olarak açılır. Dar ekranlarda tek sayfa, geniş ekranlarda iki sayfa ekrana sığar. Sol ok sonraki, sağ ok önceki sayfaya götürür. Mobilde alttaki büyük düğmeler, sol/sağ tarafa kısa dokunma ve yatay kaydırma ile sayfa değişir. Dikey hareket ve uzun basma sayfa çevirmez. Sayfa seçimi ve yakınlaştırma kullanılabilir; indirilen PDF, verilen özgün dosyanın aynısıdır.
 
 ## Geliştirme
 

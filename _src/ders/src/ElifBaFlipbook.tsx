@@ -1,5 +1,6 @@
 import { forwardRef, useImperativeHandle, useLayoutEffect, useRef } from "react";
 import { PageFlip } from "page-flip/dist/js/page-flip.module.js";
+import { flipbookGesture } from "./flipbookGesture";
 
 const pageCount = 56;
 const assets = `${import.meta.env.BASE_URL}assets/`;
@@ -55,8 +56,8 @@ export const ElifBaFlipbook = forwardRef<FlipbookHandle, Props>(function ElifBaF
       startPage: pageCount - initialPageRef.current,
       flippingTime: reducedMotion.matches ? 1 : 650,
       maxShadowOpacity: 0.22, drawShadow: true,
-      mobileScrollSupport: false, swipeDistance: 25,
-      showPageCorners: !reducedMotion.matches,
+      useMouseEvents: false, mobileScrollSupport: false,
+      showPageCorners: false,
     });
     const pages = Array.from({ length: pageCount }, (_, index) => {
       // Reversing the leaves gives a real right-to-left book without mirroring its artwork.
@@ -95,15 +96,25 @@ export const ElifBaFlipbook = forwardRef<FlipbookHandle, Props>(function ElifBaF
       }
     };
     loadNearbyRef.current = loadNearby;
+    let previousMode: "portrait" | "landscape" | null = null;
+    let visiblePage = initialPageRef.current;
     const syncPage = () => {
       if (disposed) return;
       const index = book.getCurrentPageIndex();
-      const spread = book.getOrientation() === "landscape" && index > 0 && index < pageCount - 1;
+      const mode = book.getOrientation();
+      const wasSpread = previousMode === "landscape";
+      previousMode = mode;
+      if (wasSpread && mode === "portrait" && pageCount - index !== visiblePage) {
+        book.turnToPage(pageCount - visiblePage);
+        return;
+      }
+      const spread = mode === "landscape" && index > 0 && index < pageCount - 1;
       loadNearby(index);
       pages.forEach((element, i) => element.setAttribute("aria-hidden", String(i !== index && !(spread && i === index + 1))));
       host.dataset.cover = !spread && book.getOrientation() === "landscape" ? (index === 0 ? "front" : "back") : "none";
       host.style.setProperty("--flipbook-page-width", `${book.getBoundsRect().pageWidth}px`);
-      callbacks.current.onPageChange(pageCount - index - (spread ? 1 : 0), spread);
+      visiblePage = pageCount - index - (spread ? 1 : 0);
+      callbacks.current.onPageChange(visiblePage, spread);
     };
     book.on("flip", syncPage);
     book.on("init", syncPage);
@@ -114,22 +125,76 @@ export const ElifBaFlipbook = forwardRef<FlipbookHandle, Props>(function ElifBaF
     loadNearby(pageCount - initialPageRef.current);
     book.loadFromHTML(pages);
     bookRef.current = book;
+    type Gesture = { id: number; x: number; y: number; startedAt: number; simple: boolean; bounds: { left: number; right: number; top: number; height: number } };
+    let gesture: Gesture | null = null;
+    const localPoint = (x: number, y: number) => {
+      const rect = book.getUI().getDistElement().getBoundingClientRect();
+      return { x: x - rect.left, y: y - rect.top };
+    };
+    const release = (id: number) => { if (stage.hasPointerCapture(id)) stage.releasePointerCapture(id); };
+    const pointerDown = (event: PointerEvent) => {
+      if (!event.isPrimary) { if (gesture) release(gesture.id); gesture = null; return; }
+      const target = event.target instanceof Element ? event.target : null;
+      const leaf = target?.closest<HTMLElement>(".flipbook-page");
+      if (!leaf || target?.closest("a, button") || event.button !== 0 || book.getState() === "flipping") return;
+      event.preventDefault();
+      const rects = Array.from(host.querySelectorAll<HTMLElement>('.flipbook-page[aria-hidden="false"]')).map((page) => page.getBoundingClientRect());
+      const bounds = { left: Math.min(...rects.map((rect) => rect.left)), right: Math.max(...rects.map((rect) => rect.right)), top: Math.min(...rects.map((rect) => rect.top)), height: Math.max(...rects.map((rect) => rect.height)) };
+      gesture = { id: event.pointerId, x: event.clientX, y: event.clientY, startedAt: performance.now(), simple: event.pointerType !== "mouse" || book.getOrientation() === "portrait", bounds };
+      stage.setPointerCapture(event.pointerId);
+      if (!gesture.simple) book.startUserTouch(localPoint(event.clientX, event.clientY));
+    };
+    const pointerMove = (event: PointerEvent) => {
+      if (gesture?.id !== event.pointerId) return;
+      event.preventDefault();
+      if (!gesture.simple) book.userMove(localPoint(event.clientX, event.clientY), false);
+    };
+    const pointerUp = (event: PointerEvent) => {
+      if (gesture?.id !== event.pointerId) return;
+      event.preventDefault();
+      const completed = gesture;
+      gesture = null;
+      release(event.pointerId);
+      if (!completed.simple) { book.userStop(localPoint(event.clientX, event.clientY)); return; }
+      const direction = flipbookGesture({ x: completed.x, y: completed.y }, { x: event.clientX, y: event.clientY }, completed.bounds, performance.now() - completed.startedAt);
+      const corner = completed.y < completed.bounds.top + completed.bounds.height / 2 ? "top" : "bottom";
+      if (direction === "next") book.flipPrev(corner);
+      else if (direction === "previous") book.flipNext(corner);
+    };
+    const pointerCancel = () => {
+      if (!gesture) return;
+      const cancelled = gesture;
+      gesture = null;
+      release(cancelled.id);
+      if (!cancelled.simple) book.userStop(localPoint(cancelled.x, cancelled.y));
+    };
+    stage.addEventListener("pointerdown", pointerDown);
+    stage.addEventListener("pointermove", pointerMove);
+    stage.addEventListener("pointerup", pointerUp);
+    stage.addEventListener("pointercancel", pointerCancel);
+    stage.addEventListener("lostpointercapture", pointerCancel);
     const observer = new ResizeObserver(() => {
       if (stage.clientWidth && stage.clientHeight) { fitHeight(); book.update(); syncPage(); }
     });
     observer.observe(stage);
     const updateMotion = () => {
       book.getSettings().flippingTime = reducedMotion.matches ? 1 : 650;
-      book.getSettings().showPageCorners = !reducedMotion.matches;
     };
     reducedMotion.addEventListener("change", updateMotion);
     return () => {
       disposed = true;
       observer.disconnect();
+      stage.removeEventListener("pointerdown", pointerDown);
+      stage.removeEventListener("pointermove", pointerMove);
+      stage.removeEventListener("pointerup", pointerUp);
+      stage.removeEventListener("pointercancel", pointerCancel);
+      stage.removeEventListener("lostpointercapture", pointerCancel);
       reducedMotion.removeEventListener("change", updateMotion);
       ["flip", "init", "changeOrientation", "changeState"].forEach((event) => book.off(event));
       bookRef.current = null;
       loadNearbyRef.current = () => {};
+      // The library also registers resize listeners when its own input handlers are disabled.
+      book.getSettings().useMouseEvents = true;
       book.destroy();
     };
   }, []);

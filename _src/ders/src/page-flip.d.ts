@@ -6,13 +6,17 @@ declare module "page-flip/dist/js/page-flip.module.js" {
     off(event: string): void;
     update(): void;
     destroy(): void;
-    flipNext(): void;
-    flipPrev(): void;
+    flipNext(corner?: "top" | "bottom"): void;
+    flipPrev(corner?: "top" | "bottom"): void;
     turnToPage(index: number): void;
     getCurrentPageIndex(): number;
     getOrientation(): "portrait" | "landscape";
     getState(): "read" | "flipping" | "user_fold" | "fold_corner";
     getBoundsRect(): { pageWidth: number };
-    getSettings(): { flippingTime: number; showPageCorners: boolean };
+    getSettings(): { flippingTime: number; showPageCorners: boolean; useMouseEvents: boolean };
+    getUI(): { getDistElement(): HTMLElement };
+    startUserTouch(point: { x: number; y: number }): void;
+    userMove(point: { x: number; y: number }, isTouch: boolean): void;
+    userStop(point: { x: number; y: number }, isSwipe?: boolean): void;
   }
 }

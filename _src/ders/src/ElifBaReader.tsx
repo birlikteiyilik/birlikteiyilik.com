@@ -53,6 +53,10 @@ export function ElifBaReader({ homeHref }: { homeHref: string }) {
           <ElifBaFlipbook ref={bookRef} initialPage={initialPage.current} onPageChange={(nextPage, hasSpread) => { setPage(nextPage); setSpread(hasSpread); }} onTurningChange={setTurning} />
           {zoomed && <div className="reader-zoom-view">{imageError ? <div className="empty-state"><p>Bu sayfa yüklenemedi. Kitabı PDF olarak açabilirsiniz.</p><a href={`${pdfHref}#page=${page}`} target="_blank" rel="noopener noreferrer">PDF’yi aç →</a></div> : <img key={page} src={elifBaPageImage(page)} alt={`Elif Ba müfredatı, ${page}. sayfa`} width="1273" height="1800" onError={() => setImageError(true)} />}</div>}
         </div>
+        <nav className="reader-mobile-nav" aria-label="Sayfa geçişi">
+          <button className="reader-mobile-next" onClick={() => bookRef.current?.next()} disabled={page === pageCount || turning} aria-label="Sonraki sayfa">← Sonraki sayfa</button>
+          <button onClick={() => bookRef.current?.previous()} disabled={page === 1 || turning} aria-label="Önceki sayfa">Önceki sayfa →</button>
+        </nav>
         <span className="reader-status" role="status" aria-live="polite">{spread ? `${page}–${page + 1}` : page} / {pageCount}</span>
       </main>
     </div>
