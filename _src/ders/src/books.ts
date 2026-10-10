@@ -19,7 +19,7 @@ export const elifBaBook: Book = {
 
 export const quranBook: Book = {
   title: "Kur’an-ı Kerim", imageLabel: "Kur’an-ı Kerim", pageCount: 615,
-  width: 1244, height: 1800, direction: "ltr",
+  width: 1244, height: 1800, direction: "rtl",
   imageFolder: "kuran-i-kerim-pages", pdfFile: "kuran-i-kerim.pdf",
   downloadName: "Kuran-i-Kerim.pdf",
 };

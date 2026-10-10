@@ -50,10 +50,12 @@ export const BookFlipbook = forwardRef<FlipbookHandle, Props>(function BookFlipb
     };
     fitHeight();
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    // An odd RTL book needs pairs from index 0 so its final leaf (the front cover) stays single.
+    const showCover = !isRtl || pageCount % 2 === 0;
     const book = new PageFlip(host, {
       width, height, size: "stretch",
       minWidth: 480, maxWidth: width, minHeight: 100, maxHeight: height,
-      autoSize: false, usePortrait: true, showCover: true,
+      autoSize: false, usePortrait: true, showCover,
       startPage: isRtl ? pageCount - initialPageRef.current : initialPageRef.current - 1,
       flippingTime: reducedMotion.matches ? 1 : 650,
       maxShadowOpacity: 0.22, drawShadow: true,
@@ -119,7 +121,7 @@ export const BookFlipbook = forwardRef<FlipbookHandle, Props>(function BookFlipb
         book.turnToPage(isRtl ? pageCount - visiblePage : visiblePage - 1);
         return;
       }
-      const spread = mode === "landscape" && index > 0 && index < pageCount - 1;
+      const spread = mode === "landscape" && (!showCover || index > 0) && index < pageCount - 1;
       loadNearby(index);
       pages.forEach((element, i) => element.setAttribute("aria-hidden", String(i !== index && !(spread && i === index + 1))));
       host.dataset.cover = !spread && book.getOrientation() === "landscape" ? (index === 0 ? "front" : "back") : "none";

@@ -4,7 +4,7 @@ Canlı adres: https://birlikteiyilik.com/ders
 
 Girişte Kur’an-ı Kerim, Güzel Ahlak ders rehberi ve Elif Ba kitabı seçilir. Güzel Ahlak bölümündeki tüm ders, arşiv, sınıf sunumu ve yazdırma araçları korunmuştur.
 
-Elif Ba 56 sayfalık, sağdan sola çevrilen bir flipbook’tur. Kur’an-ı Kerim kullanıcı isteğiyle soldan sağa çevrilir; verilen 616 sayfalık PDF’nin yalnızca son sayfası çıkarılarak 615 sayfa yayımlanmıştır. İndirme ve PDF açma bağlantıları da bu 615 sayfalık dosyayı kullanır. Elif Ba’nın indirilen PDF’si özgün dosyanın aynısıdır.
+Elif Ba 56 sayfalık, Kur’an-ı Kerim 615 sayfalık, sağdan sola çevrilen flipbook’lardır. Kur’an-ı Kerim için verilen 616 sayfalık PDF’nin yalnızca son sayfası çıkarılmıştır. İndirme ve PDF açma bağlantıları da bu 615 sayfalık dosyayı kullanır. Elif Ba’nın indirilen PDF’si özgün dosyanın aynısıdır. Tek sayıda yaprağı olan sağdan sola kitaplarda ilk sayfa tek gösterilir ve kalan yapraklar doğru sırayla eşlenir.
 
 Dar ekranlarda tek sayfa, geniş ekranlarda iki sayfa ekrana sığar. Mobilde alttaki büyük düğmeler, kısa dokunma ve yatay kaydırma ile sayfa değişir. Düğme yerleri, dokunma kenarı, kaydırma ve klavye okları her kitabın yönünü takip eder. Dikey hareket ve uzun basma sayfa çevirmez. Sayfa seçimi ve yakınlaştırma kullanılabilir. Uzun kitaplarda yalnızca yakın sayfaların görselleri DOM’da tutulur.
 
