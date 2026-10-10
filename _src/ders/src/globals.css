@@ -41,25 +41,10 @@ a { color: inherit; text-decoration: none; }
 .simple-brand { display: flex; align-items: center; gap: 11px; }
 .simple-brand > span { display: grid; width: 39px; height: 39px; place-items: center; border-radius: 9px; color: #fff; background: var(--green); font-family: var(--serif); font-size: 15px; font-style: italic; }
 .simple-brand > div { display: grid; gap: 2px; }
-.simple-brand strong { font-family: var(--serif); font-size: 19px; font-weight: 500; line-height: 1; }
+.simple-brand h1 { margin: 0; font-family: var(--serif); font-size: 19px; font-weight: 500; line-height: 1; }
 .simple-brand small { color: var(--muted); font-size: 9px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
 .header-meta { display: flex; align-items: center; gap: 8px; }
 .header-meta span { padding: 7px 10px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); background: #fff; font-size: 9px; font-weight: 700; }
-
-.simple-intro {
-  display: grid;
-  grid-template-columns: 1fr 1.4fr 1fr;
-  align-items: end;
-  gap: 48px;
-  padding: 72px clamp(20px, 6vw, 96px) 64px;
-  color: #fff;
-  background: var(--green);
-}
-.simple-intro > p { align-self: start; margin: 8px 0 0; color: var(--yellow); font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
-.simple-intro h1 { margin: 0; font-family: var(--serif); font-size: clamp(52px, 6vw, 86px); font-weight: 400; letter-spacing: -.055em; line-height: .91; }
-.simple-intro > div { display: grid; gap: 22px; }
-.simple-intro > div p { margin: 0; color: rgba(255,255,255,.7); font-size: 14px; line-height: 1.65; }
-.simple-intro > div strong { padding-top: 18px; border-top: 1px solid rgba(255,255,255,.24); color: var(--yellow); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
 
 .control-bar {
   position: sticky;
@@ -387,8 +372,6 @@ tbody td { color: var(--muted); }
 .print-lesson-copy, .print-month-book, .print-materials-copy { display: none; }
 
 @media (max-width: 1080px) {
-  .simple-intro { grid-template-columns: 1fr 1.6fr; }
-  .simple-intro > div { grid-column: 1 / -1; grid-template-columns: 1fr 1fr; align-items: end; }
   .control-bar { grid-template-columns: 150px 150px 1fr; }
   .print-actions { grid-column: 1 / -1; justify-content: flex-end; }
   .lesson-workspace { grid-template-columns: 270px 1fr; }
@@ -402,9 +385,6 @@ tbody td { color: var(--muted); }
 
 @media (max-width: 780px) {
   .header-meta { display: none; }
-  .simple-intro { grid-template-columns: 1fr; gap: 24px; padding-top: 52px; }
-  .simple-intro > p { margin: 0; }
-  .simple-intro > div { grid-column: auto; grid-template-columns: 1fr; }
   .control-bar { position: relative; grid-template-columns: 1fr 1fr; padding: 13px 16px; }
   .current-selection { grid-column: 1 / -1; padding: 9px 0 0; border-top: 1px solid var(--line); border-left: 0; }
   .print-actions { justify-content: stretch; }
@@ -444,8 +424,6 @@ tbody td { color: var(--muted); }
 
 @media (max-width: 480px) {
   .simple-header { padding-inline: 15px; }
-  .simple-intro { padding-inline: 18px; }
-  .simple-intro h1 { font-size: 52px; }
   .control-bar { grid-template-columns: 1fr; }
   .current-selection, .print-actions { grid-column: auto; }
   .print-actions { display: grid; }

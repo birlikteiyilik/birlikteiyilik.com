@@ -44,15 +44,31 @@
 .reader-main { display: flex; flex: 1; flex-direction: column; width: 100%; min-height: 0; }
 .reader-toolbar { z-index: 10; display: flex; flex-shrink: 0; align-items: center; justify-content: center; gap: 12px; padding: 6px 24px; border-bottom: 1px solid var(--line); background: #fff; }
 .reader-toolbar button { min-height: 40px; padding: 0 14px; border: 1px solid var(--line); border-radius: 7px; background: #fff; cursor: pointer; font-size: 12px; white-space: nowrap; }
-.reader-page-select { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 12px; white-space: nowrap; }
+.reader-page-select { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 12px; white-space: nowrap; direction: ltr; }
 .reader-page-select select { width: 68px; height: 40px; font-size: 13px; }
-.reader-toolbar .reader-zoom { margin-left: auto; color: var(--green); }
-.reader-toolbar > button:first-child { margin-right: auto; }
-.reader-page { display: flex; flex: 1; justify-content: center; min-height: 0; padding: 8px; overflow: hidden; background: #e7e7e0; }
-.reader-page > img { display: block; width: 100%; height: 100%; object-fit: contain; object-position: center top; }
-.reader-page.is-zoomed { display: block; overflow: auto; }
-.reader-page.is-zoomed > img { width: max(100%, 1272px); height: auto; max-width: none; }
+.reader-toolbar .reader-zoom { margin-inline-start: auto; color: var(--green); direction: ltr; }
+.reader-toolbar > button:first-child { margin-inline-end: auto; }
+.reader-page { position: relative; display: flex; flex: 1; justify-content: center; min-height: 0; padding: 8px; overflow: hidden; background: #e7e7e0; }
+.flipbook-stage, .flipbook { width: 100%; height: 100%; }
+.flipbook { min-width: 0 !important; min-height: 0 !important; touch-action: none; }
+.flipbook .stf__wrapper { height: 100%; }
+.flipbook .stf__block { transition: transform 350ms ease; }
+.flipbook[data-cover="front"] .stf__block { transform: translateX(calc(var(--flipbook-page-width) * -.5)); }
+.flipbook[data-cover="back"] .stf__block { transform: translateX(calc(var(--flipbook-page-width) * .5)); }
+.flipbook-page { overflow: hidden; background: #fff; box-shadow: 0 1px 9px rgba(0,0,0,.15); }
+.flipbook-page > img { position: relative; display: block; width: 100%; height: 100%; object-fit: contain; user-select: none; -webkit-user-drag: none; }
+.flipbook-page-fallback { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; color: var(--muted); font-size: 12px; }
+.flipbook-page-fallback a { display: none; color: var(--green); }
+.flipbook-page.is-loaded .flipbook-page-fallback { display: none; }
+.flipbook-page.has-error .flipbook-page-fallback span { font-size: 0; }
+.flipbook-page.has-error .flipbook-page-fallback span::after { content: "Sayfa yüklenemedi"; font-size: 12px; }
+.flipbook-page.has-error .flipbook-page-fallback a { display: block; }
+.flipbook-page:not(.is-loaded) > img { visibility: hidden; }
+.reader-page.is-zoomed .flipbook-stage { visibility: hidden; pointer-events: none; }
+.reader-zoom-view { position: absolute; inset: 0; z-index: 1; padding: 8px; overflow: auto; background: #e7e7e0; }
+.reader-zoom-view > img { display: block; width: max(100%, 1273px); height: auto; max-width: none; }
 .reader-status { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) { .flipbook .stf__block { transition: none; } }
 @media (max-width: 680px) {
   .academy-header { padding: 16px 22px; }
   .academy-header-note { display: none; }
@@ -74,10 +90,10 @@
   .reader-file-actions { gap: 6px; }
   .reader-file-actions a { min-height: 40px; padding: 0 10px; font-size: 11px; }
   .reader-toolbar { gap: 7px; padding: 5px 12px; }
-  .reader-toolbar > button:first-child { margin-right: 0; }
+  .reader-toolbar > button:first-child { margin-inline-end: 0; }
   .reader-toolbar button { min-width: 40px; padding: 0 9px; }
   .reader-toolbar > button:not(.reader-zoom) span { display: none; }
-  .reader-toolbar .reader-zoom { margin-left: auto; font-size: 11px; }
+  .reader-toolbar .reader-zoom { margin-inline-start: auto; font-size: 11px; }
   .reader-page-select { gap: 6px; font-size: 11px; }
   .reader-page-select > span:first-child { display: none; }
   .reader-page-select select { width: 55px; }

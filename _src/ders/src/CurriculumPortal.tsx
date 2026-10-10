@@ -269,11 +269,11 @@ export function CurriculumPortal({ onHomeHref }: { onHomeHref: string }) {
 
   return (
     <main className={`teacher-portal print-${printScope}`}>
-      <div className="app-shell">
+      <div className="app-shell" id="top">
         <header className="simple-header">
           <a className="simple-brand" href="#top">
             <span>GA</span>
-            <div><strong>Güzel Ahlak</strong><small>Tam Öğretmen Kitabı</small></div>
+            <div><h1>Güzel Ahlak</h1><small>Tam Öğretmen Kitabı</small></div>
           </a>
           <div className="header-meta">
             <a className="section-back-link" href={onHomeHref}>← Kitap seçimi</a>
@@ -282,15 +282,6 @@ export function CurriculumPortal({ onHomeHref }: { onHomeHref: string }) {
             <span>1-8. sınıf · 9 ay</span>
           </div>
         </header>
-
-        <section className="simple-intro" id="top">
-          <p>Özgün konu sırası korunmuştur</p>
-          <h1>Planla. Anlat.<br />Uygula. Ölç.</h1>
-          <div>
-            <p>Her sınıf ve ay için 20 ders; çocuklara okunacak metin, etkileşimli materyal, sınıf sunumu ve değerlendirmeyle birlikte.</p>
-            <strong>Öğretmen dersten ayrılmadan tüm süreci yönetir</strong>
-          </div>
-        </section>
 
         <section className="control-bar" aria-label="Sınıf ve ay seçimi">
           <label>
