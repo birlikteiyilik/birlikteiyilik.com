@@ -4,7 +4,7 @@ Canlı adres: https://birlikteiyilik.com/ders
 
 Girişte Kur’an-ı Kerim, Güzel Ahlak ders rehberi ve Elif Ba kitabı seçilir. Güzel Ahlak bölümündeki tüm ders, arşiv, sınıf sunumu ve yazdırma araçları korunmuştur.
 
-Giriş kartları image_gen ile ayrı görseller olarak üretilmiştir; başlık, açıklama, sayfa bilgisi ve eylem yazıları görsellerin içindedir. Kartın tamamı bağlantıdır. Aynı metinler ekran okuyucuları için HTML’de de tutulur. Masaüstünde üç, tablette iki, telefonda bir sütun kullanılır; görseller kırpılmaz. `public/assets/book-cards/` WebP görsellerini, `public/assets/book-cards/prompts.md` üretim istemlerini içerir.
+Giriş kartları image_gen ile ayrı görseller olarak üretilmiştir; tüm görünen yazılar görsellerin içindedir. Kartın tamamı bağlantıdır. Açıklama ve sayfa bilgileri ekran okuyucuları için HTML’de de tutulur. Masaüstünde üç, tablette iki sütun kullanılır. Telefonda başlık, sayfa bilgisi ve eylem içeren 3:1 yatay görseller alt alta gösterilir; üç butonun ilk ekrana sığması için genişlik ekran yüksekliğine göre sınırlandırılır. Kısa yatay ekranlarda üç dikey kart yan yana sığdırılır. Görseller kırpılmaz. `public/assets/book-cards/` WebP görsellerini, `prompts.md` ve `mobile-prompts.md` üretim istemlerini içerir.
 
 Elif Ba 56 sayfalık, Kur’an-ı Kerim 615 sayfalık, sağdan sola çevrilen flipbook’lardır. Kur’an-ı Kerim için verilen 616 sayfalık PDF’nin yalnızca son sayfası çıkarılmıştır. İndirme ve PDF açma bağlantıları da bu 615 sayfalık dosyayı kullanır. Elif Ba’nın indirilen PDF’si özgün dosyanın aynısıdır. Tek sayıda yaprağı olan sağdan sola kitaplarda ilk sayfa tek gösterilir ve kalan yapraklar doğru sırayla eşlenir.
 

@@ -7,9 +7,9 @@ const home = import.meta.env.BASE_URL.replace(/\/$/, "");
 const cardAssets = `${import.meta.env.BASE_URL}assets/book-cards/`;
 
 const bookCards = [
-  { section: "kuran-i-kerim", title: "Kur’an-ı Kerim", image: "kuran-grid-v1.webp", description: "Sayfalarını çevirerek okuyabileceğiniz Kur’an-ı Kerim kitabı.", metadata: "615 sayfa · PDF kitap", action: "Kitabı aç" },
-  { section: "guzel-ahlak", title: "Güzel Ahlak", image: "guzel-ahlak-grid-v1.webp", description: "Ayrıntılı ders planları, öğretmen araçları ve hazır sınıf materyalleri.", metadata: "1–8. sınıf · 9 ay", action: "Derslere git" },
-  { section: "elif-ba", title: "Elif Ba", image: "elif-ba-grid-v2.webp", description: "Tecvîdli Kur’ân-ı Kerîm elifbâsı ve ezber müfredatı.", metadata: "56 sayfa · PDF kitap", action: "Kitabı aç" },
+  { section: "kuran-i-kerim", title: "Kur’an-ı Kerim", image: "kuran-grid-v1.webp", mobileImage: "kuran-mobile-v1.webp", description: "Sayfalarını çevirerek okuyabileceğiniz Kur’an-ı Kerim kitabı.", metadata: "615 sayfa · PDF kitap", action: "Kitabı aç" },
+  { section: "guzel-ahlak", title: "Güzel Ahlak", image: "guzel-ahlak-grid-v1.webp", mobileImage: "guzel-ahlak-mobile-v1.webp", description: "Ayrıntılı ders planları, öğretmen araçları ve hazır sınıf materyalleri.", metadata: "1–8. sınıf · 9 ay", action: "Derslere git" },
+  { section: "elif-ba", title: "Elif Ba", image: "elif-ba-grid-v2.webp", mobileImage: "elif-ba-mobile-v1.webp", description: "Tecvîdli Kur’ân-ı Kerîm elifbâsı ve ezber müfredatı.", metadata: "56 sayfa · PDF kitap", action: "Kitabı aç" },
 ];
 
 export function AcademyHeader() {
@@ -45,7 +45,10 @@ export function LessonHub() {
         <nav className="book-grid" aria-label="Ders kitabı seçimi">
           {bookCards.map((card) => (
             <a className="book-option" key={card.section} href={`${home}?bolum=${card.section}`} aria-label={`${card.title} — ${card.action}`}>
-              <img className="book-card-art" src={`${cardAssets}${card.image}`} alt="" width="1122" height="1402" decoding="async" />
+              <picture>
+                <source media="(max-width: 680px) and (orientation: portrait), (max-width: 680px) and (min-height: 501px)" srcSet={`${cardAssets}${card.mobileImage}`} width="2172" height="724" />
+                <img className="book-card-art" src={`${cardAssets}${card.image}`} alt="" width="1122" height="1402" decoding="async" />
+              </picture>
               <div className="book-card-accessible"><h2>{card.title}</h2><p>{card.description}</p><span>{card.metadata}</span></div>
             </a>
           ))}
