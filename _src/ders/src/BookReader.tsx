@@ -44,10 +44,12 @@ export function BookReader({ homeHref, book }: { homeHref: string; book: Book })
         <div className="reader-file-actions"><a href={pdfHref} target="_blank" rel="noopener noreferrer" aria-label="PDF’yi aç">PDF ↗</a><a className="reader-download" href={pdfHref} download={book.downloadName} aria-label="PDF indir">İndir ↓</a></div>
       </header>
       <main className="reader-main">
-        <div className="reader-toolbar" aria-label="Kitap sayfa araçları" dir={book.direction}>
-          <button onClick={() => bookRef.current?.previous()} disabled={page === 1 || turning} aria-label="Önceki sayfa">{isRtl ? "→" : "←"} <span>Önceki</span></button>
-          <label className="reader-page-select"><span>Sayfa</span><select value={page} disabled={turning} aria-label="Sayfa seçin" onChange={(event) => bookRef.current?.goTo(Number(event.target.value))}>{Array.from({ length: pageCount }, (_, index) => <option key={index + 1} value={index + 1}>{index + 1}</option>)}</select><span>{spread ? `–${page + 1} / ${pageCount}` : `/ ${pageCount}`}</span></label>
-          <button onClick={() => bookRef.current?.next()} disabled={isLastPage || turning} aria-label="Sonraki sayfa"><span>Sonraki</span> {isRtl ? "←" : "→"}</button>
+        <div className="reader-toolbar" aria-label="Kitap sayfa araçları">
+          <div className="reader-pagination" role="group" aria-label="Sayfa seçimi ve geçişi" dir={book.direction}>
+            <button onClick={() => bookRef.current?.previous()} disabled={page === 1 || turning} aria-label="Önceki sayfa">{isRtl ? "Önceki →" : "← Önceki"}</button>
+            <label className="reader-page-select"><span>Sayfa</span><select value={page} disabled={turning} aria-label="Sayfa seçin" onChange={(event) => bookRef.current?.goTo(Number(event.target.value))}>{Array.from({ length: pageCount }, (_, index) => <option key={index + 1} value={index + 1}>{index + 1}</option>)}</select><span>{spread ? `–${page + 1} / ${pageCount}` : `/ ${pageCount}`}</span></label>
+            <button onClick={() => bookRef.current?.next()} disabled={isLastPage || turning} aria-label="Sonraki sayfa">{isRtl ? "← Sonraki" : "Sonraki →"}</button>
+          </div>
           <button className="reader-zoom" aria-pressed={zoomed} onClick={() => setZoomed((current) => !current)}>{zoomed ? "Sayfaya sığdır" : "Yakınlaştır +"}</button>
         </div>
         <div className={`reader-page ${zoomed ? "is-zoomed" : ""}`}>

@@ -8,7 +8,7 @@ Giriş kartları image_gen ile ayrı görseller olarak üretilmiştir; tüm gör
 
 Elif Ba 56 sayfalık, Kur’an-ı Kerim 615 sayfalık, sağdan sola çevrilen flipbook’lardır. Kur’an-ı Kerim için verilen 616 sayfalık PDF’nin yalnızca son sayfası çıkarılmıştır. İndirme ve PDF açma bağlantıları da bu 615 sayfalık dosyayı kullanır. Elif Ba’nın indirilen PDF’si özgün dosyanın aynısıdır. Tek sayıda yaprağı olan sağdan sola kitaplarda ilk sayfa tek gösterilir ve kalan yapraklar doğru sırayla eşlenir.
 
-Dar ekranlarda tek sayfa, geniş ekranlarda iki sayfa ekrana sığar. Mobilde alttaki büyük düğmeler, kısa dokunma ve yatay kaydırma ile sayfa değişir. Düğme yerleri, dokunma kenarı, kaydırma ve klavye okları her kitabın yönünü takip eder. Dikey hareket ve uzun basma sayfa çevirmez. Sayfa seçimi ve yakınlaştırma kullanılabilir. Uzun kitaplarda yalnızca yakın sayfaların görselleri DOM’da tutulur.
+Dar ekranlarda tek sayfa, geniş ekranlarda iki sayfa ekrana sığar. Mobilde alttaki büyük düğmeler, kısa dokunma ve yatay kaydırma ile sayfa değişir. Düğme yerleri, dokunma kenarı, kaydırma ve klavye okları her kitabın yönünü takip eder. Masaüstünde sayfa seçimi ve iki geçiş düğmesi tek bir gruptur; düğmeler sayfa göstergesinin hemen yanındadır. Sağdan sola kitaplarda Sonraki solda, Önceki sağdadır; soldan sağa kitaplarda sıralama tersidir. Yakınlaştırma düğmesi bu gruptan ayrı durur. Dikey hareket ve uzun basma sayfa çevirmez. Sayfa seçimi ve yakınlaştırma kullanılabilir. Uzun kitaplarda yalnızca yakın sayfaların görselleri DOM’da tutulur.
 
 ## Geliştirme
 
