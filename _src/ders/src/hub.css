@@ -33,27 +33,26 @@
 .hub-footer a:hover, .reader-back:hover { text-decoration: underline; }
 .teacher-portal .header-meta { display: flex; flex-wrap: wrap; justify-content: flex-end; }
 .section-back-link { display: inline-flex; min-height: 40px; align-items: center; padding: 0 13px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--green); font-size: 11px; font-weight: 650; }
-.reader-main { width: min(1160px, 100%); margin: auto; padding: 28px 28px 48px; }
-.reader-back { display: inline-block; margin-bottom: 25px; color: var(--muted); font-size: 12px; }
-.reader-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 26px; margin-bottom: 30px; }
-.reader-heading h1 { margin: 0 0 12px; font-family: var(--serif); font-size: clamp(40px, 5vw, 56px); font-weight: 400; letter-spacing: -.03em; }
-.reader-heading .hub-eyebrow { margin-bottom: 10px; }
-.reader-heading > div > p:last-child { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.65; }
-.reader-file-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-.reader-file-actions a { display: flex; min-height: 44px; align-items: center; gap: 11px; padding: 0 16px; border: 1px solid var(--line-dark); border-radius: 8px; background: #fff; font-size: 12px; }
+/* The reader reserves the viewport for the book, with compact fixed controls. */
+.reader-shell { display: flex; flex-direction: column; height: 100dvh; min-height: 0; overflow: hidden; }
+.reader-heading { display: flex; flex-shrink: 0; align-items: center; gap: 24px; min-height: 60px; padding: 8px 24px; border-bottom: 1px solid var(--line); background: #fff; }
+.reader-back { display: inline-flex; min-height: 40px; align-items: center; gap: 7px; color: var(--muted); font-size: 12px; white-space: nowrap; }
+.reader-heading h1 { margin: 0; font-family: var(--serif); font-size: 25px; font-weight: 400; letter-spacing: -.03em; }
+.reader-file-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.reader-file-actions a { display: inline-flex; min-height: 40px; align-items: center; justify-content: center; padding: 0 14px; border: 1px solid var(--line-dark); border-radius: 7px; background: #fff; font-size: 12px; white-space: nowrap; }
 .reader-file-actions .reader-download { color: #fff; border-color: var(--green); background: var(--green); }
-.reader-download > span { color: #c4d5c7; font-size: 9px; }
-.reader-toolbar { position: sticky; z-index: 10; top: 0; display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 18px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,255,255,.97); box-shadow: 0 4px 15px rgba(30,49,44,.04); }
-.reader-toolbar button, .reader-bottom button { min-height: 42px; padding: 0 14px; border: 1px solid var(--line); border-radius: 7px; background: #fff; cursor: pointer; font-size: 12px; }
+.reader-main { display: flex; flex: 1; flex-direction: column; width: 100%; min-height: 0; }
+.reader-toolbar { z-index: 10; display: flex; flex-shrink: 0; align-items: center; justify-content: center; gap: 12px; padding: 6px 24px; border-bottom: 1px solid var(--line); background: #fff; }
+.reader-toolbar button { min-height: 40px; padding: 0 14px; border: 1px solid var(--line); border-radius: 7px; background: #fff; cursor: pointer; font-size: 12px; white-space: nowrap; }
 .reader-page-select { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 12px; white-space: nowrap; }
-.reader-page-select select { width: 68px; font-size: 13px; }
+.reader-page-select select { width: 68px; height: 40px; font-size: 13px; }
 .reader-toolbar .reader-zoom { margin-left: auto; color: var(--green); }
 .reader-toolbar > button:first-child { margin-right: auto; }
-.reader-page { max-width: 850px; margin: auto; overflow: auto; border: 1px solid var(--line-dark); border-radius: 6px; background: #fff; box-shadow: 0 14px 40px rgba(30,49,44,.08); }
-.reader-page > img { display: block; width: 100%; height: auto; }
-.reader-page.is-zoomed > img { width: max(100%, 1272px); max-width: none; }
-.reader-bottom { display: flex; max-width: 850px; align-items: center; justify-content: space-between; gap: 14px; margin: 20px auto 0; }
-.reader-bottom > span { color: var(--muted); font-size: 12px; }
+.reader-page { display: flex; flex: 1; justify-content: center; min-height: 0; padding: 8px; overflow: hidden; background: #e7e7e0; }
+.reader-page > img { display: block; width: 100%; height: 100%; object-fit: contain; object-position: center top; }
+.reader-page.is-zoomed { display: block; overflow: auto; }
+.reader-page.is-zoomed > img { width: max(100%, 1272px); height: auto; max-width: none; }
+.reader-status { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 @media (max-width: 680px) {
   .academy-header { padding: 16px 22px; }
   .academy-header-note { display: none; }
@@ -68,19 +67,21 @@
   .book-option h2 { font-size: 36px; }
   .book-option > p { min-height: 0; margin-bottom: 22px; }
   .book-option-bottom { padding-top: 16px; }
-  .reader-main { padding: 22px 14px 36px; }
-  .reader-heading { align-items: flex-start; flex-direction: column; gap: 20px; }
-  .reader-file-actions { width: 100%; }
-  .reader-file-actions a { flex: 1; justify-content: center; }
-  .reader-toolbar { flex-wrap: wrap; gap: 8px; padding: 9px; }
+  .reader-heading { min-height: 54px; gap: 12px; padding: 5px 12px; }
+  .reader-back { min-width: 40px; justify-content: center; font-size: 20px; }
+  .reader-back span { display: none; }
+  .reader-heading h1 { font-size: 22px; }
+  .reader-file-actions { gap: 6px; }
+  .reader-file-actions a { min-height: 40px; padding: 0 10px; font-size: 11px; }
+  .reader-toolbar { gap: 7px; padding: 5px 12px; }
   .reader-toolbar > button:first-child { margin-right: 0; }
-  .reader-toolbar button { min-width: 42px; padding: 0 9px; }
+  .reader-toolbar button { min-width: 40px; padding: 0 9px; }
   .reader-toolbar > button:not(.reader-zoom) span { display: none; }
-  .reader-toolbar .reader-zoom { margin-left: 0; font-size: 11px; }
+  .reader-toolbar .reader-zoom { margin-left: auto; font-size: 11px; }
   .reader-page-select { gap: 6px; font-size: 11px; }
   .reader-page-select > span:first-child { display: none; }
   .reader-page-select select { width: 55px; }
-  .reader-bottom button { padding: 0 10px; font-size: 11px; }
+  .reader-page { padding: 6px; }
   .header-meta { flex-wrap: wrap; justify-content: flex-end; }
   .header-meta .section-back-link { display: inline-flex; }
 }
