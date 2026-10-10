@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
-import { ElifBaReader } from "./ElifBaReader";
+import { BookReader } from "./BookReader";
+import { elifBaBook, quranBook } from "./books";
 
 const CurriculumPortal = lazy(() => import("./CurriculumPortal").then((module) => ({ default: module.CurriculumPortal })));
 const home = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -22,7 +23,8 @@ export function LessonHub() {
   if (section === "guzel-ahlak" || (!section && params.has("sinif"))) {
     return <Suspense fallback={<div className="empty-state" role="status"><p>Ders kitabı açılıyor…</p></div>}><CurriculumPortal onHomeHref={home} /></Suspense>;
   }
-  if (section === "elif-ba") return <ElifBaReader homeHref={home} />;
+  if (section === "elif-ba") return <BookReader homeHref={home} book={elifBaBook} />;
+  if (section === "kuran-i-kerim") return <BookReader homeHref={home} book={quranBook} />;
 
   return (
     <div className="hub-shell">
@@ -31,18 +33,25 @@ export function LessonHub() {
         <div className="hub-intro">
           <p className="hub-eyebrow">BİRLİKTE ÖĞRENİYORUZ</p>
           <h1>Öğretmen Kitabı</h1>
-          <p>Ders rehberine veya müfredat kitabına ulaşmak için bir bölüm seçin.</p>
+          <p>Kur’an-ı Kerim, ders rehberi veya Elif Ba kitabına ulaşmak için bir bölüm seçin.</p>
         </div>
         <nav className="book-grid" aria-label="Ders kitabı seçimi">
+          <a className="book-option book-quran" href={`${home}?bolum=kuran-i-kerim`}>
+            <div className="book-option-top"><span>01 / KUR’AN-I KERİM</span><span className="book-arrow" aria-hidden="true">↗</span></div>
+            <div className="book-symbol" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none"><rect x="12" y="6" width="40" height="52" rx="3" stroke="currentColor" strokeWidth="2"/><path d="M19 6v52M35 18l4 6 7 3-4 6 1 7-8-1-6 4-3-7-6-4 6-5 2-7 7 1Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/></svg></div>
+            <h2>Kur’an-ı Kerim</h2>
+            <p>Sayfalarını çevirerek okuyabileceğiniz Kur’an-ı Kerim kitabı.</p>
+            <div className="book-option-bottom"><span>615 sayfa · PDF kitap</span><strong>Kitabı aç <span aria-hidden="true">→</span></strong></div>
+          </a>
           <a className="book-option book-ahlak" href={`${home}?bolum=guzel-ahlak`}>
-            <div className="book-option-top"><span>01 / DERS REHBERİ</span><span className="book-arrow" aria-hidden="true">↗</span></div>
+            <div className="book-option-top"><span>02 / DERS REHBERİ</span><span className="book-arrow" aria-hidden="true">↗</span></div>
             <div className="book-symbol" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none"><path d="M32 16C23 10 13 10 6 13v38c8-3 17-3 26 3 9-6 18-6 26-3V13c-7-3-17-3-26 3Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/><path d="M32 16v38M14 22c4-1 8 0 12 2m-12 7c4-1 8 0 12 2m12-9c4-2 8-3 12-2m-12 11c4-2 8-3 12-2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg></div>
             <h2>Güzel Ahlak</h2>
             <p>Ayrıntılı ders planları, öğretmen araçları ve hazır sınıf materyalleri.</p>
             <div className="book-option-bottom"><span>1–8. sınıf · 9 ay</span><strong>Derslere git <span aria-hidden="true">→</span></strong></div>
           </a>
           <a className="book-option book-elif" href={`${home}?bolum=elif-ba`}>
-            <div className="book-option-top"><span>02 / MÜFREDAT KİTABI</span><span className="book-arrow" aria-hidden="true">↗</span></div>
+            <div className="book-option-top"><span>03 / MÜFREDAT KİTABI</span><span className="book-arrow" aria-hidden="true">↗</span></div>
             <div className="book-symbol arabic-symbol" lang="ar" aria-hidden="true">ا ب</div>
             <h2>Elif Ba</h2>
             <p>Tecvîdli Kur’ân-ı Kerîm elifbâsı ve ezber müfredatı.</p>
