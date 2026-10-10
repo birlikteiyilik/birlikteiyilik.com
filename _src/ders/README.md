@@ -2,7 +2,7 @@
 
 Canlı adres: https://birlikteiyilik.com/ders
 
-Girişte Kur’an-ı Kerim, Güzel Ahlak ders rehberi ve Elif Ba kitabı seçilir. Güzel Ahlak bölümündeki tüm ders, arşiv, sınıf sunumu ve yazdırma araçları korunmuştur.
+Girişte Kur’an-ı Kerim, Güzel Ahlak ders rehberi ve Elif Ba kitabı seçilir. Güzel Ahlak bölümü 3–8. sınıflar içindir ve 3. sınıftan açılır. Eski 1. ve 2. sınıf bağlantıları 3. sınıfa düzeltilir; bağlantıdaki ay ve ders seçimi korunur. Ders, arşiv, sınıf sunumu ve yazdırma araçları kullanılabilir. 3. sınıfın da kullandığı özgün 1-2-3 kaynak grubu arşivde korunur.
 
 Giriş kartları image_gen ile ayrı görseller olarak üretilmiştir; tüm görünen yazılar görsellerin içindedir. Kartın tamamı bağlantıdır. Açıklama ve sayfa bilgileri ekran okuyucuları için HTML’de de tutulur. Masaüstünde üç, tablette iki sütun kullanılır. Telefonda başlık, sayfa bilgisi ve eylem içeren 3:1 yatay görseller alt alta gösterilir; üç butonun ilk ekrana sığması için genişlik ekran yüksekliğine göre sınırlandırılır. Kısa yatay ekranlarda üç dikey kart yan yana sığdırılır. Görseller kırpılmaz. `public/assets/book-cards/` WebP görsellerini, `prompts.md` ve `mobile-prompts.md` üretim istemlerini içerir.
 

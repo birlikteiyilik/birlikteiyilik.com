@@ -8,7 +8,7 @@ const cardAssets = `${import.meta.env.BASE_URL}assets/book-cards/`;
 
 const bookCards = [
   { section: "kuran-i-kerim", title: "Kur’an-ı Kerim", image: "kuran-grid-v1.webp", mobileImage: "kuran-mobile-v1.webp", description: "Sayfalarını çevirerek okuyabileceğiniz Kur’an-ı Kerim kitabı.", metadata: "615 sayfa · PDF kitap", action: "Kitabı aç" },
-  { section: "guzel-ahlak", title: "Güzel Ahlak", image: "guzel-ahlak-grid-v1.webp", mobileImage: "guzel-ahlak-mobile-v1.webp", description: "Ayrıntılı ders planları, öğretmen araçları ve hazır sınıf materyalleri.", metadata: "1–8. sınıf · 9 ay", action: "Derslere git" },
+  { section: "guzel-ahlak", title: "Güzel Ahlak", image: "guzel-ahlak-grid-v2.webp", mobileImage: "guzel-ahlak-mobile-v2.webp", description: "Ayrıntılı ders planları, öğretmen araçları ve hazır sınıf materyalleri.", metadata: "3–8. sınıf · 9 ay", action: "Derslere git" },
   { section: "elif-ba", title: "Elif Ba", image: "elif-ba-grid-v2.webp", mobileImage: "elif-ba-mobile-v1.webp", description: "Tecvîdli Kur’ân-ı Kerîm elifbâsı ve ezber müfredatı.", metadata: "56 sayfa · PDF kitap", action: "Kitabı aç" },
 ];
 

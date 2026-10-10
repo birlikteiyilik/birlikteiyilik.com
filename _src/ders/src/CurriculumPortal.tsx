@@ -158,7 +158,7 @@ function EmptyState({ text }: { text: string }) {
 export function CurriculumPortal({ onHomeHref }: { onHomeHref: string }) {
   const [archive, setArchive] = useState<ArchiveData | null>(null);
   const [error, setError] = useState("");
-  const [grade, setGrade] = useState(1);
+  const [grade, setGrade] = useState(3);
   const [month, setMonth] = useState(1);
   const [lessonNumber, setLessonNumber] = useState(1);
   const [tab, setTab] = useState<Tab>("lessons");
@@ -183,7 +183,7 @@ export function CurriculumPortal({ onHomeHref }: { onHomeHref: string }) {
     const nextGrade = Number(params.get("sinif"));
     const nextMonth = Number(params.get("ay"));
     const nextLesson = Number(params.get("ders"));
-    if (nextGrade >= 1 && nextGrade <= 8) setGrade(nextGrade);
+    if (Number.isInteger(nextGrade) && nextGrade >= 3 && nextGrade <= 8) setGrade(nextGrade);
     if (nextMonth >= 1 && nextMonth <= 9) setMonth(nextMonth);
     if (nextLesson >= 1 && nextLesson <= 20) setLessonNumber(nextLesson);
   }, []);
@@ -279,7 +279,7 @@ export function CurriculumPortal({ onHomeHref }: { onHomeHref: string }) {
             <a className="section-back-link" href={onHomeHref}>← Kitap seçimi</a>
             <span>46 kaynak dosya</span>
             <span>963 sayfa</span>
-            <span>1-8. sınıf · 9 ay</span>
+            <span>3–8. sınıf · 9 ay</span>
           </div>
         </header>
 
@@ -287,7 +287,7 @@ export function CurriculumPortal({ onHomeHref }: { onHomeHref: string }) {
           <label>
             <span>Sınıf seçin</span>
             <select value={grade} onChange={(event) => selectGrade(Number(event.target.value))}>
-              {Array.from({ length: 8 }, (_, index) => <option key={index + 1} value={index + 1}>{index + 1}. Sınıf</option>)}
+              {Array.from({ length: 6 }, (_, index) => <option key={index + 3} value={index + 3}>{index + 3}. Sınıf</option>)}
             </select>
           </label>
           <label>
