@@ -7,8 +7,6 @@
 {% block head_extra %}
 <link rel="preload" as="image" href="/images/degerler-rotasi/v1/hero-values-route-students-v1.webp" fetchpriority="high">
 <link rel="stylesheet" href="/css/degerler-rotasi.css?v=3">
-<link rel="stylesheet" href="/css/qr-tree-v1.css">
-<script type="module" src="/js/qr-tree-v1.js"></script>
 {% endblock %}
 
 {% block schema %}
@@ -364,10 +362,6 @@
 </section>
 
 <!-- İLETİŞİM -->
-{% with tree_id='egitim-agaci', tree_theme='filiz', tree_eyebrow='HER İYİLİK BİR TOHUM', tree_title='Bir iyilik, bin filiz.', tree_description='Öğrenerek, öğreterek ve paylaşarak büyüyen bir aileyiz. Ağaca dokunun; bu yolculuğun bağlantılarını sevdiklerinizle paylaşın.' %}
-  {% include 'partials/qr-tree.html' %}
-{% endwith %}
-
 <section class="section bg-white" id="iletisim">
   <div class="container">
     <div class="section-header">
