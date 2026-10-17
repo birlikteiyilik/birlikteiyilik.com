@@ -6,7 +6,9 @@ Girişte Kur’an-ı Kerim, Güzel Ahlak ders rehberi ve Elif Ba kitabı seçili
 
 Giriş kartları image_gen ile ayrı görseller olarak üretilmiştir; tüm görünen yazılar görsellerin içindedir. Kartın tamamı bağlantıdır. Açıklama ve sayfa bilgileri ekran okuyucuları için HTML’de de tutulur. Masaüstünde üç, tablette iki sütun kullanılır. Telefonda başlık, sayfa bilgisi ve eylem içeren 3:1 yatay görseller alt alta gösterilir; üç butonun ilk ekrana sığması için genişlik ekran yüksekliğine göre sınırlandırılır. Kısa yatay ekranlarda üç dikey kart yan yana sığdırılır. Görseller kırpılmaz. `public/assets/book-cards/` WebP görsellerini, `prompts.md` ve `mobile-prompts.md` üretim istemlerini içerir.
 
-Elif Ba 56 sayfalık, Kur’an-ı Kerim 615 sayfalık, sağdan sola çevrilen flipbook’lardır. Kur’an-ı Kerim için verilen 616 sayfalık PDF’nin yalnızca son sayfası çıkarılmıştır. İndirme ve PDF açma bağlantıları da bu 615 sayfalık dosyayı kullanır. Elif Ba’nın indirilen PDF’si özgün dosyanın aynısıdır. Tek sayıda yaprağı olan sağdan sola kitaplarda ilk sayfa tek gösterilir ve kalan yapraklar doğru sırayla eşlenir.
+Elif Ba bölümündeki kitap seçiminden 56 sayfalık özgün Elif Ba müfredatına veya 52 sayfalık **ELİF BA MEHMET MERT** kitabına ulaşılır. Her iki Elif Ba ve 615 sayfalık Kur’an-ı Kerim, sağdan sola çevrilen flipbook’lardır. Kur’an-ı Kerim için verilen 616 sayfalık PDF’nin yalnızca son sayfası çıkarılmıştır. İndirme ve PDF açma bağlantıları da bu 615 sayfalık dosyayı kullanır. Her iki Elif Ba’nın indirilen PDF’si verilen özgün dosyanın aynısıdır. Tek sayıda yaprağı olan sağdan sola kitaplarda ilk sayfa tek gösterilir ve kalan yapraklar doğru sırayla eşlenir.
+
+Güzel Ahlak arşivinin metinlerinde “teâlâ” ve “teala” kelimeleri küçük t ile yazılır; kaynakların diğer yazımları korunur. Başlıklar, kaynak metinleri, ders araçları ve yazdırma çıktıları aynı arşiv verisini kullanır.
 
 Dar ekranlarda tek sayfa, geniş ekranlarda iki sayfa ekrana sığar. Mobilde alttaki büyük düğmeler, kısa dokunma ve yatay kaydırma ile sayfa değişir. Düğme yerleri, dokunma kenarı, kaydırma ve klavye okları her kitabın yönünü takip eder. Masaüstünde sayfa seçimi ve iki geçiş düğmesi tek bir gruptur; düğmeler sayfa göstergesinin hemen yanındadır. Sağdan sola kitaplarda Sonraki solda, Önceki sağdadır; soldan sağa kitaplarda sıralama tersidir. Yakınlaştırma düğmesi bu gruptan ayrı durur. Dikey hareket ve uzun basma sayfa çevirmez. Sayfa seçimi ve yakınlaştırma kullanılabilir. Uzun kitaplarda yalnızca yakın sayfaların görselleri DOM’da tutulur.
 
@@ -20,11 +22,15 @@ Node.js 24 ile `pnpm test`, iki okuma yönünde dokunma ve kaydırma davranışl
 
 `pnpm build` TypeScript kontrolünden sonra statik dosyaları depo kökündeki `ders/` klasörüne üretir. Kaynak değişiklikleriyle birlikte bu klasörü de Git'e ekleyin. Mevcut ana sitenin Vercel Git yayını bu dosyaları sunar; çalışma sırasında Sites, Next.js veya ayrı bir sunucu gerektirmez.
 
-Bağlantılar `/ders?bolum=guzel-ahlak&sinif=3&ay=1&ders=1`, `/ders?bolum=elif-ba&sayfa=5` ve `/ders?bolum=kuran-i-kerim&sayfa=2` biçimindedir. Bölüm içindeki “Kitap seçimi” bağlantısı girişe döner.
+Bağlantılar `/ders?bolum=guzel-ahlak&sinif=3&ay=1&ders=1`, `/ders?bolum=elif-ba&sayfa=5`, `/ders?bolum=elif-ba&kitap=mehmet-mert&sayfa=5` ve `/ders?bolum=kuran-i-kerim&sayfa=2` biçimindedir. Bölüm içindeki “Kitap seçimi” bağlantısı girişe döner. Eski Elif Ba bağlantıları özgün 56 sayfalık kitabı açmaya devam eder.
 
 ## Kaynaklar
 
 `public/data/archive.json` özgün Güzel Ahlak arşivini, `public/assets/elif-ba-mufredat.pdf` verilen PDF'yi içerir. `public/assets/elif-ba-pages/` dosyaları bu PDF'den 1800 piksel yüksekliğinde üretilmiştir.
+
+`public/assets/elif-ba-mehmet-mert.pdf` verilen 52 sayfalık PDF'nin değiştirilmemiş kopyasıdır. `public/assets/elif-ba-mehmet-mert-pages/` dizinindeki 52 WebP, PDF sayfalarının sırasını ve en-boy oranlarını koruyarak 1800 piksel yüksekliğinde, 88 kaliteyle üretilmiştir.
+
+ELİF BA MEHMET MERT PDF SHA-256: `6e675a526f4886e0eb12ded335cfbdba684b61ec309a082973c5a67fa23b0439`
 
 `public/assets/kuran-i-kerim.pdf` son sayfası çıkarılan yeni kitabı, `public/assets/kuran-i-kerim-pages/` bu dosyanın 1800 piksel yüksekliğindeki 615 görselini içerir. Sayfa içerik akışları ve boyutları kaynak PDF’nin ilk 615 sayfasıyla karşılaştırılarak doğrulanmıştır.
 

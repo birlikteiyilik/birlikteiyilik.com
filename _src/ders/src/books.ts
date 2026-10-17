@@ -17,6 +17,13 @@ export const elifBaBook: Book = {
   downloadName: "Elif-Ba-Mufredatimiz.pdf",
 };
 
+export const mehmetMertElifBaBook: Book = {
+  title: "ELİF BA MEHMET MERT", imageLabel: "ELİF BA MEHMET MERT", pageCount: 52,
+  width: 1314, height: 1800, direction: "rtl",
+  imageFolder: "elif-ba-mehmet-mert-pages", pdfFile: "elif-ba-mehmet-mert.pdf",
+  downloadName: "ELIF-BA-MEHMET-MERT.pdf",
+};
+
 export const quranBook: Book = {
   title: "Kur’an-ı Kerim", imageLabel: "Kur’an-ı Kerim", pageCount: 615,
   width: 1244, height: 1800, direction: "rtl",

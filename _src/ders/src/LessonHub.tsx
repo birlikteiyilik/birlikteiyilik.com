@@ -1,6 +1,6 @@
 import { lazy, Suspense } from "react";
 import { BookReader } from "./BookReader";
-import { elifBaBook, quranBook } from "./books";
+import { elifBaBook, mehmetMertElifBaBook, quranBook } from "./books";
 
 const CurriculumPortal = lazy(() => import("./CurriculumPortal").then((module) => ({ default: module.CurriculumPortal })));
 const home = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -30,7 +30,14 @@ export function LessonHub() {
   if (section === "guzel-ahlak" || (!section && params.has("sinif"))) {
     return <Suspense fallback={<div className="empty-state" role="status"><p>Ders kitabı açılıyor…</p></div>}><CurriculumPortal onHomeHref={home} /></Suspense>;
   }
-  if (section === "elif-ba") return <BookReader homeHref={home} book={elifBaBook} />;
+  if (section === "elif-ba") {
+    const isMehmetMert = params.get("kitap") === "mehmet-mert";
+    const bookChoices = [
+      { title: "Elif Ba Müfredatı", href: `${home}?bolum=elif-ba`, active: !isMehmetMert },
+      { title: mehmetMertElifBaBook.title, href: `${home}?bolum=elif-ba&kitap=mehmet-mert`, active: isMehmetMert },
+    ];
+    return <BookReader homeHref={home} book={isMehmetMert ? mehmetMertElifBaBook : elifBaBook} bookChoices={bookChoices} />;
+  }
   if (section === "kuran-i-kerim") return <BookReader homeHref={home} book={quranBook} />;
 
   return (

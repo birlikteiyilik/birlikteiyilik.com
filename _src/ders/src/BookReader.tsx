@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { BookFlipbook, type FlipbookHandle } from "./BookFlipbook";
 import { bookPageImage, bookPdfHref, type Book } from "./books";
 
-export function BookReader({ homeHref, book }: { homeHref: string; book: Book }) {
+type BookChoice = { title: string; href: string; active: boolean };
+
+export function BookReader({ homeHref, book, bookChoices }: { homeHref: string; book: Book; bookChoices?: BookChoice[] }) {
   const { pageCount } = book;
   const isRtl = book.direction === "rtl";
   const pdfHref = bookPdfHref(book);
@@ -43,6 +45,13 @@ export function BookReader({ homeHref, book }: { homeHref: string; book: Book })
         <h1>{book.title}</h1>
         <div className="reader-file-actions"><a href={pdfHref} target="_blank" rel="noopener noreferrer" aria-label="PDF’yi aç">PDF ↗</a><a className="reader-download" href={pdfHref} download={book.downloadName} aria-label="PDF indir">İndir ↓</a></div>
       </header>
+      {bookChoices && (
+        <nav className="reader-book-choices" aria-label="Elif Ba kitap seçimi">
+          {bookChoices.map((choice) => (
+            <a key={choice.href} href={choice.href} aria-current={choice.active ? "page" : undefined}>{choice.title}</a>
+          ))}
+        </nav>
+      )}
       <main className="reader-main">
         <div className="reader-toolbar" aria-label="Kitap sayfa araçları">
           <div className="reader-pagination" role="group" aria-label="Sayfa seçimi ve geçişi" dir={book.direction}>
