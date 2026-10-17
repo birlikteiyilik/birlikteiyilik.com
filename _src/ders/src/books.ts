@@ -11,17 +11,17 @@ export type Book = {
 };
 
 export const elifBaBook: Book = {
-  title: "Elif Ba", imageLabel: "Elif Ba müfredatı", pageCount: 56,
+  title: "Elifba", imageLabel: "Elifba", pageCount: 56,
   width: 1273, height: 1800, direction: "rtl",
   imageFolder: "elif-ba-pages", pdfFile: "elif-ba-mufredat.pdf",
-  downloadName: "Elif-Ba-Mufredatimiz.pdf",
+  downloadName: "Elifba.pdf",
 };
 
-export const mehmetMertElifBaBook: Book = {
-  title: "ELİF BA MEHMET MERT", imageLabel: "ELİF BA MEHMET MERT", pageCount: 52,
+export const mehmedMertElifBaBook: Book = {
+  title: "Elifba Mehmed Mert", imageLabel: "Elifba Mehmed Mert", pageCount: 51,
   width: 1314, height: 1800, direction: "rtl",
-  imageFolder: "elif-ba-mehmet-mert-pages", pdfFile: "elif-ba-mehmet-mert.pdf",
-  downloadName: "ELIF-BA-MEHMET-MERT.pdf",
+  imageFolder: "elifba-mehmed-mert-pages", pdfFile: "elifba-mehmed-mert.pdf",
+  downloadName: "Elifba-Mehmed-Mert.pdf",
 };
 
 export const quranBook: Book = {

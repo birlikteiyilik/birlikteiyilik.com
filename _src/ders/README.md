@@ -2,11 +2,11 @@
 
 Canlı adres: https://birlikteiyilik.com/ders
 
-Girişte Kur’an-ı Kerim, Güzel Ahlak ders rehberi ve Elif Ba kitabı seçilir. Güzel Ahlak bölümü 3–8. sınıflar içindir ve 3. sınıftan açılır. Eski 1. ve 2. sınıf bağlantıları 3. sınıfa düzeltilir; bağlantıdaki ay ve ders seçimi korunur. Ders, arşiv, sınıf sunumu ve yazdırma araçları kullanılabilir. 3. sınıfın da kullandığı özgün 1-2-3 kaynak grubu arşivde korunur.
+Girişte Kur’an-ı Kerim, Güzel Ahlak ders rehberi ve Elifba bölümü seçilir. Elifba giriş kartında “2 kitap · PDF kitap” bilgisi gösterilir. Güzel Ahlak bölümü 3–8. sınıflar içindir ve 3. sınıftan açılır. Eski 1. ve 2. sınıf bağlantıları 3. sınıfa düzeltilir; bağlantıdaki ay ve ders seçimi korunur. Ders, arşiv, sınıf sunumu ve yazdırma araçları kullanılabilir. 3. sınıfın da kullandığı özgün 1-2-3 kaynak grubu arşivde korunur.
 
 Giriş kartları image_gen ile ayrı görseller olarak üretilmiştir; tüm görünen yazılar görsellerin içindedir. Kartın tamamı bağlantıdır. Açıklama ve sayfa bilgileri ekran okuyucuları için HTML’de de tutulur. Masaüstünde üç, tablette iki sütun kullanılır. Telefonda başlık, sayfa bilgisi ve eylem içeren 3:1 yatay görseller alt alta gösterilir; üç butonun ilk ekrana sığması için genişlik ekran yüksekliğine göre sınırlandırılır. Kısa yatay ekranlarda üç dikey kart yan yana sığdırılır. Görseller kırpılmaz. `public/assets/book-cards/` WebP görsellerini, `prompts.md` ve `mobile-prompts.md` üretim istemlerini içerir.
 
-Elif Ba bölümündeki kitap seçiminden 56 sayfalık özgün Elif Ba müfredatına veya 52 sayfalık **ELİF BA MEHMET MERT** kitabına ulaşılır. Her iki Elif Ba ve 615 sayfalık Kur’an-ı Kerim, sağdan sola çevrilen flipbook’lardır. Kur’an-ı Kerim için verilen 616 sayfalık PDF’nin yalnızca son sayfası çıkarılmıştır. İndirme ve PDF açma bağlantıları da bu 615 sayfalık dosyayı kullanır. Her iki Elif Ba’nın indirilen PDF’si verilen özgün dosyanın aynısıdır. Tek sayıda yaprağı olan sağdan sola kitaplarda ilk sayfa tek gösterilir ve kalan yapraklar doğru sırayla eşlenir.
+Elifba bölümündeki kitap seçiminden 56 sayfalık **Elifba** veya 51 sayfalık **Elifba Mehmed Mert** kitabına ulaşılır. Elifba Mehmed Mert için verilen PDF’nin 52. ve son sayfası okuyucudan ve indirilen PDF’den çıkarılmıştır; ilk 51 sayfa değiştirilmemiştir. 56 sayfalık Elifba’nın indirilen PDF’si özgün dosyanın aynısıdır. Her iki Elifba ve 615 sayfalık Kur’an-ı Kerim, sağdan sola çevrilen flipbook’lardır. Kur’an-ı Kerim için verilen 616 sayfalık PDF’nin yalnızca son sayfası çıkarılmıştır. İndirme ve PDF açma bağlantıları da bu 615 sayfalık dosyayı kullanır. Tek sayıda yaprağı olan sağdan sola kitaplarda ilk sayfa tek gösterilir ve kalan yapraklar doğru sırayla eşlenir.
 
 Güzel Ahlak arşivinin metinlerinde “teâlâ” ve “teala” kelimeleri küçük t ile yazılır; kaynakların diğer yazımları korunur. Başlıklar, kaynak metinleri, ders araçları ve yazdırma çıktıları aynı arşiv verisini kullanır.
 
@@ -22,15 +22,17 @@ Node.js 24 ile `pnpm test`, iki okuma yönünde dokunma ve kaydırma davranışl
 
 `pnpm build` TypeScript kontrolünden sonra statik dosyaları depo kökündeki `ders/` klasörüne üretir. Kaynak değişiklikleriyle birlikte bu klasörü de Git'e ekleyin. Mevcut ana sitenin Vercel Git yayını bu dosyaları sunar; çalışma sırasında Sites, Next.js veya ayrı bir sunucu gerektirmez.
 
-Bağlantılar `/ders?bolum=guzel-ahlak&sinif=3&ay=1&ders=1`, `/ders?bolum=elif-ba&sayfa=5`, `/ders?bolum=elif-ba&kitap=mehmet-mert&sayfa=5` ve `/ders?bolum=kuran-i-kerim&sayfa=2` biçimindedir. Bölüm içindeki “Kitap seçimi” bağlantısı girişe döner. Eski Elif Ba bağlantıları özgün 56 sayfalık kitabı açmaya devam eder.
+Bağlantılar `/ders?bolum=guzel-ahlak&sinif=3&ay=1&ders=1`, `/ders?bolum=elif-ba&sayfa=5`, `/ders?bolum=elif-ba&kitap=mehmed-mert&sayfa=5` ve `/ders?bolum=kuran-i-kerim&sayfa=2` biçimindedir. Eski `kitap=mehmet-mert` bağlantıları da Elifba Mehmed Mert kitabını açar. Bölüm içindeki “Kitap seçimi” bağlantısı girişe döner. Eski Elifba bağlantıları özgün 56 sayfalık kitabı açmaya devam eder.
 
 ## Kaynaklar
 
 `public/data/archive.json` özgün Güzel Ahlak arşivini, `public/assets/elif-ba-mufredat.pdf` verilen PDF'yi içerir. `public/assets/elif-ba-pages/` dosyaları bu PDF'den 1800 piksel yüksekliğinde üretilmiştir.
 
-`public/assets/elif-ba-mehmet-mert.pdf` verilen 52 sayfalık PDF'nin değiştirilmemiş kopyasıdır. `public/assets/elif-ba-mehmet-mert-pages/` dizinindeki 52 WebP, PDF sayfalarının sırasını ve en-boy oranlarını koruyarak 1800 piksel yüksekliğinde, 88 kaliteyle üretilmiştir.
+`public/assets/elifba-mehmed-mert.pdf`, verilen PDF’nin ilk 51 sayfasını içerir. `public/assets/elifba-mehmed-mert-pages/` dizinindeki 51 WebP, PDF sayfalarının sırasını ve en-boy oranlarını koruyarak 1800 piksel yüksekliğinde, 88 kaliteyle üretilmiştir. İlk 51 sayfanın PDF içerikleri ve render çıktıları özgün dosyayla karşılaştırılarak doğrulanmıştır.
 
-ELİF BA MEHMET MERT PDF SHA-256: `6e675a526f4886e0eb12ded335cfbdba684b61ec309a082973c5a67fa23b0439`
+Elifba Mehmed Mert özgün PDF SHA-256: `6e675a526f4886e0eb12ded335cfbdba684b61ec309a082973c5a67fa23b0439`
+
+Elifba Mehmed Mert yayımlanan 51 sayfalık PDF SHA-256: `cdd14c981baaf92de39dbcee3758a2f208c6f4ba9c7a03a8ec42b318357a5b41`
 
 `public/assets/kuran-i-kerim.pdf` son sayfası çıkarılan yeni kitabı, `public/assets/kuran-i-kerim-pages/` bu dosyanın 1800 piksel yüksekliğindeki 615 görselini içerir. Sayfa içerik akışları ve boyutları kaynak PDF’nin ilk 615 sayfasıyla karşılaştırılarak doğrulanmıştır.
 

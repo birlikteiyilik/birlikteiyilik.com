@@ -79,3 +79,7 @@ Make a restrained typography and frame consistency pass:
 All existing text must be retained verbatim: "03 / MÜFREDAT KİTABI", "Elif Ba", "Tecvîdli Kur’ân-ı Kerîm elifbâsı ve ezber müfredatı.", "56 sayfa · PDF kitap", "Kitabı aç →".
 Do not add any other words, symbols, objects, fake text or watermark. Do not redesign the hero or background. Output only the finished card artwork.
 ```
+
+## Elifba — iki kitaplık bölüm kartı (v3)
+
+`elifba-grid-v3.webp`, önceki `elif-ba-grid-v2.webp` kartından yerleşik image_gen ile düzenlendi. Tam 1122×1402 tuval, mevcut çizim, Arapça harfler, renkler ve diğer metinler korundu. Yalnızca başlık `Elifba`, alt bilgi `2 kitap · PDF kitap` yapıldı. Çıktı 92 kaliteyle WebP olarak kaydedildi.

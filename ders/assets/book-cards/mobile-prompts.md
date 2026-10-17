@@ -55,3 +55,7 @@ Text (verbatim, ONLY these three lines):
 "Kitabı aç →"
 Constraints: Turkish spelling and punctuation must be correct. Keep the title especially clear; do not distort or condense the letters. Maintain a cohesive three-card family.
 ```
+
+## Elifba — iki kitaplık mobil kart (v2)
+
+`elifba-mobile-v2.webp`, önceki `elif-ba-mobile-v1.webp` kartından yerleşik image_gen ile düzenlendi. Tam 2172×724 tuval, mevcut çizim, Arapça harfler, renkler ve `Kitabı aç →` eylemi korundu. Yalnızca başlık `Elifba`, alt bilgi `2 kitap · PDF kitap` yapıldı. Çıktı 92 kaliteyle WebP olarak kaydedildi.

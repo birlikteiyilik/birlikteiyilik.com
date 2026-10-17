@@ -1,6 +1,6 @@
 import { lazy, Suspense } from "react";
 import { BookReader } from "./BookReader";
-import { elifBaBook, mehmetMertElifBaBook, quranBook } from "./books";
+import { elifBaBook, mehmedMertElifBaBook, quranBook } from "./books";
 
 const CurriculumPortal = lazy(() => import("./CurriculumPortal").then((module) => ({ default: module.CurriculumPortal })));
 const home = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -9,7 +9,7 @@ const cardAssets = `${import.meta.env.BASE_URL}assets/book-cards/`;
 const bookCards = [
   { section: "kuran-i-kerim", title: "Kur’an-ı Kerim", image: "kuran-grid-v1.webp", mobileImage: "kuran-mobile-v1.webp", description: "Sayfalarını çevirerek okuyabileceğiniz Kur’an-ı Kerim kitabı.", metadata: "615 sayfa · PDF kitap", action: "Kitabı aç" },
   { section: "guzel-ahlak", title: "Güzel Ahlak", image: "guzel-ahlak-grid-v2.webp", mobileImage: "guzel-ahlak-mobile-v2.webp", description: "Ayrıntılı ders planları, öğretmen araçları ve hazır sınıf materyalleri.", metadata: "3–8. sınıf · 9 ay", action: "Derslere git" },
-  { section: "elif-ba", title: "Elif Ba", image: "elif-ba-grid-v2.webp", mobileImage: "elif-ba-mobile-v1.webp", description: "Tecvîdli Kur’ân-ı Kerîm elifbâsı ve ezber müfredatı.", metadata: "56 sayfa · PDF kitap", action: "Kitabı aç" },
+  { section: "elif-ba", title: "Elifba", image: "elifba-grid-v3.webp", mobileImage: "elifba-mobile-v2.webp", description: "Tecvîdli Kur’ân-ı Kerîm elifbâsı ve ezber müfredatı.", metadata: "2 kitap · PDF kitap", action: "Kitabı aç" },
 ];
 
 export function AcademyHeader() {
@@ -31,12 +31,12 @@ export function LessonHub() {
     return <Suspense fallback={<div className="empty-state" role="status"><p>Ders kitabı açılıyor…</p></div>}><CurriculumPortal onHomeHref={home} /></Suspense>;
   }
   if (section === "elif-ba") {
-    const isMehmetMert = params.get("kitap") === "mehmet-mert";
+    const isMehmedMert = params.get("kitap") === "mehmed-mert" || params.get("kitap") === "mehmet-mert";
     const bookChoices = [
-      { title: "Elif Ba Müfredatı", href: `${home}?bolum=elif-ba`, active: !isMehmetMert },
-      { title: mehmetMertElifBaBook.title, href: `${home}?bolum=elif-ba&kitap=mehmet-mert`, active: isMehmetMert },
+      { title: elifBaBook.title, href: `${home}?bolum=elif-ba`, active: !isMehmedMert },
+      { title: mehmedMertElifBaBook.title, href: `${home}?bolum=elif-ba&kitap=mehmed-mert`, active: isMehmedMert },
     ];
-    return <BookReader homeHref={home} book={isMehmetMert ? mehmetMertElifBaBook : elifBaBook} bookChoices={bookChoices} />;
+    return <BookReader homeHref={home} book={isMehmedMert ? mehmedMertElifBaBook : elifBaBook} bookChoices={bookChoices} />;
   }
   if (section === "kuran-i-kerim") return <BookReader homeHref={home} book={quranBook} />;
 
@@ -47,7 +47,7 @@ export function LessonHub() {
         <div className="hub-intro">
           <p className="hub-eyebrow">BİRLİKTE ÖĞRENİYORUZ</p>
           <h1>Öğretmen Kitabı</h1>
-          <p>Kur’an-ı Kerim, ders rehberi veya Elif Ba kitabına ulaşmak için bir bölüm seçin.</p>
+          <p>Kur’an-ı Kerim, ders rehberi veya Elifba kitaplarına ulaşmak için bir bölüm seçin.</p>
         </div>
         <nav className="book-grid" aria-label="Ders kitabı seçimi">
           {bookCards.map((card) => (
