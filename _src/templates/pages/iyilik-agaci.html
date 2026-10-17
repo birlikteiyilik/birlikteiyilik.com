@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f3e8">
+  <title>İyilik Ağacı | Birlikte İyilik Akademi</title>
+  <meta name="description" content="İyilik ağacına dokunun, Birlikte İyilik Akademi bağlantılarını paylaşın. Etkinlikler ve buluşmalar için interaktif QR sunumu.">
+  <link rel="canonical" href="https://birlikteiyilik.com/iyilik-agaci">
+  <meta property="og:title" content="Bir iyilik, bin filiz. | Birlikte İyilik Akademi">
+  <meta property="og:description" content="Ağaca dokun, iyiliği paylaş. Birlikte İyilik Akademi bağlantıları tek bir QR kodunda.">
+  <meta property="og:image" content="https://birlikteiyilik.com/images/logo.png">
+  <meta property="og:url" content="https://birlikteiyilik.com/iyilik-agaci">
+  <link rel="icon" href="/images/favicon-square.png">
+  <link rel="stylesheet" href="/css/qr-tree-v1.css">
+  <script type="module" src="/js/qr-tree-v1.js"></script>
+</head>
+<body class="tree-presentation-page">
+  <nav class="tree-presentation-nav" aria-label="Sayfa bağlantıları">
+    <a class="tree-presentation-brand" href="/"><img src="/images/favicon-square.png" alt="" width="30" height="30"><span>Birlikte İyilik Akademi</span></a>
+    <a href="https://birlikteiyilik.com/qr">Tüm bağlantılar</a>
+  </nav>
+  <main>
+    {% with tree_id='sunum-agaci', tree_theme='filiz', tree_eyebrow='İYİLİĞİ BİRLİKTE BÜYÜTÜYORUZ', tree_title='Bir iyilik, bin filiz.', tree_description='Ağaca dokunun, QR kodunu okutun. Eğitimden gönüllülüğe, iyiliğe açılan bütün yollar burada.', tree_presentation=true %}
+      {% include 'partials/qr-tree.html' %}
+    {% endwith %}
+  </main>
+</body>
+</html>
