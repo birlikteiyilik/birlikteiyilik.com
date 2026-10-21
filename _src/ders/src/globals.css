@@ -171,6 +171,7 @@ button:disabled { cursor: not-allowed; opacity: .42; }
 .archive-stats span { display: grid; gap: 3px; padding: 15px; color: var(--muted); background: #fff; font-size: 9px; }
 .archive-stats strong { color: var(--ink); font-family: var(--serif); font-size: 23px; font-weight: 500; }
 .archive-controls { display: grid; max-width: 1480px; grid-template-columns: 1.5fr 1fr; gap: 14px; margin: 0 auto 14px; padding: 14px; border: 1px solid var(--line); border-radius: 9px; background: #fff; }
+.archive-missing-note { max-width: 1480px; margin: 0 auto 14px; padding: 14px 18px; border: 1px solid #d8c797; border-radius: 9px; background: #fff9e9; color: #67532b; font-size: 12px; line-height: 1.6; }
 .archive-reader { display: grid; max-width: 1480px; min-height: 720px; grid-template-columns: 340px 1fr; gap: 14px; margin: 0 auto; }
 .archive-reader > aside { display: grid; align-content: start; min-height: 0; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: #fff; }
 .document-card { display: grid; gap: 7px; padding: 17px; border-bottom: 1px solid var(--line); background: var(--green); color: #fff; }

@@ -25,7 +25,7 @@
     media: { 'izin-veriyorum': 'İzin veriyor', 'izin-vermiyorum': 'İzin vermiyor', uygulanmiyor: 'Uygulanmıyor' },
     referral: { arkadas: 'Arkadaş', aile: 'Aile', 'bilgilendirme-mesaji': 'Bilgilendirme Mesajı', 'sosyal-medya': 'Sosyal Medya', 'ogrenci-arkadasi': 'Öğrenci arkadaşından', 'arkadas-tavsiyesi': 'Arkadaş tavsiyesi', 'kendi-arastirmam': 'Kendi araştırmam', diger: 'Diğer' },
     days: { pazartesi: 'Pazartesi', sali: 'Salı', carsamba: 'Çarşamba', persembe: 'Perşembe', cuma: 'Cuma' },
-    attendance: { katildi: 'Katıldı', gelmedi: 'Gelmedi', mazeretli: 'Mazeretli', eksik: 'Yoklama bekliyor' },
+    attendance: { katildi: 'Katıldı', gelmedi: 'Gelmedi', mazeretli: 'Mazeretli', eksik: 'Yoklama bekliyor', tatil: 'Tatil' },
     status: {
       yeni: 'Yeni', inceleniyor: 'İnceleniyor', uygun: 'Uygun', yedek: 'Yedek',
       'kayit-tamamlandi': 'Kayıt tamamlandı', 'uygun-degil': 'Uygun değil'
@@ -36,6 +36,7 @@
   let teachers = [];
   let placements = [];
   let attendanceRecords = [];
+  let holidayRecords = [];
   let meta = fallbackMeta;
   let loaded = false;
   let selectedId = '';
@@ -445,6 +446,44 @@
     return meta.weekdays[(new Date(`${value}T12:00:00`).getDay() || 7) - 1] || '';
   }
 
+  function holidayForDate(date, type = activeApplicationType) {
+    return holidayRecords.find((item) => item.lessonDate === date && item.applicationType === type);
+  }
+
+  function renderHolidayControls() {
+    const input = el('reportsHolidayDate');
+    const today = dateValue(new Date());
+    input.min = addDays(today, -120);
+    input.max = addDays(today, 365);
+    if (!input.value) input.value = today;
+    const holiday = holidayForDate(input.value);
+    el('reportsHolidaySave').textContent = holiday ? 'Tatili kaldır' : 'Tatil olarak işaretle';
+    el('reportsHolidayHelp').textContent = `${labels.type[activeApplicationType] || 'Seçili eğitim türü'} için seçilen günün tüm dersleri tatil olur; yoklama ve katılım oranlarına dahil edilmez.`;
+    el('reportsHolidayState').textContent = holiday ? 'Seçilen gün tatil.' : 'Seçilen gün tatil olarak işaretli değil.';
+    el('reportsHolidayList').innerHTML = holidayRecords.filter((item) => item.applicationType === activeApplicationType)
+      .sort((a, b) => a.lessonDate.localeCompare(b.lessonDate))
+      .map((item) => `<button type="button" data-holiday-date="${escapeHtml(item.lessonDate)}" aria-label="${escapeHtml(formatDate(`${item.lessonDate}T12:00:00`))} tatilini seç">${escapeHtml(formatDate(`${item.lessonDate}T12:00:00`))} · Tatil</button>`).join('');
+  }
+
+  async function saveHoliday() {
+    const date = el('reportsHolidayDate').value;
+    const type = activeApplicationType;
+    if (!date || !dayForDate(date)) return toast('Tatil için hafta içinden bir gün seçin.', 'error');
+    const holiday = !holidayForDate(date, type);
+    const button = el('reportsHolidaySave');
+    button.disabled = true;
+    try {
+      await api('POST', { action: 'attendance-holiday-save', date, applicationType: type, holiday });
+      await load(true);
+      toast(holiday ? 'Günün tüm dersleri tatil olarak işaretlendi.' : 'Tatil kaldırıldı. Önceki yoklama kayıtları korundu.');
+    } catch (error) {
+      toast(error.message, 'error');
+    } finally {
+      button.disabled = false;
+      renderHolidayControls();
+    }
+  }
+
   function consecutiveAbsenceCounts() {
     const today = dateValue(new Date());
     const lowerBound = addDays(today, -365);
@@ -463,6 +502,7 @@
       while (date <= today && guard < 370) {
         const day = dayForDate(date);
         schedule.filter((entry) => entry.day === day).forEach((entry) => {
+          if (holidayForDate(date, placement.applicationType || activeApplicationType)) return;
           const key = `${placement.applicationId}|${placement.studentName || ''}`;
           if (!timelines.has(key)) timelines.set(key, []);
           const record = saved.get(`${entry.teacherId}|${placement.applicationId}|${date}|${entry.slot}`);
@@ -550,7 +590,8 @@
               teacherId: entry.teacherId, teacherName: entry.teacherName || teacherOf(entry.teacherId)?.name || 'Arşiv öğretmen',
               applicationId: placement.applicationId, applicationReference: placement.applicationReference,
               studentName: placement.studentName, applicationType: placement.applicationType,
-              lessonDate: date, day, slot: entry.slot, status: record?.status || 'eksik', note: record?.note || '',
+              lessonDate: date, day, slot: entry.slot,
+              status: holidayForDate(date, placement.applicationType || activeApplicationType) ? 'tatil' : record?.status || 'eksik', note: record?.note || '',
               updatedAt: record?.updatedAt || ''
             });
           });
@@ -565,7 +606,8 @@
       if ((record.applicationType || placement?.applicationType) !== activeApplicationType) return;
       const key = `${record.teacherId}|${record.applicationId}|${record.lessonDate}|${record.slot}`;
       if (known.has(key)) return;
-      rows.push({ ...record, applicationType: record.applicationType || placement?.applicationType || '' });
+      const type = record.applicationType || placement?.applicationType || '';
+      rows.push({ ...record, applicationType: type, status: holidayForDate(record.lessonDate, type) ? 'tatil' : record.status });
     });
     return rows.filter((row) => {
       const haystack = `${row.studentName || ''} ${row.applicationReference || ''} ${row.teacherName || ''}`.toLocaleLowerCase('tr-TR');
@@ -574,32 +616,36 @@
   }
 
   function renderReports() {
+    renderHolidayControls();
     if (!el('reportsFrom').value || !el('reportsTo').value) {
       const range = thisWeekRange();
       el('reportsFrom').value = range.from;
       el('reportsTo').value = range.to;
     }
     const all = reportRows(false);
+    const active = all.filter((row) => row.status !== 'tatil');
+    const holidays = all.length - active.length;
+    el('reportsHolidaySummary').textContent = holidays ? `${holidays} tatil dersi oranlara dahil edilmedi.` : '';
     const slots = slotsForType(activeApplicationType);
     const filtered = reportRows(true).sort((a, b) => b.lessonDate.localeCompare(a.lessonDate) ||
       slots.indexOf(a.slot) - slots.indexOf(b.slot));
-    const completed = all.filter((row) => row.status !== 'eksik');
+    const completed = active.filter((row) => row.status !== 'eksik');
     const present = all.filter((row) => row.status === 'katildi').length;
     const missing = all.filter((row) => row.status === 'eksik');
     const absent = all.filter((row) => row.status === 'gelmedi').length;
     const excused = all.filter((row) => row.status === 'mazeretli').length;
-    const completionRate = all.length ? Math.round(completed.length / all.length * 100) : 0;
+    const completionRate = active.length ? Math.round(completed.length / active.length * 100) : 0;
     const attendanceRate = completed.length ? Math.round(present / completed.length * 100) : 0;
-    el('reportsExpected').textContent = all.length;
+    el('reportsExpected').textContent = active.length;
     el('reportsCompleted').textContent = completed.length;
     el('reportsPresent').textContent = present;
     el('reportsMissing').textContent = missing.length;
-    el('reportsCompletionText').textContent = `%${completionRate} tamamlama`;
-    el('reportsAttendanceText').textContent = `%${attendanceRate} katılım`;
-    el('reportsProgressValue').textContent = `%${completionRate}`;
+    el('reportsCompletionText').textContent = active.length ? `%${completionRate} tamamlama` : 'Hesaplanacak ders yok';
+    el('reportsAttendanceText').textContent = completed.length ? `%${attendanceRate} katılım` : 'Katılım verisi yok';
+    el('reportsProgressValue').textContent = active.length ? `%${completionRate}` : '—';
     el('reportsProgressBar').style.transform = `scaleX(${completionRate / 100})`;
-    el('reportsDonutTotal').textContent = `${all.length} ders`;
-    el('reportsDonutRate').textContent = `%${attendanceRate}`;
+    el('reportsDonutTotal').textContent = `${active.length} ders`;
+    el('reportsDonutRate').textContent = completed.length ? `%${attendanceRate}` : '—';
     el('reportsDonutRate').parentElement.parentElement.setAttribute('aria-label',
       `Yoklama dağılımı: ${present} katıldı, ${absent} gelmedi, ${excused} mazeretli, ${missing.length} bekliyor.`);
     el('reportsDonutPresent').textContent = present;
@@ -609,13 +655,13 @@
     let donutOffset = 0;
     [['reportsDonutPresentArc', present], ['reportsDonutAbsentArc', absent],
       ['reportsDonutExcusedArc', excused], ['reportsDonutPendingArc', missing.length]].forEach(([id, count]) => {
-      const share = all.length ? count / all.length * 100 : 0;
+      const share = active.length ? count / active.length * 100 : 0;
       el(id).style.strokeDasharray = `${share} ${100 - share}`;
       el(id).style.strokeDashoffset = `${-donutOffset}`;
       donutOffset += share;
     });
     const grouped = new Map();
-    all.forEach((row) => {
+    active.forEach((row) => {
       const key = row.teacherId || row.teacherName;
       if (!grouped.has(key)) grouped.set(key, { id: row.teacherId, name: row.teacherName || 'Arşiv öğretmen', expected: 0, completed: 0, present: 0 });
       const group = grouped.get(key);
@@ -638,7 +684,7 @@
 
     const streaks = consecutiveAbsenceCounts();
     const studentGroups = new Map();
-    all.forEach((row) => {
+    active.forEach((row) => {
       const key = row.applicationId || `${row.studentName}|${row.applicationReference}`;
       if (!studentGroups.has(key)) studentGroups.set(key, {
         applicationId: row.applicationId, name: row.studentName || 'İsimsiz öğrenci', reference: row.applicationReference || '',
@@ -668,7 +714,7 @@
     el('reportsResultCount').textContent = `${filtered.length} kayıt`;
     el('reportsTableBody').innerHTML = filtered.length ? filtered.map((row) => {
       const today = dateValue(new Date());
-      const editable = row.lessonDate <= today && row.lessonDate >= addDays(today, -120);
+      const editable = row.status !== 'tatil' && row.lessonDate <= today && row.lessonDate >= addDays(today, -120);
       const statusControl = editable
         ? `<select class="report-status-select" data-attendance-edit data-previous="${escapeHtml(row.status)}" data-teacher-id="${escapeHtml(row.teacherId)}" data-application-id="${escapeHtml(row.applicationId)}" data-date="${escapeHtml(row.lessonDate)}" data-slot="${escapeHtml(row.slot)}" aria-label="${escapeHtml(row.studentName)} yoklama durumu"><option value="eksik" ${row.status === 'eksik' ? 'selected' : ''}>Yoklama bekliyor</option><option value="katildi" ${row.status === 'katildi' ? 'selected' : ''}>Katıldı</option><option value="gelmedi" ${row.status === 'gelmedi' ? 'selected' : ''}>Gelmedi</option><option value="mazeretli" ${row.status === 'mazeretli' ? 'selected' : ''}>Mazeretli</option></select>`
         : `<span class="report-status report-status-${escapeHtml(row.status)}">${escapeHtml(labels.attendance[row.status] || row.status)}</span>`;
@@ -749,6 +795,7 @@
       teachers = Array.isArray(result.teachers) ? result.teachers : [];
       placements = Array.isArray(result.placements) ? result.placements : [];
       attendanceRecords = Array.isArray(result.attendance) ? result.attendance : [];
+      holidayRecords = Array.isArray(result.holidays) ? result.holidays : [];
       meta = result.meta?.weekdays && result.meta?.timeSlots
         ? { ...fallbackMeta, ...result.meta, onlineTimeSlots: result.meta.onlineTimeSlots || fallbackMeta.onlineTimeSlots }
         : fallbackMeta;
@@ -1756,6 +1803,14 @@
     el('appsTabReports').addEventListener('click', () => switchView('reports'));
     ['reportsFrom', 'reportsTo', 'reportsTeacher', 'reportsStatus'].forEach((id) => el(id).addEventListener('change', renderReports));
     el('reportsSearch').addEventListener('input', renderReports);
+    el('reportsHolidayDate').addEventListener('change', renderHolidayControls);
+    el('reportsHolidaySave').addEventListener('click', saveHoliday);
+    el('reportsHolidayList').addEventListener('click', (event) => {
+      const button = event.target.closest('[data-holiday-date]');
+      if (!button) return;
+      el('reportsHolidayDate').value = button.dataset.holidayDate;
+      renderHolidayControls();
+    });
     el('reportsReset').addEventListener('click', resetReportFilters);
     el('reportsViewSwitch').addEventListener('click', (event) => {
       const button = event.target.closest('[data-report-view]');

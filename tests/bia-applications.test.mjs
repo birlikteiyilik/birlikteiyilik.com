@@ -447,6 +447,56 @@ const adminAttendanceEdit = await handler(new Request('http://localhost:4173/api
 assert.equal(adminAttendanceEdit.status, 200);
 assert.equal((await adminAttendanceEdit.json()).data.status, 'gelmedi');
 
+const saveHoliday = (headers, date, applicationType, holiday) => handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'POST', headers, body: JSON.stringify({ action: 'attendance-holiday-save', date, applicationType, holiday })
+}));
+const teacherDataFor = (date) => handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'POST', headers: teacherHeaders, body: JSON.stringify({ action: 'teacher-data', date })
+}));
+assert.equal((await saveHoliday(teacherHeaders, attendanceDate, 'yuz-yuze', true)).status, 401);
+assert.equal((await saveHoliday(adminHeaders, attendanceDate, 'invalid', true)).status, 400);
+assert.equal((await saveHoliday(adminHeaders, attendanceDate, 'yuz-yuze', 'true')).status, 400);
+const weekend = new Date(`${attendanceDate}T12:00:00Z`);
+weekend.setUTCDate(weekend.getUTCDate() + 5);
+assert.equal((await saveHoliday(adminHeaders, weekend.toISOString().slice(0, 10), 'yuz-yuze', true)).status, 400);
+
+assert.equal((await saveHoliday(adminHeaders, attendanceDate, 'yuz-yuze', true)).status, 200);
+assert.equal((await saveHoliday(adminHeaders, attendanceDate, 'yuz-yuze', true)).status, 200);
+const holidayTeacherData = await (await teacherDataFor(attendanceDate)).json();
+assert.equal(holidayTeacherData.lessons[0].status, 'tatil');
+assert.equal(holidayTeacherData.week[0].expected, 0);
+assert.equal(holidayTeacherData.week[0].completed, 0);
+assert.equal(holidayTeacherData.week[0].holidays, 1);
+const holidayAdminData = await (await handler(new Request('http://localhost:4173/api/bia-applications', { headers: adminHeaders }))).json();
+assert.equal(holidayAdminData.holidays.length, 1, 'marking the same holiday twice is idempotent');
+assert.equal(holidayAdminData.attendance[0].status, 'gelmedi', 'holiday overlays preserve prior attendance');
+const blockedTeacherSave = await handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'POST', headers: teacherHeaders, body: JSON.stringify({
+    action: 'attendance-save', date: attendanceDate,
+    entries: [{ applicationId: firstApplication.id, slot: '15:00-15:20', status: 'katildi' }]
+  })
+}));
+assert.equal(blockedTeacherSave.status, 409);
+const blockedAdminSave = await handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'POST', headers: adminHeaders, body: JSON.stringify({
+    action: 'attendance-admin-save', date: attendanceDate, teacherId: mondayTeacher.id,
+    applicationId: firstApplication.id, slot: '15:00-15:20', status: 'eksik'
+  })
+}));
+assert.equal(blockedAdminSave.status, 409);
+assert.equal((await saveHoliday(adminHeaders, attendanceDate, 'yuz-yuze', false)).status, 200);
+assert.equal((await (await teacherDataFor(attendanceDate)).json()).lessons[0].status, 'gelmedi');
+
+assert.equal((await saveHoliday(adminHeaders, attendanceDate, 'online', true)).status, 200);
+assert.equal((await (await teacherDataFor(attendanceDate)).json()).lessons[0].status, 'gelmedi', 'online holidays do not cancel face-to-face lessons');
+assert.equal((await saveHoliday(adminHeaders, attendanceDate, 'online', false)).status, 200);
+const futureHoliday = new Date(`${attendanceDate}T12:00:00Z`);
+futureHoliday.setUTCDate(futureHoliday.getUTCDate() + 14);
+const futureHolidayDate = futureHoliday.toISOString().slice(0, 10);
+assert.equal((await saveHoliday(adminHeaders, futureHolidayDate, 'yuz-yuze', true)).status, 200);
+assert.equal((await (await teacherDataFor(futureHolidayDate)).json()).lessons[0].status, 'tatil');
+assert.equal((await saveHoliday(adminHeaders, futureHolidayDate, 'yuz-yuze', false)).status, 200);
+
 const teacherAdminAttendanceEdit = await handler(new Request('http://localhost:4173/api/bia-applications', {
   method: 'POST', headers: teacherHeaders, body: JSON.stringify({
     action: 'attendance-admin-save', date: attendanceDate, teacherId: mondayTeacher.id,

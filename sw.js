@@ -1,10 +1,10 @@
-const CACHE_NAME = 'bia-yoklama-shell-v5';
+const CACHE_NAME = 'bia-yoklama-shell-v6';
 const appScope = new URL(self.registration.scope).pathname.replace(/\/$/, '');
 const isYoklamaApp = appScope === '/yoklama';
 const APP_SHELL = [
   '/yoklama',
-  '/css/yoklama.css?v=6',
-  '/js/yoklama.js?v=8',
+  '/css/yoklama.css?v=7',
+  '/js/yoklama.js?v=9',
   '/images/qr/whatsapp.svg',
   '/images/favicon-square.png',
   '/images/yoklama-icon-512.png'

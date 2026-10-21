@@ -14,6 +14,7 @@ import {
 } from "./lesson-guide";
 import { buildMaterialKit, findLessonSource } from "./lesson-materials";
 import { ClassroomMode, LessonMaterialsStudio, PrintMaterials } from "./LessonMaterialsStudio";
+import { readableArchivePages } from "./archive-pages";
 
 type Tab = "lessons" | "archive" | "assessment";
 type PrintScope = "none" | "lesson" | "month" | "materials";
@@ -229,13 +230,14 @@ export function CurriculumPortal({ onHomeHref }: { onHomeHref: string }) {
   }, [relevantDocuments, archiveDocumentId]);
 
   const archiveDocument = relevantDocuments.find((document) => document.id === archiveDocumentId);
+  const readablePages = useMemo(() => readableArchivePages(archiveDocument?.pages || []), [archiveDocument]);
+  const missingPages = archiveDocument?.pages.filter((page) => !page.text.trim()).map((page) => page.number) || [];
   const filteredPages = useMemo(() => {
-    if (!archiveDocument) return [];
     const query = archiveSearch.trim().toLocaleLowerCase("tr-TR");
-    if (!query) return archiveDocument.pages;
-    return archiveDocument.pages.filter((page) => page.text.toLocaleLowerCase("tr-TR").includes(query));
-  }, [archiveDocument, archiveSearch]);
-  const selectedArchivePage = archiveDocument?.pages.find((page) => page.number === archivePage) || filteredPages[0];
+    if (!query) return readablePages;
+    return readablePages.filter((page) => page.text.toLocaleLowerCase("tr-TR").includes(query));
+  }, [readablePages, archiveSearch]);
+  const selectedArchivePage = filteredPages.find((page) => page.number === archivePage) || filteredPages[0];
 
   const selectGrade = (value: number) => {
     setGrade(value);
@@ -365,8 +367,8 @@ export function CurriculumPortal({ onHomeHref }: { onHomeHref: string }) {
         {archive && plan && tab === "archive" && (
           <section className="archive-view">
             <header className="view-heading">
-              <div><p>Eksiksiz içerik erişimi</p><h2>Özgün Metin Arşivi</h2></div>
-              <p>Seçili sınıf grubuna ve aya ait plan ile içerik dosyalarının çıkarılmış tüm sayfaları. Metin sadeleştirilmemiştir.</p>
+              <div><p>Kaynak metinlere erişim</p><h2>Özgün Metin Arşivi</h2></div>
+              <p>Seçili sınıf grubuna ve aya ait plan ile içerik dosyalarından aktarılabilen sayfalar. Metinler ve özgün sayfa numaraları korunmuştur.</p>
             </header>
             <div className="archive-stats">
               <span><strong>{archive.meta.fileCount}</strong> öğretim dosyası</span>
@@ -388,6 +390,12 @@ export function CurriculumPortal({ onHomeHref }: { onHomeHref: string }) {
                 <input value={archiveSearch} onChange={(event) => setArchiveSearch(event.target.value)} placeholder="Örn. adalet, namaz, merhamet…" />
               </label>
             </div>
+            {missingPages.length > 0 && (
+              <p className="archive-missing-note" role="note">
+                <strong>Kaynak aktarımında eksik sayfalar: {missingPages.join(", ")}.</strong>{" "}
+                Bu sayfaların metni arşivde bulunmadığı için okuma listesine alınmadı. Özgün dosya olmadan içerikleri tamamlanamıyor.
+              </p>
+            )}
             {archiveDocument ? (
               <div className="archive-reader">
                 <aside>
@@ -407,8 +415,8 @@ export function CurriculumPortal({ onHomeHref }: { onHomeHref: string }) {
                   </div>
                 </aside>
                 <article className="source-page">
-                  <header><span>{archiveDocument.name}</span><strong>Sayfa {selectedArchivePage?.number || 1} / {archiveDocument.pageCount}</strong></header>
-                  <pre>{selectedArchivePage?.text || "Bu sayfada çıkarılabilir metin bulunamadı."}</pre>
+                  <header><span>{archiveDocument.name}</span><strong>{selectedArchivePage ? `Sayfa ${selectedArchivePage.number} / ${archiveDocument.pageCount}` : "Sayfa seçilemedi"}</strong></header>
+                  <pre>{selectedArchivePage?.text || (archiveSearch.trim() ? "Aramanızla eşleşen sayfa bulunamadı." : "Bu dosyanın aktarılmış metni bulunmuyor.")}</pre>
                 </article>
               </div>
             ) : <EmptyState text="Bu seçim için kaynak dosya bulunamadı." />}
@@ -451,7 +459,7 @@ export function CurriculumPortal({ onHomeHref }: { onHomeHref: string }) {
 
         <footer className="simple-footer">
           <strong>Güzel Ahlak · Tam Öğretmen Kitabı</strong>
-          <p>46 dosya ve 963 sayfalık özgün içeriğe dayalı pedagojik uyarlama. Resmî MEB müfredatı değildir; dinî içerikler kurumun ilmî onay sürecinden geçirilmelidir.</p>
+          <p>46 dosya ve 963 sayfalık özgün içeriğe dayalı pedagojik uyarlama.</p>
         </footer>
       </div>
 

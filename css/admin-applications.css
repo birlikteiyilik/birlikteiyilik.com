@@ -535,6 +535,20 @@ html, body { max-width: 100%; overflow-x: hidden; }
   background: #fff; border: 1px solid var(--app-line); border-radius: 14px; box-shadow: 0 4px 18px rgba(18,35,58,.05);
 }
 .reports-toolbar { margin-bottom: 13px; padding: 14px; }
+.reports-holiday { align-items: center; background: #f4f7fb; border: 1px solid var(--app-line); border-radius: 13px; display: flex; flex-wrap: wrap; gap: 10px 20px; margin-bottom: 13px; padding: 14px; }
+.reports-holiday > div:first-child { flex: 1 1 250px; }
+.reports-holiday h3 { color: var(--app-ink); font-size: .9rem; margin: 0 0 4px; }
+.reports-holiday p { color: var(--app-muted); font-size: .7rem; line-height: 1.6; margin: 0; }
+.reports-holiday-actions { align-items: end; display: flex; flex-wrap: wrap; gap: 9px; }
+.reports-holiday-actions label { color: var(--app-muted); display: grid; font-size: .65rem; gap: 5px; }
+.reports-holiday-actions input { background: #fff; border: 1px solid #d8dee7; border-radius: 8px; color: var(--app-ink); font: inherit; min-height: 39px; padding: 8px; }
+.reports-holiday-actions button { min-height: 39px; }
+#reportsHolidayState, .reports-holiday-list { flex-basis: 100%; }
+.reports-holiday-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.reports-holiday-list:empty { display: none; }
+.reports-holiday-list button { background: #e6edf7; border: 1px solid #c4d1e3; border-radius: 999px; color: #39567c; cursor: pointer; font: inherit; font-size: .65rem; padding: 7px 10px; }
+.reports-holiday-summary { color: #39567c; font-size: .73rem; margin: 0 0 13px; }
+.reports-holiday-summary:empty { display: none; }
 .reports-toolbar-head { margin-bottom: 11px; }
 .reports-toolbar-head h3 { color: var(--app-ink); font-size: .9rem; margin: 0; }
 .reports-toolbar-head button { background: none; border: 0; color: var(--app-red); cursor: pointer; font: inherit; font-size: .7rem; font-weight: 800; }
@@ -597,6 +611,7 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .report-status-gelmedi { background: #fff0f3; color: var(--app-red-dark); }
 .report-status-mazeretli { background: #fff6db; color: #805b00; }
 .report-status-eksik { background: #eef1f5; color: #657084; }
+.report-status-tatil { background: #e6edf7; color: #39567c; }
 .report-status-select { appearance: auto; background: #fff; border: 1px solid #d8dee7; border-radius: 999px; color: var(--app-ink); cursor: pointer; font: inherit; font-size: .61rem; font-weight: 750; max-width: 154px; min-height: 31px; padding: 5px 8px; }
 .report-status-select:focus { border-color: var(--app-red); box-shadow: 0 0 0 3px rgba(215,25,63,.09); outline: none; }
 .report-status-select:disabled { cursor: progress; opacity: .65; }

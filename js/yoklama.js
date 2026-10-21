@@ -127,9 +127,10 @@
     el('weekDays').innerHTML = week.map((item) => {
       const isActive = item.date === selectedDate;
       const isFuture = item.date > today;
+      const isHoliday = item.holidays > 0 && item.expected === 0;
       const complete = item.expected > 0 && item.completed === item.expected;
       return `<button class="week-day${isActive ? ' is-active' : ''}${complete ? ' is-complete' : ''}${isFuture ? ' is-future' : ''}" type="button" data-date="${item.date}" aria-pressed="${isActive}" aria-label="${labels.days[item.day]}, ${formatDate(item.date, { day: 'numeric', month: 'long' })}${isFuture ? ', ileri tarihli program' : ''}">
-        <span>${labels.shortDays[item.day]}</span><strong>${Number(item.date.slice(8))}</strong><small>${isFuture ? `${item.expected} ders` : `${item.completed}/${item.expected}`}</small>
+        <span>${labels.shortDays[item.day]}</span><strong>${Number(item.date.slice(8))}</strong><small>${isHoliday ? 'Tatil' : isFuture ? `${item.expected} ders` : `${item.completed}/${item.expected}`}</small>
       </button>`;
     }).join('');
     const earliest = addDays(today, -120);
@@ -145,16 +146,19 @@
     el('errorState').hidden = true;
     el('emptyState').hidden = lessons.length > 0;
     list.hidden = lessons.length === 0;
-    const completed = lessons.filter((lesson) => lesson.status).length;
-    el('completedCount').textContent = isFuture ? lessons.length : completed;
-    el('dayScoreText').innerHTML = isFuture ? 'atanmış ders' : `/ <b>${lessons.length}</b> yoklama`;
-    el('dayKicker').textContent = isFuture ? 'İleri tarihli program · yoklama alınamaz' : selectedDate === dateValue(new Date()) ? 'Bugünün programı' : formatDate(selectedDate, { weekday: 'long' });
+    const activeLessons = lessons.filter((lesson) => lesson.status !== 'tatil');
+    const allHoliday = lessons.length > 0 && activeLessons.length === 0;
+    const completed = activeLessons.filter((lesson) => lesson.status).length;
+    el('completedCount').textContent = allHoliday ? '—' : isFuture ? activeLessons.length : completed;
+    el('dayScoreText').innerHTML = allHoliday ? 'Yoklama alınmaz' : isFuture ? 'atanmış ders' : `/ <b>${activeLessons.length}</b> yoklama`;
+    el('dayKicker').textContent = allHoliday ? 'Tatil günü' : isFuture ? 'İleri tarihli program · yoklama alınamaz' : selectedDate === dateValue(new Date()) ? 'Bugünün programı' : formatDate(selectedDate, { weekday: 'long' });
     el('dayHeading').textContent = formatDate(selectedDate, { day: 'numeric', month: 'long' });
-    el('daySubheading').textContent = isFuture
+    el('daySubheading').textContent = allHoliday ? 'Bugünün dersleri tatil olarak işaretli. Yoklama ve katılım oranlarına dahil edilmez.' : isFuture
       ? lessons.length ? 'İleri tarihli ders programınızı önceden görüntülüyorsunuz. Yoklama, ders günü açılacaktır.' : 'Bu tarih için atanmış bir ders görünmüyor.'
-      : lessons.length ? `${lessons.length} birebir ders planlandı. Yoklamayı ders sonrasında tamamlayın.` : 'Bu gün için planlanmış bir ders bulunmuyor.';
+      : activeLessons.length ? `${activeLessons.length} birebir ders planlandı. Yoklamayı ders sonrasında tamamlayın.` : 'Bu gün için planlanmış bir ders bulunmuyor.';
     list.innerHTML = lessons.map((lesson, index) => {
       const isSaving = saving.has(attendanceKey(lesson, selectedDate));
+      const isHoliday = lesson.status === 'tatil';
       const noteIsFromPreviousDay = Boolean(lesson.note && lesson.noteDate && lesson.noteDate < selectedDate);
       const active = (status) => lesson.status === status ? ' is-active' : '';
       const whatsapp = guardianWhatsApp(lesson.guardianPhone);
@@ -166,9 +170,9 @@
         <div class="lesson-surface">
           <header class="lesson-summary"><div class="student-info"><div class="lesson-student-name"><strong>${escapeHtml(lesson.studentName)}</strong>${contact}</div><span>${escapeHtml(lesson.applicationReference || '')}</span></div><span class="lesson-mode">${escapeHtml(labels.type[lesson.applicationType] || lesson.applicationType)}</span></header>
           <div class="attendance-controls" role="group" aria-label="${escapeHtml(lesson.studentName)} yoklama durumu">
-            ${['katildi', 'gelmedi', 'mazeretli'].map((status) => `<button type="button" class="status-action${active(status)}" data-lesson-key="${escapeHtml(lessonKey(lesson))}" data-status="${status}" aria-pressed="${lesson.status === status}" ${isFuture || isSaving ? 'disabled' : ''}><svg><use href="#${icon[status]}"></use></svg>${labels.status[status]}</button>`).join('')}
+            ${isHoliday ? '<span class="lesson-holiday">Tatil · Yoklama oranlarına dahil edilmez.</span>' : ['katildi', 'gelmedi', 'mazeretli'].map((status) => `<button type="button" class="status-action${active(status)}" data-lesson-key="${escapeHtml(lessonKey(lesson))}" data-status="${status}" aria-pressed="${lesson.status === status}" ${isFuture || isSaving ? 'disabled' : ''}><svg><use href="#${icon[status]}"></use></svg>${labels.status[status]}</button>`).join('')}
           </div>
-          <details class="lesson-note" ${lesson.note ? 'open' : ''}><summary><svg><use href="#icon-note"></use></svg>Ders notu ${lesson.note ? noteIsFromPreviousDay ? `· önceki dersten, ${formatDate(lesson.noteDate, { day: 'numeric', month: 'short' })}` : '· eklendi' : 'ekle'}</summary><textarea data-note-key="${escapeHtml(lessonKey(lesson))}" maxlength="300" ${lesson.status && !isFuture && !isSaving ? '' : 'disabled'} placeholder="Yalnızca gerekli kısa notu yazın...">${escapeHtml(lesson.note)}</textarea><div class="lesson-note-actions"><span aria-live="polite" data-note-state="${escapeHtml(lessonKey(lesson))}">${lesson.note !== lesson.originalNote ? 'Kaydedilmemiş değişiklik' : 'Notlar sonraki ders gününde de görünür.'}</span><button type="button" data-note-save-key="${escapeHtml(lessonKey(lesson))}" ${lesson.status && !isFuture && !isSaving && lesson.note !== lesson.originalNote ? '' : 'disabled'}>${isSaving ? 'Kaydediliyor…' : 'Notu kaydet'}</button></div></details>
+          <details class="lesson-note" ${lesson.note ? 'open' : ''}><summary><svg><use href="#icon-note"></use></svg>Ders notu ${lesson.note ? noteIsFromPreviousDay ? `· önceki dersten, ${formatDate(lesson.noteDate, { day: 'numeric', month: 'short' })}` : '· eklendi' : 'ekle'}</summary><textarea data-note-key="${escapeHtml(lessonKey(lesson))}" maxlength="300" ${lesson.status && !isHoliday && !isFuture && !isSaving ? '' : 'disabled'} placeholder="Yalnızca gerekli kısa notu yazın...">${escapeHtml(lesson.note)}</textarea><div class="lesson-note-actions"><span aria-live="polite" data-note-state="${escapeHtml(lessonKey(lesson))}">${lesson.note !== lesson.originalNote ? 'Kaydedilmemiş değişiklik' : 'Notlar sonraki ders gününde de görünür.'}</span><button type="button" data-note-save-key="${escapeHtml(lessonKey(lesson))}" ${lesson.status && !isHoliday && !isFuture && !isSaving && lesson.note !== lesson.originalNote ? '' : 'disabled'}>${isSaving ? 'Kaydediliyor…' : 'Notu kaydet'}</button></div></details>
         </div>
       </article>`;
     }).join('');
@@ -242,6 +246,7 @@
   }
 
   async function saveAttendance(lesson, date, previous) {
+    if (lesson.status === 'tatil') return;
     const key = attendanceKey(lesson, date);
     if (saving.has(key)) return;
     saving.add(key);

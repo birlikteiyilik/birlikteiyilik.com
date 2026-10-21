@@ -408,6 +408,10 @@ function attendanceDay(dateValue) {
   return ['', 'pazartesi', 'sali', 'carsamba', 'persembe', 'cuma', ''][index] || '';
 }
 
+function holidayFor(records, date, applicationType) {
+  return records.find((item) => item.kind === 'holiday' && item.lessonDate === date && item.applicationType === applicationType);
+}
+
 function mondayFor(dateValue) {
   const date = new Date(`${dateValue}T12:00:00Z`);
   const day = date.getUTCDay() || 7;
@@ -659,12 +663,13 @@ export default async function handler(req) {
         .filter((entry) => entry.teacherId === teacher.id && entry.day === day)
         .map((entry) => {
           const attendance = saved.get(`${placement.applicationId}|${entry.slot}`);
+          const holiday = holidayFor(records, date, placement.applicationType);
           const noteRecord = attendance || previousNotes.get(placement.applicationId);
           return {
             applicationId: placement.applicationId, applicationReference: placement.applicationReference,
             studentName: placement.studentName, applicationType: placement.applicationType,
             startDate: placement.startDate, day, slot: entry.slot,
-            status: attendance?.status || '', note: noteRecord?.note || '', noteDate: noteRecord?.lessonDate || '',
+            status: holiday ? 'tatil' : attendance?.status || '', note: noteRecord?.note || '', noteDate: noteRecord?.lessonDate || '',
             attendanceId: attendance?.id || '', updatedAt: attendance?.updatedAt || ''
           };
         }))
@@ -676,9 +681,11 @@ export default async function handler(req) {
     return WEEKDAYS.map((day, index) => {
       const date = isoPlusDays(start, index);
       const lessons = teacherDayLessons(records, teacher, date);
+      const activeLessons = lessons.filter((item) => item.status !== 'tatil');
       return {
-        day, date, expected: lessons.length,
-        completed: lessons.filter((item) => item.status).length
+        day, date, expected: activeLessons.length,
+        completed: activeLessons.filter((item) => item.status).length,
+        holidays: lessons.length - activeLessons.length
       };
     });
   }
@@ -799,6 +806,7 @@ export default async function handler(req) {
         teachers: planning.records.filter((item) => item.kind === 'teacher').map(publicTeacher),
         placements: planning.records.filter((item) => item.kind === 'placement'),
         attendance: planning.records.filter((item) => item.kind === 'attendance'),
+        holidays: planning.records.filter((item) => item.kind === 'holiday'),
         meta: { weekdays: WEEKDAYS, timeSlots: TIME_SLOTS, onlineTimeSlots: ONLINE_TIME_SLOTS, onlineTimeRanges: ONLINE_TIME_RANGES, attendanceStatuses: ATTENDANCE_STATUSES }
       }, 200, cors);
     } catch (_) {
@@ -947,6 +955,7 @@ export default async function handler(req) {
             const key = `${applicationId}|${slot}`;
             const lesson = available.get(key);
             if (!lesson || seen.has(key)) throw new RequestError('Ders ataması değişti. Programı yenileyip tekrar deneyin.', 409);
+            if (lesson.status === 'tatil') throw new RequestError('Bu gün tatil olarak işaretli. Yoklama kaydedilemez.', 409);
             seen.add(key);
             const index = records.findIndex((item) => item.kind === 'attendance' && item.teacherId === teacher.id &&
               item.applicationId === applicationId && item.lessonDate === date && item.slot === slot);
@@ -1036,6 +1045,34 @@ export default async function handler(req) {
       }
     }
 
+    if (body.action === 'attendance-holiday-save') {
+      try {
+        const date = assertTeacherViewDate(body.date);
+        const applicationType = cleanText(body.applicationType, 20);
+        if (!ENUMS.applicationType.includes(applicationType) || typeof body.holiday !== 'boolean') {
+          throw new RequestError('Tatil günü bilgileri geçersiz.');
+        }
+        const now = new Date().toISOString();
+        const saved = await mutateArchive(PLANNING_FILE, (records) => {
+          const existing = holidayFor(records, date, applicationType);
+          if (!body.holiday) return {
+            records: records.filter((item) => item !== existing),
+            value: { lessonDate: date, applicationType, cleared: true }
+          };
+          const holiday = {
+            kind: 'holiday', id: existing?.id || crypto.randomUUID(), lessonDate: date, applicationType,
+            createdAt: existing?.createdAt || now, updatedAt: now, updatedBy: adminIdentity(admin)
+          };
+          if (existing) records[records.indexOf(existing)] = holiday;
+          else records.push(holiday);
+          return { records, value: holiday };
+        }, `BIA: ${date} tatil günü ${body.holiday ? 'işaretlendi' : 'kaldırıldı'}`);
+        return json({ ok: true, data: saved }, 200, cors);
+      } catch (error) {
+        return json({ error: error.message || 'Tatil günü kaydedilemedi.' }, error.status || 500, cors);
+      }
+    }
+
     if (body.action === 'attendance-admin-save') {
       try {
         const date = assertAttendanceDate(body.date);
@@ -1053,6 +1090,7 @@ export default async function handler(req) {
             (!item.startDate || item.startDate <= date) && (item.schedule || []).some((entry) =>
               entry.teacherId === teacherId && entry.day === day && entry.slot === slot));
           if (!placement) throw new RequestError('Bu öğretmen ve öğrenci için seçilen gün/saatte ders ataması bulunamadı.', 409);
+          if (holidayFor(records, date, placement.applicationType)) throw new RequestError('Bu gün tatil olarak işaretli. Önce tatili kaldırın.', 409);
           const index = records.findIndex((item) => item.kind === 'attendance' && item.teacherId === teacherId &&
             item.applicationId === applicationId && item.lessonDate === date && item.slot === slot);
           if (status === 'eksik') {

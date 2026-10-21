@@ -10,6 +10,10 @@ Elifba bölümündeki kitap seçiminden 56 sayfalık **Elifba** veya 51 sayfalı
 
 Güzel Ahlak arşivinin metinlerinde “teâlâ” ve “teala” kelimeleri küçük t ile yazılır; kaynakların diğer yazımları korunur. Başlıklar, kaynak metinleri, ders araçları ve yazdırma çıktıları aynı arşiv verisini kullanır.
 
+Özgün arşivde metni aktarılmamış 11 sayfa bulunur. Okuma listesi boş sayfaları atlar; dosyada hangi özgün sayfaların eksik olduğu ayrıca belirtilir. Kalan metinler ve sayfa numaraları değiştirilmez. Özellikle 3. sınıf / 7. ay / 2–3. sayfalar ile 3, 5 ve 7. sınıf / 8. ay / 3. sayfa bu kapsamdadır. 8. ayda 3. ve 5. sınıflar aynı 7–8 kaynak grubunu kullandığı için ortak eksiklik gösterilir. Özgün PDF'ler depoda bulunmadığından bu içerikler yeniden oluşturulmamıştır. Arama sonucu yoksa önceki sayfanın metni gösterilmez.
+
+Kitabın alt açıklaması “46 dosya ve 963 sayfalık özgün içeriğe dayalı pedagojik uyarlama.” şeklindedir.
+
 Dar ekranlarda tek sayfa, geniş ekranlarda iki sayfa ekrana sığar. Mobilde alttaki büyük düğmeler, kısa dokunma ve yatay kaydırma ile sayfa değişir. Düğme yerleri, dokunma kenarı, kaydırma ve klavye okları her kitabın yönünü takip eder. Masaüstünde sayfa seçimi ve iki geçiş düğmesi tek bir gruptur; düğmeler sayfa göstergesinin hemen yanındadır. Sağdan sola kitaplarda Sonraki solda, Önceki sağdadır; soldan sağa kitaplarda sıralama tersidir. Yakınlaştırma düğmesi bu gruptan ayrı durur. Dikey hareket ve uzun basma sayfa çevirmez. Sayfa seçimi ve yakınlaştırma kullanılabilir. Uzun kitaplarda yalnızca yakın sayfaların görselleri DOM’da tutulur.
 
 ## Geliştirme
