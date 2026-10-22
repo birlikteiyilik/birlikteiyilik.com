@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="/images/favicon-square.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 <script>if ('serviceWorker' in navigator) { window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js', { scope: '/yonetim' }).catch(() => {})); }</script>
-<link rel="stylesheet" href="/css/admin-applications.css?v=30">
+<link rel="stylesheet" href="/css/admin-applications.css?v=31">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; color: #222; min-height: 100vh; }
@@ -477,7 +477,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
     <section class="program-overview-head">
       <div>
         <span class="apps-eyebrow">Haftalık canlı görünüm</span>
-        <h2>Ders programı</h2>
+        <div class="program-title-row"><h2>Genel program</h2><div class="program-edit-anchor">
+          <button type="button" id="programEdit" class="program-icon-button" aria-label="Programı düzenle" title="Programı düzenle" aria-expanded="false" aria-controls="programEditMenu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 3 5 5M4 20l4-1L21 6a2.1 2.1 0 0 0-3-3L5 16l-1 4Z"/></svg></button>
+          <div id="programEditMenu" class="program-edit-menu" role="group" aria-label="Program düzenleme seçenekleri" hidden>
+            <button type="button" data-program-edit-scope="general"><strong>Genel programı düzenle</strong><small>Hocaların ortak ders saatleri</small></button>
+            <button type="button" data-program-edit-scope="teachers"><strong>Ekleme / düzeltme</strong><small>Bir veya birden fazla hoca seçin</small></button>
+          </div>
+        </div></div>
         <p id="appsProgramViewCopy">Seçilen eğitim türünün öğretmen yükünü ve birebir derslerini tek bakışta takip edin.</p>
       </div>
       <div class="program-head-actions">
@@ -705,6 +711,28 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
     <div class="apps-modal-actions">
       <button type="button" class="btn apps-delete-record" id="teacherDelete" hidden>Öğretmeni sil</button><div><button type="button" class="btn btn-gray" id="teacherCancel">Vazgeç</button> <button type="submit" class="btn btn-red" id="teacherSave">Öğretmeni kaydet</button></div>
     </div>
+  </form>
+</dialog>
+
+<dialog id="programHoursDialog" class="apps-dialog program-hours-dialog" aria-labelledby="programHoursTitle">
+  <form id="programHoursForm">
+    <div class="apps-modal-head"><div><span class="apps-eyebrow">Program düzenleme</span><h2 id="programHoursTitle">Genel programı düzenle</h2></div><button type="button" class="apps-close" id="programHoursClose" aria-label="Düzenlemeyi kapat">×</button></div>
+    <div class="apps-modal-body">
+      <p class="program-hours-description" id="programHoursDescription"></p>
+      <section id="programHoursTeachers" class="program-hours-teachers" hidden aria-label="Programı düzenlenecek hocalar">
+        <label class="program-teacher-search">Hoca seçin<input type="search" id="programHoursTeacherSearch" placeholder="Hoca adıyla ara…" autocomplete="off"></label>
+        <div id="programHoursTeacherList" class="program-hours-teacher-list"></div>
+        <p id="programHoursSelection" role="status"></p>
+      </section>
+      <div class="program-hours-table-head" aria-hidden="true"><span>Ders</span><span>Başlangıç</span><span>Bitiş</span><span></span></div>
+      <p id="programHoursTimeHint" class="program-hours-time-hint">24 saat biçimi · Örnek: 09:00, 15:30</p>
+      <div id="programHoursRows" class="program-hours-rows"></div>
+      <button type="button" id="programHoursAdd" class="program-hours-add"><span aria-hidden="true">＋</span> Ders saati ekle</button>
+      <p id="programHoursImpact" class="program-hours-impact" role="status"></p>
+      <p id="programHoursFeedback" class="program-hours-feedback" role="status"></p>
+      <button type="button" id="programHoursReset" class="program-hours-reset" hidden>Seçili hocaları ortak programa döndür</button>
+    </div>
+    <div class="apps-modal-actions"><button type="button" class="btn btn-gray" id="programHoursCancel">Vazgeç</button><button type="submit" class="btn btn-red" id="programHoursSave">Değişiklikleri kaydet</button></div>
   </form>
 </dialog>
 
@@ -1484,7 +1512,7 @@ function logout() {
 loadNews();
 </script>
 <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="/js/admin-program-excel.js?v=2"></script>
-<script src="/js/admin-applications.js?v=32"></script>
+<script src="/js/admin-program-excel.js?v=3"></script>
+<script src="/js/admin-applications.js?v=33"></script>
 </body>
 </html>

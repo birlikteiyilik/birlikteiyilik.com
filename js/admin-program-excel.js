@@ -28,7 +28,7 @@
     const teacherIds = new Set(selectedTeachers.map((teacher) => teacher.id));
     const selectedDays = filters.day ? days.filter((day) => day === filters.day) : days.slice();
     const selectedEntries = entries.filter((entry) => teacherIds.has(entry.teacherId) && selectedDays.includes(entry.day));
-    const selectedSlots = filters.slot ? [filters.slot] : [...new Set([...slots, ...selectedEntries.map((entry) => entry.slot)])]
+    const selectedSlots = filters.slot ? [filters.slot] : [...new Set([...slots, ...selectedTeachers.flatMap((teacher) => teacher.programSlots || []), ...selectedEntries.map((entry) => entry.slot)])]
       .sort((a, b) => startMinute(a) - startMinute(b) || a.localeCompare(b));
     const visibleEntries = selectedEntries.filter((entry) => (!filters.slot || entry.slot === filters.slot) &&
       (!query || matchesTeacher(selectedTeachers.find((teacher) => teacher.id === entry.teacherId)) || matchesEntry(entry)));
@@ -51,6 +51,7 @@
         }
         if (!(teacher.days || []).includes(day)) return { state: 'off', text: 'Çalışmıyor', assigned };
         if (!teacher.active) return { state: 'off', text: 'Pasif', assigned };
+        if (!(Array.isArray(teacher.programSlots) ? teacher.programSlots : slots).includes(slot)) return { state: 'off', text: 'Program dışı', assigned };
         return { state: 'open', text: 'Müsait', assigned };
       }
     };

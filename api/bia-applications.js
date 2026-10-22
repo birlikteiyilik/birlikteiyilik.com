@@ -7,6 +7,7 @@ import {
   updateArchiveEnvelope
 } from './_bia-neon-store.js';
 import { applicationHistory, trackApplicationChanges } from './_bia-application-history.js';
+import { DEFAULT_PROGRAM_SLOTS, applyProgramHours, availableProgramSlots, programDay, programHours, scheduleForDate, scheduleHistory, teacherProgramSlots } from './_bia-program-hours.js';
 
 export const config = { runtime: 'edge' };
 
@@ -15,11 +16,7 @@ const GH_API = 'https://api.github.com';
 const PLANNING_FILE = 'planning.enc.json';
 const STATUS_VALUES = ['yeni', 'inceleniyor', 'uygun', 'yedek', 'kayit-tamamlandi', 'uygun-degil'];
 const WEEKDAYS = ['pazartesi', 'sali', 'carsamba', 'persembe', 'cuma'];
-const TIME_SLOTS = [
-  '15:00-15:20', '15:20-15:40', '15:40-16:00',
-  '16:00-16:20', '16:20-16:40', '16:40-17:00',
-  '17:00-17:20', '17:20-17:40', '17:40-18:00'
-];
+const TIME_SLOTS = DEFAULT_PROGRAM_SLOTS;
 function createTimeSlots(startHour, endHour) {
   const slots = [];
   const format = (value) => `${String(Math.floor(value / 60)).padStart(2, '0')}:${String(value % 60).padStart(2, '0')}`;
@@ -253,7 +250,7 @@ function isFutureDate(value) {
   return String(value) > todayInTurkey;
 }
 
-function validateSubmission(body) {
+function validateSubmission(body, allowedSlots = TIME_SLOTS) {
   const isNewOnlineForm = body.applicationType === 'online' && body.applicationVersion === 'online-2026-09';
   if (isNewOnlineForm) {
     if (cleanText(body.studentName, 100).length < 3) return 'Öğrenci adı soyadı eksik.';
@@ -305,7 +302,7 @@ function validateSubmission(body) {
     return 'Telefon numaralarından biri geçersiz.';
   }
   if (cleanText(body.province, 80).length < 2 || cleanText(body.district, 80).length < 2) return 'İl ve ilçe seçin.';
-  const availability = orderedUnique(body.availabilitySlots, TIME_SLOTS);
+  const availability = orderedUnique(body.availabilitySlots, allowedSlots);
   if (!Array.isArray(body.availabilitySlots) || !availability.length || availability.length !== body.availabilitySlots.length) {
     return 'En az bir geçerli müsait saat aralığı seçin.';
   }
@@ -315,7 +312,7 @@ function validateSubmission(body) {
   return '';
 }
 
-function normalizeSubmission(body) {
+function normalizeSubmission(body, allowedSlots = TIME_SLOTS) {
   if (body.applicationType === 'online' && body.applicationVersion === 'online-2026-09') {
     const legacyGuardians = !body.guardianName;
     const guardianName = cleanText(legacyGuardians ? body.motherName : body.guardianName, 100);
@@ -354,7 +351,7 @@ function normalizeSubmission(body) {
     secondGuardianName: cleanText(body.secondGuardianName, 100),
     secondGuardianPhone: digits(body.secondGuardianPhone).slice(0, 12), quranLevel: String(body.quranLevel),
     previousTraining: String(body.previousTraining), previousTrainingDetail: cleanText(body.previousTrainingDetail, 180),
-    availabilitySlots: orderedUnique(body.availabilitySlots, TIME_SLOTS), notes: cleanText(body.notes, 600),
+    availabilitySlots: orderedUnique(body.availabilitySlots, allowedSlots), notes: cleanText(body.notes, 600),
     consents: {
       rulesAccepted: true, privacyAcknowledged: true, termsAccepted: true,
       mediaConsent: String(body.mediaConsent), version: '2026-09-08'
@@ -620,7 +617,7 @@ export default async function handler(req) {
           id: teacher.id, name: teacher.name, phone: teacher.phone,
           days: WEEKDAYS.filter((day) => (placement.schedule || []).some((entry) => entry.teacherId === teacher.id && entry.day === day)),
           schedule: (placement.schedule || [])
-            .filter((entry) => entry.teacherId === teacher.id && WEEKDAYS.includes(entry.day) && TIME_SLOTS.includes(entry.slot))
+            .filter((entry) => entry.teacherId === teacher.id && WEEKDAYS.includes(entry.day) && teacherProgramSlots(planning.records, teacher.id).includes(entry.slot))
             .map((entry) => ({ day: entry.day, slot: entry.slot }))
             .sort((a, b) => WEEKDAYS.indexOf(a.day) - WEEKDAYS.indexOf(b.day) || slotMinutes(a.slot) - slotMinutes(b.slot))
         }));
@@ -659,7 +656,7 @@ export default async function handler(req) {
       .sort((a, b) => a.lessonDate.localeCompare(b.lessonDate) || String(a.updatedAt || '').localeCompare(String(b.updatedAt || '')))
       .forEach((item) => previousNotes.set(item.applicationId, item));
     return records.filter((item) => item.kind === 'placement' && (!item.startDate || item.startDate <= date))
-      .flatMap((placement) => (placement.schedule || [])
+      .flatMap((placement) => scheduleForDate(placement, date)
         .filter((entry) => entry.teacherId === teacher.id && entry.day === day)
         .map((entry) => {
           const attendance = saved.get(`${placement.applicationId}|${entry.slot}`);
@@ -797,6 +794,12 @@ export default async function handler(req) {
   }
 
   if (req.method === 'GET') {
+    if (new URL(req.url).searchParams.get('action') === 'program-hours') {
+      try {
+        const planning = await getArchive(PLANNING_FILE);
+        return json({ ok: true, slots: availableProgramSlots(planning.records), revision: programHours(planning.records).revision }, 200, cors);
+      } catch (_) { return json({ error: 'Ders saatleri yüklenemedi.' }, 503, cors); }
+    }
     const admin = await checkAdmin();
     if (!admin) return json({ error: 'Yetkisiz erişim.' }, 401, cors);
     try {
@@ -807,7 +810,7 @@ export default async function handler(req) {
         placements: planning.records.filter((item) => item.kind === 'placement'),
         attendance: planning.records.filter((item) => item.kind === 'attendance'),
         holidays: planning.records.filter((item) => item.kind === 'holiday'),
-        meta: { weekdays: WEEKDAYS, timeSlots: TIME_SLOTS, onlineTimeSlots: ONLINE_TIME_SLOTS, onlineTimeRanges: ONLINE_TIME_RANGES, attendanceStatuses: ATTENDANCE_STATUSES }
+        meta: { weekdays: WEEKDAYS, timeSlots: programHours(planning.records).slots, programRevision: programHours(planning.records).revision, onlineTimeSlots: ONLINE_TIME_SLOTS, onlineTimeRanges: ONLINE_TIME_RANGES, attendanceStatuses: ATTENDANCE_STATUSES }
       }, 200, cors);
     } catch (_) {
       return json({ error: 'Şifreli başvuru arşivi açılamadı. Şifreleme anahtarını kontrol edin.' }, 500, cors);
@@ -852,11 +855,15 @@ export default async function handler(req) {
       if (!Number.isFinite(Number(body.startedAt)) || Date.now() - Number(body.startedAt) < 2500) {
         return json({ error: 'Form çok hızlı gönderildi. Lütfen alanları kontrol edip yeniden deneyin.' }, 429, cors);
       }
-      const validationError = validateSubmission(body);
+      let allowedSlots = TIME_SLOTS;
+      try {
+        if (body.applicationType !== 'online') allowedSlots = availableProgramSlots((await getArchive(PLANNING_FILE)).records);
+      } catch (_) { return json({ error: 'Ders saatleri yüklenemedi. Lütfen tekrar deneyin.' }, 503, cors); }
+      const validationError = validateSubmission(body, allowedSlots);
       if (validationError) return json({ error: validationError }, 400, cors);
       const now = new Date();
       const record = {
-        id: crypto.randomUUID(), reference: referenceFor(now), ...normalizeSubmission(body),
+        id: crypto.randomUUID(), reference: referenceFor(now), ...normalizeSubmission(body, allowedSlots),
         status: 'yeni', adminNote: '', createdAt: now.toISOString(), updatedAt: now.toISOString()
       };
       try {
@@ -923,7 +930,7 @@ export default async function handler(req) {
           ok: true, teacher: publicTeacher(teacher), date, day: attendanceDay(date),
           lessons: lessons.map((lesson) => ({ ...lesson, guardianPhone: contacts.get(lesson.applicationId) || '' })),
           week: teacherWeekSummary(planning.records, teacher, date),
-          meta: { weekdays: WEEKDAYS, timeSlots: TIME_SLOTS, onlineTimeSlots: ONLINE_TIME_SLOTS, attendanceStatuses: ATTENDANCE_STATUSES }
+          meta: { weekdays: WEEKDAYS, timeSlots: programHours(planning.records).slots, onlineTimeSlots: ONLINE_TIME_SLOTS, attendanceStatuses: ATTENDANCE_STATUSES }
         }, 200, cors);
       } catch (error) {
         return json({ error: error.message || 'Dersler yüklenemedi.' }, error.status || 500, cors);
@@ -970,7 +977,7 @@ export default async function handler(req) {
               kind: 'attendance', id: existing?.id || crypto.randomUUID(), teacherId: teacher.id,
               teacherName: currentTeacher.name, applicationId, applicationReference: lesson.applicationReference,
               studentName: lesson.studentName, applicationType: lesson.applicationType,
-              lessonDate: date, day, slot, status, note, isDemo: Boolean(existing?.isDemo ||
+              lessonDate: date, day, slot, status, note, ...(existing?.slotAtAttendance ? { slotAtAttendance: existing.slotAtAttendance } : {}), isDemo: Boolean(existing?.isDemo ||
                 records.find((item) => item.kind === 'placement' && item.applicationId === applicationId)?.isDemo),
               createdAt: existing?.createdAt || now, updatedAt: now, updatedBy: currentTeacher.name
             };
@@ -1087,7 +1094,7 @@ export default async function handler(req) {
         const now = new Date().toISOString();
         const saved = await mutateArchive(PLANNING_FILE, (records) => {
           const placement = records.find((item) => item.kind === 'placement' && item.applicationId === applicationId &&
-            (!item.startDate || item.startDate <= date) && (item.schedule || []).some((entry) =>
+            (!item.startDate || item.startDate <= date) && scheduleForDate(item, date).some((entry) =>
               entry.teacherId === teacherId && entry.day === day && entry.slot === slot));
           if (!placement) throw new RequestError('Bu öğretmen ve öğrenci için seçilen gün/saatte ders ataması bulunamadı.', 409);
           if (holidayFor(records, date, placement.applicationType)) throw new RequestError('Bu gün tatil olarak işaretli. Önce tatili kaldırın.', 409);
@@ -1103,7 +1110,7 @@ export default async function handler(req) {
             teacherName: records.find((item) => item.kind === 'teacher' && item.id === teacherId)?.name || existing?.teacherName || 'Öğretmen',
             applicationId, applicationReference: placement.applicationReference, studentName: placement.studentName,
             applicationType: placement.applicationType, lessonDate: date, day, slot, status,
-            note: existing?.note || '', isDemo: Boolean(existing?.isDemo || placement.isDemo),
+            note: existing?.note || '', ...(existing?.slotAtAttendance ? { slotAtAttendance: existing.slotAtAttendance } : {}), isDemo: Boolean(existing?.isDemo || placement.isDemo),
             createdAt: existing?.createdAt || now, updatedAt: now, updatedBy: adminIdentity(admin)
           };
           if (index >= 0) records[index] = attendance; else records.push(attendance);
@@ -1350,6 +1357,7 @@ export default async function handler(req) {
             passwordHash: credentials?.passwordHash || existing?.passwordHash,
             passwordSalt: credentials?.passwordSalt || existing?.passwordSalt,
             passwordUpdatedAt: credentials ? now : existing?.passwordUpdatedAt,
+            ...(Array.isArray(existing?.programSlots) ? { programSlots: existing.programSlots } : {}),
             createdAt: existing?.createdAt || now, updatedAt: now, updatedBy: adminIdentity(admin)
           };
           if (index >= 0) records[index] = teacher; else records.push(teacher);
@@ -1394,6 +1402,16 @@ export default async function handler(req) {
       }
     }
 
+    if (body.action === 'program-hours-save') {
+      try {
+        if (!['general', 'teachers'].includes(body.scope)) throw new RequestError('Düzenleme kapsamını seçin.');
+        if (body.reset !== undefined && typeof body.reset !== 'boolean') throw new RequestError('Program seçimi geçersiz.');
+        const saved = await mutateArchive(PLANNING_FILE, (records) =>
+          applyProgramHours(records, body.changes, body.revision, adminIdentity(admin), { scope: body.scope, teacherIds: body.teacherIds, reset: body.reset }), 'BIA: ders saatleri düzenlendi');
+        return json({ ok: true, data: saved }, 200, cors);
+      } catch (error) { return json({ error: error.message || 'Ders saatleri kaydedilemedi.' }, error.status || 500, cors); }
+    }
+
     if (body.action === 'placement-save') {
       try {
         const applicationId = cleanText(body.applicationId, 80);
@@ -1401,10 +1419,11 @@ export default async function handler(req) {
         if (application.applicationType === 'online') throw new RequestError('Online öğrenciler için yalnızca öğretmen ataması yapılabilir.', 409);
         if (!validDate(body.startDate)) throw new RequestError('Başlangıç tarihi seçin.');
         const schedule = normalizeSchedule(body.schedule);
-        const allowedSlots = application.applicationType === 'online' ? ONLINE_TIME_SLOTS : TIME_SLOTS;
         const saved = await mutateArchive(PLANNING_FILE, (records) => {
+          if (body.programRevision !== undefined && body.programRevision !== programHours(records).revision) throw new RequestError('Ders saatleri değişti. Programı yenileyip tekrar deneyin.', 409);
           const teachers = new Map(records.filter((item) => item.kind === 'teacher').map((item) => [item.id, item]));
           const existing = placementFor(records, applicationId);
+          if (body.expectedUpdatedAt !== undefined && body.expectedUpdatedAt !== (existing?.updatedAt || '')) throw new RequestError('Öğrencinin programı başka bir oturumda değişti. Programı yenileyin.', 409);
           const hydratedSchedule = schedule.map((entry) => {
             const teacher = teachers.get(entry.teacherId);
             if (!teacher) throw new RequestError(`${entry.day} için öğretmen seçin.`);
@@ -1416,7 +1435,7 @@ export default async function handler(req) {
             if (!teacher.modes.includes(application.applicationType)) throw new RequestError(`${teacher.name}, bu eğitim türünde ders vermiyor.`, 409);
             if (!teacher.days.includes(entry.day)) throw new RequestError(`${teacher.name}, seçilen günde çalışmıyor.`, 409);
             if (!entry.slot) throw new RequestError(`${entry.day} için saat seçin.`);
-            if (!allowedSlots.includes(entry.slot)) throw new RequestError(`${entry.slot}, geçerli ders saatleri arasında değil.`, 409);
+            if (!teacherProgramSlots(records, teacher.id).includes(entry.slot)) throw new RequestError(`${entry.slot}, bu hocanın ders saatleri arasında değil.`, 409);
             const conflict = records.find((item) => item.kind === 'placement' && item.applicationId !== applicationId &&
               (item.schedule || []).some((assigned) => assigned.teacherId === entry.teacherId &&
                 assigned.day === entry.day && assigned.slot === entry.slot));
@@ -1431,6 +1450,7 @@ export default async function handler(req) {
             applicationCreatedAt: application.createdAt, applicationReference: application.reference,
             studentName: application.studentName, applicationType: application.applicationType,
             startDate: String(body.startDate), schedule: hydratedSchedule,
+            programScheduleHistory: scheduleHistory(existing, hydratedSchedule, programDay(now)),
             createdAt: existing?.createdAt || now, updatedAt: now, updatedBy: adminIdentity(admin)
           };
           const index = existing ? records.findIndex((item) => item.kind === 'placement' && item.applicationId === applicationId) : -1;

@@ -100,3 +100,14 @@ test('an entirely closed day produces zero expected lessons without invalid perc
   assert.equal(el('reportsCompletionText').textContent, 'Hesaplanacak ders yok');
   assert.equal(el('reportsDonutRate').textContent, '—');
 });
+
+test('editing a program does not create missing historical lessons or count the same saved attendance twice', () => {
+  const updated = { ...placement, schedule: placement.schedule.map((entry) => ({ ...entry, slot: '19:00-19:20' })),
+    programScheduleHistory: [{ beforeDate: '2026-10-22', schedule: placement.schedule }] };
+  const { api, el } = reports(dates.map((date) => record(date, 'katildi')), [], [updated]);
+  api.render();
+  assert.equal(api.rows(false).length, 3);
+  assert.equal(el('reportsMissing').textContent, 0);
+  assert.equal(el('reportsExpected').textContent, 3);
+  assert.equal(el('reportsAttendanceText').textContent, '%100 katılım');
+});

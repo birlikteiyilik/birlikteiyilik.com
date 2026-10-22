@@ -331,4 +331,17 @@
   });
 
   updateStep(0, false);
+
+  // Offer the same current time ranges that can actually be assigned in the
+  // timetable, including extra hours available from individual teachers.
+  fetch('/api/bia-applications?action=program-hours').then(async (response) => {
+    if (!response.ok) throw new Error('Ders saatleri yüklenemedi.');
+    const data = await response.json();
+    if (!Array.isArray(data.slots) || !data.slots.length || data.slots.some((slot) => !/^\d{2}:\d{2}-\d{2}:\d{2}$/.test(slot))) throw new Error('Ders saatleri yüklenemedi.');
+    const selected = new Set(Array.from(form.querySelectorAll('[name="availabilitySlots"]:checked'), (input) => input.value));
+    form.querySelector('.availability-grid').innerHTML = data.slots.map((slot) => {
+      const [start, end] = slot.split('-');
+      return `<label><input type="checkbox" name="availabilitySlots" value="${slot}" ${selected.has(slot) ? 'checked' : ''}><span><strong>${start.replace(':', '.')}</strong><small>${end.replace(':', '.')}</small></span></label>`;
+    }).join('');
+  }).catch(() => showNotice('Güncel ders saatleri yüklenemedi. Başvurmadan önce lütfen sayfayı yenileyin.', 'error'));
 })();

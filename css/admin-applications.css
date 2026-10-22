@@ -260,6 +260,60 @@ html, body { max-width: 100%; overflow-x: hidden; }
 
 .program-overview-head { align-items: flex-end; margin: 4px 0 16px; }
 .program-overview-head h2 { color: var(--app-ink); font-size: 1.25rem; margin: 0 0 3px; }
+.program-title-row { align-items: center; display: flex; gap: 8px; position: relative; }
+.program-edit-anchor { position: static; }
+.program-icon-button { align-items: center; background: transparent; border: 1px solid transparent; border-radius: 9px; color: #778396; cursor: pointer; display: inline-flex; flex: 0 0 auto; height: 34px; justify-content: center; padding: 7px; width: 34px; }
+.program-icon-button svg { height: 18px; width: 18px; }
+.program-icon-button:hover, .program-icon-button[aria-expanded="true"] { background: #fff; border-color: #d8e0e9; color: #17385c; }
+.program-icon-button:focus-visible, .program-edit-menu button:focus-visible { outline: 3px solid #edb1be; outline-offset: 2px; }
+.program-edit-menu { background: #fff; border: 1px solid #e1e7ef; border-radius: 12px; box-shadow: 0 12px 36px #17385c20; left: 0; padding: 5px; position: absolute; top: calc(100% + 6px); width: 278px; z-index: 20; }
+.program-edit-menu button { background: none; border: 0; border-radius: 8px; color: #17385c; cursor: pointer; display: grid; font: inherit; gap: 4px; min-height: 62px; padding: 12px; text-align: left; width: 100%; }
+.program-edit-menu button:hover { background: #f4f7fb; }
+.program-edit-menu strong { font-size: .78rem; }
+.program-edit-menu small { color: #778396; font-size: .67rem; }
+.program-teacher-name .program-custom-label { background: #edf2fb; border-radius: 5px; color: #3a5c86; font-size: .55rem; padding: 3px 5px; }
+.apps-dialog.program-hours-dialog { width: min(600px, calc(100vw - 24px)); }
+.program-hours-dialog form { display: flex; flex-direction: column; max-height: min(820px, calc(100dvh - 32px)); }
+.program-hours-dialog .apps-modal-body { flex: 1; max-height: none; min-height: 0; padding: 18px 22px; }
+.program-hours-dialog .apps-modal-head, .program-hours-dialog .apps-modal-actions { flex-shrink: 0; }
+.program-hours-description { color: #667085; font-size: .76rem; line-height: 1.65; margin: 0 0 15px; }
+.program-hours-table-head, .program-hour-row { align-items: center; display: grid; gap: 10px; grid-template-columns: minmax(58px, 1fr) minmax(96px, 1.4fr) minmax(96px, 1.4fr) 32px; }
+.program-hours-table-head { color: #7a8799; font-size: .64rem; padding: 0 0 7px; }
+.program-hours-time-hint { color: #7a8799; font-size: .62rem; margin: 0 0 9px; }
+.program-hour-row { border-top: 1px solid #edf0f5; padding: 9px 0; }
+.program-hour-number { color: #445369; font-size: .72rem; }
+.program-hour-number small { color: #8691a1; display: block; font-size: .56rem; margin-top: 3px; }
+.program-hour-row input { background: #f7f9fb; border: 1px solid #dce3ec; border-radius: 8px; color: #17385c; font: inherit; font-size: .8rem; font-variant-numeric: tabular-nums; min-height: 40px; min-width: 0; padding: 8px; width: 100%; }
+.program-hour-row input:focus { background: #fff; border-color: #17385c; outline: 2px solid #dfe8f3; }
+.program-hour-row input[aria-invalid="true"] { border-color: #ce3152; }
+.program-hour-remove { background: none; border: 0; border-radius: 7px; color: #9b6774; cursor: pointer; font: inherit; font-size: 1.2rem; height: 32px; width: 32px; }
+.program-hour-remove:hover { background: #fff0f3; color: #b41a3b; }
+.program-hour-remove:disabled { cursor: not-allowed; opacity: .32; }
+.program-hours-add, .program-hours-reset { background: none; border: 0; color: #315c87; cursor: pointer; font: inherit; font-size: .73rem; font-weight: 700; min-height: 40px; padding: 8px 0; }
+.program-hours-add span { margin-right: 4px; }
+.program-hours-impact { background: #f5f8fb; border-radius: 8px; color: #63748a; font-size: .67rem; line-height: 1.7; margin: 6px 0 0; padding: 10px 12px; }
+.program-hours-feedback { color: #b0203e; font-size: .73rem; line-height: 1.6; margin: 8px 0 0; }
+.program-hours-feedback:empty { display: none; }
+.program-hours-reset { color: #6b7c90; font-size: .65rem; font-weight: 500; }
+.program-hours-teachers { border: 1px solid #e1e7ef; border-radius: 10px; margin: 0 0 16px; padding: 12px; }
+.program-hours-teachers[hidden], .program-hours-reset[hidden] { display: none; }
+.program-teacher-search { color: #53657d; display: grid; font-size: .69rem; gap: 7px; }
+.program-teacher-search input { border: 1px solid #dce3ec; border-radius: 7px; font: inherit; min-height: 36px; padding: 8px; width: 100%; }
+.program-hours-teacher-list { display: grid; gap: 2px; margin-top: 8px; max-height: 145px; overflow-y: auto; }
+.program-hours-teacher-list label { align-items: center; border-radius: 6px; color: #34465e; cursor: pointer; display: flex; font-size: .73rem; gap: 9px; min-height: 36px; padding: 5px; }
+.program-hours-teacher-list label:has(:checked) { background: #eef4fa; }
+.program-hours-teacher-list input { accent-color: #17385c; height: 17px; width: 17px; }
+.program-hours-teacher-list small { color: #8190a2; font-size: .6rem; margin-left: auto; }
+#programHoursSelection { color: #728197; font-size: .65rem; line-height: 1.6; margin: 8px 0 0; }
+@media (pointer: coarse) { .program-icon-button { height: 44px; width: 44px; } .program-hour-remove { min-height: 44px; } }
+@media (max-width: 520px) {
+  .program-hours-dialog .apps-modal-head { padding: 15px; }
+  .program-hours-dialog .apps-modal-body { padding: 14px 15px; }
+  .program-hours-dialog .apps-modal-actions { align-items: center; flex-direction: row; padding: 12px 15px; }
+  .program-hours-dialog .apps-modal-actions .btn { font-size: .7rem; padding: 10px; }
+  .program-hours-table-head, .program-hour-row { gap: 6px; grid-template-columns: minmax(44px, .8fr) minmax(86px, 1.5fr) minmax(86px, 1.5fr) 28px; }
+  .program-hour-row input { font-size: .75rem; padding: 7px 4px; }
+}
 .program-head-actions { align-items: flex-end; display: flex; flex-direction: column; gap: 8px; }
 .program-head-button-row { display: flex; gap: 7px; }
 .program-head-actions .btn { font-size: .7rem; padding: 7px 10px; }

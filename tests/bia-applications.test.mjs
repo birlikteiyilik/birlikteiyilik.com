@@ -612,6 +612,49 @@ const outsidePreferencesResponse = await adminPost({
 assert.equal(outsidePreferencesResponse.status, 200);
 assert.equal((await outsidePreferencesResponse.json()).data.schedule.length, 5);
 
+// Program templates are stored in the same encrypted planning archive. Verify
+// the real handler, permissions, public hours, and teacher-only overrides.
+const programList = async () => (await handler(new Request('http://localhost:4173/api/bia-applications', { headers: adminHeaders }))).json();
+const publicProgram = async () => (await handler(new Request('http://localhost:4173/api/bia-applications?action=program-hours'))).json();
+const programBefore = await programList();
+const originalHours = programBefore.meta.timeSlots;
+const programChanges = (slots) => slots.map((slot) => ({ previousSlot: slot, slot }));
+const hoursBody = { action: 'program-hours-save', scope: 'general', revision: 0,
+  changes: [...programChanges(originalHours), { previousSlot: '', slot: '18:00-18:20' }] };
+const teacherProgramDenied = await handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'POST', headers: teacherHeaders, body: JSON.stringify(hoursBody)
+}));
+assert.equal(teacherProgramDenied.status, 401);
+assert.equal((await adminPost(hoursBody)).status, 200);
+assert.equal((await adminPost(hoursBody)).status, 409, 'stale editors cannot overwrite a newer program');
+let programCurrent = await programList();
+assert.equal(programCurrent.meta.programRevision, 1);
+assert.ok(programCurrent.meta.timeSlots.includes('18:00-18:20'));
+const publicHours = await publicProgram();
+assert.deepEqual(Object.keys(publicHours).sort(), ['ok', 'revision', 'slots']);
+assert.ok(publicHours.slots.includes('18:00-18:20'));
+assert.equal((await adminPost({ action: 'program-hours-save', scope: 'teachers', teacherIds: [mondayTeacher.id, fridayTeacher.id], revision: 1,
+  changes: [...programChanges(programCurrent.meta.timeSlots), { previousSlot: '', slot: '19:00-19:20' }] })).status, 200);
+programCurrent = await programList();
+assert.ok(programCurrent.teachers.find((item) => item.id === mondayTeacher.id).programSlots.includes('19:00-19:20'));
+assert.ok(!programCurrent.teachers.find((item) => item.id === maleTeacher.id).programSlots);
+assert.ok(!programCurrent.meta.timeSlots.includes('19:00-19:20'), 'teacher-only hours do not change the common template');
+assert.ok((await publicProgram()).slots.includes('19:00-19:20'));
+const customAssignment = await adminPost({ action: 'placement-save', applicationId: firstApplication.id, applicationCreatedAt: firstApplication.createdAt,
+  startDate: '2020-01-01', programRevision: 2, schedule: splitSchedule.map((entry) => ({ ...entry, slot: '19:00-19:20' })) });
+assert.equal(customAssignment.status, 200);
+assert.ok((await (await teacherDataFor(futureHolidayDate)).json()).lessons.some((lesson) => lesson.slot === '19:00-19:20'));
+const otherTeacherDenied = await adminPost({ action: 'placement-save', applicationId: maleApplication.id, applicationCreatedAt: maleApplication.createdAt,
+  startDate: '2026-09-14', schedule: scheduleOutsideRequestedTimes.map((entry) => ({ ...entry, slot: '19:00-19:20' })) });
+assert.equal(otherTeacherDenied.status, 409);
+assert.equal((await adminPost({ action: 'program-hours-save', scope: 'teachers', teacherIds: [mondayTeacher.id], revision: 2,
+  changes: programChanges(originalHours) })).status, 409, 'an occupied teacher-specific hour cannot be removed');
+assert.equal((await adminPost({ action: 'placement-save', applicationId: firstApplication.id, applicationCreatedAt: firstApplication.createdAt,
+  startDate: '2020-01-01', schedule: splitSchedule })).status, 200);
+assert.equal((await adminPost({ action: 'program-hours-save', scope: 'teachers', teacherIds: [mondayTeacher.id, fridayTeacher.id], revision: 2, reset: true })).status, 200);
+assert.equal((await adminPost({ action: 'program-hours-save', scope: 'general', revision: 3, changes: programChanges(originalHours) })).status, 200);
+assert.deepEqual((await publicProgram()).slots, originalHours);
+
 const demoSeedResponse = await adminPost({ action: 'demo-seed', startDate: '2026-09-14' });
 assert.equal(demoSeedResponse.status, 200);
 const demoSeed = await demoSeedResponse.json();

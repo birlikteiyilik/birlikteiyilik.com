@@ -37,6 +37,8 @@
   let placements = [];
   let attendanceRecords = [];
   let holidayRecords = [];
+  let programEditor = null;
+  let programEditorTeacher = '';
   let meta = fallbackMeta;
   let loaded = false;
   let selectedId = '';
@@ -89,6 +91,142 @@
   }
   function slotsForType(type) {
     return type === 'online' ? (meta.onlineTimeSlots || fallbackMeta.onlineTimeSlots) : meta.timeSlots;
+  }
+
+  function teacherSlots(teacherId) {
+    const teacher = teacherOf(teacherId);
+    return Array.isArray(teacher?.programSlots) ? teacher.programSlots : meta.timeSlots;
+  }
+
+  function programScheduleForDate(placement, date) {
+    const version = (placement.programScheduleHistory || []).slice()
+      .sort((a, b) => a.beforeDate.localeCompare(b.beforeDate)).find((item) => date < item.beforeDate);
+    return version?.schedule || placement.schedule || [];
+  }
+
+  function pencilIcon() {
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 3 5 5M4 20l4-1L21 6a2.1 2.1 0 0 0-3-3L5 16l-1 4Z"/></svg>';
+  }
+
+  function closeProgramMenu() {
+    el('programEditMenu').hidden = true;
+    el('programEdit').setAttribute('aria-expanded', 'false');
+  }
+
+  function editorTeachers() {
+    return teachers.filter((teacher) => teacher.modes?.includes('yuz-yuze')).slice().sort((a, b) => a.name.localeCompare(b.name, 'tr'));
+  }
+
+  function editorScopeIds() {
+    return programEditor.scope === 'teachers' ? programEditor.teacherIds : new Set(editorTeachers().filter((teacher) => !Array.isArray(teacher.programSlots)).map((teacher) => teacher.id));
+  }
+
+  function programHourUsage(slot) {
+    const ids = editorScopeIds();
+    return placements.filter((item) => item.applicationType === 'yuz-yuze')
+      .flatMap((item) => item.schedule || []).filter((entry) => ids.has(entry.teacherId) && entry.slot === slot).length;
+  }
+
+  function hourRows(slots) {
+    return slots.map((slot) => { const [start, end] = slot.split('-'); return { previousSlot: slot, start, end }; });
+  }
+
+  function normalizeProgramTime(value) {
+    const original = String(value).trim();
+    let time = original.replace('.', ':');
+    if (/^\d{3,4}$/.test(time)) { time = time.padStart(4, '0'); time = `${time.slice(0, 2)}:${time.slice(2)}`; }
+    else if (/^\d{1,2}$/.test(time)) time = `${time.padStart(2, '0')}:00`;
+    else if (/^\d{1,2}:\d{2}$/.test(time)) time = time.padStart(5, '0');
+    return /^([01]\d|2[0-3]):[0-5]\d$/.test(time) ? time : original;
+  }
+
+  function renderProgramHourRows() {
+    el('programHoursRows').innerHTML = programEditor.rows.map((row, index) => {
+      const usage = row.previousSlot ? programHourUsage(row.previousSlot) : 0;
+      return `<div class="program-hour-row" data-hour-row="${index}"><span class="program-hour-number">${index + 1}. saat<small>${usage ? `${usage} ders / hafta` : row.previousSlot ? 'Boş saat' : 'Yeni saat'}</small></span>
+        <input type="text" inputmode="numeric" maxlength="5" pattern="([01][0-9]|2[0-3]):[0-5][0-9]" placeholder="09:00" autocomplete="off" spellcheck="false" data-hour-start="${index}" aria-label="${index + 1}. ders başlangıcı, 24 saat" aria-describedby="programHoursTimeHint" value="${escapeHtml(row.start)}" required>
+        <input type="text" inputmode="numeric" maxlength="5" pattern="([01][0-9]|2[0-3]):[0-5][0-9]" placeholder="09:20" autocomplete="off" spellcheck="false" data-hour-end="${index}" aria-label="${index + 1}. ders bitişi, 24 saat" aria-describedby="programHoursTimeHint" value="${escapeHtml(row.end)}" required>
+        <button type="button" class="program-hour-remove" data-hour-remove="${index}" aria-label="${index + 1}. ders saatini kaldır" title="${usage ? 'Önce bu saatteki dersleri başka bir saate taşıyın' : 'Ders saatini kaldır'}" ${usage ? 'disabled' : ''}>×</button></div>`;
+    }).join('');
+    updateProgramHoursFeedback();
+  }
+
+  function renderProgramTeacherChoices() {
+    const query = el('programHoursTeacherSearch').value.trim().toLocaleLowerCase('tr-TR');
+    const choices = editorTeachers().filter((teacher) => !query || teacher.name.toLocaleLowerCase('tr-TR').includes(query));
+    el('programHoursTeacherList').innerHTML = choices.map((teacher) => `<label><input type="checkbox" data-program-hour-teacher="${escapeHtml(teacher.id)}" ${programEditor.teacherIds.has(teacher.id) ? 'checked' : ''}><span>${escapeHtml(teacher.name)}</span><small>${Array.isArray(teacher.programSlots) ? 'Özel program' : 'Ortak program'}</small></label>`).join('') || '<p>Hoca bulunamadı.</p>';
+    const ids = [...programEditor.teacherIds];
+    const different = ids.length > 1 && ids.some((id) => JSON.stringify(teacherSlots(id)) !== JSON.stringify(teacherSlots(ids[0])));
+    el('programHoursSelection').textContent = ids.length ? `${ids.length} hoca seçildi.${different ? ' Programları farklı; kaydedince aşağıdaki saatler tüm seçili hocalara uygulanır.' : ''}` : 'Düzenlemek istediğiniz hoca veya hocaları seçin.';
+    el('programHoursReset').hidden = !ids.some((id) => Array.isArray(teacherOf(id)?.programSlots));
+  }
+
+  function updateProgramHoursFeedback() {
+    if (!programEditor) return;
+    const rows = programEditor.rows;
+    const sorted = rows.filter((row) => row.start && row.end).slice().sort((a, b) => a.start.localeCompare(b.start));
+    const timePattern = /^([01]\d|2[0-3]):[0-5]\d$/;
+    const invalidFormat = rows.some((row) => !timePattern.test(row.start) || !timePattern.test(row.end));
+    const invalid = rows.some((row) => row.start >= row.end);
+    const overlap = sorted.some((row, index) => index > 0 && row.start < sorted[index - 1].end);
+    const noTeachers = programEditor.scope === 'teachers' && !programEditor.teacherIds.size;
+    const error = invalidFormat ? 'Saatleri 24 saat biçiminde yazın (ör. 09:00 veya 15:30).' : invalid ? 'Her satırda başlangıç ve bitiş saatini kontrol edin.' : overlap ? 'Ders saatleri birbiriyle çakışıyor.' :
+      programEditor.scope === 'general' && !rows.length ? 'Ortak programda en az bir ders saati olmalı.' : '';
+    el('programHoursFeedback').textContent = error;
+    el('programHoursSave').disabled = Boolean(error || noTeachers || programEditor.saving);
+    el('programHoursAdd').disabled = rows.length >= 72 || programEditor.saving;
+    let moved = 0;
+    rows.forEach((row) => { if (row.previousSlot && `${row.start}-${row.end}` !== row.previousSlot) moved += programHourUsage(row.previousSlot); });
+    el('programHoursImpact').textContent = `${editorScopeIds().size} hoca · ${rows.length} ders saati.${moved ? ` ${moved} haftalık ders yeni saate taşınacak.` : ''} Geçmiş günlerin yoklamaları korunur. Atanmış ders bulunan saatler taşınmadan kaldırılamaz.`;
+    rows.forEach((row, index) => el('programHoursRows').querySelectorAll(`[data-hour-row="${index}"] input`).forEach((input) => input.setAttribute('aria-invalid', String(Boolean(input.value && (!timePattern.test(input.value) || (timePattern.test(row.start) && timePattern.test(row.end) && row.start >= row.end)))))));
+  }
+
+  function openProgramHours(scope, teacherId) {
+    closeProgramMenu();
+    if (activeApplicationType !== 'yuz-yuze') return;
+    programEditorTeacher = teacherId || '';
+    const ids = new Set(teacherId ? [teacherId] : []);
+    const slots = teacherId ? teacherSlots(teacherId) : meta.timeSlots;
+    programEditor = { scope, teacherIds: ids, revision: meta.programRevision || 0, rows: hourRows(slots), dirty: false, saving: false };
+    el('programHoursTitle').textContent = scope === 'general' ? 'Genel programı düzenle' : 'Ekleme / düzeltme';
+    el('programHoursDescription').textContent = scope === 'general'
+      ? 'Ortak programı kullanan hocaların ders saatlerini ekleyin, değiştirin veya kaldırın. Özel programı olan hocalar kendi saatlerini korur.'
+      : 'Yalnızca seçtiğiniz hocaların saatlerini düzenleyin. Diğer hocaların ve ortak programın saatleri değişmez.';
+    el('programHoursTeachers').hidden = scope !== 'teachers';
+    el('programHoursTeacherSearch').value = '';
+    el('programHoursSave').textContent = 'Değişiklikleri kaydet';
+    renderProgramTeacherChoices(); renderProgramHourRows();
+    el('programHoursDialog').showModal();
+  }
+
+  function closeProgramHours() {
+    if (programEditor?.saving) return;
+    el('programHoursDialog').close(); programEditor = null;
+  }
+
+  async function saveProgramHours(reset = false) {
+    if (!programEditor || programEditor.saving) return;
+    if (!reset && el('programHoursSave').disabled) return;
+    if (programEditor.scope === 'teachers' && !programEditor.teacherIds.size) return;
+    programEditor.saving = true;
+    el('programHoursSave').textContent = 'Kaydediliyor…';
+    updateProgramHoursFeedback();
+    el('programHoursDialog').querySelectorAll('input, button').forEach((control) => { control.disabled = true; });
+    try {
+      const result = await api('POST', { action: 'program-hours-save', scope: programEditor.scope,
+        teacherIds: [...programEditor.teacherIds], revision: programEditor.revision, reset,
+        changes: programEditor.rows.map((row) => ({ previousSlot: row.previousSlot, slot: `${row.start}-${row.end}` })) });
+      const refreshed = await load(true);
+      programEditor.saving = false; closeProgramHours();
+      toast(refreshed ? `Program kaydedildi. ${result.data.affectedTeachers} hocaya uygulandı.` : 'Program kaydedildi; güncel görünüm için sayfayı yenileyin.', refreshed ? undefined : 'error');
+    } catch (error) {
+      programEditor.saving = false;
+      programEditor.error = error.message;
+    } finally {
+      el('programHoursSave').textContent = 'Değişiklikleri kaydet';
+      el('programHoursDialog').querySelectorAll('input, button').forEach((control) => { control.disabled = false; });
+      if (programEditor) { renderProgramHourRows(); if (programEditor.error) el('programHoursFeedback').textContent = programEditor.error; }
+    }
   }
   function rangeMinutes(value) {
     const [start, end] = String(value || '').split('-').map((part) => {
@@ -341,7 +479,7 @@
 
   function renderProgramFilters() {
     const entries = programEntries();
-    const slots = slotsForType(activeApplicationType);
+    const slots = [...new Set([...slotsForType(activeApplicationType), ...scopedTeachers().flatMap((teacher) => teacher.programSlots || []), ...entries.map((entry) => entry.slot)])].sort();
     const teacherValue = el('programTeacher').value;
     const slotValue = el('programSlot').value;
     el('programTeacher').innerHTML = '<option value="">Tüm öğretmenler</option>' + programTeachers(entries)
@@ -377,13 +515,13 @@
         const allTeacherEntries = entries.filter((entry) => entry.teacherId === teacher.id);
         const totalStudents = new Set(allTeacherEntries.map((entry) => entry.applicationId)).size;
         const totalLessons = allTeacherEntries.length;
-        const capacity = Math.max(1, (teacher.days || []).length * slotsForType(activeApplicationType).length);
+        const capacity = Math.max(1, (teacher.days || []).length * teacherSlots(teacher.id).length);
         const occupancy = Math.min(100, Math.round(totalLessons / capacity * 100));
         const displayDays = view.days;
         const dayColumns = displayDays.map((day, dayIndex) => {
           const allDayEntries = allTeacherEntries.filter((entry) => entry.day === day);
           const slotBlocks = [];
-          slots.forEach((slot) => {
+          slots.filter((slot) => teacherSlots(teacher.id).includes(slot) || allTeacherEntries.some((entry) => entry.slot === slot)).forEach((slot) => {
             const cell = view.cell(teacher, day, slot);
             if (cell.state === 'off') {
               slotBlocks.push(`<li class="program-off-slot"><span class="program-slot-state">${escapeHtml(cell.text)}</span><time>${escapeHtml(slot.replace(/:/g, '.').replace('-', ' – '))}</time></li>`);
@@ -402,11 +540,12 @@
             ${workingDay ? `<ol class="program-day-slots">${slotBlocks.join('')}</ol>` : '<div class="program-day-empty">Bu gün çalışma günü değil</div>'}
           </section>`;
         }).join('');
-        const testTag = teacher.isDemo ? '<span class="program-demo-tag">Test</span>' : '';
+        const testTag = (teacher.isDemo ? '<span class="program-demo-tag">Test</span>' : '') + (Array.isArray(teacher.programSlots) ? '<span class="program-custom-label">Özel program</span>' : '');
+        const editButton = teacher.archived ? '' : `<button type="button" class="program-icon-button" data-program-teacher-edit="${escapeHtml(teacher.id)}" aria-label="${escapeHtml(teacher.name)} programını düzenle" title="Hocanın programını düzenle">${pencilIcon()}</button>`;
         const printButton = totalLessons ? `<button type="button" class="btn program-print-button" data-program-print="${escapeHtml(teacher.id)}">Not kağıdı yazdır</button>` : '';
         cards.push(`<article class="program-teacher-card ${teacher.active ? '' : 'is-passive'}" style="--program-index:${cards.length}">
           <header class="program-teacher-head">
-            <div class="program-teacher-identity"><span class="teacher-avatar">${escapeHtml(teacher.name.charAt(0).toLocaleUpperCase('tr-TR'))}</span><div><div class="program-teacher-name"><h3>${escapeHtml(teacher.name)}</h3>${testTag}<span class="teacher-status">${teacher.active ? 'Aktif' : teacher.archived ? 'Arşiv' : 'Pasif'}</span></div><small>${escapeHtml((teacher.days || []).map((day) => labels.days[day]).join(', ') || 'Çalışma günü yok')}</small></div>${printButton}</div>
+            <div class="program-teacher-identity"><span class="teacher-avatar">${escapeHtml(teacher.name.charAt(0).toLocaleUpperCase('tr-TR'))}</span><div><div class="program-teacher-name"><h3>${escapeHtml(teacher.name)}</h3>${testTag}<span class="teacher-status">${teacher.active ? 'Aktif' : teacher.archived ? 'Arşiv' : 'Pasif'}</span>${editButton}</div><small>${escapeHtml((teacher.days || []).map((day) => labels.days[day]).join(', ') || 'Çalışma günü yok')}</small></div>${printButton}</div>
             <div class="program-load-summary"><div><span><strong>${totalStudents}</strong> öğrenci</span><span><strong>${totalLessons}</strong> ders / hafta</span></div><div class="program-load-meter" aria-label="Yüzde ${occupancy} doluluk"><i style="--load:${occupancy}%"></i></div><small>${occupancy}% haftalık doluluk</small></div>
           </header>
           <div class="program-slot-legend"><span><i class="is-open"></i>Müsait saat</span><span><i class="is-busy"></i>Dolu ders saati</span><span><i class="is-off"></i>Çalışmıyor / Pasif</span></div>
@@ -492,8 +631,7 @@
     ]));
     const timelines = new Map();
     scopedPlacements().forEach((placement) => {
-      const schedule = Array.isArray(placement.schedule) ? placement.schedule : [];
-      if (!schedule.length) return;
+      if (!placement.schedule?.length && !placement.programScheduleHistory?.length) return;
       const earliestSaved = attendanceRecords.filter((item) => item.applicationId === placement.applicationId)
         .map((item) => item.lessonDate).filter(Boolean).sort()[0];
       const start = [placement.startDate || earliestSaved || lowerBound, lowerBound].sort().at(-1);
@@ -501,7 +639,7 @@
       let guard = 0;
       while (date <= today && guard < 370) {
         const day = dayForDate(date);
-        schedule.filter((entry) => entry.day === day).forEach((entry) => {
+        programScheduleForDate(placement, date).filter((entry) => entry.day === day).forEach((entry) => {
           if (holidayForDate(date, placement.applicationType || activeApplicationType)) return;
           const key = `${placement.applicationId}|${placement.studentName || ''}`;
           if (!timelines.has(key)) timelines.set(key, []);
@@ -582,7 +720,7 @@
       const day = dayForDate(date);
       if (day) {
         scopedPlacements().filter((placement) => !placement.startDate || placement.startDate <= date).forEach((placement) => {
-          (placement.schedule || []).filter((entry) => entry.day === day).forEach((entry) => {
+          programScheduleForDate(placement, date).filter((entry) => entry.day === day).forEach((entry) => {
             const key = `${entry.teacherId}|${placement.applicationId}|${date}|${entry.slot}`;
             const record = saved.get(key);
             known.add(key);
@@ -802,9 +940,11 @@
       loaded = true;
       renderStats(); renderTeacherFilter(); renderProgramFilters(); renderTable(); renderTeacherGrid(); renderProgram(); renderReportFilters(); renderReports();
       if (force) toast('Başvurular ve ders planı güncellendi.');
+      return true;
     } catch (error) {
       el('appsTableBody').innerHTML = `<tr><td colspan="9" class="apps-empty">${escapeHtml(error.message)}</td></tr>`;
       el('appsNotice').innerHTML = `<div class="notice err">${escapeHtml(error.message)}</div>`;
+      return false;
     }
   }
 
@@ -896,9 +1036,9 @@
   }
 
   function renderScheduleRows(item) {
-    const availableSlots = slotsForType(item.applicationType);
     el('appsScheduleRows').innerHTML = meta.weekdays.map((day, index) => {
       const draft = draftSchedule[day] || { teacherId: '', slot: '' };
+      const availableSlots = item.applicationType === 'online' ? slotsForType('online') : teacherSlots(draft.teacherId);
       const eligible = eligibleTeachers(item, day, draft.teacherId);
       const teacherOptions = eligible.map((teacher) => `<option value="${escapeHtml(teacher.id)}" ${teacher.id === draft.teacherId ? 'selected' : ''}>${escapeHtml(teacher.name)}${teacher.active ? '' : ' · Pasif'}</option>`).join('');
       const slotOptions = availableSlots.map((slot) => {
@@ -1037,6 +1177,7 @@
       const result = await api('POST', {
         action: 'placement-save', applicationId: item.id, applicationCreatedAt: item.createdAt,
         startDate: el('appsStartDate').value,
+        programRevision: meta.programRevision || 0, expectedUpdatedAt: placementOf(item.id)?.updatedAt || '',
         schedule
       });
       const index = placements.findIndex((placement) => placement.applicationId === item.id);
@@ -1695,6 +1836,7 @@
   }
 
   function switchView(view) {
+    closeProgramMenu();
     if (view === 'schedule' && activeApplicationType === 'online') view = 'applications';
     activeWorkspaceView = view;
     const views = { applications: 'appsApplicationsView', teachers: 'appsTeachersView', schedule: 'appsScheduleView', reports: 'appsReportsView' };
@@ -1779,6 +1921,81 @@
   window.showApplications = function () { showScreen('applicationsScreen'); showTypeChooser(); load(false); };
 
   document.addEventListener('DOMContentLoaded', () => {
+    el('programEdit').addEventListener('click', () => {
+      const opening = el('programEditMenu').hidden;
+      el('programEditMenu').hidden = !opening;
+      el('programEdit').setAttribute('aria-expanded', String(opening));
+      if (opening) el('programEditMenu').querySelector('button').focus();
+    });
+    el('programEditMenu').addEventListener('click', (event) => {
+      const button = event.target.closest('[data-program-edit-scope]');
+      if (button) openProgramHours(button.dataset.programEditScope);
+    });
+    document.addEventListener('click', (event) => { if (!event.target.closest('.program-edit-anchor')) closeProgramMenu(); });
+    document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !el('programEditMenu').hidden) { closeProgramMenu(); el('programEdit').focus(); } });
+    el('programHoursForm').addEventListener('submit', (event) => { event.preventDefault(); saveProgramHours(); });
+    el('programHoursClose').addEventListener('click', closeProgramHours);
+    el('programHoursCancel').addEventListener('click', closeProgramHours);
+    el('programHoursDialog').addEventListener('cancel', (event) => { if (programEditor?.saving) event.preventDefault(); });
+    el('programHoursDialog').addEventListener('close', () => {
+      if (el('programHoursDialog').open) return;
+      programEditor = null;
+      const trigger = programEditorTeacher ? document.querySelector(`[data-program-teacher-edit="${CSS.escape(programEditorTeacher)}"]`) : null;
+      (trigger || el('programEdit')).focus({ preventScroll: true });
+    });
+    el('programHoursDialog').addEventListener('click', (event) => { if (event.target === el('programHoursDialog')) closeProgramHours(); });
+    el('programHoursTeacherSearch').addEventListener('input', renderProgramTeacherChoices);
+    el('programHoursTeacherList').addEventListener('change', (event) => {
+      const input = event.target.closest('[data-program-hour-teacher]');
+      if (!input || !programEditor) return;
+      const id = input.dataset.programHourTeacher;
+      if (input.checked) programEditor.teacherIds.add(id); else programEditor.teacherIds.delete(id);
+      if (!programEditor.dirty && programEditor.teacherIds.size) {
+        programEditor.rows = hourRows([...new Set([...programEditor.teacherIds].flatMap((teacherId) => teacherSlots(teacherId)))].sort());
+      }
+      renderProgramTeacherChoices(); renderProgramHourRows();
+      el('programHoursTeacherList').querySelector(`[data-program-hour-teacher="${CSS.escape(id)}"]`)?.focus();
+    });
+    el('programHoursRows').addEventListener('input', (event) => {
+      const input = event.target;
+      if (!programEditor || !input.matches('[data-hour-start], [data-hour-end]')) return;
+      const index = Number(input.dataset.hourStart ?? input.dataset.hourEnd);
+      if (/^\d{4}$/.test(input.value) || /^\d{1,2}[:.]\d{2}$/.test(input.value)) input.value = normalizeProgramTime(input.value);
+      programEditor.rows[index][input.matches('[data-hour-start]') ? 'start' : 'end'] = input.value;
+      programEditor.dirty = true;
+      updateProgramHoursFeedback();
+    });
+    el('programHoursRows').addEventListener('focusout', (event) => {
+      const input = event.target;
+      if (!programEditor || !input.matches('[data-hour-start], [data-hour-end]')) return;
+      input.value = normalizeProgramTime(input.value);
+      const index = Number(input.dataset.hourStart ?? input.dataset.hourEnd);
+      programEditor.rows[index][input.matches('[data-hour-start]') ? 'start' : 'end'] = input.value;
+      updateProgramHoursFeedback();
+    });
+    el('programHoursRows').addEventListener('click', (event) => {
+      const button = event.target.closest('[data-hour-remove]');
+      if (!programEditor || !button || button.disabled) return;
+      programEditor.rows.splice(Number(button.dataset.hourRemove), 1); programEditor.dirty = true;
+      renderProgramHourRows();
+      el('programHoursAdd').focus();
+    });
+    el('programHoursAdd').addEventListener('click', () => {
+      if (!programEditor || programEditor.rows.length >= 72) return;
+      const start = programEditor.rows.map((row) => row.end).filter(Boolean).sort().at(-1) || '15:00';
+      const [hour, minute] = start.split(':').map(Number);
+      const endMinute = Math.min(1439, hour * 60 + minute + 20);
+      const end = `${String(Math.floor(endMinute / 60)).padStart(2, '0')}:${String(endMinute % 60).padStart(2, '0')}`;
+      programEditor.rows.push({ previousSlot: '', start, end }); programEditor.dirty = true;
+      renderProgramHourRows();
+      const input = el('programHoursRows').querySelector(`[data-hour-start="${programEditor.rows.length - 1}"]`);
+      input.focus(); input.scrollIntoView({ block: 'nearest' });
+    });
+    el('programHoursReset').addEventListener('click', () => saveProgramHours(true));
+    el('programBoard').addEventListener('click', (event) => {
+      const button = event.target.closest('[data-program-teacher-edit]');
+      if (button) openProgramHours('teachers', button.dataset.programTeacherEdit);
+    });
     el('applicationsScreen').addEventListener('click', (event) => {
       const button = event.target.closest('[data-student-info-id]');
       if (button) { event.stopPropagation(); openStudentInfo(button.dataset.studentInfoId); }

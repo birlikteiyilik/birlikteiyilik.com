@@ -32,6 +32,21 @@ const workbookFor = (view) => buildWorkbook(ExcelJS, { ...view, days: view.days.
   date: '2026-10-03', filterLabel: 'Tüm hocalar · Tüm hafta · Tüm saatler'
 });
 
+test('teacher-specific hours are shared by the board and exports without offering other teachers those hours', () => {
+  const custom = { ...teachers[0], programSlots: [slots[0], '19:00-19:20'] };
+  const view = selectProgram({ teachers: [custom, teachers[1]], entries: [], days, slots });
+  assert.ok(view.slots.includes('19:00-19:20'));
+  assert.equal(view.cell(custom, 'pazartesi', slots[1]).state, 'off');
+  assert.equal(view.cell(custom, 'pazartesi', '19:00-19:20').state, 'open');
+  assert.equal(view.cell(teachers[1], 'pazartesi', '19:00-19:20').state, 'off');
+  // Uncustomised teachers inherit the common slots rather than every slot in the union.
+  const inherited = { ...teachers[1], programSlots: slots };
+  const scoped = selectProgram({ teachers: [custom, inherited], entries: [], days, slots });
+  assert.equal(scoped.cell(inherited, 'pazartesi', '19:00-19:20').state, 'off');
+  const wb = workbookFor(scoped);
+  assert.ok(wb.worksheets[0].getColumn(1).values.some((value) => String(value).includes('19.00')));
+});
+
 test('gender, teacher, day and slot filters share the board/export selection, including available teachers', () => {
   assert.deepEqual(Array.from(select({ gender: 'kadin' }).teachers, (teacher) => teacher.id), ['b']);
   assert.deepEqual(Array.from(select({ gender: 'erkek' }).teachers, (teacher) => teacher.id), ['a', 'c']);
