@@ -50,7 +50,7 @@ export function scheduleHistory(existing, schedule, date) {
 
 export function applyProgramHours(records, changes, revision, actor, options = {}, at = new Date().toISOString()) {
   const current = programHours(records);
-  if (!Number.isInteger(revision) || revision !== current.revision) throw new ProgramError('Program başka bir oturumda değişti. Kapatıp yeniden açın.', 409);
+  if (!Number.isInteger(revision) || revision !== current.revision) throw new ProgramError('Program başka bir oturumda değişti. Sayfayı yenileyip tekrar deneyin.', 409);
   const scoped = options.scope === 'teachers';
   const teacherIds = scoped ? options.teacherIds : [];
   if (scoped && (!Array.isArray(teacherIds) || !teacherIds.length || teacherIds.length > 200 || new Set(teacherIds).size !== teacherIds.length)) {

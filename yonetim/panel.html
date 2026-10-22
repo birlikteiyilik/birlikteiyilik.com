@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="/images/favicon-square.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 <script>if ('serviceWorker' in navigator) { window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js', { scope: '/yonetim' }).catch(() => {})); }</script>
-<link rel="stylesheet" href="/css/admin-applications.css?v=31">
+<link rel="stylesheet" href="/css/admin-applications.css?v=32">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; color: #222; min-height: 100vh; }
@@ -477,13 +477,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
     <section class="program-overview-head">
       <div>
         <span class="apps-eyebrow">Haftalık canlı görünüm</span>
-        <div class="program-title-row"><h2>Genel program</h2><div class="program-edit-anchor">
-          <button type="button" id="programEdit" class="program-icon-button" aria-label="Programı düzenle" title="Programı düzenle" aria-expanded="false" aria-controls="programEditMenu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 3 5 5M4 20l4-1L21 6a2.1 2.1 0 0 0-3-3L5 16l-1 4Z"/></svg></button>
-          <div id="programEditMenu" class="program-edit-menu" role="group" aria-label="Program düzenleme seçenekleri" hidden>
-            <button type="button" data-program-edit-scope="general"><strong>Genel programı düzenle</strong><small>Hocaların ortak ders saatleri</small></button>
-            <button type="button" data-program-edit-scope="teachers"><strong>Ekleme / düzeltme</strong><small>Bir veya birden fazla hoca seçin</small></button>
-          </div>
-        </div></div>
+        <div class="program-title-row"><h2>Genel program</h2><button type="button" id="programEdit" class="program-icon-button" aria-label="Genel programı düzenle" title="Genel programı düzenle" aria-haspopup="dialog" aria-controls="programHoursDialog"></button></div>
         <p id="appsProgramViewCopy">Seçilen eğitim türünün öğretmen yükünü ve birebir derslerini tek bakışta takip edin.</p>
       </div>
       <div class="program-head-actions">
@@ -714,16 +708,19 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   </form>
 </dialog>
 
-<dialog id="programHoursDialog" class="apps-dialog program-hours-dialog" aria-labelledby="programHoursTitle">
+<dialog id="programHoursDialog" class="apps-dialog program-hours-dialog" aria-labelledby="programHoursTitle" aria-describedby="programHoursDescription">
   <form id="programHoursForm">
     <div class="apps-modal-head"><div><span class="apps-eyebrow">Program düzenleme</span><h2 id="programHoursTitle">Genel programı düzenle</h2></div><button type="button" class="apps-close" id="programHoursClose" aria-label="Düzenlemeyi kapat">×</button></div>
     <div class="apps-modal-body">
       <p class="program-hours-description" id="programHoursDescription"></p>
-      <section id="programHoursTeachers" class="program-hours-teachers" hidden aria-label="Programı düzenlenecek hocalar">
-        <label class="program-teacher-search">Hoca seçin<input type="search" id="programHoursTeacherSearch" placeholder="Hoca adıyla ara…" autocomplete="off"></label>
-        <div id="programHoursTeacherList" class="program-hours-teacher-list"></div>
-        <p id="programHoursSelection" role="status"></p>
-      </section>
+      <details id="programHoursTeachers" class="program-hours-teachers" hidden>
+        <summary>Başka hocalara da uygula<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 6.5 3 3 3-3"/></svg></summary>
+        <div class="program-hours-teacher-choices">
+          <label class="program-teacher-search">Hoca seçin<input type="search" id="programHoursTeacherSearch" placeholder="Hoca adıyla ara…" autocomplete="off"></label>
+          <div id="programHoursTeacherList" class="program-hours-teacher-list"></div>
+          <p id="programHoursSelection" role="status"></p>
+        </div>
+      </details>
       <div class="program-hours-table-head" aria-hidden="true"><span>Ders</span><span>Başlangıç</span><span>Bitiş</span><span></span></div>
       <p id="programHoursTimeHint" class="program-hours-time-hint">24 saat biçimi · Örnek: 09:00, 15:30</p>
       <div id="programHoursRows" class="program-hours-rows"></div>
@@ -850,6 +847,7 @@ function sanitizeHTML(html) {
 let token = sessionStorage.getItem('biaToken') || '';
 let news = [], sha = '', editIdx = null, filter = '';
 let events = [], eventsSha = '', eventEditIdx = null;
+let newsLoaded = false, newsLoading = null, panelNavigation = null;
 
 // ── GÜVENLİK: Session timeout (30 dakika) ──
 const SESSION_TIMEOUT = 30 * 60 * 1000;
@@ -934,14 +932,21 @@ function showScreen(id) {
 
 // ── HABERLERİ YÜKLE ──
 async function loadNews() {
-  try {
-    const d = await apiFetch({ type: 'news' });
-    news = d.data; sha = d.sha;
-    showMain();
-  } catch(e) {
-    alert('Haberler yuklenemedi: ' + e.message);
-    logout();
-  }
+  if (newsLoaded) return true;
+  if (newsLoading) return newsLoading;
+  newsLoading = (async () => {
+    try {
+      const d = await apiFetch({ type: 'news' });
+      news = d.data || []; sha = d.sha; newsLoaded = true;
+      return true;
+    } catch(e) {
+      const notice = document.getElementById('mainNotice');
+      notice.innerHTML = '<div class="notice err"></div>';
+      notice.firstElementChild.textContent = 'Haberler yüklenemedi: ' + e.message;
+      return false;
+    } finally { newsLoading = null; }
+  })();
+  return newsLoading;
 }
 
 function renderList() {
@@ -974,12 +979,20 @@ function renderList() {
 function setFilter(f) { filter = f; renderList(); }
 
 function showMain() {
+  return navigatePanel({ section: 'news' });
+}
+
+function renderNewsList() {
   renderList();
   showScreen('mainScreen');
-  document.getElementById('mainNotice').innerHTML = '';
+  if (newsLoaded) document.getElementById('mainNotice').innerHTML = '';
 }
 
 function showEdit(idx) {
+  return navigatePanel({ section: 'news', ...(idx === null ? { newItem: true } : { item: news[idx]?.slug }) });
+}
+
+function renderNewsEditor(idx) {
   editIdx = idx;
   const item = idx !== null ? news[idx] : {};
   document.getElementById('editHeading').textContent = idx === null ? 'Yeni Haber Ekle' : 'Duzenle';
@@ -1185,18 +1198,19 @@ async function uploadImage(input) {
 }
 
 // ── ETKİNLİKLER ──
-async function showEvents() {
+function showEvents() { return navigatePanel({ section: 'events' }); }
+
+async function loadEvents() {
   if (!events.length && !eventsSha) {
     try {
       const d = await apiFetch({ type: 'events' });
       events = d.data || []; eventsSha = d.sha;
     } catch(e) {
       document.getElementById('eventsMainNotice').innerHTML = `<div class="notice err">Yuklenemedi: ${e.message}</div>`;
-      return;
+      return false;
     }
   }
-  renderEventsList();
-  showScreen('eventsScreen');
+  return true;
 }
 
 function renderEventsList() {
@@ -1220,6 +1234,10 @@ function renderEventsList() {
 }
 
 function showEventEdit(idx) {
+  return navigatePanel({ section: 'events', ...(idx === null ? { newItem: true } : { item: events[idx]?.slug }) });
+}
+
+function renderEventEditor(idx) {
   eventEditIdx = idx;
   const ev = idx !== null ? events[idx] : {};
   document.getElementById('eventEditHeading').textContent = idx === null ? 'Yeni Etkinlik' : 'Etkinligi Duzenle';
@@ -1292,22 +1310,47 @@ let homepageData = null, homepageSha = '';
 let faqData = null, faqSha = '';
 let programsData = null, programsSha = '';
 
-async function switchTab(type) {
-  if (type === 'applications') { showApplications(); return; }
-  if (type === 'news') { showMain(); return; }
-  if (type === 'events') { showEvents(); return; }
-  if (type === 'site') { await loadAndShowSite(); return; }
-  if (type === 'homepage') { await loadAndShowHomepage(); return; }
-  if (type === 'faq') { await loadAndShowFaq(); return; }
-  if (type === 'programs') { await loadAndShowPrograms(); return; }
+function switchTab(type) { return navigatePanel({ section: type }); }
+
+function navigatePanel(route) { return panelNavigation?.navigate(route); }
+function syncPanelRoute(route) { panelNavigation?.sync(route); }
+
+async function renderPanelRoute(route, isCurrent) {
+  document.querySelectorAll('dialog[open]').forEach((dialog) => {
+    if (dialog.dispatchEvent(new Event('cancel', { cancelable: true }))) dialog.close();
+  });
+  if (route.section === 'applications') { renderApplicationsRoute(route); return; }
+  if (route.section === 'news') {
+    await loadNews();
+    if (!isCurrent()) return;
+    if (newsLoaded && (route.item || route.newItem)) {
+      const index = route.newItem ? null : news.findIndex((item) => item.slug === route.item);
+      if (index === -1) return panelNavigation.navigate({ section: 'news' }, { replace: true });
+      renderNewsEditor(index);
+    } else renderNewsList();
+    return;
+  }
+  if (route.section === 'events') {
+    const ready = await loadEvents();
+    if (!isCurrent()) return;
+    if (ready && (route.item || route.newItem)) {
+      const index = route.newItem ? null : events.findIndex((item) => item.slug === route.item);
+      if (index === -1) return panelNavigation.navigate({ section: 'events' }, { replace: true });
+      renderEventEditor(index);
+    } else { renderEventsList(); showScreen('eventsScreen'); }
+    return;
+  }
+  const renderers = { site: loadAndShowSite, homepage: loadAndShowHomepage, faq: loadAndShowFaq, programs: loadAndShowPrograms };
+  await renderers[route.section]?.(isCurrent);
 }
 
 // ── SITE AYARLARI ──
-async function loadAndShowSite() {
+async function loadAndShowSite(isCurrent = () => true) {
   if (!siteData) {
     try { const res = await apiFetch({ type: 'site' }); siteData = res.data; siteSha = res.sha; }
     catch(e) { alert('Yuklenemedi: ' + e.message); return; }
   }
+  if (!isCurrent()) return;
   document.getElementById('sPhone').value = siteData.phone || '';
   document.getElementById('sPhoneHref').value = siteData.phone_href || '';
   document.getElementById('sEmail').value = siteData.email || '';
@@ -1347,11 +1390,12 @@ async function saveSite() {
 }
 
 // ── ANA SAYFA ──
-async function loadAndShowHomepage() {
+async function loadAndShowHomepage(isCurrent = () => true) {
   if (!homepageData) {
     try { const res = await apiFetch({ type: 'homepage' }); homepageData = res.data; homepageSha = res.sha; }
     catch(e) { alert('Yuklenemedi: ' + e.message); return; }
   }
+  if (!isCurrent()) return;
   document.getElementById('hpHeroTitle').value = homepageData.hero?.title || '';
   document.getElementById('hpHeroSubtitle').value = homepageData.hero?.subtitle || '';
   document.getElementById('hpAboutTitle').value = homepageData.about?.title || '';
@@ -1394,11 +1438,12 @@ async function saveHomepage() {
 }
 
 // ── SSS ──
-async function loadAndShowFaq() {
+async function loadAndShowFaq(isCurrent = () => true) {
   if (!faqData) {
     try { const res = await apiFetch({ type: 'faq' }); faqData = res.data; faqSha = res.sha; }
     catch(e) { alert('Yuklenemedi: ' + e.message); return; }
   }
+  if (!isCurrent()) return;
   renderFaq();
   showScreen('faqScreen');
 }
@@ -1456,11 +1501,12 @@ async function saveFaq() {
 }
 
 // ── PROGRAMLAR ──
-async function loadAndShowPrograms() {
+async function loadAndShowPrograms(isCurrent = () => true) {
   if (!programsData) {
     try { const res = await apiFetch({ type: 'programs' }); programsData = res.data; programsSha = res.sha; }
     catch(e) { alert('Yuklenemedi: ' + e.message); return; }
   }
+  if (!isCurrent()) return;
   renderPrograms();
   showScreen('programsScreen');
 }
@@ -1509,10 +1555,14 @@ function logout() {
 }
 
 // ── BAŞLANGIÇ ──
-loadNews();
+document.addEventListener('DOMContentLoaded', () => {
+  panelNavigation = BiaPanelNavigation.createPanelNavigation(window, renderPanelRoute);
+  panelNavigation.start();
+});
 </script>
+<script type="module" src="/js/admin-navigation.js?v=1"></script>
 <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="/js/admin-program-excel.js?v=3"></script>
-<script src="/js/admin-applications.js?v=33"></script>
+<script src="/js/admin-applications.js?v=34"></script>
 </body>
 </html>

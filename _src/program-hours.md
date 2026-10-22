@@ -1,9 +1,11 @@
 # Genel ve hocaya özel ders saatleri
 
-Yüz yüze eğitim alanında **Ders programı → Genel program** başlığının yanındaki küçük kalem iki seçenek açar:
+Yüz yüze eğitim alanında küçük, ince çizgili program ızgarası simgesi ilgili kapsamın saatlerini doğrudan açar; ara seçim menüsü yoktur:
 
-- **Genel programı düzenle:** Ortak programdaki başlangıç/bitiş saatlerini değiştirir, yeni saat ekler veya boş saati kaldırır. Ortak programı kullanan hocalara uygulanır. Özel programı olan hocalar kendi saatlerini korur. Yeni hocalar ortak programı kullanır.
-- **Ekleme / düzeltme:** Aramayla bir veya birden fazla hoca seçilir. Düzenlenen saat listesi yalnızca bu hocalara uygulanır. Ortak program ve diğer hocalar değişmez. Hoca kartındaki küçük kalem aynı pencereyi o hocayı seçerek açar.
+- **Genel program başlığındaki düğme:** Doğrudan **Genel programı düzenle** penceresini açar. Ortak programdaki başlangıç/bitiş saatlerini değiştirir, yeni saat ekler veya boş saati kaldırır. Ortak programı kullanan hocalara uygulanır. Özel programı olan hocalar kendi saatlerini korur. Yeni hocalar ortak programı kullanır.
+- **Hoca kartındaki düğme:** Doğrudan o hocanın mevcut saatlerini açar. Pencerenin başlığında hocanın adı yer alır; başlangıçta yalnızca bu hoca seçilidir. Başka hocaların saatleri ve ortak program değişmez. Birden fazla hoca için düzenleme gerekiyorsa pencere içindeki küçük **Başka hocalara da uygula** alanı açılarak arama ve seçim yapılabilir. Bu alan her yeni açılışta kapalıdır ve önceki hoca seçimleri taşınmaz.
+
+Simgenin iki hücresi üzerine gelince veya klavyeyle odaklanınca 280 ms içinde hafifçe yer değiştirir. Düğme basıldığında küçük bir basılma tepkisi verir; pencere 180 ms'de açılır. Telefonlarda dokunma alanı 44px'dir. Hareketi azaltma tercihi varsa hareketler kapatılır. Pencere kapatılınca klavye odağı açan düğmeye döner.
 
 Hoca seçimi yapılırken saatler henüz değiştirilmemişse seçilen hocaların saatleri birleştirilerek açılır. Farklı programlar aynı listeye dönüştürülecekse seçim altında açıklama gösterilir. Saatler çalışma günlerinin tamamı için geçerlidir; mevcut hoca çalışma günü alanları korunur. Online eğitimdeki yalnızca hoca atama akışı değişmez.
 
@@ -24,3 +26,5 @@ Değişiklik günü İstanbul saatine göre belirlenir. Önceki günlerdeki prog
 ## Doğrulama
 
 `node --test tests/*.test.mjs` ortak ve seçili hoca kapsamlarını, ekleme/değiştirme/boş saati kaldırmayı, çakışmaları, yetkileri, eski revizyonu, geçmiş günlerin oranlarını ve Excel modelini kapsar. API testleri şifreli arşivi taklit eder. Tarayıcı kontrolleri örnek kayıtlarla masaüstü, 390px ve 320px ekranlarda çalıştırılır; canlı öğrenci verileri veya program ayarları değiştirilmez. Kullanıcı incelemesinden önce yayın yapılmaz.
+
+`tests/neon-program-hours.test.mjs` gerçek API işleyicisi, AES-GCM şifreleme ve Neon sürücüsü üzerinden kayıt/yeniden okuma akışını doğrular; uzak SQL servisi test verileriyle taklit edilir. Aynı anda iki program kaydı, başka bir arşiv güncellemesiyle çakışma ve yeniden deneme, veritabanı yazma hatası, ilk kayıt ve yetkisiz erişim de kapsanır. Eski revizyon reddedildiğinde kullanıcı sayfayı yenileyerek güncel saatleri ve revizyonu alır.

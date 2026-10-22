@@ -104,13 +104,8 @@
     return version?.schedule || placement.schedule || [];
   }
 
-  function pencilIcon() {
-    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 3 5 5M4 20l4-1L21 6a2.1 2.1 0 0 0-3-3L5 16l-1 4Z"/></svg>';
-  }
-
-  function closeProgramMenu() {
-    el('programEditMenu').hidden = true;
-    el('programEdit').setAttribute('aria-expanded', 'false');
+  function programControlIcon() {
+    return '<svg class="program-control-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3.75" y="3.75" width="6.5" height="6.5" rx="1.65"/><rect class="program-control-cell program-control-cell-top" x="13.75" y="3.75" width="6.5" height="6.5" rx="1.65"/><rect class="program-control-cell program-control-cell-bottom" x="3.75" y="13.75" width="6.5" height="6.5" rx="1.65"/><rect class="program-control-accent" x="13.75" y="13.75" width="6.5" height="6.5" rx="1.65"/></svg>';
   }
 
   function editorTeachers() {
@@ -158,7 +153,14 @@
     const ids = [...programEditor.teacherIds];
     const different = ids.length > 1 && ids.some((id) => JSON.stringify(teacherSlots(id)) !== JSON.stringify(teacherSlots(ids[0])));
     el('programHoursSelection').textContent = ids.length ? `${ids.length} hoca seçildi.${different ? ' Programları farklı; kaydedince aşağıdaki saatler tüm seçili hocalara uygulanır.' : ''}` : 'Düzenlemek istediğiniz hoca veya hocaları seçin.';
-    el('programHoursReset').hidden = !ids.some((id) => Array.isArray(teacherOf(id)?.programSlots));
+    el('programHoursReset').hidden = programEditor.scope !== 'teachers' || !ids.some((id) => Array.isArray(teacherOf(id)?.programSlots));
+    el('programHoursReset').textContent = ids.length === 1 ? 'Ortak programa döndür' : 'Seçili hocaları ortak programa döndür';
+    if (programEditor.scope === 'teachers') {
+      el('programHoursTitle').textContent = ids.length === 1 ? teacherOf(ids[0]).name : ids.length ? `${ids.length} hocanın programı` : 'Hoca seçin';
+      el('programHoursDescription').textContent = ids.length === 1
+        ? `Ders saati ekleyin, değiştirin veya kaldırın. Değişiklikler yalnızca ${teacherOf(ids[0]).name} için geçerlidir.`
+        : 'Düzenlenen ders saatleri yalnızca aşağıda seçtiğiniz hocalara uygulanır.';
+    }
   }
 
   function updateProgramHoursFeedback() {
@@ -182,17 +184,16 @@
   }
 
   function openProgramHours(scope, teacherId) {
-    closeProgramMenu();
     if (activeApplicationType !== 'yuz-yuze') return;
+    if (scope === 'teachers' && !teacherOf(teacherId)) return;
     programEditorTeacher = teacherId || '';
     const ids = new Set(teacherId ? [teacherId] : []);
     const slots = teacherId ? teacherSlots(teacherId) : meta.timeSlots;
     programEditor = { scope, teacherIds: ids, revision: meta.programRevision || 0, rows: hourRows(slots), dirty: false, saving: false };
-    el('programHoursTitle').textContent = scope === 'general' ? 'Genel programı düzenle' : 'Ekleme / düzeltme';
-    el('programHoursDescription').textContent = scope === 'general'
-      ? 'Ortak programı kullanan hocaların ders saatlerini ekleyin, değiştirin veya kaldırın. Özel programı olan hocalar kendi saatlerini korur.'
-      : 'Yalnızca seçtiğiniz hocaların saatlerini düzenleyin. Diğer hocaların ve ortak programın saatleri değişmez.';
+    el('programHoursTitle').textContent = 'Genel programı düzenle';
+    el('programHoursDescription').textContent = 'Ortak programı kullanan hocaların ders saatlerini ekleyin, değiştirin veya kaldırın. Özel programı olan hocalar kendi saatlerini korur.';
     el('programHoursTeachers').hidden = scope !== 'teachers';
+    el('programHoursTeachers').open = false;
     el('programHoursTeacherSearch').value = '';
     el('programHoursSave').textContent = 'Değişiklikleri kaydet';
     renderProgramTeacherChoices(); renderProgramHourRows();
@@ -541,7 +542,7 @@
           </section>`;
         }).join('');
         const testTag = (teacher.isDemo ? '<span class="program-demo-tag">Test</span>' : '') + (Array.isArray(teacher.programSlots) ? '<span class="program-custom-label">Özel program</span>' : '');
-        const editButton = teacher.archived ? '' : `<button type="button" class="program-icon-button" data-program-teacher-edit="${escapeHtml(teacher.id)}" aria-label="${escapeHtml(teacher.name)} programını düzenle" title="Hocanın programını düzenle">${pencilIcon()}</button>`;
+        const editButton = teacher.archived ? '' : `<button type="button" class="program-icon-button" data-program-teacher-edit="${escapeHtml(teacher.id)}" aria-label="${escapeHtml(teacher.name)} programını düzenle" title="${escapeHtml(teacher.name)} programını düzenle" aria-haspopup="dialog" aria-controls="programHoursDialog">${programControlIcon()}</button>`;
         const printButton = totalLessons ? `<button type="button" class="btn program-print-button" data-program-print="${escapeHtml(teacher.id)}">Not kağıdı yazdır</button>` : '';
         cards.push(`<article class="program-teacher-card ${teacher.active ? '' : 'is-passive'}" style="--program-index:${cards.length}">
           <header class="program-teacher-head">
@@ -865,7 +866,7 @@
     }).join('') : '<tr><td colspan="7" class="apps-empty">Filtrelerle eşleşen yoklama kaydı bulunamadı.</td></tr>';
   }
 
-  function switchReportView(view) {
+  function switchReportView(view, updateRoute = true) {
     activeReportView = view === 'students' ? 'students' : 'overview';
     const showStudents = activeReportView === 'students';
     el('reportsOverviewView').hidden = showStudents;
@@ -875,6 +876,7 @@
       button.classList.toggle('is-active', active);
       button.setAttribute('aria-pressed', String(active));
     });
+    if (updateRoute) syncWorkspaceRoute();
   }
 
   async function updateAttendanceFromReport(select) {
@@ -1833,10 +1835,14 @@
     activeApplicationType = '';
     updateWorkspaceShell();
     renderStats();
+    syncWorkspaceRoute();
   }
 
-  function switchView(view) {
-    closeProgramMenu();
+  function syncWorkspaceRoute() {
+    syncPanelRoute({ section: 'applications', mode: activeApplicationType, view: activeWorkspaceView, reportView: activeReportView });
+  }
+
+  function switchView(view, updateRoute = true) {
     if (view === 'schedule' && activeApplicationType === 'online') view = 'applications';
     activeWorkspaceView = view;
     const views = { applications: 'appsApplicationsView', teachers: 'appsTeachersView', schedule: 'appsScheduleView', reports: 'appsReportsView' };
@@ -1850,6 +1856,7 @@
     });
     if (view === 'schedule') renderProgram();
     if (view === 'reports') renderReports();
+    if (updateRoute) syncWorkspaceRoute();
   }
 
   function closeTeacherDialog() {
@@ -1918,21 +1925,24 @@
     } finally { button.disabled = false; button.textContent = 'Öğretmeni kaydet'; }
   }
 
-  window.showApplications = function () { showScreen('applicationsScreen'); showTypeChooser(); load(false); };
+  window.showApplications = function () { return navigatePanel({ section: 'applications' }); };
+  window.renderApplicationsRoute = function (route) {
+    showScreen('applicationsScreen');
+    const mode = route.mode || '';
+    if (mode !== activeApplicationType) {
+      activeApplicationType = mode;
+      resetFilters(); resetProgramFilters(); resetReportFilters();
+    }
+    updateWorkspaceShell();
+    switchReportView(route.reportView || 'overview', false);
+    switchView(route.view || 'applications', false);
+    renderWorkspaceData();
+    return load(false);
+  };
 
   document.addEventListener('DOMContentLoaded', () => {
-    el('programEdit').addEventListener('click', () => {
-      const opening = el('programEditMenu').hidden;
-      el('programEditMenu').hidden = !opening;
-      el('programEdit').setAttribute('aria-expanded', String(opening));
-      if (opening) el('programEditMenu').querySelector('button').focus();
-    });
-    el('programEditMenu').addEventListener('click', (event) => {
-      const button = event.target.closest('[data-program-edit-scope]');
-      if (button) openProgramHours(button.dataset.programEditScope);
-    });
-    document.addEventListener('click', (event) => { if (!event.target.closest('.program-edit-anchor')) closeProgramMenu(); });
-    document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !el('programEditMenu').hidden) { closeProgramMenu(); el('programEdit').focus(); } });
+    el('programEdit').innerHTML = programControlIcon();
+    el('programEdit').addEventListener('click', () => openProgramHours('general'));
     el('programHoursForm').addEventListener('submit', (event) => { event.preventDefault(); saveProgramHours(); });
     el('programHoursClose').addEventListener('click', closeProgramHours);
     el('programHoursCancel').addEventListener('click', closeProgramHours);
