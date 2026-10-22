@@ -2,6 +2,8 @@
 
 Paneldeki bölüm adresin `#` bölümünde tutulur. Sunucu adresi `/yonetim/panel` olarak kalır; Vercel'de ek yönlendirme veya veritabanı değişikliği gerekmez. Yenileme, doğrudan bağlantı ve tarayıcının geri/ileri düğmeleri aynı gezinme durumunu açar.
 
+Son geçerli bölüm ayrıca aynı sekmenin `sessionStorage` alanında `biaPanelLastRoute:v1` anahtarıyla tutulur. Yenileme veya yönlendirme sonucunda adres yalnızca `/yonetim/panel` olarak açılırsa bu kayıt geri yüklenir. Adreste açık bir bölüm varsa her zaman o bağlantı önceliklidir. Çıkıştaki mevcut `sessionStorage.clear()` son konumu da temizler; farklı sekmeler birbirinin konumunu değiştirmez. Depolama kullanılamıyorsa adres tabanlı gezinme devam eder.
+
 - `#basvurular`: Eğitim türü seçimi.
 - `#basvurular/yuz-yuze/ders-programi`: Yüz yüze ders programı.
 - `#basvurular/online/hocalar`: Online öğretmenler.

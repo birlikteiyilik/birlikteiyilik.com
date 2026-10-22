@@ -2,6 +2,7 @@ const sections = { news: 'haberler', events: 'etkinlikler', applications: 'basvu
   site: 'ayarlar', homepage: 'ana-sayfa', faq: 'sss', programs: 'programlar' };
 const views = { applications: 'ogrenciler', teachers: 'hocalar', schedule: 'ders-programi', reports: 'yoklama' };
 const keyOf = (map, value) => Object.keys(map).find((key) => map[key] === value);
+export const PANEL_ROUTE_STORAGE_KEY = 'biaPanelLastRoute:v1';
 
 export function parsePanelRoute(hash = '') {
   let parts;
@@ -43,6 +44,7 @@ export function createPanelNavigation(browser, render) {
   function update(route, replace = false) {
     const hash = panelRouteHash(route);
     activeHash = hash;
+    try { browser.sessionStorage?.setItem(PANEL_ROUTE_STORAGE_KEY, hash); } catch (_) {}
     if (browser.location.hash !== hash) browser.history[replace ? 'replaceState' : 'pushState'](null, '', hash);
     return parsePanelRoute(hash);
   }
@@ -56,9 +58,16 @@ export function createPanelNavigation(browser, render) {
     if (browser.location.hash === activeHash) return;
     return navigate(parsePanelRoute(browser.location.hash), { replace: true });
   }
+  function start() {
+    let hash = browser.location.hash;
+    if (!hash) {
+      try { hash = browser.sessionStorage?.getItem(PANEL_ROUTE_STORAGE_KEY) || ''; } catch (_) {}
+    }
+    return navigate(parsePanelRoute(hash), { replace: true });
+  }
   browser.addEventListener('popstate', restore);
   browser.addEventListener('hashchange', restore);
-  return { navigate, sync, start: restore };
+  return { navigate, sync, start };
 }
 
 if (typeof window !== 'undefined') window.BiaPanelNavigation = { createPanelNavigation };

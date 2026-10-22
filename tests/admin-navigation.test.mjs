@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parsePanelRoute, panelRouteHash, createPanelNavigation } from '../js/admin-navigation.js';
+import { parsePanelRoute, panelRouteHash, createPanelNavigation, PANEL_ROUTE_STORAGE_KEY } from '../js/admin-navigation.js';
 
 test('panel routes restore education mode, workspace tab and attendance student view', () => {
   for (const mode of ['yuz-yuze', 'online']) for (const view of ['applications', 'teachers', 'reports', ...(mode === 'yuz-yuze' ? ['schedule'] : [])]) {
@@ -32,14 +32,63 @@ test('invalid links fall back to safe sections and online has no face-to-face sc
   assert.equal(panelRouteHash({ section: '__proto__' }), '#haberler');
 });
 
-function browser(initial = '') {
+function browser(initial = '', storage = new Map()) {
   const listeners = new Map(), writes = [];
-  const page = { location: { hash: initial }, history: {}, addEventListener(name, callback) { listeners.set(name, callback); } };
+  const page = { location: { hash: initial }, history: {},
+    sessionStorage: { getItem: (key) => storage.get(key) || null, setItem: (key, value) => storage.set(key, value) },
+    addEventListener(name, callback) { listeners.set(name, callback); } };
   for (const method of ['pushState', 'replaceState']) page.history[method] = (state, title, hash) => {
     page.location.hash = hash; writes.push({ method, hash });
   };
-  return { page, writes, listeners };
+  return { page, writes, listeners, storage };
 }
+
+test('a reload that returns to the bare panel URL restores the last location from the same tab', async () => {
+  const first = browser();
+  const initial = createPanelNavigation(first.page, () => {});
+  await initial.start();
+  initial.sync({ section: 'applications', mode: 'yuz-yuze', view: 'reports', reportView: 'students' });
+  const reload = browser('', first.storage);
+  const rendered = [];
+  await createPanelNavigation(reload.page, (route) => rendered.push(route)).start();
+  assert.deepEqual(rendered, [{ section: 'applications', mode: 'yuz-yuze', view: 'reports', reportView: 'students' }]);
+  assert.equal(reload.page.location.hash, '#basvurular/yuz-yuze/yoklama/ogrenciler');
+  assert.equal(reload.writes[0].method, 'replaceState');
+});
+
+test('an explicit deep link wins over a saved location, including the news home link', async () => {
+  for (const hash of ['#haberler', '#basvurular/online/hocalar']) {
+    const saved = new Map([[PANEL_ROUTE_STORAGE_KEY, '#basvurular/yuz-yuze/ders-programi']]);
+    const { page } = browser(hash, saved);
+    const rendered = [];
+    await createPanelNavigation(page, (route) => rendered.push(route)).start();
+    assert.deepEqual(rendered, [parsePanelRoute(hash)]);
+    assert.equal(saved.get(PANEL_ROUTE_STORAGE_KEY), hash);
+  }
+});
+
+test('saved navigation is tab-scoped and a cleared login session returns to the default section', async () => {
+  const first = browser();
+  const nav = createPanelNavigation(first.page, () => {});
+  await nav.navigate({ section: 'site' });
+  assert.equal(first.storage.get(PANEL_ROUTE_STORAGE_KEY), '#ayarlar');
+  first.storage.clear();
+  const fresh = browser('', first.storage);
+  const rendered = [];
+  await createPanelNavigation(fresh.page, (route) => rendered.push(route)).start();
+  assert.deepEqual(rendered, [{ section: 'news' }]);
+});
+
+test('unavailable session storage does not break navigation or URL-based restoration', async () => {
+  const { page } = browser('#basvurular/yuz-yuze/ders-programi');
+  Object.defineProperty(page, 'sessionStorage', { get() { throw new Error('Storage disabled'); } });
+  const rendered = [];
+  const nav = createPanelNavigation(page, (route) => rendered.push(route));
+  await nav.start();
+  await nav.navigate({ section: 'site' });
+  assert.equal(rendered[0].view, 'schedule');
+  assert.equal(page.location.hash, '#ayarlar');
+});
 
 test('reload restores the current URL and UI changes add a single history entry', async () => {
   const { page, writes } = browser('#basvurular/yuz-yuze/ders-programi');
