@@ -2,12 +2,13 @@
   "id": "11-14",
   "title": "Ahlak Eğitim Programı",
   "ageLabel": "11–14 yaş",
-  "publisher": "TACEV Eğitim Vakfı",
+  "publisher": "Birlikte İyilik",
   "edition": "Mayıs 2025",
   "pageCount": 187,
   "topicCount": 59,
-  "pdfFile": "ahlak-egitim-programi-11-14-yas.pdf",
+  "pdfFile": "birlikte-iyilik-ahlak-egitim-programi-11-14-yas.pdf",
   "sourceSha256": "18469302f9d3951c003889f5659550b05700d489c3aab8e25467d1fa31368bd4",
+  "pdfSha256": "24fc6dab81cf5cf0f79da657759d9518a61cf4c427b4459bf1d87228ef02401d",
   "topics": [
     {
       "number": 1,
@@ -37,8 +38,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             3
           ]
@@ -123,8 +124,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             6
           ]
@@ -215,8 +216,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             8
           ]
@@ -315,8 +316,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             11
           ]
@@ -399,8 +400,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             13
           ]
@@ -492,8 +493,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             16
           ]
@@ -585,8 +586,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             19
           ]
@@ -684,8 +685,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             21
           ]
@@ -777,8 +778,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             24
           ]
@@ -862,8 +863,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             26
           ]
@@ -955,8 +956,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             28
           ]
@@ -1049,8 +1050,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             31
           ]
@@ -1141,8 +1142,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             33
           ]
@@ -1232,8 +1233,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             35
           ]
@@ -1325,8 +1326,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             38
           ]
@@ -1427,8 +1428,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             42
           ]
@@ -1513,8 +1514,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             45
           ]
@@ -1605,8 +1606,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             47
           ]
@@ -1698,8 +1699,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             50
           ]
@@ -1792,8 +1793,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             54
           ]
@@ -1888,8 +1889,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             60
           ]
@@ -1982,8 +1983,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             64
           ]
@@ -2078,8 +2079,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             70
           ]
@@ -2170,8 +2171,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             72
           ]
@@ -2264,8 +2265,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             76
           ]
@@ -2358,8 +2359,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             80
           ]
@@ -2453,8 +2454,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             85
           ]
@@ -2547,8 +2548,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             89
           ]
@@ -2640,8 +2641,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             92
           ]
@@ -2734,8 +2735,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             97
           ]
@@ -2836,8 +2837,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             102
           ]
@@ -2923,8 +2924,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             106
           ]
@@ -3016,8 +3017,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             109
           ]
@@ -3110,8 +3111,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             113
           ]
@@ -3202,8 +3203,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             116
           ]
@@ -3295,8 +3296,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             119
           ]
@@ -3387,8 +3388,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             122
           ]
@@ -3480,8 +3481,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             126
           ]
@@ -3572,8 +3573,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             129
           ]
@@ -3665,8 +3666,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             132
           ]
@@ -3759,8 +3760,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             136
           ]
@@ -3850,8 +3851,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             139
           ]
@@ -3942,8 +3943,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             142
           ]
@@ -4034,8 +4035,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             144
           ]
@@ -4126,8 +4127,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             146
           ]
@@ -4218,8 +4219,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             148
           ]
@@ -4310,8 +4311,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             150
           ]
@@ -4403,8 +4404,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             153
           ]
@@ -4495,8 +4496,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             155
           ]
@@ -4588,8 +4589,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             158
           ]
@@ -4680,8 +4681,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             160
           ]
@@ -4772,8 +4773,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             163
           ]
@@ -4865,8 +4866,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             166
           ]
@@ -4958,8 +4959,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             169
           ]
@@ -5051,8 +5052,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             172
           ]
@@ -5144,8 +5145,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             176
           ]
@@ -5230,8 +5231,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             179
           ]
@@ -5316,8 +5317,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             182
           ]
@@ -5409,8 +5410,8 @@
           ]
         },
         {
-          "key": "duration",
-          "text": "40 dkk (Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
+          "key": "method",
+          "text": "(Online/İnteraktif/Teorik) - Görsel / İşitsel / Kinestetik Materyallerle Eğitim Öğretim)",
           "pages": [
             185
           ]

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import { assessmentQuestions, learningItems, readingBlocks, resourceLabel, sectionLinks, topicDuration } from "../src/native-curriculum.ts";
+import { assessmentQuestions, learningItems, readingBlocks, resourceLabel, sectionLinks } from "../src/native-curriculum.ts";
 import type { AgeCurriculum } from "../src/age-curricula.ts";
 
 const junior: AgeCurriculum = JSON.parse(readFileSync(new URL("../public/data/ahlak-mufredati-7-10.json", import.meta.url), "utf8"));
@@ -20,10 +20,13 @@ test("wrapped numbered and bulleted learning outcomes become clean native list i
   assert.deepEqual(learningItems("• Saygılı davranır.\n• Başkasının\nhakkını gözetir."), ["Saygılı davranır.", "Başkasının hakkını gözetir."]);
 });
 
-test("lesson duration follows each actual source rather than imposing one age-group default", () => {
-  assert.deepEqual(topicDuration(junior.topics[0]), { label: "2 × 40 dk", total: 80 });
-  assert.deepEqual(topicDuration(junior.topics[40]), { label: "40 dk", total: 40 });
-  assert.deepEqual(topicDuration(senior.topics[0]), { label: "40 dk", total: 40 });
+test("lesson guides contain teaching methods without duration declarations", () => {
+  for (const data of [junior, senior]) for (const topic of data.topics) {
+    assert.ok(!topic.sections.some((section) => section.key === "duration"));
+    const method = topic.sections.find((section) => section.key === "method");
+    assert.ok(method?.text);
+    assert.doesNotMatch(method.text, /\b40\s*(?:\+\s*40\s*)?(?:dk|dakika)/i);
+  }
 });
 
 test("every topic has useful questions, including discussion prompts for the two source gaps", () => {

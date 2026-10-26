@@ -3,7 +3,7 @@ import { AcademyHeader } from "./AcademyHeader";
 import { CurriculumCards } from "./CurriculumCards";
 import { CurriculumLinkIcon } from "./CurriculumLinkIcon";
 import { ageCurricula, curriculumTopic, curriculumTopicAtPage, readableTopicTitle, searchCurriculumTopics, type AgeCurriculum, type CurriculumAge, type CurriculumTopic } from "./age-curricula";
-import { assessmentQuestions, learningItems, readingBlocks, resourceLabel, sectionLinks, topicDuration, topicText } from "./native-curriculum";
+import { assessmentQuestions, learningItems, readingBlocks, resourceLabel, sectionLinks, topicText } from "./native-curriculum";
 
 const base = import.meta.env.BASE_URL;
 const home = base.replace(/\/$/, "");
@@ -50,12 +50,11 @@ export function AgeCurriculumPortal() {
   const contentRef = useRef<HTMLElement>(null);
   const topic = data ? (selection.sourcePage ? curriculumTopicAtPage(data, selection.sourcePage) : undefined) || curriculumTopic(data, selection.topic) : null;
   const filtered = useMemo(() => searchCurriculumTopics(data?.topics || [], query), [data, query]);
-  const duration = topic ? topicDuration(topic) : null;
   const outcomes = topic ? learningItems(topicText(topic, "outcomes")) : [];
   const concepts = topic ? topicText(topic, "concepts").split(/[•\n]/).map((value) => value.trim()).filter(Boolean) : [];
   const messages = topic ? learningItems(topicText(topic, "messages")) : [];
   const questions = topic ? assessmentQuestions(topic, age!) : [];
-  const pdf = `${base}assets/ahlak-mufredati/${age}/ahlak-egitim-programi-${age}-yas.pdf`;
+  const pdf = `${base}assets/ahlak-mufredati/${age}/birlikte-iyilik-ahlak-egitim-programi-${age}-yas.pdf`;
 
   useEffect(() => {
     if (!age) return;
@@ -119,7 +118,7 @@ export function AgeCurriculumPortal() {
     </div>
     <header className="curriculum-program-heading">
       <div><p className="hub-eyebrow">AHLAK EĞİTİM PROGRAMI</p><h1>{metadata.ageLabel} <span>Öğretmen rehberi</span></h1><p>{metadata.topicCount} konu · Ders hazırlığından değerlendirmeye</p></div>
-      <a className="curriculum-source-download" href={pdf} download={`Ahlak-Egitim-Programi-${age}-Yas.pdf`}>Kaynak PDF ↓</a>
+      <a className="curriculum-source-download" href={pdf} download={`Birlikte-Iyilik-Ahlak-Egitim-Programi-${age}-Yas.pdf`}>Kaynak PDF ↓</a>
     </header>
     {error ? <main className="curriculum-load-state" role="alert"><h2>Müfredat yüklenemedi</h2><p>Bağlantınızı kontrol edip yeniden deneyin.</p><button onClick={() => window.location.reload()}>Yeniden dene</button><a href={pdf} target="_blank" rel="noopener noreferrer">Kaynak PDF’yi aç</a></main>
       : !data || !topic ? <main className="curriculum-load-state" role="status">Ders rehberi açılıyor…</main>
@@ -130,13 +129,13 @@ export function AgeCurriculumPortal() {
             <div className="curriculum-index-heading"><h2>Konular</h2><span>{metadata.topicCount}</span></div>
             <label className="curriculum-search"><span>Konu veya içerik ara</span><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Örn. sabır, adalet…" /></label>
             <p className="curriculum-search-count" role="status">{query ? `${filtered.length} konu bulundu` : "Bir konu seçerek başlayın"}</p>
-            <nav className="curriculum-topic-list" aria-label="Konu seçimi">{filtered.map((item) => <button key={item.number} aria-current={topic.number === item.number ? "true" : undefined} onClick={() => navigate(item.number, selection.tab, true)}><span className="curriculum-topic-number">{String(item.number).padStart(2, "0")}</span><span><strong>{readableTopicTitle(item.title)}</strong><small>{topicDuration(item).label}</small></span></button>)}
+            <nav className="curriculum-topic-list" aria-label="Konu seçimi">{filtered.map((item) => <button key={item.number} aria-current={topic.number === item.number ? "true" : undefined} onClick={() => navigate(item.number, selection.tab, true)}><span className="curriculum-topic-number">{String(item.number).padStart(2, "0")}</span><span><strong>{readableTopicTitle(item.title)}</strong></span></button>)}
               {!filtered.length && <div className="curriculum-no-results"><p>Aramanızla eşleşen konu bulunamadı.</p><button onClick={() => setQuery("")}>Aramayı temizle</button></div>}
             </nav>
           </div>
         </aside>
         <main className="curriculum-content" ref={contentRef}>
-          <div className="curriculum-topic-heading"><p>KONU {String(topic.number).padStart(2, "0")} <span>·</span> {metadata.ageLabel} {duration?.label && <><span>·</span> {duration.label}</>}</p><h2>{readableTopicTitle(topic.title)}</h2><button className="curriculum-print" onClick={() => window.print()}>Ders notlarını yazdır <CurriculumLinkIcon /></button></div>
+          <div className="curriculum-topic-heading"><p>KONU {String(topic.number).padStart(2, "0")} <span>·</span> {metadata.ageLabel}</p><h2>{readableTopicTitle(topic.title)}</h2><button className="curriculum-print" onClick={() => window.print()}>Ders notlarını yazdır <CurriculumLinkIcon /></button></div>
           <div className="native-tabs" role="tablist" aria-label="Ders bölümleri">{tabs.map((tab, index) => <button id={`curriculum-tab-${tab.id}`} key={tab.id} role="tab" aria-selected={selection.tab === tab.id} tabIndex={selection.tab === tab.id ? 0 : -1} aria-controls="curriculumLessonPanel" onClick={() => navigate(topic.number, tab.id)} onKeyDown={(event) => tabKey(event, index)}>{tab.label}</button>)}</div>
           <div id="curriculumLessonPanel" className="native-panel" role="tabpanel" aria-labelledby={`curriculum-tab-${selection.tab}`}>
             <section className="native-tab-content" hidden={selection.tab !== "plan"}>
@@ -145,7 +144,7 @@ export function AgeCurriculumPortal() {
                 <section className="native-card"><p className="native-kicker">KAZANIMLAR</p><h3>Öğrenciler neler kazanacak?</h3><ul className="native-outcomes">{outcomes.map((item, index) => <li key={index}><span aria-hidden="true">✓</span>{item}</li>)}</ul></section>
                 <section className="native-card native-concept-card"><p className="native-kicker">HAZIRLIK</p><h3>Üzerinde duracağımız kavramlar</h3><ul className="curriculum-concepts">{concepts.map((concept, index) => <li key={index}>{concept}</li>)}</ul></section>
               </div>
-              <section className="native-card native-flow"><div className="native-section-heading"><div><p className="native-kicker">ADIM ADIM</p><h3>Dersi birlikte ilerletelim</h3></div><small>{duration?.label}</small></div>
+              <section className="native-card native-flow"><div className="native-section-heading"><div><p className="native-kicker">ADIM ADIM</p><h3>Dersi birlikte ilerletelim</h3></div></div>
                 <button onClick={() => navigate(topic.number, "anlatim", true)}><span>01</span><div><strong>Konuyu anlat</strong><p>{messages[0] || outcomes[0]}</p></div><span aria-hidden="true">→</span></button>
                 <button onClick={() => navigate(topic.number, "menkibeler", true)}><span>02</span><div><strong>Menkıbelerle pekiştir</strong><p>Örnek olayları okuyun; konuyla bağlantıları üzerine konuşun.</p></div><span aria-hidden="true">→</span></button>
                 <button onClick={() => navigate(topic.number, "sorular", true)}><span>03</span><div><strong>Birlikte değerlendirin</strong><p>{questions[0] || "Kazanımları birlikte gözden geçirin."}</p></div><span aria-hidden="true">→</span></button>

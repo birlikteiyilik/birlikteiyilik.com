@@ -3,7 +3,7 @@ export type CurriculumSection = { key: string; text: string; pages: number[] };
 export type CurriculumTopic = { number: number; title: string; startPage: number; endPage: number; sections: CurriculumSection[]; links: string[] };
 export type AgeCurriculum = {
   id: CurriculumAge; title: string; ageLabel: string; publisher: string; edition: string;
-  pageCount: number; topicCount: number; pdfFile: string; sourceSha256: string;
+  pageCount: number; topicCount: number; pdfFile: string; sourceSha256: string; pdfSha256: string;
   topics: CurriculumTopic[];
 };
 
@@ -18,7 +18,7 @@ export const ageCurricula = [
 
 export const curriculumSectionTitles: Record<string, string> = {
   age: "Yaş seviyesi", outcomes: "Öğrenme çıktıları", materials: "Oyunlar ve materyaller",
-  duration: "Süre ve yöntem", concepts: "Anahtar kavramlar", messages: "Verilecek mesajlar",
+  method: "Yöntem", concepts: "Anahtar kavramlar", messages: "Verilecek mesajlar",
   sayings: "Büyüklerin sözlerinden", explanation: "Açıklamalar", stories: "Konuyla ilgili menkıbeler",
   questions: "Ders sonunda ne anladık?", sources: "Kaynaklar",
 };

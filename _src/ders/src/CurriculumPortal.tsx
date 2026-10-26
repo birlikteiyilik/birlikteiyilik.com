@@ -51,7 +51,6 @@ function LessonDetails({
           <h2>{guide.title}</h2>
         </div>
         <div className="lesson-facts">
-          <span><strong>{guide.duration}</strong> dakika</span>
           <span><strong>{guide.age}</strong> öğrenci düzeyi</span>
         </div>
       </header>
@@ -95,12 +94,11 @@ function LessonDetails({
       <section className="content-section">
         <div className="section-title-row">
           <h3>Adım adım ders akışı</h3>
-          <span>Toplam {guide.duration} dakika</span>
         </div>
         <div className="flow-list">
           {guide.flow.map((step, index) => (
             <div className="flow-step" key={step.title}>
-              <div className="flow-time"><strong>{step.time}</strong><small>dk</small></div>
+              <div className="flow-time"><strong>{String(index + 1).padStart(2, "0")}</strong></div>
               <div><span>{index + 1}. adım</span><h4>{step.title}</h4><p>{step.detail}</p></div>
             </div>
           ))}

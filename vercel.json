@@ -11,6 +11,8 @@
     {"source": "/images/(.*)", "headers": [{"key": "Cache-Control", "value": "public, max-age=31536000, immutable"}]}
   ],
   "redirects": [
+    {"source": "/ders/assets/ahlak-mufredati/7-10/ahlak-egitim-programi-7-10-yas.pdf", "destination": "/ders/assets/ahlak-mufredati/7-10/birlikte-iyilik-ahlak-egitim-programi-7-10-yas.pdf", "permanent": true},
+    {"source": "/ders/assets/ahlak-mufredati/11-14/ahlak-egitim-programi-11-14-yas.pdf", "destination": "/ders/assets/ahlak-mufredati/11-14/birlikte-iyilik-ahlak-egitim-programi-11-14-yas.pdf", "permanent": true},
     {"source": "/:path*", "has": [{"type": "host", "value": "www.birlikteiyilik.com"}], "destination": "https://birlikteiyilik.com/:path*", "permanent": true},
     {"source": "/basvurular/online-egitim", "destination": "/basvurular/online", "permanent": true},
     {"source": "/basvurular/yuz-yuze-egitim", "destination": "/basvuru", "permanent": true},

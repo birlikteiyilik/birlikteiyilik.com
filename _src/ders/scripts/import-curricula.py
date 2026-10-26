@@ -1,4 +1,4 @@
-"""Import the two supplied TACEV PDFs without modifying their original files.
+"""Import the two supplied curriculum PDFs and publish academy-branded copies.
 
 Requires PyMuPDF. Run with --junior <7-10.pdf> --senior <11-14.pdf>.
 """
@@ -6,10 +6,10 @@ import argparse
 import hashlib
 import json
 import re
-import shutil
 from pathlib import Path
 
 import fitz
+from brand_curriculum_pdf import BRAND, TIME_PREFIX, publish_pdf
 
 PUBLIC = Path(__file__).resolve().parents[1] / 'public'
 LABELS = [
@@ -35,10 +35,10 @@ def import_pdf(source, age, expected_pages, expected_topics, edition):
     assert len(document) == expected_pages, 'Unexpected PDF page count'
     folder = PUBLIC / 'assets' / 'ahlak-mufredati' / age
     folder.mkdir(parents=True, exist_ok=True)
-    pdf_name = f'ahlak-egitim-programi-{age}-yas.pdf'
+    pdf_name = f'birlikte-iyilik-ahlak-egitim-programi-{age}-yas.pdf'
     source_hash = hashlib.sha256(source.read_bytes()).hexdigest()
     target = PUBLIC / 'data' / f'ahlak-mufredati-{age}.json'
-    shutil.copyfile(source, folder / pdf_name)
+    publish_pdf(source, folder / pdf_name, age)
     topics = []
     current_section = None
     for index, page in enumerate(document):
@@ -86,9 +86,15 @@ def import_pdf(source, age, expected_pages, expected_topics, edition):
         print('Incomplete:', incomplete, flush=True)
     assert not incomplete
     assert all(any(section['key'] == 'outcomes' and section['text'] for section in topic['sections']) for topic in topics)
+    for topic in topics:
+        for section in topic['sections']:
+            if section['key'] == 'duration':
+                section['key'] = 'method'
+                section['text'] = TIME_PREFIX.sub('', section['text']).lstrip(' –-')
     payload = {'id': age, 'title': 'Ahlak Eğitim Programı', 'ageLabel': f'{age.replace("-", "–")} yaş',
-               'publisher': 'TACEV Eğitim Vakfı', 'edition': edition, 'pageCount': len(document),
+               'publisher': BRAND, 'edition': edition, 'pageCount': len(document),
                'topicCount': len(topics), 'pdfFile': pdf_name, 'sourceSha256': source_hash,
+               'pdfSha256': hashlib.sha256((folder / pdf_name).read_bytes()).hexdigest(),
                'topics': topics}
     target.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + '\n')
     print(f'{age}: {len(topics)} topics, {len(document)} pages, {target.stat().st_size} bytes of text', flush=True)

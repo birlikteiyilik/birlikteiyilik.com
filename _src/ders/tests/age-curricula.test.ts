@@ -11,12 +11,14 @@ const sources = {
 };
 const load = (id: string): AgeCurriculum => JSON.parse(readFileSync(new URL(`../public/data/ahlak-mufredati-${id}.json`, import.meta.url), "utf8"));
 
-test("both supplied PDFs remain byte-identical to their uploaded originals", () => {
+test("published PDFs match their manifest while original-source fingerprints are retained", () => {
   for (const metadata of ageCurricula) {
     const data = load(metadata.id);
     const original = readFileSync(new URL(`../public/assets/ahlak-mufredati/${metadata.id}/${data.pdfFile}`, import.meta.url));
-    assert.equal(createHash("sha256").update(original).digest("hex"), sources[metadata.id]);
+    assert.equal(createHash("sha256").update(original).digest("hex"), data.pdfSha256);
     assert.equal(data.sourceSha256, sources[metadata.id]);
+    assert.equal(data.publisher, "Birlikte İyilik");
+    assert.ok(data.pdfFile.startsWith("birlikte-iyilik-"));
     assert.equal(data.pageCount, metadata.pageCount);
     assert.equal(data.topicCount, metadata.topicCount);
   }
@@ -31,7 +33,7 @@ test("all 115 topics retain their source order and cover every teaching page wit
     for (const topic of data.topics) {
       assert.equal(topic.startPage, nextPage);
       assert.ok(topic.endPage >= topic.startPage);
-      for (const key of ["outcomes", "duration", "concepts", "messages", "sayings", "explanation", "stories", "sources"]) {
+      for (const key of ["outcomes", "method", "concepts", "messages", "sayings", "explanation", "stories", "sources"]) {
         assert.ok(topic.sections.some((section) => section.key === key && section.text.trim()), `${metadata.id}, topic ${topic.number}: ${key}`);
       }
       nextPage = topic.endPage + 1;

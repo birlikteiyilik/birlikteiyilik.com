@@ -52,7 +52,7 @@ export function LessonHub() {
             </a>
           ))}
         </nav>
-        <section className="hub-curricula" aria-labelledby="hubCurriculaTitle"><div className="hub-curricula-heading"><div><p className="hub-eyebrow">YAŞA GÖRE MÜFREDATLAR</p><h2 id="hubCurriculaTitle">Ahlak Eğitim Programları</h2></div><span>TACEV Eğitim Vakfı</span></div><CurriculumCards /></section>
+        <section className="hub-curricula" aria-labelledby="hubCurriculaTitle"><div className="hub-curricula-heading"><div><p className="hub-eyebrow">YAŞA GÖRE MÜFREDATLAR</p><h2 id="hubCurriculaTitle">Ahlak Eğitim Programları</h2></div><span>Birlikte İyilik</span></div><CurriculumCards /></section>
         <footer className="hub-footer"><span>Birlikte İyilik Akademi</span><a href="/">Ana siteye dön <span aria-hidden="true">↗</span></a></footer>
       </main>
     </div>

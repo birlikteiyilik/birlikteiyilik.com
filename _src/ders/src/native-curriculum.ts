@@ -41,13 +41,6 @@ export function topicText(topic: CurriculumTopic, key: string) {
   return topic.sections.find((section) => section.key === key)?.text || "";
 }
 
-export function topicDuration(topic: CurriculumTopic) {
-  const values = /^\s*(\d+)(?:\s*\+\s*(\d+))?/.exec(topicText(topic, "duration"));
-  if (!values) return { label: "", total: 0 };
-  const first = Number(values[1]), second = Number(values[2]) || 0;
-  return { label: second ? first === second ? `2 × ${first} dk` : `${first} + ${second} dk` : `${first} dk`, total: first + second };
-}
-
 export function sectionLinks(topic: CurriculumTopic, key: string) {
   return [...new Set((topicText(topic, key).match(/https?:\/\/[^\s]+/g) || []).map((url) => topic.links.find((link) => link.startsWith(url)) || url))];
 }
