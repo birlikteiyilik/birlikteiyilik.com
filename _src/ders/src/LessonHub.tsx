@@ -1,8 +1,11 @@
 import { lazy, Suspense } from "react";
 import { BookReader } from "./BookReader";
 import { elifBaBook, mehmedMertElifBaBook, quranBook } from "./books";
+import { CurriculumCards } from "./CurriculumCards";
+import { AcademyHeader } from "./AcademyHeader";
 
 const CurriculumPortal = lazy(() => import("./CurriculumPortal").then((module) => ({ default: module.CurriculumPortal })));
+const AgeCurriculumPortal = lazy(() => import("./AgeCurriculumPortal").then((module) => ({ default: module.AgeCurriculumPortal })));
 const home = import.meta.env.BASE_URL.replace(/\/$/, "");
 const cardAssets = `${import.meta.env.BASE_URL}assets/book-cards/`;
 
@@ -12,21 +15,10 @@ const bookCards = [
   { section: "elif-ba", title: "Elifba", image: "elifba-grid-v3.webp", mobileImage: "elifba-mobile-v2.webp", description: "Tecvîdli Kur’ân-ı Kerîm elifbâsı ve ezber müfredatı.", metadata: "2 kitap · PDF kitap", action: "Kitabı aç" },
 ];
 
-export function AcademyHeader() {
-  return (
-    <header className="academy-header">
-      <a className="academy-brand" href="/" aria-label="Birlikte İyilik Akademi ana sayfası">
-        <img src="/images/favicon-square.png" alt="" width="42" height="42" />
-        <div><strong>Birlikte İyilik</strong><span>AKADEMİ</span></div>
-      </a>
-      <span className="academy-header-note">Öğretmen kaynakları</span>
-    </header>
-  );
-}
-
 export function LessonHub() {
   const params = new URLSearchParams(window.location.search);
   const section = params.get("bolum");
+  if (section === "ahlak-mufredati") return <Suspense fallback={<div className="empty-state" role="status"><p>Müfredat açılıyor…</p></div>}><AgeCurriculumPortal /></Suspense>;
   if (section === "guzel-ahlak" || (!section && params.has("sinif"))) {
     return <Suspense fallback={<div className="empty-state" role="status"><p>Ders kitabı açılıyor…</p></div>}><CurriculumPortal onHomeHref={home} /></Suspense>;
   }
@@ -47,7 +39,7 @@ export function LessonHub() {
         <div className="hub-intro">
           <p className="hub-eyebrow">BİRLİKTE ÖĞRENİYORUZ</p>
           <h1>Öğretmen Kitabı</h1>
-          <p>Kur’an-ı Kerim, ders rehberi veya Elifba kitaplarına ulaşmak için bir bölüm seçin.</p>
+          <p>Kitaplara, ders rehberine ve yaş gruplarına göre ahlak eğitim programlarına ulaşın.</p>
         </div>
         <nav className="book-grid" aria-label="Ders kitabı seçimi">
           {bookCards.map((card) => (
@@ -60,6 +52,7 @@ export function LessonHub() {
             </a>
           ))}
         </nav>
+        <section className="hub-curricula" aria-labelledby="hubCurriculaTitle"><div className="hub-curricula-heading"><div><p className="hub-eyebrow">YAŞA GÖRE MÜFREDATLAR</p><h2 id="hubCurriculaTitle">Ahlak Eğitim Programları</h2></div><span>TACEV Eğitim Vakfı</span></div><CurriculumCards /></section>
         <footer className="hub-footer"><span>Birlikte İyilik Akademi</span><a href="/">Ana siteye dön <span aria-hidden="true">↗</span></a></footer>
       </main>
     </div>
