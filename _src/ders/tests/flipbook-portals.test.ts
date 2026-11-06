@@ -4,6 +4,7 @@ import test from "node:test";
 import { readableArchivePages } from "../src/archive-pages.ts";
 import { archiveWeeks, isTopicHeading, topicTitle, weekAtPage } from "../src/archive-weeks.ts";
 import { videoCover, embedUrl, thumbnailUrl } from "../src/elifba-videos.ts";
+import { paragraphs, programBlocks, questionItems } from "../src/program-text.ts";
 import type { ArchiveData } from "../src/lesson-guide.ts";
 
 const read = (path: string) => JSON.parse(readFileSync(new URL(path, import.meta.url), "utf8"));
@@ -46,26 +47,41 @@ test("topic titles are recognised and made readable without touching story pages
   assert.equal(topicTitle("Konu: Ehemmi Mühimme tercih etmek"), "Ehemmi Mühimme tercih etmek");
 });
 
-test("programme flipbooks have a page image and link areas for every page", () => {
-  for (const age of ["7-10", "11-14"]) {
+test("programme books hold only the teacher's reading text, with the Wordwall activities in place", () => {
+  for (const age of ["7-10", "11-14"] as const) {
     const data = read(`../public/data/ahlak-mufredati-${age}.json`);
-    const pages = read(`../public/data/ahlak-mufredati-${age}-sayfalar.json`);
-    assert.equal(pages.pageCount, data.pageCount);
-    for (let page = 1; page <= pages.pageCount; page++) {
-      assert.ok(existsSync(new URL(`../public/assets/${pages.imageFolder}/page-${String(page).padStart(3, "0")}.webp`, import.meta.url)), `${age} ${page}`);
-    }
-    for (const links of Object.values(pages.links) as { href: string; rect: number[] }[][]) {
-      for (const link of links) {
-        assert.match(link.href, /^(https?:\/\/|mailto:)/);
-        assert.ok(link.rect.every((value) => value >= 0 && value <= 100) && link.rect[0] < link.rect[2] && link.rect[1] < link.rect[3]);
+    for (const topic of data.topics) {
+      const blocks = programBlocks(topic, age);
+      assert.equal(blocks[0].kind, "title", `${age} ${topic.number}`);
+      assert.ok(blocks.some((block) => block.kind === "paragraph"), `${age} ${topic.number} has reading text`);
+      const text = JSON.stringify(blocks);
+      // Lesson-plan rows (outcomes, method, sources) are left to the PDF.
+      for (const key of ["outcomes", "method", "sources"]) {
+        const first = topic.sections.find((section: { key: string }) => section.key === key)?.text.split("\n")[0].replace(/^[•\d.\s]+/, "").trim();
+        if (first && first.length > 25) assert.ok(!text.includes(first), `${age} ${topic.number} leaves out ${key}`);
       }
+      const activities = blocks.find((block) => block.kind === "activities");
+      const wordwall = topic.links.filter((href: string) => href.includes("wordwall.net"));
+      if (wordwall.length) assert.ok(activities && activities.kind === "activities" && activities.links.length, `${age} ${topic.number} links its activities`);
+      if (activities?.kind === "activities") assert.equal(blocks.indexOf(activities), 1);
     }
     const vatan = data.topics.find((topic: { title: string }) => topic.title === "VATAN SEVGİSİ");
-    assert.ok(vatan.links.includes(newVatanActivity));
-    assert.ok(!vatan.links.includes("https://wordwall.net/tr/resource/28325043"));
-    const pageLinks = Array.from({ length: vatan.endPage - vatan.startPage + 1 }, (_, index) => pages.links[String(vatan.startPage + index)] || []).flat();
-    assert.ok(pageLinks.some((link: { href: string }) => link.href === newVatanActivity));
+    const links = programBlocks(vatan, age).flatMap((block) => block.kind === "activities" ? block.links.map((link) => link.href) : []);
+    assert.ok(links.includes(newVatanActivity));
+    assert.ok(!links.includes("https://wordwall.net/tr/resource/28325043"));
   }
+});
+
+test("wrapped PDF lines are joined into paragraphs, and short runs keep their lines", () => {
+  const width = "x".repeat(100);
+  assert.deepEqual(paragraphs(`${width} birinci satır.\nikinci satır burada biter.\nYeni paragraf.`), [
+    { kind: "paragraph", text: `${width} birinci satır. ikinci satır burada biter.` },
+    { kind: "paragraph", text: "Yeni paragraf." },
+  ]);
+  assert.deepEqual(paragraphs(`Menkıbe 1 - Kısa Başlık\n${width} metin.`, { titles: true })[0], { kind: "heading", text: "Menkıbe 1 - Kısa Başlık" });
+  const poem = paragraphs(`${width}\nbiter.\nBir Şiir (Şiir)\nŞanlı kitap önderimiz kılındı\nİman, sancak, gönderimiz kılındı\nİklim-i Rum, minderimiz kılındı\nOl mindere kavi diz verilmeli.`, { titles: true });
+  assert.deepEqual(poem.slice(1), [{ kind: "heading", text: "Bir Şiir (Şiir)" }, { kind: "verse", lines: ["Şanlı kitap önderimiz kılındı", "İman, sancak, gönderimiz kılındı", "İklim-i Rum, minderimiz kılındı", "Ol mindere kavi diz verilmeli."] }]);
+  assert.deepEqual(questionItems("Birinci soru nedir?\nİkinci soru uzun bir\nsatırda devam eder mi?\n• Üçüncü?"), ["Birinci soru nedir?", "İkinci soru uzun bir satırda devam eder mi?", "Üçüncü?"]);
 });
 
 test("Karabaş Tecvid is published as a 52 page right-to-left book", () => {

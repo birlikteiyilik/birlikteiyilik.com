@@ -29,10 +29,6 @@ function ZoomedImagePage({ book, page, onError }: { book: Book; page: number; on
   return (
     <div className="reader-zoom-figure" style={{ width: `max(100%, ${book.width}px)` }}>
       <img src={bookPageImage(book, page)} alt={`${book.imageLabel}, ${page}. sayfa`} width={book.width} height={book.height} onError={onError} />
-      {(book.pageLinks?.[page] || []).map((link, index) => {
-        const [left, top, right, bottom] = link.rect;
-        return <a key={index} className="flipbook-link" href={link.href} target="_blank" rel="noopener noreferrer" title={link.label} aria-label={`${link.label} (yeni sekmede açılır)`} style={{ left: `${left}%`, top: `${top}%`, width: `${right - left}%`, height: `${bottom - top}%` }} />;
-      })}
     </div>
   );
 }

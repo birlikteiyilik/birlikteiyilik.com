@@ -1,16 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ageCurricula, curriculumTopicAtPage, readableTopicTitle, type AgeCurriculum, type CurriculumAge } from "./age-curricula";
-import { resourceLabel } from "./native-curriculum";
+import { ageCurricula, readableTopicTitle, type AgeCurriculum, type CurriculumAge } from "./age-curricula";
+import { programBlocks } from "./program-text";
+import { paginateProgram, programLeafShell, type ProgramPages, type ProgramType } from "./program-book";
 import { FlipbookPanel, type FlipbookPanelHandle } from "./FlipbookPanel";
 import { ReaderHeading } from "./BookReader";
-import { CurriculumLinkIcon } from "./CurriculumLinkIcon";
-import type { Book, PageLink } from "./books";
+import type { Book } from "./books";
 
 const base = import.meta.env.BASE_URL;
 const home = base.replace(/\/$/, "");
 const libraryHref = `${home}?bolum=ahlak-mufredati`;
 
-export type CurriculumPageData = { id: CurriculumAge; pageCount: number; width: number; height: number; imageFolder: string; links: Record<string, { href: string; rect: PageLink["rect"] }[]> };
+const phoneQuery = "(max-width: 700px)";
+const typeForScreen = (): ProgramType => window.matchMedia(phoneQuery).matches ? "large" : "regular";
 
 function readStart() {
   const params = new URLSearchParams(window.location.search);
@@ -18,68 +19,87 @@ function readStart() {
   return { topic: Number(params.get("konu")) || 0, page: Number.isInteger(page) && page >= 1 ? page : 0 };
 }
 
-/** Wordwall activities printed on a topic's pages, in reading order and without repeats. */
-export function wordwallLinks(pages: CurriculumPageData | null, startPage: number, endPage: number) {
-  if (!pages) return [];
-  const hrefs: string[] = [];
-  for (let page = startPage; page <= endPage; page++) {
-    for (const link of pages.links[String(page)] || []) {
-      if (/^https?:\/\/(www\.)?wordwall\.net\//.test(link.href) && !hrefs.includes(link.href)) hrefs.push(link.href);
-    }
-  }
-  return hrefs;
-}
-
+/**
+ * The programme as a plain reading book: for every topic only the text a teacher reads aloud,
+ * with the topic's Wordwall activities in place. The full PDF stays available for download.
+ */
 export function AgeCurriculumPortal() {
   const ageParam = new URLSearchParams(window.location.search).get("yas");
   const age: CurriculumAge = ageParam === "11-14" ? "11-14" : "7-10";
   const metadata = ageCurricula.find((program) => program.id === age)!;
   const start = useRef(readStart());
   const [data, setData] = useState<AgeCurriculum | null>(null);
-  const [pages, setPages] = useState<CurriculumPageData | null>(null);
+  const [program, setProgram] = useState<ProgramPages | null>(null);
   const [error, setError] = useState(false);
   const [page, setPage] = useState(0);
+  const [spread, setSpread] = useState(false);
+  const [type, setType] = useState<ProgramType>(typeForScreen);
   const panelRef = useRef<FlipbookPanelHandle>(null);
   const navRef = useRef<HTMLElement>(null);
+  const topicRef = useRef<number | undefined>(undefined);
   const pdfFile = `ahlak-mufredati/${age}/birlikte-iyilik-ahlak-egitim-programi-${age}-yas.pdf`;
   const downloadName = `Birlikte-Iyilik-Ahlak-Egitim-Programi-${age}-Yas.pdf`;
   const pdf = `${base}assets/${pdfFile}`;
 
   useEffect(() => {
     const controller = new AbortController();
-    const load = (file: string) => fetch(`${base}data/${file}`, { signal: controller.signal }).then((response) => { if (!response.ok) throw new Error("Kaynak yüklenemedi"); return response.json(); });
-    Promise.all([load(`ahlak-mufredati-${age}.json`), load(`ahlak-mufredati-${age}-sayfalar.json`)])
-      .then(([value, pageData]: [AgeCurriculum, CurriculumPageData]) => {
-        if (value.id !== age || !Array.isArray(value.topics) || !value.topics.length || pageData.id !== age) throw new Error("Kaynak geçersiz");
-        setData(value); setPages(pageData);
+    fetch(`${base}data/ahlak-mufredati-${age}.json`, { signal: controller.signal })
+      .then((response) => { if (!response.ok) throw new Error("Kaynak yüklenemedi"); return response.json(); })
+      .then((value: AgeCurriculum) => {
+        if (value.id !== age || !Array.isArray(value.topics) || !value.topics.length) throw new Error("Kaynak geçersiz");
+        setData(value);
       })
       .catch((failure: Error) => { if (failure.name !== "AbortError") setError(true); });
     return () => controller.abort();
   }, [age]);
 
-  const book = useMemo<Book | null>(() => {
-    if (!pages) return null;
-    const pageLinks: Record<number, PageLink[]> = {};
-    for (const [number, links] of Object.entries(pages.links)) pageLinks[Number(number)] = links.map((link, index) => ({ ...link, label: resourceLabel(link.href, index) || link.href.replace(/^mailto:/, "") }));
-    return {
-      id: `ahlak-mufredati-${age}`, title: `Ahlak Eğitim Programı · ${metadata.ageLabel}`, imageLabel: `Ahlak Eğitim Programı ${metadata.ageLabel}`,
-      pageCount: pages.pageCount, width: pages.width, height: pages.height, direction: "ltr", singlePage: true,
-      imageFolder: pages.imageFolder, pdfFile, downloadName, pageLinks,
+  useEffect(() => {
+    // Phones get larger type and so more pages; page numbers differ, so a switch reopens the same topic.
+    const query = window.matchMedia(phoneQuery);
+    const update = () => {
+      start.current = { topic: topicRef.current || start.current.topic, page: 0 };
+      setPage(0);
+      setType(typeForScreen());
     };
-  }, [pages, age, metadata, pdfFile, downloadName]);
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
+
+  useEffect(() => {
+    if (!data) return;
+    setProgram(paginateProgram(data.topics.map((topic) => ({ number: topic.number, title: readableTopicTitle(topic.title), blocks: programBlocks(topic, age) })), type));
+  }, [data, age, type]);
+
+  const titles = useMemo(() => new Map((data?.topics || []).map((topic) => [topic.number, readableTopicTitle(topic.title)])), [data]);
+
+  const book = useMemo<Book | null>(() => {
+    if (!program) return null;
+    return {
+      id: `ahlak-programi-${age}-${type}`, title: `Ahlak Eğitim Programı · ${metadata.ageLabel}`, imageLabel: `Ahlak Eğitim Programı ${metadata.ageLabel}`,
+      pageCount: program.pages.length, width: 1240, height: 1754, direction: "ltr", pdfFile, downloadName,
+      renderPage: (position) => {
+        const number = program.pageTopics[position - 1];
+        const { leaf, body } = programLeafShell([`${metadata.ageLabel} · Konu ${number}`, titles.get(number) || ""], String(position), type);
+        body.append(...program.pages[position - 1].map((element) => element.cloneNode(true)));
+        return leaf;
+      },
+    };
+  }, [program, age, type, metadata, pdfFile, downloadName, titles]);
 
   const initialPage = useMemo(() => {
-    if (!data || !pages) return 1;
-    if (start.current.page) return Math.min(pages.pageCount, start.current.page);
-    return data.topics.find((topic) => topic.number === start.current.topic)?.startPage || 1;
-  }, [data, pages]);
+    if (!program) return 1;
+    if (start.current.page) return Math.min(program.pages.length, start.current.page);
+    return program.topicStarts.get(start.current.topic) || 1;
+  }, [program]);
 
-  const topic = data ? curriculumTopicAtPage(data, page || initialPage) : undefined;
-  const activities = topic ? wordwallLinks(pages, topic.startPage, topic.endPage) : [];
+  // On a two-page spread a topic that opens on the right-hand page is the one being read.
+  const topicNumber = program ? program.pageTopics[Math.min(program.pages.length, (page || initialPage) + (spread ? 1 : 0)) - 1] : undefined;
+  const topic = data?.topics.find((item) => item.number === topicNumber);
+  topicRef.current = topicNumber;
 
   useEffect(() => {
     navRef.current?.querySelector('[aria-current="true"]')?.scrollIntoView({ block: "nearest", inline: "nearest" });
-  }, [topic?.number]);
+  }, [topicNumber]);
 
   useEffect(() => {
     if (!data) return;
@@ -96,16 +116,16 @@ export function AgeCurriculumPortal() {
       <ReaderHeading homeHref={home} title="Ahlak Eğitim Programları" pdfHref={pdf} downloadName={downloadName} />
       <section className="archive-book-controls" aria-label="Yaş grubu seçimi">
         <nav className="archive-segments" aria-label="Müfredat yaş grubu">
-          {ageCurricula.map((program) => <a key={program.id} href={`${libraryHref}&yas=${program.id}`} aria-current={program.id === age ? "page" : undefined}>{program.ageLabel}</a>)}
+          {ageCurricula.map((item) => <a key={item.id} href={`${libraryHref}&yas=${item.id}`} aria-current={item.id === age ? "page" : undefined}>{item.ageLabel}</a>)}
         </nav>
-        <p className="archive-book-summary">{metadata.topicCount} konu · {metadata.edition}</p>
+        <p className="archive-book-summary">{metadata.topicCount} konu · hocanın okuyacağı metin ve etkinlikler</p>
       </section>
       <div className="archive-book-body">
         <nav className="archive-week-nav archive-topic-nav" aria-label="Konu seçimi" ref={navRef}>
           {data?.topics.map((item) => {
-            const active = topic?.number === item.number;
+            const active = topicNumber === item.number;
             return (
-              <button key={item.number} className={active ? "active" : ""} aria-current={active ? "true" : undefined} onClick={() => panelRef.current?.goTo(item.startPage)}>
+              <button key={item.number} className={active ? "active" : ""} aria-current={active ? "true" : undefined} disabled={!program} onClick={() => panelRef.current?.goTo(program?.topicStarts.get(item.number) || 1)}>
                 <span className="archive-topic-number">{String(item.number).padStart(2, "0")}</span>
                 <strong>{readableTopicTitle(item.title)}</strong>
               </button>
@@ -113,18 +133,9 @@ export function AgeCurriculumPortal() {
           })}
         </nav>
         <div className="archive-book-reader">
-          {topic && activities.length > 0 && (
-            <div className="archive-activities" aria-label="Bu konunun Wordwall etkinlikleri">
-              <span>Etkinlikler</span>
-              {activities.map((href, index) => {
-                const label = resourceLabel(href, index);
-                return <a key={href} href={href} target="_blank" rel="noopener noreferrer">{label.charAt(0).toLocaleUpperCase("tr-TR") + label.slice(1)} <CurriculumLinkIcon /></a>;
-              })}
-            </div>
-          )}
           {error && <div className="empty-state" role="alert"><p>Müfredat yüklenemedi. Bağlantınızı kontrol edip yeniden deneyin.</p><a href={pdf} target="_blank" rel="noopener noreferrer">Kaynak PDF’yi aç →</a></div>}
           {!book && !error && <div className="empty-state" role="status"><p>Müfredat açılıyor…</p></div>}
-          {book && data && <FlipbookPanel key={book.id} ref={panelRef} book={book} initialPage={initialPage} onPageChange={(value) => setPage(value)} />}
+          {book && <FlipbookPanel key={book.id} ref={panelRef} book={book} initialPage={initialPage} onPageChange={(value, isSpread) => { setPage(value); setSpread(isSpread); }} />}
         </div>
       </div>
     </div>

@@ -1,6 +1,3 @@
-/** A clickable area on a page, given as percentages of the page: [left, top, right, bottom]. */
-export type PageLink = { href: string; label: string; rect: [number, number, number, number] };
-
 export type Book = {
   /** Stable identity; the flipbook is rebuilt when it changes. */
   id: string;
@@ -13,9 +10,6 @@ export type Book = {
   imageFolder?: string;
   pdfFile?: string;
   downloadName?: string;
-  /** Wide pages read best one at a time, so they are never paired into spreads. */
-  singlePage?: boolean;
-  pageLinks?: Record<number, PageLink[]>;
   /** Text books draw their own leaves instead of loading page images. */
   renderPage?: (page: number) => HTMLElement;
 };
