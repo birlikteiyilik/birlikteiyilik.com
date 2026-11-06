@@ -18,6 +18,11 @@ export function videoCover(title: string | undefined, position: number): VideoCo
   return { lesson: fallback.lesson, topic: cleaned || title.trim() };
 }
 
+/** The video's own YouTube cover (480×360, letterboxed for 16:9 videos; cropped by the card). */
+export function thumbnailUrl(id: string) {
+  return `https://i.ytimg.com/vi/${encodeURIComponent(id)}/hqdefault.jpg`;
+}
+
 export function embedUrl(id: string, autoplay = true) {
   const params = new URLSearchParams({ rel: "0", modestbranding: "1", playsinline: "1" });
   if (autoplay) params.set("autoplay", "1");

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { elifbaPlaylistId, elifbaPlaylistUrl, embedUrl, knownElifbaVideos, videoCover } from "./elifba-videos";
+import { elifbaPlaylistId, elifbaPlaylistUrl, embedUrl, knownElifbaVideos, thumbnailUrl, videoCover } from "./elifba-videos";
 
 type Video = { id: string; title?: string };
 type YouTubePlayer = {
@@ -163,7 +163,11 @@ export function ElifbaVideos() {
           return (
             <li key={video.id}>
               <button className={`video-cover video-cover-${index % 4}`} onClick={() => setOpen(video.id)} aria-label={`${lesson}${topic ? `: ${topic}` : ""} videosunu aç`}>
-                <span className="video-cover-art" aria-hidden="true"><span className="video-cover-play">▶</span></span>
+                <span className="video-cover-art" aria-hidden="true">
+                  {/* If YouTube's cover cannot load, the drawn card behind it stays visible. */}
+                  <img src={thumbnailUrl(video.id)} alt="" loading="lazy" decoding="async" onError={(event) => { event.currentTarget.hidden = true; }} />
+                  <span className="video-cover-play">▶</span>
+                </span>
                 <span className="video-cover-text"><strong>{lesson}</strong><span>{topic || "Elifba"}</span></span>
               </button>
             </li>

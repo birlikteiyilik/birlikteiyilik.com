@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 import test from "node:test";
 import { readableArchivePages } from "../src/archive-pages.ts";
 import { archiveWeeks, isTopicHeading, topicTitle, weekAtPage } from "../src/archive-weeks.ts";
-import { videoCover, embedUrl } from "../src/elifba-videos.ts";
+import { videoCover, embedUrl, thumbnailUrl } from "../src/elifba-videos.ts";
 import type { ArchiveData } from "../src/lesson-guide.ts";
 
 const read = (path: string) => JSON.parse(readFileSync(new URL(path, import.meta.url), "utf8"));
@@ -73,9 +73,10 @@ test("Karabaş Tecvid is published as a 52 page right-to-left book", () => {
   assert.ok(existsSync(new URL("../public/assets/karabas-tecvid.pdf", import.meta.url)));
 });
 
-test("video covers read the lesson number and topic from playlist titles", () => {
+test("video covers use the YouTube cover and read the lesson number and topic from playlist titles", () => {
   assert.deepEqual(videoCover("ElifBa Mobil - Ders 01 / Harfler", 1), { lesson: "Ders 01", topic: "Harfler" });
   assert.deepEqual(videoCover("ElifBa Mobil - Ders 12 - Üstün", 12), { lesson: "Ders 12", topic: "Üstün" });
   assert.deepEqual(videoCover(undefined, 7), { lesson: "Ders 07", topic: "" });
+  assert.equal(thumbnailUrl("EqgHsdzLvWc"), "https://i.ytimg.com/vi/EqgHsdzLvWc/hqdefault.jpg");
   assert.equal(embedUrl("EqgHsdzLvWc"), "https://www.youtube-nocookie.com/embed/EqgHsdzLvWc?rel=0&modestbranding=1&playsinline=1&autoplay=1");
 });
