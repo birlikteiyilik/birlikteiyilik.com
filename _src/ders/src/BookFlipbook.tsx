@@ -18,7 +18,6 @@ type Props = {
 
 export const BookFlipbook = forwardRef<FlipbookHandle, Props>(function BookFlipbook({ book: edition, initialPage, onPageChange, onTurningChange }, ref) {
   const { pageCount, width, height, direction } = edition;
-  const singlePage = Boolean(edition.singlePage);
   const isRtl = direction === "rtl";
   const stageRef = useRef<HTMLDivElement>(null);
   const bookRef = useRef<PageFlip | null>(null);
@@ -46,7 +45,7 @@ export const BookFlipbook = forwardRef<FlipbookHandle, Props>(function BookFlipb
     host.className = "flipbook";
     stage.appendChild(host);
     const fitHeight = () => {
-      const columns = singlePage || stage.clientWidth < 960 ? 1 : 2;
+      const columns = stage.clientWidth < 960 ? 1 : 2;
       host.style.height = `${Math.min(stage.clientHeight, stage.clientWidth / columns * height / width)}px`;
     };
     fitHeight();
@@ -55,8 +54,7 @@ export const BookFlipbook = forwardRef<FlipbookHandle, Props>(function BookFlipb
     const showCover = !isRtl || pageCount % 2 === 0;
     const book = new PageFlip(host, {
       width, height, size: "stretch",
-      // A very large minimum width keeps wide pages in single-page (portrait) mode at every screen size.
-      minWidth: singlePage ? 100000 : 480, maxWidth: singlePage ? 100000 : width, minHeight: 100, maxHeight: singlePage ? 100000 : height,
+      minWidth: 480, maxWidth: width, minHeight: 100, maxHeight: height,
       autoSize: false, usePortrait: true, showCover,
       startPage: isRtl ? pageCount - initialPageRef.current : initialPageRef.current - 1,
       flippingTime: reducedMotion.matches ? 1 : 650,
@@ -72,22 +70,9 @@ export const BookFlipbook = forwardRef<FlipbookHandle, Props>(function BookFlipb
       element.setAttribute("role", "group");
       element.setAttribute("aria-label", `Sayfa ${page}`);
       element.setAttribute("aria-hidden", "true");
-      const links = edition.pageLinks?.[page] || [];
-      const linkLayer = links.map((item) => {
-        const anchor = document.createElement("a");
-        anchor.className = "flipbook-link";
-        anchor.href = item.href;
-        anchor.target = "_blank";
-        anchor.rel = "noopener noreferrer";
-        anchor.title = item.label;
-        anchor.setAttribute("aria-label", `${item.label} (yeni sekmede açılır)`);
-        const [left, top, right, bottom] = item.rect;
-        Object.assign(anchor.style, { left: `${left}%`, top: `${top}%`, width: `${right - left}%`, height: `${bottom - top}%` });
-        return anchor;
-      });
       if (edition.renderPage) {
         element.classList.add("is-loaded", "is-text");
-        element.append(edition.renderPage(page), ...linkLayer);
+        element.append(edition.renderPage(page));
         return element;
       }
       const image = document.createElement("img");
@@ -111,7 +96,7 @@ export const BookFlipbook = forwardRef<FlipbookHandle, Props>(function BookFlipb
         link.rel = "noopener noreferrer";
         fallback.append(link);
       }
-      element.append(fallback, image, ...linkLayer);
+      element.append(fallback, image);
       return element;
     });
     const loadNearby = (index: number) => {
@@ -234,7 +219,7 @@ export const BookFlipbook = forwardRef<FlipbookHandle, Props>(function BookFlipb
       book.getSettings().useMouseEvents = true;
       book.destroy();
     };
-  }, [edition, pageCount, width, height, direction, isRtl, singlePage]);
+  }, [edition, pageCount, width, height, direction, isRtl]);
 
   return <div className="flipbook-stage" ref={stageRef} aria-label={`${edition.title} sayfa çevirme kitabı`} title={isRtl ? "Sonraki sayfa için sol kenara dokunun veya sayfayı sağa sürükleyin" : "Sonraki sayfa için sağ kenara dokunun veya sayfayı sola sürükleyin"} />;
 });
