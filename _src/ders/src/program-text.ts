@@ -91,11 +91,15 @@ function isUpperCase(text: string) {
   return letters.length > 0 && letters.every((char) => char === char.toLocaleUpperCase("tr-TR"));
 }
 
-/** Büyüklerin sözleri; a leading all-caps label such as "SÖZLERİNDEN MİSAL/LER" is dropped. */
-function quoteText(text: string) {
+/**
+ * Büyüklerin sözleri. A leading all-caps label such as "SÖZLERİNDEN MİSAL/LER" and the
+ * "Büyükler buyuruyor ki:" lead-in are dropped; the saying itself is kept as printed.
+ */
+export function quoteText(text: string) {
   const kept = lines(text).filter(Boolean);
   if (kept.length && isUpperCase(kept[0])) kept.shift();
-  return kept.join(" ").replace(/^[•●*]\s*/, "").trim();
+  const saying = kept.join(" ").replace(/^[•●*]\s*/, "").replace(/^büyükler(?:imiz)?\s+buyur\p{L}*\s+ki\s*[:,]?\s*/iu, "").trim();
+  return saying.replace(/^([“"‘']?)(\p{Ll})/u, (_, mark: string, letter: string) => mark + letter.toLocaleUpperCase("tr-TR"));
 }
 
 export function activityLinks(topic: CurriculumTopic): ProgramLink[] {

@@ -147,14 +147,12 @@ export const BookFlipbook = forwardRef<FlipbookHandle, Props>(function BookFlipb
     loadNearby(isRtl ? pageCount - initialPageRef.current : initialPageRef.current - 1);
     book.loadFromHTML(pages);
     bookRef.current = book;
-    type Gesture = { id: number; x: number; y: number; startedAt: number; simple: boolean; bounds: { left: number; right: number; top: number; height: number } };
+    type Gesture = { id: number; x: number; y: number; startedAt: number; bounds: { left: number; right: number; top: number; height: number } };
     let gesture: Gesture | null = null;
-    const localPoint = (x: number, y: number) => {
-      const rect = book.getUI().getDistElement().getBoundingClientRect();
-      return { x: x - rect.left, y: y - rect.top };
-    };
     const release = (id: number) => { if (stage.hasPointerCapture(id)) stage.releasePointerCapture(id); };
     const pointerDown = (event: PointerEvent) => {
+      // Mouse users turn pages with the buttons and arrow keys, so dragging over a page selects and copies text.
+      if (event.pointerType === "mouse") return;
       if (!event.isPrimary) { if (gesture) release(gesture.id); gesture = null; return; }
       const target = event.target instanceof Element ? event.target : null;
       const leaf = target?.closest<HTMLElement>(".flipbook-page");
@@ -162,14 +160,12 @@ export const BookFlipbook = forwardRef<FlipbookHandle, Props>(function BookFlipb
       event.preventDefault();
       const rects = Array.from(host.querySelectorAll<HTMLElement>('.flipbook-page[aria-hidden="false"]')).map((page) => page.getBoundingClientRect());
       const bounds = { left: Math.min(...rects.map((rect) => rect.left)), right: Math.max(...rects.map((rect) => rect.right)), top: Math.min(...rects.map((rect) => rect.top)), height: Math.max(...rects.map((rect) => rect.height)) };
-      gesture = { id: event.pointerId, x: event.clientX, y: event.clientY, startedAt: performance.now(), simple: event.pointerType !== "mouse" || book.getOrientation() === "portrait", bounds };
+      gesture = { id: event.pointerId, x: event.clientX, y: event.clientY, startedAt: performance.now(), bounds };
       stage.setPointerCapture(event.pointerId);
-      if (!gesture.simple) book.startUserTouch(localPoint(event.clientX, event.clientY));
     };
     const pointerMove = (event: PointerEvent) => {
       if (gesture?.id !== event.pointerId) return;
       event.preventDefault();
-      if (!gesture.simple) book.userMove(localPoint(event.clientX, event.clientY), false);
     };
     const pointerUp = (event: PointerEvent) => {
       if (gesture?.id !== event.pointerId) return;
@@ -177,7 +173,6 @@ export const BookFlipbook = forwardRef<FlipbookHandle, Props>(function BookFlipb
       const completed = gesture;
       gesture = null;
       release(event.pointerId);
-      if (!completed.simple) { book.userStop(localPoint(event.clientX, event.clientY)); return; }
       const turn = flipbookGesture({ x: completed.x, y: completed.y }, { x: event.clientX, y: event.clientY }, completed.bounds, performance.now() - completed.startedAt, direction);
       const corner = completed.y < completed.bounds.top + completed.bounds.height / 2 ? "top" : "bottom";
       if (turn === "next") { if (isRtl) book.flipPrev(corner); else book.flipNext(corner); }
@@ -188,7 +183,6 @@ export const BookFlipbook = forwardRef<FlipbookHandle, Props>(function BookFlipb
       const cancelled = gesture;
       gesture = null;
       release(cancelled.id);
-      if (!cancelled.simple) book.userStop(localPoint(cancelled.x, cancelled.y));
     };
     stage.addEventListener("pointerdown", pointerDown);
     stage.addEventListener("pointermove", pointerMove);

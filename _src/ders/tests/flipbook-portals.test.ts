@@ -65,6 +65,11 @@ test("programme books hold only the teacher's reading text, with the Wordwall ac
       if (wordwall.length) assert.ok(activities && activities.kind === "activities" && activities.links.length, `${age} ${topic.number} links its activities`);
       if (activities?.kind === "activities") assert.equal(blocks.indexOf(activities), 1);
     }
+    // The saying's author is shown as "Hikmet Ehli Zat", and the "Büyükler buyuruyor ki" lead-in is dropped.
+    assert.ok(!JSON.stringify(data).includes("Enver"));
+    const quotes = data.topics.flatMap((topic: never) => programBlocks(topic, age)).filter((block: { kind: string }) => block.kind === "quote").map((block: { text: string }) => block.text);
+    assert.ok(quotes.some((quote: string) => quote.includes("acımak zamanıdır") && quote.includes("(Hikmet Ehli Zat)")));
+    assert.ok(quotes.every((quote: string) => !/^büyükler/i.test(quote)));
     const vatan = data.topics.find((topic: { title: string }) => topic.title === "VATAN SEVGİSİ");
     const links = programBlocks(vatan, age).flatMap((block) => block.kind === "activities" ? block.links.map((link) => link.href) : []);
     assert.ok(links.includes(newVatanActivity));
