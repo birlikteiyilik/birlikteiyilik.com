@@ -1,18 +1,19 @@
 import { lazy, Suspense } from "react";
 import { BookReader } from "./BookReader";
-import { elifBaBook, mehmedMertElifBaBook, quranBook } from "./books";
+import { elifBaBook, karabasTecvidBook, mehmedMertElifBaBook, quranBook } from "./books";
 import { CurriculumCards } from "./CurriculumCards";
 import { AcademyHeader } from "./AcademyHeader";
 
 const CurriculumPortal = lazy(() => import("./CurriculumPortal").then((module) => ({ default: module.CurriculumPortal })));
+const ElifbaVideos = lazy(() => import("./ElifbaVideos").then((module) => ({ default: module.ElifbaVideos })));
 const AgeCurriculumPortal = lazy(() => import("./AgeCurriculumPortal").then((module) => ({ default: module.AgeCurriculumPortal })));
 const home = import.meta.env.BASE_URL.replace(/\/$/, "");
 const cardAssets = `${import.meta.env.BASE_URL}assets/book-cards/`;
 
 const bookCards = [
   { section: "kuran-i-kerim", title: "Kur’an-ı Kerim", image: "kuran-grid-v1.webp", mobileImage: "kuran-mobile-v1.webp", description: "Sayfalarını çevirerek okuyabileceğiniz Kur’an-ı Kerim kitabı.", metadata: "615 sayfa · PDF kitap", action: "Kitabı aç" },
-  { section: "guzel-ahlak", title: "Güzel Ahlak", image: "guzel-ahlak-grid-v2.webp", mobileImage: "guzel-ahlak-mobile-v2.webp", description: "Ayrıntılı ders planları, öğretmen araçları ve hazır sınıf materyalleri.", metadata: "3–8. sınıf · 9 ay", action: "Derslere git" },
-  { section: "elif-ba", title: "Elifba", image: "elifba-grid-v3.webp", mobileImage: "elifba-mobile-v2.webp", description: "Tecvîdli Kur’ân-ı Kerîm elifbâsı ve ezber müfredatı.", metadata: "2 kitap · PDF kitap", action: "Kitabı aç" },
+  { section: "guzel-ahlak", title: "Çocuklar ve Gençler İçin Temel Dini Bilgiler", image: "temel-dini-bilgiler-grid-v1.webp", mobileImage: "temel-dini-bilgiler-mobile-v1.webp", description: "Sınıf ve aya göre haftalık ders sayfaları; okunaklı, çevrilebilir kitap düzeni.", metadata: "3–8. sınıf · 9 ay", action: "Derslere git" },
+  { section: "elif-ba", title: "Elifba", image: "elifba-grid-v4.webp", mobileImage: "elifba-mobile-v3.webp", description: "Tecvîdli Kur’ân-ı Kerîm elifbâsı, Karabaş Tecvid ve video dersler.", metadata: "3 kitap · Video dersler", action: "Kitabı aç" },
 ];
 
 export function LessonHub() {
@@ -23,12 +24,19 @@ export function LessonHub() {
     return <Suspense fallback={<div className="empty-state" role="status"><p>Ders kitabı açılıyor…</p></div>}><CurriculumPortal onHomeHref={home} /></Suspense>;
   }
   if (section === "elif-ba") {
-    const isMehmedMert = params.get("kitap") === "mehmed-mert" || params.get("kitap") === "mehmet-mert";
+    const requested = params.get("kitap");
+    const choice = requested === "mehmed-mert" || requested === "mehmet-mert" ? "mehmed-mert" : requested === "karabas-tecvid" || requested === "videolar" ? requested : "elifba";
     const bookChoices = [
-      { title: elifBaBook.title, href: `${home}?bolum=elif-ba`, active: !isMehmedMert },
-      { title: mehmedMertElifBaBook.title, href: `${home}?bolum=elif-ba&kitap=mehmed-mert`, active: isMehmedMert },
+      { title: elifBaBook.title, href: `${home}?bolum=elif-ba`, active: choice === "elifba" },
+      { title: mehmedMertElifBaBook.title, href: `${home}?bolum=elif-ba&kitap=mehmed-mert`, active: choice === "mehmed-mert" },
+      { title: karabasTecvidBook.title, href: `${home}?bolum=elif-ba&kitap=karabas-tecvid`, active: choice === "karabas-tecvid" },
+      { title: "Video dersler", href: `${home}?bolum=elif-ba&kitap=videolar`, active: choice === "videolar" },
     ];
-    return <BookReader homeHref={home} book={isMehmedMert ? mehmedMertElifBaBook : elifBaBook} bookChoices={bookChoices} />;
+    if (choice === "videolar") {
+      return <BookReader homeHref={home} title="Elifba video dersleri" bookChoices={bookChoices}><Suspense fallback={<div className="empty-state" role="status"><p>Videolar açılıyor…</p></div>}><ElifbaVideos /></Suspense></BookReader>;
+    }
+    const book = choice === "mehmed-mert" ? mehmedMertElifBaBook : choice === "karabas-tecvid" ? karabasTecvidBook : elifBaBook;
+    return <BookReader homeHref={home} book={book} bookChoices={bookChoices} />;
   }
   if (section === "kuran-i-kerim") return <BookReader homeHref={home} book={quranBook} />;
 
@@ -39,7 +47,7 @@ export function LessonHub() {
         <div className="hub-intro">
           <p className="hub-eyebrow">BİRLİKTE ÖĞRENİYORUZ</p>
           <h1>Öğretmen Kitabı</h1>
-          <p>Kitaplara, ders rehberine ve yaş gruplarına göre ahlak eğitim programlarına ulaşın.</p>
+          <p>Kitaplara, temel dini bilgiler ders kitabına ve yaş gruplarına göre ahlak eğitim programlarına ulaşın.</p>
         </div>
         <nav className="book-grid" aria-label="Ders kitabı seçimi">
           {bookCards.map((card) => (

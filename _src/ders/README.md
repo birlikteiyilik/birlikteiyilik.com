@@ -2,7 +2,15 @@
 
 Canlı adres: https://birlikteiyilik.com/ders
 
-Girişte Kur’an-ı Kerim, Güzel Ahlak ders rehberi ve Elifba bölümü seçilir. Bunların altında **Ahlak Eğitim Programları** başlığında Birlikte İyilik’in **7–10 yaş** ve **11–14 yaş** müfredatları ayrı kartlar olarak yer alır. Elifba giriş kartında “2 kitap · PDF kitap” bilgisi gösterilir. Güzel Ahlak bölümü 3–8. sınıflar içindir ve 3. sınıftan açılır. Eski 1. ve 2. sınıf bağlantıları 3. sınıfa düzeltilir; bağlantıdaki ay ve ders seçimi korunur. Ders, arşiv, sınıf sunumu ve yazdırma araçları kullanılabilir. 3. sınıfın da kullandığı özgün 1-2-3 kaynak grubu arşivde korunur.
+Girişte Kur’an-ı Kerim, **Çocuklar ve Gençler İçin Temel Dini Bilgiler** (eski adıyla Güzel Ahlak; bağlantılarda `bolum=guzel-ahlak` korunur) ve Elifba bölümü seçilir. Bunların altında **Ahlak Eğitim Programları** başlığında Birlikte İyilik’in **7–10 yaş** ve **11–14 yaş** müfredatları ayrı kartlar olarak yer alır. Elifba giriş kartında “3 kitap · Video dersler” bilgisi gösterilir.
+
+## Çocuklar ve Gençler İçin Temel Dini Bilgiler
+
+Bölüm sadedir: üstte yalnızca **sınıf** (3–8) ve **ay** (1–9) seçimi, yanda **hafta** seçimi, ortada özgün arşivin sayfa çevrilen kitap (flipbook) hâli bulunur. Seçili sınıf grubunun ve ayın özgün içerik dosyası, metni değiştirilmeden okunaklı kitap sayfalarına dizilir; konu başlıkları sayfa başlığı olur, uzun sayfalarda yazı boyu sayfaya sığacak şekilde küçülür. “Yakınlaştır” sayfanın metnini büyük puntoyla gösterir. Eski 1. ve 2. sınıf bağlantıları 3. sınıfa düzeltilir.
+
+Haftalar `src/archive-weeks.ts` ile bulunur: içerik dosyaları ayın konularını (çoğunlukla 20 konu) sırayla taşır; her hafta beş konuyla başlar. Konu başlığı az tanınan dosyalarda sayfalar dört eşit parçaya bölünür. Hafta düğmesi kitabı o haftanın ilk sayfasına çevirir; sayfa çevrildikçe etkin hafta güncellenir. Aynı başlıklı farklı dersler “· 1, · 2” biçiminde numaralanır. Bağlantı biçimi: `/ders?bolum=guzel-ahlak&sinif=5&ay=3&hafta=2` (isteğe bağlı `sayfa=`).
+
+Önceki ayrıntılı ders planı, sınıf sunumu ve yazdırma araçları bu sadeleştirmeyle kaldırılmıştır.
 
 ## Birlikte İyilik yaş müfredatları
 
@@ -12,7 +20,11 @@ Verilen iki **Ahlak Eğitim Programı**, mevcut 3–8. sınıf Güzel Ahlak rehb
 - `/ders?bolum=ahlak-mufredati&yas=11-14`: 59 konu, 187 sayfalık Mayıs 2025 kaynağı temel alınır.
 - `/ders?bolum=ahlak-mufredati`: İki yaş grubunun seçim ekranı.
 
-Bu alan PDF sayfalarını veya ekran görüntülerini göstermez. İçerik öğretmenin derste kullanabileceği dört alana dönüştürülür:
+Bölüm sadedir: üstte yaş grubu, yanda konu dizini, ortada Birlikte İyilik PDF’sinin sayfa çevrilen kitap hâli. Geniş (yatay) sayfalar her ekranda tek sayfa gösterilir. PDF’deki bütün bağlantılar (Wordwall etkinlikleri, kaynak siteler) sayfa görselinin üzerinde tıklanabilir alanlar olarak korunur; açık konunun Wordwall etkinlikleri ayrıca kitabın üstünde düğme olarak listelenir. Sayfa görselleri `public/assets/ahlak-mufredati/<yaş>/pages/` altında 1600 piksel genişliğinde WebP’dir; bağlantı alanları `public/data/ahlak-mufredati-<yaş>-sayfalar.json` dosyasında sayfa yüzdesi olarak tutulur. Bağlantı biçimi: `/ders?bolum=ahlak-mufredati&yas=7-10&konu=7`.
+
+Silinen Wordwall etkinliği (`resource/28325043`) yerine **Vatan Sevgisi** konusunda (7–10 yaş 7. konu, 11–14 yaş 34. konu) `https://wordwall.net/tr/resource/12756846/vatan-sevgisi` kullanılır; PDF’deki bağlantı yazısı ve adresi de güncellenmiştir. Aynı silinmiş etkinlik kaynakta Mesuliyet, Millî/Dinî Değerler ve İş Ahlakı konularında da geçer; bunlar için yeni etkinlik belirlenmediğinden değiştirilmemiştir.
+
+Önceki sürümde içerik aşağıdaki dört alana dönüştürülerek gösteriliyordu; aktarım verisi (`ahlak-mufredati-<yaş>.json`) aramalar ve konu dizini için korunur:
 
 - **Ders planı:** Konuya giriş sorusu, kazanımlar, kavramlar, anlatım/menkıbe/değerlendirmeye geçilen ders akışı ve okunabilir adlarla etkinlik bağlantıları.
 - **Anlatım:** Verilecek mesajlar, okunabilir paragraflara ve listelere ayrılan açıklamalar, büyüklerin sözleri.
@@ -32,9 +44,11 @@ Konu dizini başlıkta ve içerikte Türkçe arama yapar. Masaüstünde sabit ya
 
 `tests/age-curricula.test.ts` kaynak ve yayımlanan PDF özetlerini, 115 konunun sırasını, sayfa aralıklarını, metinlerin devamlılığını, tekrarlı başlıkları ve Türkçe aramayı doğrular. `tests/native-curriculum.test.ts` paragraf/listelere dönüşümü, süre bilgisinin kaldırılmasını, soruları ve okunabilir kaynak bağlantılarını kapsar. Chromium kontrolleri masaüstü ile 320px, 390px ve 768px ekranlarda gezinme, sekmeler, yenileme, yazdırma ve PDF indirme akışlarını kapsar.
 
-Giriş kartları image_gen ile ayrı görseller olarak üretilmiştir; tüm görünen yazılar görsellerin içindedir. Kartın tamamı bağlantıdır. Açıklama ve sayfa bilgileri ekran okuyucuları için HTML’de de tutulur. Masaüstünde üç, tablette iki sütun kullanılır. Telefonda başlık, sayfa bilgisi ve eylem içeren 3:1 yatay görseller alt alta gösterilir; üç butonun ilk ekrana sığması için genişlik ekran yüksekliğine göre sınırlandırılır. Kısa yatay ekranlarda üç dikey kart yan yana sığdırılır. Görseller kırpılmaz. `public/assets/book-cards/` WebP görsellerini, `prompts.md` ve `mobile-prompts.md` üretim istemlerini içerir.
+Giriş kartları image_gen ile ayrı görseller olarak üretilmiştir; tüm görünen yazılar görsellerin içindedir. “Temel Dini Bilgiler” kartı (`temel-dini-bilgiler-*-v1.webp`) önceki Güzel Ahlak kartının çizimi korunarak yeni başlıkla dizilmiştir (Playfair Display ve Inter). Elifba kartlarında (`elifba-*-v4/v3.webp`) yalnızca alt bilgi “3 kitap · Video dersler” olarak güncellenmiştir. Kartın tamamı bağlantıdır. Açıklama ve sayfa bilgileri ekran okuyucuları için HTML’de de tutulur. Masaüstünde üç, tablette iki sütun kullanılır. Telefonda başlık, sayfa bilgisi ve eylem içeren 3:1 yatay görseller alt alta gösterilir; üç butonun ilk ekrana sığması için genişlik ekran yüksekliğine göre sınırlandırılır. Kısa yatay ekranlarda üç dikey kart yan yana sığdırılır. Görseller kırpılmaz. `public/assets/book-cards/` WebP görsellerini, `prompts.md` ve `mobile-prompts.md` üretim istemlerini içerir.
 
-Elifba bölümündeki kitap seçiminden 56 sayfalık **Elifba** veya 51 sayfalık **Elifba Mehmed Mert** kitabına ulaşılır. Elifba Mehmed Mert için verilen PDF’nin 52. ve son sayfası okuyucudan ve indirilen PDF’den çıkarılmıştır; ilk 51 sayfa değiştirilmemiştir. 56 sayfalık Elifba’nın indirilen PDF’si özgün dosyanın aynısıdır. Her iki Elifba ve 615 sayfalık Kur’an-ı Kerim, sağdan sola çevrilen flipbook’lardır. Kur’an-ı Kerim için verilen 616 sayfalık PDF’nin yalnızca son sayfası çıkarılmıştır. İndirme ve PDF açma bağlantıları da bu 615 sayfalık dosyayı kullanır. Tek sayıda yaprağı olan sağdan sola kitaplarda ilk sayfa tek gösterilir ve kalan yapraklar doğru sırayla eşlenir.
+Elifba bölümündeki kitap seçiminden 56 sayfalık **Elifba**, 51 sayfalık **Elifba Mehmed Mert**, 52 sayfalık **Karabaş Tecvid** (Hakikat Kitabevi baskısı; `public/assets/karabas-tecvid.pdf` verilen dosyanın aynısıdır, SHA-256 `c0cd6b5b8b886553e81c34d75279c827e1316104ae1fabd1e48741245747622a`; sayfalar 1800 piksel yüksekliğinde WebP) ve **Video dersler** sayfasına ulaşılır.
+
+Video dersler, Birlikteiyilik Akademi YouTube kanalındaki “ElifBa” oynatma listesini (`PLyi8Qf72STLgAI-MhiAnuZFNe9c6iIgx5`) kapaklı bir galeri olarak gösterir. Liste sayfa açılırken YouTube IFrame API’siyle okunur; listeye eklenen yeni videolar site güncellemesi gerekmeden görünür. Kapakta “Ders 01 / Harfler” gibi başlıktan çıkarılan ders numarası ve konu yazar. Kapağa dokununca video sayfadan çıkmadan, youtube-nocookie gömülü oynatıcıyla açılır; önceki/sonraki ders düğmeleri ve `video=` bağlantısı vardır. Liste okunamazsa oynatma listesinin tamamı gömülü oynatıcıyla gösterilir. Bunun için `vercel.json` içindeki CSP `script-src` alanına `https://www.youtube.com` ve `https://s.ytimg.com` eklenmiştir. Elifba Mehmed Mert için verilen PDF’nin 52. ve son sayfası okuyucudan ve indirilen PDF’den çıkarılmıştır; ilk 51 sayfa değiştirilmemiştir. 56 sayfalık Elifba’nın indirilen PDF’si özgün dosyanın aynısıdır. Her iki Elifba ve 615 sayfalık Kur’an-ı Kerim, sağdan sola çevrilen flipbook’lardır. Kur’an-ı Kerim için verilen 616 sayfalık PDF’nin yalnızca son sayfası çıkarılmıştır. İndirme ve PDF açma bağlantıları da bu 615 sayfalık dosyayı kullanır. Tek sayıda yaprağı olan sağdan sola kitaplarda ilk sayfa tek gösterilir ve kalan yapraklar doğru sırayla eşlenir.
 
 Güzel Ahlak arşivinin metinlerinde “teâlâ” ve “teala” kelimeleri küçük t ile yazılır; kaynakların diğer yazımları korunur. Başlıklar, kaynak metinleri, ders araçları ve yazdırma çıktıları aynı arşiv verisini kullanır.
 
@@ -54,7 +68,7 @@ Node.js 24 ile `pnpm test`, iki okuma yönünde dokunma ve kaydırma davranışl
 
 `pnpm build` TypeScript kontrolünden sonra statik dosyaları depo kökündeki `ders/` klasörüne üretir. Kaynak değişiklikleriyle birlikte bu klasörü de Git'e ekleyin. Mevcut ana sitenin Vercel Git yayını bu dosyaları sunar; çalışma sırasında Sites, Next.js veya ayrı bir sunucu gerektirmez.
 
-Bağlantılar `/ders?bolum=guzel-ahlak&sinif=3&ay=1&ders=1`, `/ders?bolum=elif-ba&sayfa=5`, `/ders?bolum=elif-ba&kitap=mehmed-mert&sayfa=5` ve `/ders?bolum=kuran-i-kerim&sayfa=2` biçimindedir. Eski `kitap=mehmet-mert` bağlantıları da Elifba Mehmed Mert kitabını açar. Bölüm içindeki “Kitap seçimi” bağlantısı girişe döner. Eski Elifba bağlantıları özgün 56 sayfalık kitabı açmaya devam eder.
+Bağlantılar `/ders?bolum=guzel-ahlak&sinif=3&ay=1&hafta=1`, `/ders?bolum=elif-ba&sayfa=5`, `/ders?bolum=elif-ba&kitap=mehmed-mert&sayfa=5`, `/ders?bolum=elif-ba&kitap=karabas-tecvid`, `/ders?bolum=elif-ba&kitap=videolar` ve `/ders?bolum=kuran-i-kerim&sayfa=2` biçimindedir. Eski `kitap=mehmet-mert` bağlantıları da Elifba Mehmed Mert kitabını açar. Bölüm içindeki “Kitap seçimi” bağlantısı girişe döner. Eski Elifba bağlantıları özgün 56 sayfalık kitabı açmaya devam eder.
 
 ## Kaynaklar
 
