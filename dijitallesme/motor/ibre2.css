@@ -1,0 +1,91 @@
+/* Ders Odası — İbremetre vitrin blokları (ibrePay · ibreGun · ibreNefes). ibre.css'den sonra yüklenir. Sahne 1600×900; alt HUD y>~760'ı örter. */
+.ib2-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.ib-sahne button:focus-visible, .ib-sahne input:focus-visible { outline: 4px solid #F4C95D; outline-offset: 3px; }
+.ib2-gec { background: none; border: 0; color: rgba(255,255,255,.82); font: 700 22px var(--yazi); text-decoration: underline; cursor: pointer; padding: 6px 10px; }
+.ib2-gec:hover { color: #fff; }
+
+/* ——— ibrePay ——— */
+.ibp-ust { position: absolute; left: 60px; top: 96px; width: 1090px; z-index: 3; }
+.ibp-ust h2 { margin: 0; font: 800 54px/1.05 var(--baslik); color: #fff; }
+.ibp-ust p { margin: 8px 0 0; font: 700 27px/1.3 var(--yazi); color: #F2EADB; opacity: .92; }
+.ibp-kisi { position: absolute; top: 580px; width: 250px; z-index: 4; }
+.ibp-ad { display: flex; justify-content: space-between; align-items: baseline; padding: 0 6px; font: 800 24px var(--yazi); }
+.ibp-ad b { color: var(--c); }
+.ibp-sayi { font: 900 34px/1 var(--baslik); color: #fff; }
+.ibp-kontrol { display: flex; align-items: center; gap: 6px; }
+.ibp-pm { flex: none; width: 44px; height: 44px; border-radius: 50%; border: 3px solid rgba(255,255,255,.5); background: rgba(255,255,255,.12); color: #fff; font: 900 28px/1 var(--yazi); display: grid; place-items: center; padding: 0; cursor: pointer; transition: transform .15s, background .2s; }
+.ibp-pm:hover:not(:disabled) { background: rgba(255,255,255,.26); transform: scale(1.06); }
+.ibp-pm:disabled { opacity: .35; cursor: default; }
+.ibp-kisi input[type=range] { -webkit-appearance: none; appearance: none; flex: 1; min-width: 0; height: 44px; margin: 0; background: transparent; cursor: pointer; touch-action: pan-y; }
+.ibp-kisi input[type=range]::-webkit-slider-runnable-track { height: 10px; border-radius: 6px; background: rgba(255,255,255,.28); }
+.ibp-kisi input[type=range]::-moz-range-track { height: 10px; border-radius: 6px; background: rgba(255,255,255,.28); }
+.ibp-kisi input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 32px; height: 32px; margin-top: -11px; border-radius: 50%; background: var(--c); border: 4px solid #fff; box-shadow: 0 3px 8px rgba(0,0,0,.35); }
+.ibp-kisi input[type=range]::-moz-range-thumb { width: 24px; height: 24px; border-radius: 50%; background: var(--c); border: 4px solid #fff; box-shadow: 0 3px 8px rgba(0,0,0,.35); }
+.ibp-kisi input[type=range]:disabled { cursor: default; opacity: .6; }
+.ibp-sag { position: absolute; left: 1186px; top: 368px; width: 378px; max-height: 390px; overflow: auto; z-index: 5; display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+.ibp-durum .ib-rozet { font-size: 21px; letter-spacing: 1px; padding: 5px 16px; border: 3px solid rgba(255,255,255,.85); }
+.ibp-ipucu { margin: 0; font: 700 23px/1.35 var(--yazi); color: #F2EADB; }
+.ibp-alt { display: flex; gap: 14px; flex-wrap: wrap; }
+.ibp-tamam { font-size: 26px !important; padding: 14px 26px !important; }
+.ibp-yorum { background: #FFFBF1; color: #14264A; border-radius: 28px; padding: 16px 20px; box-shadow: 0 14px 30px rgba(0,0,0,.3); animation: ibGir .45s cubic-bezier(.2,.8,.2,1); }
+.ibp-yorum p { margin: 0 0 8px; font: 700 23px/1.35 var(--yazi); }
+.ibp-yorum p:last-child { margin-bottom: 0; }
+.ibp-sag .ib-sen-butonlar { margin-top: 2px; }
+
+/* ——— ibreGun ——— */
+.ibg-panel { position: absolute; right: 56px; top: 96px; width: 716px; max-height: 662px; overflow: auto; background: #FFFBF1; color: #14264A; border-radius: 40px; padding: 22px 32px 24px; z-index: 5; box-shadow: 0 20px 50px rgba(0,0,0,.35); animation: ibGir .5s cubic-bezier(.2,.8,.2,1); }
+.ibg-panel h3 { margin: 8px 0 6px; font: 800 38px/1.15 var(--baslik); }
+.ibg-adimlar { display: flex; gap: 10px; margin: 0 0 10px; align-items: center; }
+.ibg-adim { width: 46px; height: 46px; border-radius: 50%; border: 3px solid #14264A; background: #F4EAD2; color: #14264A; font: 900 22px var(--yazi); padding: 0; cursor: pointer; display: grid; place-items: center; transition: transform .15s; }
+.ibg-adim:hover { transform: scale(1.08); }
+.ibg-adim.simdi { box-shadow: 0 0 0 4px #F4C95D; }
+.ibg-adim.z-az { background: #4262B0; border-color: #4262B0; color: #fff; } .ibg-adim.z-orta { background: #0E8173; border-color: #0E8173; color: #fff; } .ibg-adim.z-fazla { background: #C94F38; border-color: #C94F38; color: #fff; }
+.ibg-adim.atla { background: transparent; border-style: dashed; opacity: .75; }
+.ibg-durum { margin: 4px 0 10px; font: 700 26px/1.38 var(--yazi); }
+.ibg-sec { display: grid; gap: 9px; }
+.ibg-btn { display: flex; gap: 12px; align-items: flex-start; text-align: left; background: #F4EAD2; border: 3px solid transparent; border-radius: 22px; padding: 11px 18px; font: 800 24px/1.25 var(--yazi); color: #14264A; cursor: pointer; transition: transform .15s, border-color .2s; }
+.ibg-btn:hover { transform: translateX(5px); border-color: #14264A; }
+.ibg-btn.secili { background: #E9DCB8; border-color: #14264A; }
+.ibg-panel .ib-not { margin: 10px 0 0; font: 700 22px/1.35 var(--yazi) !important; }
+.ibg-alt { display: flex; gap: 14px; align-items: center; justify-content: space-between; margin-top: 12px; flex-wrap: wrap; }
+.ibg-alt .dug { font-size: 24px !important; padding: 12px 24px !important; margin-left: auto; }
+.ibg-atla { background: none; border: 0; color: #6f6656; font: 700 22px var(--yazi); text-decoration: underline; cursor: pointer; padding: 6px 0; text-align: left; }
+.ibg-yarin { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 4px; }
+.ibg-chip { background: #F4EAD2; color: #14264A; border: 3px solid transparent; border-radius: 999px; padding: 9px 20px; font: 800 23px var(--yazi); cursor: pointer; transition: transform .15s; }
+.ibg-chip:hover { transform: translateY(-2px); border-color: #14264A; }
+.ibg-chip.secili { background: #14264A; color: #F4C95D; }
+.ibg-panel .ib-sen-butonlar { margin-top: 14px; }
+
+/* ——— ibreNefes ——— */
+.ibn-kart { position: absolute; left: 60px; top: 98px; width: 720px; z-index: 3; }
+.ibn-kart h2 { margin: 0; font: 800 48px/1.05 var(--baslik); color: #fff; }
+.ibn-kart p { margin: 8px 0 0; font: 700 27px/1.32 var(--yazi); color: #F2EADB; opacity: .95; }
+.ibn-nefes { position: absolute; inset: 0; pointer-events: none; z-index: 4; }
+.ibn-dugme { position: absolute !important; left: 1030px; top: 668px; width: 280px; pointer-events: auto; font-size: 30px !important; padding: 14px 20px !important; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; transition: transform .12s, background .2s !important; }
+.ibn-dugme.basili { transform: scale(.96); background: #0E8173 !important; box-shadow: 0 0 0 6px rgba(244,201,93,.55) !important; }
+.ibn-ipucu { position: absolute; left: 1296px; top: 484px; width: 262px; margin: 0; font: 700 22px/1.35 var(--yazi); color: #F2EADB; background: rgba(255,255,255,.1); border-radius: 20px; padding: 12px 16px; pointer-events: auto; }
+.ibn-panel { position: absolute; right: 56px; top: 364px; width: 764px; max-height: 394px; overflow: auto; background: #FFFBF1; color: #14264A; border-radius: 36px; padding: 18px 30px 20px; z-index: 5; box-shadow: 0 20px 50px rgba(0,0,0,.35); animation: ibGir .5s cubic-bezier(.2,.8,.2,1); }
+.ibn-panel h3 { margin: 6px 0 6px; font: 800 29px/1.22 var(--baslik); }
+.ibn-panel .ib-sen-sorus { font-size: 22px; margin-bottom: 8px; }
+.ibn-panel .ib-sen-sec { gap: 9px; }
+.ibn-panel .ib-sen-btn { padding: 8px 16px; font-size: 23px; line-height: 1.25; }
+.ibn-panel .ib-sen-secim { margin: 6px 0 4px !important; font-size: 23px !important; }
+.ibn-panel .ib-sen-butonlar { margin-top: 10px; flex-wrap: nowrap; }
+.ibn-panel .ib-sen-butonlar .dug { font-size: 21px !important; padding: 10px 16px !important; white-space: nowrap; }
+.ibn-gec { position: absolute; left: 56px; top: 330px; z-index: 4; }
+
+@media (prefers-reduced-motion: reduce) { .ibp-yorum, .ibg-panel, .ibn-panel { animation: none !important; } .ibn-dugme, .ibg-adim, .ibg-btn, .ibg-chip, .ibp-pm { transition: none !important; } }
+
+/* dokunmatik / dikey telefon (sahne küçülür): hedefler büyür */
+@media (pointer: coarse) {
+  .ibp-pm { width: 54px; height: 54px; }
+  .ibp-kisi input[type=range] { height: 54px; }
+  .ibp-kisi input[type=range]::-webkit-slider-thumb { width: 40px; height: 40px; margin-top: -15px; }
+  .ibg-adim { width: 54px; height: 54px; }
+  .ibn-dugme { padding: 22px 20px !important; top: 656px; }
+}
+html.do-dikey .ibp-pm { width: 54px; height: 54px; }
+html.do-dikey .ibp-kisi input[type=range] { height: 54px; }
+html.do-dikey .ibp-kisi input[type=range]::-webkit-slider-thumb { width: 40px; height: 40px; margin-top: -15px; }
+html.do-dikey .ibg-adim { width: 54px; height: 54px; }
+html.do-dikey .ibn-dugme { padding: 22px 20px !important; top: 656px; }

@@ -1,0 +1,35 @@
+/* birlikteiyilik.com/dijitallesme: sunum kipindeki ders sayfası */
+.sunum .el-dug { display: none !important; }
+.sunum .giris-perde { display: none !important; }
+/* Dersin adı üst şeritte yazmaz; o köşede ders listesine dönüş düğmesi durur */
+.sunum .hud-sol { visibility: hidden; }
+/* Pul makinesindeki "önizleme" notu sunumda gerekmez */
+.sunum .pm-not { display: none !important; }
+/* Sunumda duraklar sarılarak geçilebildiği için puan gösterilmez */
+.sunum .hud-puan, .sunum .kapanis-puan { display: none !important; }
+
+.sunum-geri {
+  position: fixed; z-index: 60; left: max(12px, env(safe-area-inset-left)); top: max(12px, env(safe-area-inset-top));
+  display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 14px 0 10px;
+  border-radius: 999px; border: 1px solid rgba(243, 213, 132, .45);
+  background: rgba(15, 26, 68, .78); color: #f3d584; text-decoration: none;
+  font: 800 15px/1 'Nunito', system-ui, sans-serif; letter-spacing: .01em;
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  box-shadow: 0 6px 22px rgba(4, 8, 30, .35);
+  opacity: .55; transition: opacity .25s ease, transform .25s ease, background .25s ease;
+}
+.sunum-geri:hover, .sunum-geri:focus-visible { opacity: 1; background: rgba(15, 26, 68, .94); transform: translateY(-1px); outline: none; }
+.sunum-geri:focus-visible { box-shadow: 0 0 0 3px rgba(243, 213, 132, .6); }
+:fullscreen .sunum-geri { display: none; }
+
+.sunum-hata {
+  max-width: 520px; margin: 15vh auto; padding: 32px; border-radius: 28px;
+  background: #fbf2dd; color: #2b2419; box-shadow: 0 12px 50px rgba(15, 26, 68, .25);
+  font: 17px/1.6 'Nunito', system-ui, sans-serif;
+}
+.sunum-hata h1 { margin: 0 0 12px; font: 800 28px/1.2 'Alegreya', serif; }
+.sunum-hata a { display: inline-block; margin-top: 12px; padding: 12px 20px; border-radius: 14px; background: #17307f; color: #fbf2dd; text-decoration: none; font-weight: 800; }
+
+/* Durakta da sarılır: oynatma şeridi üstte, soluk durur; üzerine gelince belirginleşir */
+.sunum .kd.basladi.durakta .kd-bar { top: 10px; bottom: auto; left: 50%; right: auto; width: 760px; margin-left: -380px; opacity: .55 !important; pointer-events: auto !important; }
+.sunum .kd.basladi.durakta .kd-bar:hover, .sunum .kd.basladi.durakta .kd-bar:focus-within { opacity: 1 !important; }

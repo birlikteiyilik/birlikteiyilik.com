@@ -1,0 +1,316 @@
+/* Üretilmiş dosya: node scripts/maskot-paketle.mjs. Kaynak: scripts/maskot/. Elle düzenlemeyin. */
+.m{display:block;overflow:visible}
+svg.m .o{fill:#6A0020;stroke:#6A0020;stroke-linejoin:round}
+.m path{stroke-linecap:round;stroke-linejoin:round}
+svg.m .gl{fill:none;stroke:#E9DADF;stroke-width:3px}svg.m .bw{fill:none;stroke:#7A0022;stroke-width:7px}svg.m .lc{fill:none;stroke:#B83656;stroke-width:4px}
+svg.m .hl{fill:none;stroke:#FF6E8F;stroke-width:11.5px;opacity:.75}svg.m .hd{fill:#FF6E8F;opacity:.75}
+.m-eye{animation:m-blink 5.2s infinite}
+@keyframes m-blink{0%,38%,42%,84%,87%,90%,100%{transform:scaleY(1)}40%,85.5%,88.5%{transform:scaleY(.06)}}
+.m-stem{animation:m-sway 3.6s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-sway{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2.5deg)}}
+.m-move{animation:m-bob 3.6s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.m-squash{animation:m-breath 3.6s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-breath{0%,100%{transform:scale(1,1)}50%{transform:scale(.988,1.018)}}
+.m-shadow{animation:m-shad 3.6s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-shad{0%,100%{transform:scale(1)}50%{transform:scale(.94)}}
+.m-heart{animation:m-beat 2.4s ease-in-out infinite}
+@keyframes m-beat{0%,55%,100%{transform:scale(1)}12%{transform:scale(1.13)}24%{transform:scale(.98)}36%{transform:scale(1.07)}}
+@keyframes m-glance{0%,22%,50%,72%,100%{transform:translate(0,0)}28%,44%{transform:translate(-5px,0)}78%,94%{transform:translate(5px,-1px)}}
+@keyframes m-glanceP{0%,22%,50%,72%,100%{transform:translate(0,0)}28%,44%{transform:translate(-7px,1px)}78%,94%{transform:translate(7px,-2px)}}
+@keyframes m-tiltS{0%,100%{transform:rotate(-2.5deg)}50%{transform:rotate(2.5deg)}}
+@keyframes m-wvF{0%,100%{transform:rotate(-22deg)}50%{transform:rotate(20deg)}}
+@keyframes m-wvH{0%,100%{transform:rotate(-16deg)}50%{transform:rotate(16deg)}}
+@keyframes m-wvU{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(6deg)}}
+@keyframes m-wig{0%{transform:rotate(-14deg)}100%{transform:rotate(14deg)}}
+@keyframes m-pulse{0%{transform:scale(.9)}100%{transform:scale(1.12)}}
+@keyframes m-armIdle{0%,100%{transform:rotate(0)}50%{transform:rotate(-5deg)}}
+@keyframes m-foreIdle{0%,100%{transform:rotate(0)}50%{transform:rotate(7deg)}}
+.m-tw{animation:m-tw 1.6s ease-in-out infinite}
+@keyframes m-tw{0%,100%{transform:scale(.25) rotate(0);opacity:.2}50%{transform:scale(1) rotate(45deg);opacity:1}}
+.m-tw.m-d2{animation-delay:-.4s}.m-tw.m-d3{animation-delay:-.8s}.m-tw.m-d4{animation-delay:-1.2s}
+.m-rise{animation:m-riseL 3.4s ease-out infinite;opacity:0}.m-rr{animation-name:m-riseR}
+@keyframes m-riseL{0%{transform:translate(0,0) scale(.3);opacity:0}15%{opacity:1}55%{transform:translate(-14px,-90px) scale(1) rotate(-8deg)}100%{transform:translate(-26px,-180px) scale(1.1) rotate(6deg);opacity:0}}
+@keyframes m-riseR{0%{transform:translate(0,0) scale(.3);opacity:0}15%{opacity:1}55%{transform:translate(14px,-90px) scale(1) rotate(8deg)}100%{transform:translate(26px,-180px) scale(1.1) rotate(-6deg);opacity:0}}
+.m-rise.m-d2{animation-delay:-.85s}.m-rise.m-d3{animation-delay:-1.7s}.m-rise.m-d4{animation-delay:-2.55s}
+.m-conf{animation:m-conf 2s linear infinite;opacity:0}
+@keyframes m-conf{0%{transform:translate(0,-30px) rotate(0);opacity:0}10%{opacity:1}50%{transform:translate(12px,50px) rotate(220deg)}100%{transform:translate(-6px,140px) rotate(440deg);opacity:0}}
+.m-conf.m-c2{animation-delay:-.5s;animation-duration:2.3s}.m-conf.m-c3{animation-delay:-1s;animation-duration:1.8s}.m-conf.m-c4{animation-delay:-1.5s;animation-duration:2.1s}
+/* Selam: üst kol, ön kol ve el sırayla, gecikmeli takip */
+.m-selam .m-uaR{animation:m-wvU 1s cubic-bezier(.45,0,.55,1) infinite}
+.m-selam .m-faR{animation:m-wvF 1s cubic-bezier(.45,0,.55,1) -.88s infinite}
+.m-selam .m-hdR{animation:m-wvH 1s cubic-bezier(.45,0,.55,1) -.76s infinite}
+.m-selam .m-tilt{animation:m-tiltS 2s cubic-bezier(.45,0,.55,1) infinite}
+/* Duruş: sakin bekleyiş, gözler etrafı süzer */
+.m-durus .m-face{animation:m-glance 8s cubic-bezier(.45,0,.55,1) infinite}
+.m-durus .m-pup{animation:m-glanceP 8s cubic-bezier(.45,0,.55,1) infinite}
+.m-durus .m-uaL{animation:m-armIdle 3.6s cubic-bezier(.45,0,.55,1) infinite}.m-durus .m-uaR{animation:m-armIdle 3.6s cubic-bezier(.45,0,.55,1) -1.8s infinite}
+.m-selam .m-face{animation:m-glance 9s cubic-bezier(.45,0,.55,1) infinite}
+.m-selam .m-pup{animation:m-glanceP 9s cubic-bezier(.45,0,.55,1) infinite}
+.m-selam .m-uaL{animation:m-armIdle 2s cubic-bezier(.45,0,.55,1) infinite}
+/* Teşekkür: eğilip doğrulur, kalpler yükselir */
+.m-tesekkur .m-squash{animation:m-bow 3s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-bow{0%,18%,100%{transform:scale(1,1)}40%,60%{transform:scale(1.03,.95)}76%{transform:scale(.99,1.02)}88%{transform:scale(1,1)}}
+.m-tesekkur .m-face{animation:m-bowF 3s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-bowF{0%,18%,88%,100%{transform:translateY(0)}40%,60%{transform:translateY(8px)}76%{transform:translateY(-2px)}}
+.m-tesekkur .m-stem{animation:m-bowS 3s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-bowS{0%,18%,100%{transform:rotate(0)}40%,60%{transform:rotate(6deg)}76%{transform:rotate(-2deg)}88%{transform:rotate(1deg)}}
+.m-tesekkur .m-uaL{animation:m-armIdle 3s cubic-bezier(.45,0,.55,1) infinite}
+/* Aferin: hazırlık çömelmesi, esneyerek kalkış, tepe, ezilerek iniş, toparlanma */
+.m-aferin .m-move,.m-kupa .m-move{animation:m-jump 1.3s infinite}
+@keyframes m-jump{0%{transform:translateY(0);animation-timing-function:ease-in-out}16%{transform:translateY(7px);animation-timing-function:cubic-bezier(.2,.6,.35,1)}46%{transform:translateY(-72px);animation-timing-function:cubic-bezier(.6,0,.85,.45)}68%{transform:translateY(0);animation-timing-function:ease-out}78%{transform:translateY(3px);animation-timing-function:ease-in-out}88%,100%{transform:translateY(0)}}
+.m-aferin .m-squash,.m-kupa .m-squash{animation:m-jsq 1.3s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-jsq{0%,90%,100%{transform:scale(1,1)}16%{transform:scale(1.1,.88)}26%{transform:scale(.9,1.12)}46%{transform:scale(1,1)}66%{transform:scale(.96,1.05)}70%{transform:scale(1.12,.86)}80%{transform:scale(.97,1.03)}}
+.m-aferin .m-shadow,.m-kupa .m-shadow{animation:m-jsh 1.3s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-jsh{0%,100%{transform:scale(1);opacity:.13}16%{transform:scale(1.06)}46%{transform:scale(.6);opacity:.05}70%{transform:scale(1.08);opacity:.15}}
+.m-aferin .m-stem,.m-kupa .m-stem{animation:m-jst 1.3s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-jst{0%,100%{transform:rotate(0) scale(1,1)}16%{transform:rotate(-2deg) scale(1.03,.93)}30%{transform:rotate(3deg) scale(.96,1.09)}48%{transform:rotate(-2deg) scale(1,1)}72%{transform:rotate(3deg) scale(1.04,.91)}84%{transform:rotate(-1deg) scale(.99,1.02)}}
+.m-aferin .m-uaL,.m-aferin .m-uaR{animation:m-jarm 1.3s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-jarm{0%,100%{transform:rotate(0)}16%{transform:rotate(28deg)}34%{transform:rotate(-12deg)}50%{transform:rotate(-4deg)}70%{transform:rotate(16deg)}84%{transform:rotate(-4deg)}}
+.m-aferin .m-hdL,.m-aferin .m-hdR{animation:m-wig .26s ease-in-out infinite alternate}
+.m-aferin .m-pup,.m-kupa .m-pup{animation:m-pulse .65s ease-in-out infinite alternate}
+/* Vay: irkilme, gözler büyür, ünlem patlar */
+.m-vay .m-move{animation:m-startle 2.4s infinite}
+@keyframes m-startle{0%{transform:translateY(0);animation-timing-function:cubic-bezier(.2,.9,.3,1)}8%{transform:translateY(-28px);animation-timing-function:cubic-bezier(.5,0,.8,.6)}18%{transform:translateY(0);animation-timing-function:ease-out}24%{transform:translateY(-4px)}30%,100%{transform:translateY(0)}}
+.m-vay .m-squash{animation:m-stsq 2.4s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-stsq{0%,34%,100%{transform:scale(1,1)}5%{transform:scale(.92,1.1)}18%{transform:scale(1.08,.92)}26%{transform:scale(.98,1.02)}}
+.m-vay .m-stem{animation:m-stst 2.4s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-stst{0%,40%,100%{transform:rotate(0) scale(1,1)}6%{transform:rotate(-3deg) scale(.96,1.1)}20%{transform:rotate(3deg) scale(1.03,.94)}30%{transform:rotate(-1deg) scale(1,1.01)}}
+.m-vay .m-eyeL,.m-vay .m-eyeR{animation:m-eyePop 2.4s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-eyePop{0%,100%{transform:scale(1)}6%{transform:scale(1.16)}16%,80%{transform:scale(1.06)}}
+.m-vay .m-mouth{animation:m-oPop 2.4s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-oPop{0%,100%{transform:scale(.7)}8%{transform:scale(1.2)}18%,80%{transform:scale(1)}}
+.m-vay .m-brow{animation:m-browUp 2.4s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-browUp{0%,100%{transform:translateY(0)}6%{transform:translateY(-9px)}20%,80%{transform:translateY(-4px)}}
+.m-pop{animation:m-pop 2.4s infinite}
+@keyframes m-pop{0%,3%{transform:scale(0) rotate(-20deg);opacity:0}12%{transform:scale(1.18) rotate(6deg);opacity:1}20%{transform:scale(1) rotate(0)}82%{transform:scale(1);opacity:1}94%,100%{transform:scale(.6);opacity:0}}
+/* Düşünüyor: parmak çeneye vurur, soru balonu süzülür, sonra ampul yanar */
+.m-dusun .m-hdR{animation:m-tap .55s cubic-bezier(.45,0,.55,1) infinite alternate}
+@keyframes m-tap{0%{transform:rotate(0)}100%{transform:rotate(-9deg)}}
+.m-dusun .m-pup{animation:m-ponder 4.8s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-ponder{0%,100%{transform:translate(0,0)}22%,40%{transform:translate(-9px,2px)}56%{transform:translate(0,0)}62%,90%{transform:translate(2px,-4px)}}
+.m-dusun .m-tilt{animation:m-tiltD 4.8s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-tiltD{0%,100%{transform:rotate(0)}28%,48%{transform:rotate(-3deg)}60%{transform:rotate(1.5deg)}66%,90%{transform:rotate(0)}}
+.m-dusun .m-brow{animation:m-browB 4.8s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-browB{0%,56%,96%,100%{transform:translateY(0)}62%,90%{transform:translateY(-7px)}}
+.m-dusun .m-stem{animation:m-perk 4.8s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-perk{0%,56%,100%{transform:rotate(-1deg) scale(1,1)}62%{transform:rotate(2deg) scale(.97,1.08)}70%,90%{transform:rotate(0) scale(1,1.02)}}
+.m-q{animation:m-q 4.8s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-q{0%{transform:translateY(0) rotate(-5deg);opacity:1}25%{transform:translateY(-8px) rotate(5deg)}50%{transform:translateY(0) rotate(-4deg);opacity:1}57%,100%{transform:scale(.4);opacity:0}}
+.m-bulb{animation:m-bulb 4.8s cubic-bezier(.45,0,.55,1) infinite;opacity:0}
+@keyframes m-bulb{0%,57%{transform:scale(0);opacity:0}62%{transform:scale(1.22);opacity:1}68%{transform:scale(.95)}74%,90%{transform:scale(1);opacity:1}97%,100%{transform:scale(.4);opacity:0}}
+/* Okuyor: göz satırları izler, sayfa çevrilir */
+.m-oku .m-pup{animation:m-scan 3.6s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-scan{0%,100%{transform:translate(-8px,-3px)}20%{transform:translate(7px,-3px)}24%{transform:translate(-8px,1px)}44%{transform:translate(7px,1px)}48%{transform:translate(-8px,4px)}64%{transform:translate(6px,4px)}82%{transform:translate(-6px,2px)}}
+.m-page{animation:m-flip 3.6s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-flip{0%,64%{transform:scaleX(1);opacity:1}82%{transform:scaleX(-1);opacity:1}92%{transform:scaleX(-1);opacity:0}100%{transform:scaleX(1);opacity:0}}
+.m-oku .m-face{animation:m-nod 3.6s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-nod{0%,100%{transform:translateY(0)}50%{transform:translateY(3px)}}
+/* Dua: yavaş nefes, avuçlardan ışık yükselir */
+.m-dua .m-move{animation-duration:4.4s}.m-dua .m-squash{animation-duration:4.4s}.m-dua .m-stem{animation-duration:4.4s}
+.m-glow{animation:m-glow 3.2s ease-in-out infinite;opacity:0}
+@keyframes m-glow{0%{transform:translateY(10px) scale(.4) rotate(0);opacity:0}40%{opacity:1}100%{transform:translateY(-40px) scale(1) rotate(60deg);opacity:0}}
+.m-glow.m-d2{animation-delay:-.8s}.m-glow.m-d3{animation-delay:-1.6s}.m-glow.m-d4{animation-delay:-2.4s}
+/* Uykuda: yavaş nefes, horlama, külah ucu sallanır */
+.m-uyku .m-move{animation:none}
+.m-uyku .m-squash{animation:m-sleep 4s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-sleep{0%,100%{transform:scale(1,1)}50%{transform:scale(1.025,1.04)}}
+.m-uyku .m-mouth{animation:m-snore 4s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-snore{0%,100%{transform:scale(1)}50%{transform:scale(1.5,1.7)}}
+.m-uyku .m-stem{animation:m-droop 4s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-droop{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(1deg)}}
+.m-cap{animation:m-capSw 4s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-capSw{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(7deg)}}
+.m-uyku .m-shadow{animation:none}
+.m-z{animation:m-z 3.6s ease-out infinite;opacity:0}
+@keyframes m-z{0%{transform:translate(0,0) scale(.4) rotate(0);opacity:0}15%{opacity:1}100%{transform:translate(60px,-150px) scale(1.15) rotate(14deg);opacity:0}}
+.m-z.m-d2{animation-delay:-1.2s}.m-z.m-d3{animation-delay:-2.4s}
+/* Koşuyor: gövde iki kez sekiyor, kollar ve bacaklar karşılıklı */
+.m-kos .m-move{animation:m-runbob .25s ease-in-out infinite alternate}
+@keyframes m-runbob{0%{transform:translateY(0)}100%{transform:translateY(-14px)}}
+.m-kos .m-squash{animation:m-runsq .25s ease-in-out infinite alternate}
+@keyframes m-runsq{0%{transform:scale(1.03,.97)}100%{transform:scale(.98,1.03)}}
+.m-kos .m-lgL{animation:m-step .5s linear infinite}
+.m-kos .m-lgR{animation:m-step .5s linear -.25s infinite}
+@keyframes m-step{0%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-24px) rotate(-14deg)}50%{transform:translateY(-4px) rotate(10deg)}75%{transform:translateY(0) rotate(4deg)}}
+.m-kos .m-uaL{animation:m-pump .5s cubic-bezier(.45,0,.55,1) infinite}
+.m-kos .m-uaR{animation:m-pump .5s cubic-bezier(.45,0,.55,1) -.25s infinite}
+@keyframes m-pump{0%,100%{transform:rotate(-34deg)}50%{transform:rotate(30deg)}}
+.m-kos .m-stem{animation:m-runst .25s ease-in-out infinite alternate}
+@keyframes m-runst{0%{transform:rotate(-8deg)}100%{transform:rotate(-3deg)}}
+.m-kos .m-shadow{animation:m-runsh .25s ease-in-out infinite alternate}
+@keyframes m-runsh{0%{transform:scale(1)}100%{transform:scale(.88)}}
+.m-speed{animation:m-speed .5s linear infinite}
+@keyframes m-speed{0%{transform:translateX(30px);opacity:0}30%{opacity:1}100%{transform:translateX(-30px);opacity:0}}
+.m-dust{animation:m-dust .9s ease-out infinite;opacity:0}
+@keyframes m-dust{0%{transform:translate(0,0) scale(.3);opacity:.9}100%{transform:translate(-34px,-14px) scale(1.3);opacity:0}}
+.m-dust.m-d2{animation-delay:-.3s}.m-dust.m-d3{animation-delay:-.6s}
+/* İyilik: büyük kalp atar, kalpler yükselir */
+.m-bigheart{animation:m-bigbeat 1.2s ease-in-out infinite}
+@keyframes m-bigbeat{0%,55%,100%{transform:scale(1)}12%{transform:scale(1.1)}24%{transform:scale(.98)}36%{transform:scale(1.06)}}
+.m-iyilik .m-pup{animation:m-bigbeat 1.2s ease-in-out infinite}
+.m-iyilik .m-tilt{animation:m-tiltS 3s cubic-bezier(.45,0,.55,1) infinite}
+/* Üzgün ama umutlu: iç çekiş, sap düşer, tek damla */
+.m-uzgun .m-move{animation:m-sigh 4.2s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-sigh{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+.m-uzgun .m-squash{animation:m-deflate 4.2s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-deflate{0%,100%{transform:scale(1,1)}50%{transform:scale(1.02,.96)}}
+.m-uzgun .m-stem{animation:m-sadst 4.2s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-sadst{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(-8deg)}}
+.m-uzgun .m-hdL,.m-uzgun .m-hdR{animation:m-fidget 1.4s cubic-bezier(.45,0,.55,1) infinite alternate}
+@keyframes m-fidget{0%{transform:rotate(-6deg)}100%{transform:rotate(6deg)}}
+.m-tear{animation:m-tear 2.8s ease-in infinite;opacity:0}
+@keyframes m-tear{0%{transform:translateY(0) scale(.3);opacity:0}22%{transform:translateY(0) scale(1);opacity:1}100%{transform:translateY(80px) scale(.9);opacity:0}}
+/* Kupa: küçük zıplama, kupa kolu hazırlanıp yükselir */
+.m-kupa .m-uaR{animation:m-lift 1.3s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-lift{0%,100%{transform:rotate(0)}16%{transform:rotate(10deg)}36%{transform:rotate(-10deg)}56%{transform:rotate(-2deg)}72%{transform:rotate(6deg)}}
+.m-kupa .m-faL{animation:m-wvF .6s cubic-bezier(.45,0,.55,1) infinite}
+.m-kupa .m-hdL{animation:m-wig .3s ease-in-out infinite alternate}
+/* Kahkaha: hızlı sarsıntı, geriye ve öne yaslanma */
+.m-kahkaha .m-move{animation:m-laugh .3s ease-in-out infinite alternate}
+@keyframes m-laugh{0%{transform:translateY(0)}100%{transform:translateY(-7px)}}
+.m-kahkaha .m-squash{animation:m-laughsq .3s ease-in-out infinite alternate}
+@keyframes m-laughsq{0%{transform:scale(1.04,.96)}100%{transform:scale(.98,1.03)}}
+.m-kahkaha .m-tilt{animation:m-tiltK 2.4s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-tiltK{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(4deg)}}
+.m-kahkaha .m-mouth{animation:m-hah .3s ease-in-out infinite alternate}
+@keyframes m-hah{0%{transform:scale(1.05,.8)}100%{transform:scale(.97,1.1)}}
+.m-kahkaha .m-stem{animation:m-laughst .3s ease-in-out infinite alternate}
+@keyframes m-laughst{0%{transform:rotate(-3deg)}100%{transform:rotate(3deg)}}
+.m-kahkaha .m-hdL,.m-kahkaha .m-hdR{animation:m-fidget .3s ease-in-out infinite alternate}
+.m-ha{animation:m-ha 1.6s ease-out infinite;opacity:0}
+@keyframes m-ha{0%{transform:scale(.3) rotate(-10deg);opacity:0}14%{transform:scale(1.2) rotate(6deg);opacity:1}28%{transform:scale(1) rotate(0)}70%{opacity:1}100%{transform:translateY(-34px) scale(1);opacity:0}}
+.m-ha.m-d3{animation-delay:-.8s}
+.m-joy{animation:m-joyL 1.2s ease-in infinite;opacity:0}.m-joyR{animation-name:m-joyR}
+@keyframes m-joyL{0%{transform:translate(0,0) scale(.5);opacity:0}20%{opacity:1}100%{transform:translate(-30px,20px) scale(1);opacity:0}}
+@keyframes m-joyR{0%{transform:translate(0,0) scale(.5);opacity:0}20%{opacity:1}100%{transform:translate(30px,20px) scale(1);opacity:0}}
+/* Utangaç: iki yana salınır, bir an bakıp kaçırır, ayağını sürter */
+.m-utangac .m-tilt{animation:m-shy 3.4s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-shy{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
+.m-utangac .m-pup{animation:m-peek 3.4s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-peek{0%,52%,90%,100%{transform:translate(0,0)}60%,78%{transform:translate(12px,-10px)}}
+.m-utangac .m-blush{animation:m-blush 3.4s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-blush{0%,52%,100%{opacity:.7}64%,82%{opacity:1}}
+.m-utangac .m-lgR{animation:m-twist 1.7s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-twist{0%,100%{transform:rotate(0)}50%{transform:translateY(-3px) rotate(-9deg)}}
+/* Bakmıyorum: kalbin arkasında salınır, kalp yavaşça atar, eller kalbi sıkıca tutar */
+.m-gizle .m-hide{animation:m-bigbeat 2.4s ease-in-out infinite}
+.m-gizle .m-tilt{animation:m-shy 3.4s cubic-bezier(.45,0,.55,1) infinite}
+.m-gizle .m-hdL,.m-gizle .m-hdR{animation:m-fidget 1.7s cubic-bezier(.45,0,.55,1) infinite alternate}
+.m-gizle .m-stem{animation:m-sway 2.4s cubic-bezier(.45,0,.55,1) infinite}
+/* Şuraya bak: kol iki kez ileri itilir, beden gösterilen yana eğilir */
+.m-isaret .m-uaR{animation:m-jab 1.6s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-jab{0%,44%,100%{transform:rotate(0)}12%{transform:rotate(-8deg)}24%{transform:rotate(2deg)}34%{transform:rotate(-6deg)}}
+.m-isaret .m-tilt{animation:m-lean 3.2s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-lean{0%,100%{transform:rotate(1.5deg)}50%{transform:rotate(4.5deg)}}
+.m-isaret .m-uaL{animation:m-armIdle 3.2s cubic-bezier(.45,0,.55,1) infinite}
+/* Bir notun var: göz satırları izler, ara ara başını kaldırıp sana bakar, kâğıt hafifçe oynar */
+.m-mektup .m-pup{animation:m-readLook 5s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-readLook{0%,100%{transform:translate(-7px,-2px)}14%{transform:translate(6px,-2px)}18%{transform:translate(-7px,3px)}32%{transform:translate(6px,3px)}40%,62%{transform:translate(0,-15px)}72%{transform:translate(-7px,-2px)}}
+.m-letter{animation:m-letter 5s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-letter{0%,100%{transform:rotate(0)}40%,62%{transform:translateY(5px) rotate(2deg)}}
+.m-mektup .m-brow{animation:m-browB 5s cubic-bezier(.45,0,.55,1) infinite}
+.m-mektup .m-tilt{animation:m-tiltS 5s cubic-bezier(.45,0,.55,1) infinite}
+@media (prefers-reduced-motion:reduce){.m *{animation:none!important}.m-bulb{opacity:0}.m-rise,.m-conf,.m-z,.m-tear,.m-glow,.m-ha{opacity:1}}
+/* Yürüyüş: iki adımda bir gövde sekmesi, kollar karşı yönde */
+.m-walk .m-move{animation:m-wbob .32s ease-in-out infinite alternate}
+@keyframes m-wbob{0%{transform:translateY(0)}100%{transform:translateY(-8px)}}
+.m-walk .m-lgL{animation:m-wstep .64s linear infinite}.m-walk .m-lgR{animation:m-wstep .64s linear -.32s infinite}
+@keyframes m-wstep{0%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-14px) rotate(-9deg)}50%{transform:translateY(0) rotate(4deg)}}
+.m-walk .m-uaL{animation:m-wswing .64s cubic-bezier(.45,0,.55,1) infinite}.m-walk .m-uaR{animation:m-wswing .64s cubic-bezier(.45,0,.55,1) -.32s infinite}
+@keyframes m-wswing{0%,100%{transform:rotate(-18deg)}50%{transform:rotate(16deg)}}
+.m-carry .m-uaL,.m-carry .m-uaR{animation:none}
+.m-walk .m-stem{animation:m-wst .32s ease-in-out infinite alternate}
+@keyframes m-wst{0%{transform:rotate(-3deg)}100%{transform:rotate(1.5deg)}}
+.m-bag{animation:m-bag .32s ease-in-out -.1s infinite alternate}
+@keyframes m-bag{0%{transform:translateY(0) rotate(0)}100%{transform:translateY(-6px) rotate(-3deg)}}
+/* Cuma */
+.m-swing{animation:m-tsb 2.2s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-tsb{0%,100%{transform:rotate(-9deg)}50%{transform:rotate(9deg)}}
+.m-cami .m-squash{animation:m-bow 3.4s cubic-bezier(.45,0,.55,1) infinite}.m-cami .m-face{animation:m-bowF 3.4s cubic-bezier(.45,0,.55,1) infinite}
+/* Kış */
+.m-pom{animation:m-pom 1.8s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-pom{0%,100%{transform:translate(0,0)}30%{transform:translate(2px,-6px)}60%{transform:translate(-2px,1px)}}
+.m-tail{animation:m-tail 1.6s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-tail{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(8deg)}}
+.m-kis .m-tilt{animation:m-shiver 3s linear infinite}
+@keyframes m-shiver{0%,24%,100%{transform:translateX(0)}3%,9%,15%,21%{transform:translateX(-2px)}6%,12%,18%{transform:translateX(2px)}}
+.m-snow{animation:m-snow 4s linear infinite;opacity:0}
+@keyframes m-snow{0%{transform:translate(0,0) rotate(0);opacity:0}10%{opacity:1}100%{transform:translate(18px,240px) rotate(180deg);opacity:0}}
+.m-snow.m-d2{animation-delay:-1s}.m-snow.m-d3{animation-delay:-2s}.m-snow.m-d4{animation-delay:-3s}
+.m-steam{animation:m-steam 2.2s ease-out infinite;opacity:0}
+@keyframes m-steam{0%{transform:translateY(10px) scale(.6);opacity:0}30%{opacity:.95}100%{transform:translateY(-30px) scale(1.1);opacity:0}}
+.m-steam.m-d2{animation-delay:-.7s}.m-steam.m-d3{animation-delay:-1.4s}
+/* Ramazan */
+.m-lant{animation:m-lant 2.6s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-lant{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(7deg)}}
+.m-lglow{animation:m-lglow 1.3s ease-in-out infinite alternate}
+@keyframes m-lglow{0%{opacity:.18}100%{opacity:.42}}
+.m-flame{animation:m-flame .35s ease-in-out infinite alternate}
+@keyframes m-flame{0%{transform:scale(.9,1);opacity:.85}100%{transform:scale(1.1,1.12);opacity:1}}
+.m-moon{animation:m-moon 5s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-moon{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
+.m-ramazan .m-uaR{animation:m-armIdle 2.6s cubic-bezier(.45,0,.55,1) infinite}
+/* Bayram */
+.m-bayram .m-move{animation:m-hopS 1s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-hopS{0%,100%{transform:translateY(0)}40%{transform:translateY(-12px)}}
+.m-bayram .m-squash{animation:m-hopSq 1s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-hopSq{0%,100%{transform:scale(1.04,.96)}40%{transform:scale(.98,1.03)}}
+.m-bayram .m-uaR{animation:m-offer 1s cubic-bezier(.45,0,.55,1) -.15s infinite}
+@keyframes m-offer{0%,100%{transform:rotate(3deg)}40%{transform:rotate(-5deg)}}
+.m-bayram .m-faL{animation:m-wvF .9s cubic-bezier(.45,0,.55,1) infinite}
+/* Kâşif */
+.m-kasif .m-tilt{animation:m-tiltS 3.2s cubic-bezier(.45,0,.55,1) infinite}
+.m-fly{animation:m-fly 6s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-fly{0%,100%{transform:translate(0,0) rotate(-10deg)}25%{transform:translate(120px,-150px) rotate(12deg)}50%{transform:translate(280px,-60px) rotate(-6deg)}75%{transform:translate(160px,40px) rotate(8deg)}}
+.m-wing{animation:m-wing .18s ease-in-out infinite alternate}
+@keyframes m-wing{0%{transform:scaleX(1)}100%{transform:scaleX(.35)}}
+/* Fidan */
+.m-pour{animation:m-pourA 2.4s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-pourA{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(10deg)}}
+.m-pdrop{animation:m-pdrop .9s ease-in infinite;opacity:0}
+@keyframes m-pdrop{0%{transform:translate(0,0);opacity:0}15%{opacity:1}100%{transform:translate(10px,70px);opacity:0}}
+.m-pdrop.m-d2{animation-delay:-.3s}.m-pdrop.m-d3{animation-delay:-.6s}
+.m-grow{animation:m-grow 4.8s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-grow{0%{transform:scale(.55)}70%,100%{transform:scale(1.05)}}
+.m-leafA{animation:m-leafA 1.6s cubic-bezier(.45,0,.55,1) infinite}.m-leafB{animation:m-leafB 1.6s cubic-bezier(.45,0,.55,1) -.4s infinite}
+@keyframes m-leafA{0%,100%{transform:rotate(0)}50%{transform:rotate(-12deg)}}
+@keyframes m-leafB{0%,100%{transform:rotate(0)}50%{transform:rotate(12deg)}}
+/* Sağlıkçı */
+.m-doktor .m-heart{animation:m-beat 1s ease-in-out infinite}
+.m-ekg{stroke-dasharray:140;animation:m-ekg 1.6s linear infinite}
+@keyframes m-ekg{0%{stroke-dashoffset:140}60%,100%{stroke-dashoffset:0}}
+.m-doktor .m-pop{animation:none}
+/* Yağmur */
+.m-rain{animation:m-rain .9s linear infinite}
+@keyframes m-rain{0%{transform:translate(0,-60px);opacity:0}15%{opacity:1}100%{transform:translate(-12px,120px);opacity:0}}
+.m-rain.m-d2{animation-delay:-.25s}.m-rain.m-d3{animation-delay:-.5s}.m-rain.m-d4{animation-delay:-.7s}
+.m-ripple{animation:m-ripple 1.4s ease-out infinite;opacity:0}
+@keyframes m-ripple{0%{transform:scale(.3);opacity:.9}100%{transform:scale(1.5);opacity:0}}
+.m-ripple.m-d2{animation-delay:-.7s}
+.m-yagmur .m-lgR{animation:m-stomp 1.4s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-stomp{0%,40%,100%{transform:translateY(0)}20%{transform:translateY(-22px) rotate(-8deg)}}
+.m-yagmur .m-hdR{animation:m-umb 2.8s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-umb{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
+/* Aşçı */
+.m-asci .m-uaR{animation:m-taste 1.8s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-taste{0%,100%{transform:rotate(0)}45%,65%{transform:rotate(-6deg)}}
+.m-asci .m-mouth{animation:m-mmm 1.8s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-mmm{0%,100%{transform:scale(1)}50%{transform:scale(.7,.8)}}
+.m-asci .m-tilt{animation:m-tiltS 1.8s cubic-bezier(.45,0,.55,1) infinite}
+/* Mezun */
+.m-tassel{animation:m-tassel 1.6s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-tassel{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(12deg)}}
+.m-mezun .m-uaL{animation:m-dip 1.2s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-dip{0%,100%{transform:rotate(0)}50%{transform:rotate(-12deg)}}
+.m-mezun .m-move{animation:m-hopS 1.2s cubic-bezier(.45,0,.55,1) infinite}
+@media (prefers-reduced-motion:reduce){.m-snow,.m-steam,.m-pdrop,.m-rain{opacity:1}.m-ripple{opacity:.5}}
+/* Büyükler takımı */
+.m-genc .m-ip{animation:m-ip 3.6s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes m-ip{0%,100%{transform:translateY(0)}50%{transform:translateY(2px)}}
+.reduce-motion svg.m *,svg.m.m-still *{animation:none!important}
+.reduce-motion .m-bulb,.m-still .m-bulb{opacity:0}
+.reduce-motion .m-rise,.m-still .m-rise,.reduce-motion .m-conf,.m-still .m-conf,.reduce-motion .m-z,.m-still .m-z,.reduce-motion .m-tear,.m-still .m-tear,.reduce-motion .m-glow,.m-still .m-glow,.reduce-motion .m-ha,.m-still .m-ha{opacity:1}
+.reduce-motion .m-snow,.m-still .m-snow,.reduce-motion .m-steam,.m-still .m-steam,.reduce-motion .m-pdrop,.m-still .m-pdrop,.reduce-motion .m-rain,.m-still .m-rain{opacity:1}
+.reduce-motion .m-ripple,.m-still .m-ripple{opacity:.5}
+.biri-logo{display:block;overflow:visible}
