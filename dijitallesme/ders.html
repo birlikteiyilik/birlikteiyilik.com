@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<base href="/dijitallesme/">
+<title>Ders · Birlikte İyilik Akademi</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0f1a44">
+<link rel="icon" href="/images/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alegreya:wght@500;700;800&family=Baloo+2:wght@600;800&family=Caveat:wght@600;700&family=Nunito:wght@600;700;800;900&family=Amiri&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="motor/stil.css">
+<link rel="stylesheet" href="motor/ibre.css">
+<link rel="stylesheet" href="motor/ibre2.css">
+<link rel="stylesheet" href="motor/kodders.css">
+<link rel="stylesheet" href="motor/pul.css">
+<link rel="stylesheet" href="motor/giris.css">
+<link rel="stylesheet" href="app/maskot.css">
+<link rel="stylesheet" href="sunum.css">
+</head>
+<body class="sunum">
+<script>
+  /* Sunum kipi: giriş yok, ad sorulmaz, anlatım serbestçe ileri ve geri sarılır, dersler arasında serbest gezilir. */
+  window.DO_SUNUM = true;
+  window.DO_AYAR = {};
+</script>
+<script src="motor/cekirdek.js"></script>
+<script src="motor/kayit.js"></script>
+<script src="motor/canli.js"></script>
+<script src="motor/oynatici.js"></script>
+<script src="motor/bloklar-temel.js"></script>
+<script src="motor/bloklar-oyun.js"></script>
+<script src="motor/bloklar-eglence.js"></script>
+<script src="motor/bloklar-ibre.js"></script>
+<script src="motor/bloklar-ibre2.js"></script>
+<script src="motor/kd-tuval.js"></script>
+<script src="motor/pul-sanat.js"></script>
+<script src="motor/bloklar-kodders.js"></script>
+<script src="motor/bloklar-pul.js"></script>
+<script src="app/maskot.js"></script>
+<script>
+(function () {
+  var DERSLER = /^(?:akaid-(?:0[1-9]|10)|kuran-0[1-8])$/;
+  var id = new URLSearchParams(location.search).get('d') || '';
+  var seri = /^kuran-/.test(id) ? 'elifba' : 'akaid';
+  var liste = '/dijitallesme#' + seri;
+
+  function hata(mesaj) {
+    var kart = document.createElement('main');
+    kart.className = 'sunum-hata';
+    kart.innerHTML = '<h1>Ders açılamadı</h1><p></p><a href="/dijitallesme">Kapılara dön</a>';
+    kart.querySelector('p').textContent = mesaj;
+    document.body.replaceChildren(kart);
+  }
+  if (!DERSLER.test(id)) { hata('Bu adreste bir ders yok.'); return; }
+
+  // Ders içindeki "Panelime dön" ve "Ders listesine dön" bağlantıları ders listesine götürür
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a[href]');
+    if (!a) return;
+    var h = a.getAttribute('href');
+    if (h === 'panel.html' || h === 'index.html' || /^panel\.html\?/.test(h)) { e.preventDefault(); location.assign(liste); }
+  }, true);
+
+  var s = document.createElement('script');
+  s.src = 'dersler/' + id + '/ders.js';
+  s.onerror = function () { hata('Ders dosyası yüklenemedi. Bağlantınızı kontrol edip sayfayı yenileyin.'); };
+  s.onload = function () {
+    if (!DO._ders || DO._ders.id !== id) { hata('Ders dosyası okunamadı.'); return; }
+    DO._ders._kok = 'dersler/' + id + '/';
+    DO._ders._medya = DO._ders._kok;
+    document.title = DO._ders.ad + ' · Birlikte İyilik Akademi';
+    DO.Oynatici.baslat();
+    var geri = document.createElement('a');
+    geri.className = 'sunum-geri';
+    geri.href = liste;
+    geri.setAttribute('aria-label', 'Ders listesine dön');
+    geri.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg><span>' + (seri === 'elifba' ? 'Elifbâ Dersleri' : 'Akaid Dersleri') + '</span>';
+    document.body.appendChild(geri);
+  };
+  document.head.appendChild(s);
+})();
+</script>
+</body>
+</html>
