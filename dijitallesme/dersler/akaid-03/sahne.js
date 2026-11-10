@@ -47,7 +47,7 @@
       buyuk: C(60), akilli: C(61), geciktiremez: C(62), kim: C(63),
       gunesAy: C(64), geceGunduz: C(65), yaratan: C(66), hareket: C(67), ettiren: C(68), bakip: C(69),
       basta: C(70), hizli: C(71), hava: C(72), araba: C(73), sasmiyor: C(74), yolcu: C(75),
-      uyu: C(76), uyandirmaz: C(77), sabah: C(78), biliyorsun: C(79), gelecek: C(80), emanet: C(81)
+      uyu: C(76), uyandirmaz: C(77), sabah: C(78), biliyorsun: C(79), doner: C(80), gelecek: C(81), emanet: C(82)
     };
     AN.dDonus = kel('dönüşü'); AN.dEgik = kel('eğik', 2); AN.dAy = AN.olmasa - 0.9;
     // Bölüm içindeki kesmeler: hepsi bir cümle başına düşer, perde bu anlarda kısa bir an kararır
@@ -104,7 +104,9 @@
       ['Her şeyi hareket ettiren, Allahü teâlânın kudretidir.', 'kagit', 800, 540, AN.ettiren, AN.bakip - 0.4],
       ['Gökyüzüne bakıp düşünmek, boş bir iş değildir.', 'kagit', 800, 450, AN.bakip, AN.basta - 0.3],
       ['Hep birlikte gidiyoruz.', 'etiket', 800, 96, AN.hava + 1.2, KES.arabaGir - 0.1],
-      ['Geceyi ve sabahı getiren: Dünya\'nın dönüşü.', 'etiket', 800, 96, AN.biliyorsun + 1.2, AN.gelecek - 0.1],
+      ['Geceyi ve sabahı getiren: Dünya\'nın dönüşü.', 'etiket', 800, 96, AN.biliyorsun + 1.2, AN.doner - 0.4],
+      // sır Allahü teâlâya bağlanarak kapanır: boya çekilir, kâğıt ve yazı kalır
+      ['Dünya\'yı döndüren, geceyi ve sabahı getiren, Allahü teâlâdır.', 'kagit', 800, 450, AN.doner, AN.gelecek - 0.5],
       ['Gelecek ders: Yeryüzünün sırları', 'etiket', 800, 110, AN.gelecek + 0.2, AN.emanet + 0.9]
     ].map(function (s) { return { e: yazi(s[0], s[1], s[2], s[3]), kagit: /^kagit/.test(s[1]), bas: s[4], son: s[5] }; });
     var kagitYazisi = false;
@@ -611,7 +613,8 @@
     /* ——— perde: kesmelerde kısa bir an lacivert (kâğıt bölümünde krem) karartma ——— */
     var LACI = [0.07, 0.11, 0.3], KREM = [1, 1, 1];
     var PERDE = [[AN.gel], [AN.yildiz - 0.4], [AN.ay - 0.3], [KES.ayYol], [KES.hilal], [KES.haller], [AN.sasmaz + 1], [AN.dik - 0.2],
-      [AN.uc - 0.4], [AN.buyuk], [AN.gunesAy - 0.3, KREM], [AN.basta - 0.2, KREM], [KES.arabaGir], [KES.arabaCik], [AN.uyu]];
+      [AN.uc - 0.4], [AN.buyuk], [AN.gunesAy - 0.3, KREM], [AN.basta - 0.2, KREM], [KES.arabaGir], [KES.arabaCik], [AN.uyu],
+      [AN.doner - 0.3, KREM], [AN.gelecek - 0.2, KREM]];
     var perdeSon = -1;
     function perde(t) {
       var k = 0, renk = LACI;
@@ -640,7 +643,8 @@
       else if (t < AN.gunesAy - 0.3) bol = 10;
       else if (t < AN.basta - 0.2) bol = 11;
       else if (t < AN.uyu) bol = 12;
-      else bol = 13;
+      else if (t < AN.doner - 0.3 || t >= AN.gelecek - 0.2) bol = 13;
+      else bol = 14;
 
       if (bol === 0) kanca(t, a);
       else if (bol === 1) {
@@ -670,6 +674,7 @@
       else if (bol === 10) buyukSahne(t, a);
       else if (bol === 11) { T.bas(a, { x: 800, y: 450, z: 1 }); plaka('kagit', { d: 0 }); }
       else if (bol === 12) sirSahnesi(t, a);
+      else if (bol === 14) { T.bas(a, { x: 800, y: 450, z: 1 }); plaka('kagit', { d: 0 }); }
       else kapanis(t, a);
 
       gorunurluk(bol, t);
@@ -694,7 +699,7 @@
       hazir: hazir,
       ciz: ciz,
       // Allahü teâlâdan söz edilen kâğıt bölümünde yazı sahnenin kendisidir; altyazı ve dokunma oyunu yoktur
-      altyazisiz: function (t) { return kagitYazisi || (t >= AN.gunesAy - 0.3 && t < AN.basta - 0.2); },
+      altyazisiz: function (t) { return kagitYazisi || (t >= AN.gunesAy - 0.3 && t < AN.basta - 0.2) || (t >= AN.doner - 0.3 && t < AN.gelecek - 0.2); },
       durak: function (id, olay, veri) {
         if (id === 'donus' && olay === 'deger') gv = veri;
         if (id === 'mevsim' && olay === 'deger') mv = veri;
