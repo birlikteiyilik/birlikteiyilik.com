@@ -36,3 +36,33 @@
 .sunum .kd.basladi.durakta .kd-bar:hover, .sunum .kd.basladi.durakta .kd-bar:focus-within { opacity: 1 !important; }
 /* Defter ve eşleştirme bütün sahneyi kullanır: şerit alttaki boşluğa iner */
 .sunum .kd.basladi.durakta[data-yer="tam"] .kd-bar { top: auto; bottom: 12px; }
+
+/* ——— Dokunmatik (tablet): sahne ekrana sığmak için küçülür (1024 genişlikte yaklaşık 0,64),
+   bu yüzden oynatma şeridi, düğmeler ve ilerleme çizgisi sahne ölçüsünde büyütülür ——— */
+.dokunmatik .sunum .kd-bar { height: 78px; left: 32px; right: 32px; bottom: 18px; gap: 16px; padding: 0 18px; border-radius: 20px; }
+.dokunmatik .sunum .kd-oynat, .dokunmatik .sunum .kd-geri { height: 64px; min-width: 88px; border-radius: 14px; font-size: 27px; }
+.dokunmatik .sunum .kd.oynuyor .kd-oynat::before { font-size: 22px; }
+.dokunmatik .sunum .kd-oynat:active, .dokunmatik .sunum .kd-geri:active { background: rgba(243, 213, 132, .25); }
+.dokunmatik .sunum .kd-serit { height: 12px; border-radius: 6px; }
+.dokunmatik .sunum .kd-serit::before { content: ''; position: absolute; left: -10px; right: -10px; top: -28px; bottom: -28px; }
+.dokunmatik .sunum .kd-serit i { border-radius: 6px; }
+.dokunmatik .sunum .kd-sure { font-size: 25px; }
+.dokunmatik .sunum .kd.basladi.durakta .kd-bar { top: 12px; bottom: auto; width: 1040px; margin-left: -520px; }
+.dokunmatik .sunum .kd.basladi.durakta[data-yer="tam"] .kd-bar { top: auto; bottom: 14px; }
+.dokunmatik .sunum .dug-yuvarlak { width: 96px; height: 96px; }
+.dokunmatik .sunum .dug-yuvarlak svg { width: 42px; height: 42px; }
+.dokunmatik .sunum .dug-kucuk { min-width: 72px; height: 72px; font-size: 24px; }
+.dokunmatik .sunum-geri { height: 46px; padding: 0 18px 0 12px; font-size: 17px; opacity: .8; }
+
+/* Dik tutulan tablette sahne şerit gibi kalır: yatay çevirme ipucu */
+.sunum-yatay { display: none; }
+@media (orientation: portrait) and (min-width: 600px) {
+  .dokunmatik .sunum-yatay {
+    display: flex; position: fixed; z-index: 70; left: 50%; bottom: max(24px, env(safe-area-inset-bottom)); transform: translateX(-50%);
+    align-items: center; gap: 10px; padding: 12px 20px; border-radius: 999px; white-space: nowrap;
+    background: rgba(15, 26, 68, .92); color: #f3d584; font: 800 17px/1 'Nunito', system-ui, sans-serif;
+    box-shadow: 0 10px 30px rgba(4, 8, 30, .35); pointer-events: none;
+  }
+  .dokunmatik .sunum-yatay svg { animation: sunumCevir 2.6s ease-in-out infinite; }
+}
+@keyframes sunumCevir { 0%, 30% { transform: rotate(0deg); } 60%, 100% { transform: rotate(-90deg); } }
