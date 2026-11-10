@@ -31,5 +31,8 @@
 .sunum-hata a { display: inline-block; margin-top: 12px; padding: 12px 20px; border-radius: 14px; background: #17307f; color: #fbf2dd; text-decoration: none; font-weight: 800; }
 
 /* Durakta da sarılır: oynatma şeridi üstte, soluk durur; üzerine gelince belirginleşir */
-.sunum .kd.basladi.durakta .kd-bar { top: 10px; bottom: auto; left: 50%; right: auto; width: 760px; margin-left: -380px; opacity: .55 !important; pointer-events: auto !important; }
+.sunum .kd.basladi.durakta .kd-bar { top: 10px; bottom: auto; left: 50%; right: auto; width: 760px; margin-left: -380px; opacity: .85 !important; pointer-events: auto !important;
+  background: rgba(11, 17, 44, .94); box-shadow: 0 6px 22px rgba(4, 8, 30, .4); }
 .sunum .kd.basladi.durakta .kd-bar:hover, .sunum .kd.basladi.durakta .kd-bar:focus-within { opacity: 1 !important; }
+/* Defter ve eşleştirme bütün sahneyi kullanır: şerit alttaki boşluğa iner */
+.sunum .kd.basladi.durakta[data-yer="tam"] .kd-bar { top: auto; bottom: 12px; }
