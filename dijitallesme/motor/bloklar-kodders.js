@@ -1194,7 +1194,7 @@
       function hareketGoster() {
         kok.classList.add('hareket');
         clearTimeout(hareketSayac);
-        hareketSayac = setTimeout(function () { kok.classList.remove('hareket'); }, 2400);
+        hareketSayac = setTimeout(function () { kok.classList.remove('hareket'); }, window.DO_SUNUM ? 4000 : 2400);
       }
       var hareketSayac = null;
       kok.addEventListener('pointermove', hareketGoster);
