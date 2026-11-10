@@ -59,7 +59,7 @@
       bilmiyor: C(67), dag: C(68), solucanB: C(69), hepsi: C(70), kimVerdi: C(71),
       yaratan: C(72), olcuyle: C(73), sanat: C(74), nimet: C(75),
       coz: C(76), neredeydi: C(77), tepesinde: C(78), catlak: C(79), dondu: C(80), genisler: C(81), catlatti: C(82), dereAldi: C(83), yillar: C(84), yolcu: C(85),
-      gelecek: C(86), emanet: C(87)
+      yaratanSon: C(86), gelecek: C(87), emanet: C(88)
     };
     AN.wDag = kel('dağ'); AN.wBahce = kel('bahçesi'); AN.wDeniz = kel('deniz');
     AN.wKum = kel('tanesi'); AN.wCo2 = kel('karbondioksit.'); AN.wO2 = kel('oksijen');
@@ -68,7 +68,7 @@
       sir: AN.sir - 0.1, vadi: AN.vadi - 0.1, bahce: AN.tahmin - 0.1, dal: AN.yan - 0.1, ic: AN.gir + 1.3, fab: AN.siraSende - 0.15,
       sonbahar: AN.sonbahar - 0.1, toprak: AN.ordu - 0.15, bahar: AN.bahar - 0.1, bosa: AN.bosa - 0.1, dag: AN.su - 0.1,
       gece: AN.gece - 0.25, uzay: AN.elmaK - 0.2, dere: AN.sabah - 0.2, deniz: AN.denizF - 0.2, buyuk: AN.bilmiyor - 0.3,
-      kagit: AN.yaratan - 0.3, sir2: AN.coz - 0.2, sirDere: AN.dereAldi - 0.15, sirDeniz: AN.yolcu - 0.2, son: AN.gelecek - 0.2
+      kagit: AN.yaratan - 0.3, sir2: AN.coz - 0.2, sirDere: AN.dereAldi - 0.15, sirDeniz: AN.yolcu - 0.2, kagit2: AN.yaratanSon - 0.3, son: AN.gelecek - 0.2
     };
 
     /* ——— yazılar ——— */
@@ -121,6 +121,8 @@
       ['Elmadaki şeker de, soluduğun temiz hava da, Onun sana verdiği birer nimettir.', 'kagit', 800, 560, AN.nimet, AN.coz - 0.5],
       ['su donunca genişler', 'etiket', 1250, 640, AN.genisler + 0.4, AN.catlatti + 0.6],
       ['yüzlerce, belki binlerce yıl', 'etiket', 800, 96, AN.yillar + 0.2, KES.sirDeniz - 0.2],
+      // sır Allahü teâlâya bağlanarak kapanır: boya çekilir, kâğıt ve yazı kalır
+      ['Kayayı, suyu ve kum tanesini bir ölçüyle yaratan, Allahü teâlâdır.', 'kagit', 800, 450, AN.yaratanSon, AN.gelecek - 0.5],
       ['Gelecek ders: Canlılardaki incelik', 'etiket', 800, 110, AN.gelecek + 0.2, AN.emanet + 0.9]
     ].map(function (s) { return { e: yazi(s[0], s[1], s[2], s[3]), kagit: /^kagit/.test(s[1]), bas: s[4], son: s[5], dunya: !!s[6], x: s[2], y: s[3] }; });
     var kagitYazisi = false;
@@ -728,7 +730,7 @@
     /* ——— perde: kesmelerde kısa bir an lacivert (kâğıt bölümünde krem) karartma ——— */
     var LACI = [0.07, 0.11, 0.3], KREM = [1, 1, 1];
     var PERDE = [[KES.sir], [KES.vadi], [KES.bahce], [KES.dal], [KES.ic], [KES.fab], [KES.sonbahar], [KES.toprak], [KES.bahar], [KES.bosa], [KES.dag], [KES.gece], [KES.uzay],
-      [KES.dere], [KES.deniz], [KES.buyuk], [KES.kagit, KREM], [KES.sir2, KREM], [KES.sirDere], [KES.sirDeniz], [KES.son]];
+      [KES.dere], [KES.deniz], [KES.buyuk], [KES.kagit, KREM], [KES.sir2, KREM], [KES.sirDere], [KES.sirDeniz], [KES.kagit2, KREM], [KES.son, KREM]];
     var perdeSon = -1;
     function perde(t) {
       var k = 0, renk = LACI;
@@ -763,7 +765,8 @@
       else if (t < KES.sir2) b = 16;
       else if (t < KES.sirDere) b = 17;
       else if (t < KES.sirDeniz) b = 18;
-      else if (t < KES.son) b = 19;
+      else if (t < KES.kagit2) b = 19;
+      else if (t < KES.son) b = 21;
       else b = 20;
 
       if (b === 0) kanca(t, a);
@@ -786,6 +789,7 @@
       else if (b === 17) sirKaya(t, a);
       else if (b === 18) sirDere(t, a);
       else if (b === 19) sirDeniz(t, a);
+      else if (b === 21) { T.bas(a, { x: 800, y: 450, z: 1 }); plaka('kagit', { d: 0 }); }
       else kapanis(t, a);
 
       // bu karede kullanılmayan SVG yolları kapanır (sarınca eski hâl ekranda kalmaz)
@@ -798,7 +802,7 @@
       hazir: hazir,
       ciz: ciz,
       // Allahü teâlâdan söz edilen kâğıt bölümünde yazı sahnenin kendisidir; altyazı ve dokunma oyunu yoktur
-      altyazisiz: function (t) { return kagitYazisi || (t >= KES.kagit && t < KES.sir2); },
+      altyazisiz: function (t) { return kagitYazisi || (t >= KES.kagit && t < KES.sir2) || (t >= KES.kagit2 && t < KES.son); },
       durak: function (id, olay, veri) {
         if (id === 'fabrika') { if (olay === 'dogru') dolu[veri] = true; if (olay === 'ac') dolu = {}; }
         if (id === 'toprak') { if (olay === 'cikar') cikan = veri; if (olay === 'kapat' || olay === 'ac') cikan = null; }

@@ -51,7 +51,7 @@
 
     /* ——— anlatıcıya bağlı anlar ——— */
     var D = {}; ['isik', 'koza', 'mikroskop', 'yer', 'sir', 'veren'].forEach(function (id) { D[id] = api.durak(id); });
-    var AN = {}; for (var n0 = 0; n0 <= 70; n0++) AN[n0] = C(n0);
+    var AN = {}; for (var n0 = 0; n0 <= 71; n0++) AN[n0] = C(n0);
     var W = {
       // kelime sırası büyük küçük harf ayırmadan sayılır (ateş: 1. "ateş böcekleri", 5. "Ateş böceği ışığını")
       ates: kel('ateş'), kuru: kel('kuru'), isitmadan: kel('ısıtmadan'), ipek: kel('ipek'), tirman: kel('tırmanır,'), sekiz: kel('sekiz'),
@@ -65,7 +65,7 @@
       sirDis: AN[3] - 0.1, sirOda: W.kuru - 0.15, ates: AN[9] - 0.1, soguk: AN[10] - 0.1, dil: AN[13] - 0.1, sabah: AN[16] - 0.1,
       oda: AN[18] - 0.1, orme: AN[20] - 0.1, km: AN[25] - 0.1, anne: AN[27] - 0.1, kusursuz: AN[29] - 0.1, ogle: AN[30] - 0.1,
       agKesit: AN[33] - 0.1, golet: AN[36] - 0.1, mik: AN[39] - 0.1, aksam: AN[45] - 0.1, gece: AN[53] - 0.1, buyuk: AN[56] - 0.1,
-      kagit: AN[59] - 0.3, sirCoz: AN[62] - 0.2, son: AN[69] - 0.2
+      kagit: AN[59] - 0.3, sirCoz: AN[62] - 0.2, kagit2: AN[69] - 0.3, son: AN[70] - 0.2
     };
 
     /* ——— yazılar ——— */
@@ -120,8 +120,10 @@
       ['Bu küçücük canlıların her biri, Onun varlığını ve kudretini gösterir.', 'kagit', 800, 580, AN[61], AN[62] - 0.5],
       ['iki hafta sonra', 'etiket', 800, 96, AN[64], AN[65] + 0.8],
       ['özel bir sıvı', 'etiket', KOZA[0] - 150, KOZA[1] - 90, W.sivi, AN[67] - 0.2, 1],
-      ['yumurtalar', 'etiket', KOZA[0] + 40, KOZA[1] + 190, W.yumurta + 0.3, KES.son - 0.3, 1],
-      ['Gelecek ders: Kendi bedenimiz', 'etiket', 800, 110, AN[69] + 0.2, AN[70] + 0.9]
+      ['yumurtalar', 'etiket', KOZA[0] + 40, KOZA[1] + 190, W.yumurta + 0.3, KES.kagit2 - 0.3, 1],
+      // sır Allahü teâlâya bağlanarak kapanır: boya çekilir, kâğıt ve yazı kalır
+      ['İpek böceğini kozasıyla, kelebeği kapısıyla yaratan, Allahü teâlâdır.', 'kagit', 800, 450, AN[69], AN[70] - 0.5],
+      ['Gelecek ders: Kendi bedenimiz', 'etiket', 800, 110, AN[70] + 0.2, AN[71] + 0.9]
     ].map(function (s) { return { e: yazi(s[0], s[1], s[2], s[3]), kagit: /^kagit/.test(s[1]), bas: s[4], son: s[5], dunya: !!s[6], x: s[2], y: s[3] }; });
     var kagitYazisi = false;
     function yazilar(t) {
@@ -705,7 +707,7 @@
     }
     // 21. Sırrın çözümü: iki hafta sonra koza açılır; kelebek çıkar, kanatlarını açar, yumurtalarını bırakır
     function sirCoz(t, a) {
-      var kam = kameraYolu(t, [[KES.sirCoz, { x: KOZA[0], y: KOZA[1] + 20, z: 2.1 }], [AN[65], { x: KOZA[0] - 20, y: KOZA[1] + 10, z: 2.6 }], [AN[67], { x: KOZA[0] + 10, y: KOZA[1] + 50, z: 2.3 }], [KES.son, { x: KOZA[0] + 20, y: KOZA[1] + 70, z: 2.1 }]]);
+      var kam = kameraYolu(t, [[KES.sirCoz, { x: KOZA[0], y: KOZA[1] + 20, z: 2.1 }], [AN[65], { x: KOZA[0] - 20, y: KOZA[1] + 10, z: 2.6 }], [AN[67], { x: KOZA[0] + 10, y: KOZA[1] + 50, z: 2.3 }], [KES.kagit2, { x: KOZA[0] + 20, y: KOZA[1] + 70, z: 2.1 }]]);
       T.bas(a, kam);
       // iki hafta: ışık hızla gündüz gece döner, sonra şafakta durur
       var hf = ic(t, AN[64], AN[65] - AN[64]), dn = hf > 0 && hf < 1 ? 0.5 - 0.5 * Math.cos(hf * Math.PI * 14) : 0;
@@ -740,7 +742,7 @@
     /* ——— perde: kesmelerde kısa bir an lacivert (kâğıt bölümünde krem) karartma ——— */
     var LACI = [0.07, 0.11, 0.3], KREM = [1, 1, 1];
     var PERDE = [[KES.sirOda], [KES.ates], [KES.soguk], [KES.dil], [KES.sabah], [KES.oda], [KES.orme], [KES.km], [KES.anne], [KES.kusursuz], [KES.ogle], [KES.agKesit],
-      [KES.golet], [KES.mik], [KES.aksam], [KES.gece], [KES.buyuk], [KES.kagit, KREM], [KES.sirCoz, KREM], [KES.son]];
+      [KES.golet], [KES.mik], [KES.aksam], [KES.gece], [KES.buyuk], [KES.kagit, KREM], [KES.sirCoz, KREM], [KES.kagit2, KREM], [KES.son, KREM]];
     var perdeSon = -1;
     function perde(t) {
       var k = 0, renk = LACI;
@@ -756,7 +758,8 @@
       [KES.sirDis, kanca], [KES.sirOda, sirDis], [KES.ates, sirOda], [KES.soguk, atesYakin], [KES.dil, soguk], [KES.sabah, dil], [KES.oda, sabah],
       [KES.orme, oda], [KES.km, orme], [KES.anne, km], [KES.kusursuz, anne], [KES.ogle, kusursuz], [KES.agKesit, ogle], [KES.golet, agKesit],
       [KES.mik, golet], [AN[41] - 0.1, mikroskop], [KES.aksam, terliksi], [KES.gece, aksam], [KES.buyuk, geceSahne], [KES.kagit, buyuk],
-      [KES.sirCoz, function (t, a) { T.bas(a, { x: 800, y: 450, z: 1 }); plaka('kagit', { d: 0 }); }], [KES.son, sirCoz], [Infinity, kapanis]
+      [KES.sirCoz, function (t, a) { T.bas(a, { x: 800, y: 450, z: 1 }); plaka('kagit', { d: 0 }); }], [KES.kagit2, sirCoz],
+      [KES.son, function (t, a) { T.bas(a, { x: 800, y: 450, z: 1 }); plaka('kagit', { d: 0 }); }], [Infinity, kapanis]
     ];
     function ciz(t, a) {
       aNow = a; acik = api.acikDurak(); kullanildi = [];
@@ -771,7 +774,7 @@
       hazir: hazir,
       ciz: ciz,
       // Allahü teâlâdan söz edilen kâğıt bölümünde yazı sahnenin kendisidir; altyazı ve dokunma oyunu yoktur
-      altyazisiz: function (t) { return kagitYazisi || (t >= KES.kagit && t < KES.sirCoz); },
+      altyazisiz: function (t) { return kagitYazisi || (t >= KES.kagit && t < KES.sirCoz) || (t >= KES.kagit2 && t < KES.son); },
       durak: function (id, olay, veri) {
         if (id === 'mikroskop' && olay === 'deger') mv = veri;
         if (id === 'yer') { if (olay === 'dogru') yerde[veri] = true; if (olay === 'ac') yerde = {}; }
