@@ -1159,6 +1159,8 @@
         var serbest = serbestSar || (kk.kim && kk.kim.rol === 'ogretmen');
         var hedef = sinirla(x.t, 0, serbest ? b.sure : enUzak);
         if (acik && !serbest) return;
+        // Sunum kipi: açık durağın içinden sarınca anlatım kendiliğinden sürer
+        var surdur = !!window.DO_SUNUM && !!acik && !kk.tekrar;
         if (acik && !kk.tekrar && hedef <= acik.d.zaman + 0.05) durakBirak(acik.d);
         if (serbest) duraklar.forEach(function (d) {
           if (d.bitti || d.zaman >= hedef - 0.05) return;
@@ -1169,6 +1171,7 @@
         t = hedef; enUzak = Math.max(enUzak, t);
         try { ses.currentTime = t; } catch (e) { /* yüklenmedi */ }
         son = performance.now(); ciz();
+        if (surdur && !acik && !oynuyor && t < b.sure) basla();
       });
       serit.addEventListener('click', function (e) {
         if (acik && !serbestSar) return;
