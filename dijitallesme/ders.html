@@ -46,7 +46,7 @@
 <script src="app/maskot.js"></script>
 <script>
 (function () {
-  var DERSLER = /^(?:akaid-(?:0[1-9]|10)|kuran-0[1-8])$/;
+  var DERSLER = /^(?:akaid-(?:0[1-9]|1[0-8])|kuran-0[1-8])$/;
   var id = new URLSearchParams(location.search).get('d') || '';
   var seri = /^kuran-/.test(id) ? 'elifba' : 'akaid';
   var liste = '/dijitallesme#' + seri;
