@@ -670,9 +670,9 @@
         '</g>' + rozetIkon + '</g></svg>';
       var metin = el('div', { class: 'kapanis-metin' }, [
         el('h1', { text: b.baslik || 'Ders tamamlandı' }),
-        el('p', { class: max ? 'kapanis-puan' : 'kapanis-puan bos', html: puanMetni }),
+        kurumda && (!canliDers || hoca) ? null : el('p', { class: max ? 'kapanis-puan' : 'kapanis-puan bos', html: puanMetni }),
         el('div', { class: 'kapanis-maddeler' }, maddeler.map(function (m) {
-          return el('span', { style: { '--r': m.renk } }, [el('b', { text: m.baslik }), ' ', m.metin]);
+          return el('span', { style: { '--r': m.renk } }, [el('b', { text: m.baslik }), el('span', { text: m.metin })]);
         })),
         b.dua ? el('p', { class: 'kapanis-dua', text: b.dua }) : null,
         dugmeler

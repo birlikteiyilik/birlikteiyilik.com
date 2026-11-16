@@ -80,7 +80,7 @@
       ['Kimine melek okudu, kimine yazılı levhalar indi, kimine melek olmadan işittirildi.', 'kagit', 800, 320, AN[26], KES.sayfa - 0.4],
       ['Bunlar meleğin ya da peygamberin kendi sözü değildir; Allahü teâlânın kelâmıdır.', 'kagit', 800, 580, AN[27], KES.sayfa - 0.4],
       ['Kadir gecesinde başladı, yirmi üç yılda tamamlandı', 'etiket', 800, 96, AN[29] + 0.2, AN[31] - 0.1],
-      ['her yıl bir kez birlikte okurlardı', 'etiket', 800, 96, AN[38], AN[40] - 0.1],
+      ['her Ramazân birlikte okurlardı', 'etiket', 800, 96, AN[38], AN[40] - 0.1],
       ['son yıl iki kez', 'etiket', 800, 96, AN[40], D.nasil - 0.7],
       ['ekmek · süt · peynir · zeytin', 'etiket', 800, 96, AN[43] + 0.4, D.liste - 0.7],
       ['mühür sapasağlam', 'etiket', 800, 96, W.sapa, KES.kagit2 - 0.2],

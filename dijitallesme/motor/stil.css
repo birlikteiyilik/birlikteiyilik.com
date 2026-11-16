@@ -449,7 +449,7 @@ button:disabled { cursor: default; }
 .kapanis-puan { font: 800 28px var(--yazi); margin: 8px 0; color: var(--soluk); }
 .kapanis-puan b { color: var(--yesil); font-size: 34px; }
 .kapanis-maddeler { display: flex; justify-content: center; gap: 14px; margin: 10px 0; }
-.kapanis-maddeler span { background: #fff; border: 3px solid var(--r); border-radius: 999px; padding: 8px 18px; font: 700 20px var(--yazi); }
+.kapanis-maddeler > span { background: #fff; border: 3px solid var(--r); border-radius: 999px; padding: 8px 18px; font: 700 20px var(--yazi); }
 .kapanis-maddeler b { color: var(--r); }
 .kapanis-dua { font: 700 22px var(--yazi); color: var(--yesil); margin: 4px 0 0; }
 .kapanis-puan.bos { font-size: 20px; font-weight: 700; }
@@ -805,3 +805,11 @@ button:disabled { cursor: default; }
 .lms-kapandi-dugmeler a, .lms-kapandi-dugmeler button { display: inline-flex; align-items: center; min-height: 46px; padding: 0 18px; border-radius: 14px; border: 2px solid #d9cfbd; background: #fff; color: var(--lacivert); font: 800 16px var(--yazi); text-decoration: none; cursor: pointer; }
 .lms-kapandi-dugmeler .lms-kapandi-ana { border-color: var(--lacivert); background: var(--lacivert); color: #fff; }
 .lms-kapandi-dugmeler :focus-visible { outline: 3px solid var(--altin); outline-offset: 2px; }
+
+/* Gezinti de sahneden bağımsız dokunma boyutunu korur. */
+.kompakt-kontrol .hud-alt { left: 0; bottom: 0; right: auto; width: var(--kontrol-genislik); padding: 6px; transform: scale(var(--sahne-ters-olcek)); transform-origin: left bottom; }
+.kompakt-kontrol .hud-alt :is(.dug-yuvarlak,.dug-kucuk) { min-width: 44px; width: 44px; height: 44px; font-size: 16px; }
+.kompakt-kontrol .hud-alt .hud-orta { padding: 0; gap: 2px; }
+.slayt-tekrar { left: auto; right: 24px; top: auto; bottom: 112px; }
+.kompakt-kontrol .slayt-tekrar { bottom: calc(64px * var(--sahne-ters-olcek)); }
+.kapanis-maddeler > span > b { display: block; margin-bottom: 8px; }

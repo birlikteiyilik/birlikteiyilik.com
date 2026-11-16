@@ -47,19 +47,21 @@
 
     /* ——— anlatıcıya bağlı anlar ——— */
     var D = {}; ['karanlik', 'kandil', 'ses', 'yol', 'bildi', 'zor'].forEach(function (id) { D[id] = api.durak(id); });
-    var AN = {}; for (var n0 = 0; n0 <= 72; n0++) AN[n0] = C(n0);
+    var AN = {}; for (var n0 = 0; n0 <= 78; n0++) AN[n0] = C(n0);
     var W = {
       doldurdun: kel('doldurdun'), sekiz: kel('sekiz'), karinca1: kel('karınca', 1), isiga: kel('ışığa'), mutfak: kel('mutfaklar'),
       ahir: kel('ahırlar'), kuyu: kel('kuyular'), yuvarlanan: kel('yuvarlanan'), fitil: kel('fitil', 1), damliyor: kel('damlıyor'),
       baca: kel('bacasından'), yarasa: kel('yarasa'), yanki: kel('yankısıyla'), yaprak: kel('yaprak', 1), sayamazsin: kel('sayamazsın'),
       peri: kel('peri'), yuz: kel('yüz'), sabaha: kel('sabaha'), bilen: kel('bilen'), dua: kel('dua'), zor1: kel('zor', 1),
-      sirri: kel('sırrı'), kandilVar: kel('kandil', 3)
+      sirri: kel('sırrı'), kandilVar: kel('kandil', 3),
+      basir: kel('Basîrdir:'), goren: kel('gören'), semi: kel('Semîdir:'), isiten: kel('işiten'), alim: kel('Âlimdir:'),
+      kadir: kel('Kâdirdir:'), yeten: kel('yeten')
     };
     // bölümler arası kesmeler (cümle başlarına düşer). Durak 3'ten sonraki cümlenin başı kayıtta durakla çakıştığı için kesme duraktan sonradır.
     var KES = {
       sir: AN[8] - 0.1, dip: AN[11] - 0.1, oda: AN[16] - 0.1, kesit2: AN[19] - 0.1, kandil: AN[23] - 0.1, karinca: D.ses + 0.2,
-      bag: AN[42] - 0.1, peri: AN[46] - 0.1, sabah: AN[48] - 0.1, kagit: AN[51] - 0.3, gece: AN[60] - 0.1, sirCoz: AN[66] - 0.1,
-      kagit2: AN[69] - 0.3, son: AN[71] - 0.2
+      bag: AN[44] - 0.1, peri: AN[48] - 0.1, sabah: AN[50] - 0.1, kagit: AN[53] - 0.3, gece: AN[66] - 0.1, sirCoz: AN[72] - 0.1,
+      kagit2: AN[75] - 0.3, son: AN[77] - 0.2
     };
 
     /* ——— yazılar ——— */
@@ -75,6 +77,7 @@
     }
     var PG = 1696, PH = 954, K = PG / 1672;
     function P(px, py) { return [800 + (px - 836) * K, 450 + (py - 470.5) * K]; }   // ham görsel pikseli → sahne noktası
+    var ALTIN = '#a8741c';
     var AKIS = [
       ['kimse görmedi', 'etiket', 800, 96, AN[5], AN[7] + 0.4],
       ['sekiz kat aşağı', 'etiket', 800, 96, W.sekiz - 0.2, KES.dip - 0.2],
@@ -85,23 +88,35 @@
       ['fitil', 'etiket', 800, 96, W.fitil - 0.2, D.kandil - 0.7],
       ['kulak her sesi duymaz', 'etiket', 800, 96, AN[28], AN[30] - 0.1],
       ['yarasanın sesi: duyamayız', 'etiket', 800, 96, W.yarasa + 0.4, AN[36] - 0.1],
-      ['ancak bir yere kadar', 'etiket', 800, 96, AN[42], AN[43] - 0.1],
+      ['ancak bir yere kadar', 'etiket', 800, 96, AN[44], AN[45] - 0.1],
       ['yüz kişi de oynatamaz', 'etiket', 800, 96, W.yuz - 0.2, KES.sabah - 0.2],
-      ['Allahü teâlâ her şeyi görür, her şeyi işitir.', 'kagit', 800, 330, AN[51], AN[54] - 0.4],
-      ['Onun görmesi bizim görmemize benzemez. Göze de ışığa da muhtaç değildir.', 'kagit', 800, 560, AN[52], AN[54] - 0.4],
-      ['Her zaman, her şeyi görür; gece de gündüz de.', 'kagit', 800, 330, AN[54], AN[56] - 0.4],
-      ['İşitmesi de kulağa muhtaç değildir.', 'kagit', 800, 540, AN[55], AN[56] - 0.4],
-      ['Allahü teâlâ her şeyi bilir.', 'kagit', 800, 300, AN[56], AN[58] - 0.4],
-      ['Gizliyi de açığı da bilir; asmadaki yaprakların sayısını da, en küçük zerreyi de.', 'kagit', 800, 520, AN[57], AN[58] - 0.4],
-      ['Gücü her şeye yeter.', 'kagit', 800, 360, AN[58], KES.gece - 0.4],
-      ['Onun gücü sonsuzdur.', 'kagit', 800, 520, AN[59], KES.gece - 0.4],
-      ['kimse görmese de iyilik', 'etiket', 800, 96, AN[60], AN[61] - 0.1],
-      ['sessiz dua da işitilir', 'etiket', 800, 96, AN[61], AN[62] - 0.1],
-      ['zor işte: yardım iste, çalış', 'etiket', 800, 96, AN[62], D.zor - 0.7],
-      ['Ama Allahü teâlâ onu görür, ayak sesini işitir.', 'kagit', 800, 330, AN[69], KES.son - 0.4],
-      ['Karanlıkta koku izini takip edip yuvasını bulmayı da ona O vermiştir.', 'kagit', 800, 540, AN[70], KES.son - 0.4],
-      ['Gelecek ders: Peygamberler kimdir?', 'etiket', 800, 110, AN[71] + 0.2, AN[72] + 0.9]
-    ].map(function (s) { return { e: yazi(s[0], s[1], s[2], s[3]), kagit: /^kagit/.test(s[1]), bas: s[4], son: s[5] }; });
+      ['Allahü teâlâ her şeyi görür, her şeyi işitir.', 'kagit', 800, 330, AN[53], AN[56] - 0.4],
+      ['Onun görmesi bizim görmemize benzemez. Göze de ışığa da muhtaç değildir.', 'kagit', 800, 560, AN[54], AN[56] - 0.4],
+      ['Her zaman, her şeyi görür; gece de gündüz de.', 'kagit', 800, 300, AN[56], AN[58] - 0.4],
+      ['Basîr', 'kagit iri', 800, 470, W.basir, AN[58] - 0.4, 'altin'],
+      ['Basîr: her şeyi gören.', 'kagit', 800, 600, W.goren, AN[58] - 0.4],
+      ['İşitmesi de kulağa muhtaç değildir.', 'kagit', 800, 300, AN[58], AN[60] - 0.4],
+      ['Semî', 'kagit iri', 800, 470, W.semi, AN[60] - 0.4, 'altin'],
+      ['Semî: her şeyi işiten.', 'kagit', 800, 600, W.isiten, AN[60] - 0.4],
+      ['Allahü teâlâ her şeyi bilir.', 'kagit', 800, 300, AN[60], AN[63] - 0.4],
+      ['Gizliyi de açığı da bilir; asmadaki yaprakların sayısını da, en küçük zerreyi de.', 'kagit', 800, 520, AN[61], AN[62] - 0.4],
+      ['Âlim', 'kagit iri', 800, 470, W.alim, AN[63] - 0.4, 'altin'],
+      ['Âlim: her şeyi bilen.', 'kagit', 800, 600, W.bilen, AN[63] - 0.4],
+      ['Gücü her şeye yeter.', 'kagit', 800, 300, AN[63], KES.gece - 0.4],
+      ['Onun gücü sonsuzdur.', 'kagit', 800, 520, AN[64], AN[65] - 0.4],
+      ['Kâdir', 'kagit iri', 800, 470, W.kadir, KES.gece - 0.4, 'altin'],
+      ['Kâdir: her şeye gücü yeten.', 'kagit', 800, 600, W.yeten, KES.gece - 0.4],
+      ['kimse görmese de iyilik', 'etiket', 800, 96, AN[66], AN[67] - 0.1],
+      ['sessiz dua da işitilir', 'etiket', 800, 96, AN[67], AN[68] - 0.1],
+      ['zor işte: yardım iste, çalış', 'etiket', 800, 96, AN[68], D.zor - 0.7],
+      ['Ama Allahü teâlâ onu görür, ayak sesini işitir.', 'kagit', 800, 330, AN[75], KES.son - 0.4],
+      ['Karanlıkta koku izini takip edip yuvasını bulmayı da ona O vermiştir.', 'kagit', 800, 540, AN[76], KES.son - 0.4],
+      ['Gelecek ders: Peygamberler kimdir?', 'etiket', 800, 110, AN[77] + 0.2, AN[78] + 0.9]
+    ].map(function (s) {
+      var e = yazi(s[0], s[1], s[2], s[3]);
+      if (s[6] === 'altin') e.style.color = ALTIN;     // Allahü teâlânın isimleri kâğıtta altın harfle durur; dokunulmaz, sürüklenmez
+      return { e: e, kagit: /^kagit/.test(s[1]), bas: s[4], son: s[5] };
+    });
     var kagitYazisi = false;
     function yazilar(t) {
       kagitYazisi = false;
@@ -263,9 +278,19 @@
     /* ——— 4. Yeraltı odası: kandil (durak 2), sesler, karınca ve yol bulan canlılar ——— */
     var KND = { x: 800, y: P(0, 668)[1], g: 260 }, KND_H = 260 * 161 / 420;
     var FITIL = [KND.x - 0.5 * KND.g + 0.037 * KND.g, KND.y - KND_H + 0.137 * KND_H];
-    var DAMLA = P(1500, 712), BACA = P(1385, 190), TAVAN_Y = P(0, 300)[1];
+    var DAMLA = P(1500, 712), BACA = P(1385, 190), TAVAN_Y = P(0, 300)[1], KAPI_OD = P(452, 512), KARINCA_Y = P(0, 700)[1];
     function alevBoy(v) { return v <= 1 ? 0 : 10 + v * 1.4; }
     var NF = { yol: 1.4 };
+    /* Kandil durağında alevin sesi (döngü): değerle birlikte hafifçe yükselir; alev söndüğünde kısa bir üfleme duyulur ve ses kesilir */
+    var KSES = { h: null, sondu: false };
+    function kandilKazanc(v) { return 0.3 + 0.7 * v / 100; }      // anlatımdaki karışımla aynı eğri (50 → 0,65)
+    function kandilSes(v) {
+      if (!KSES.h || KSES.h.bitti()) KSES.h = api.sfx('ses/efekt-kandil.m4a', { dongu: true, ses: v <= 1 ? 0 : kandilKazanc(v) });
+      if (v <= 1) {
+        if (!KSES.sondu) { KSES.sondu = true; KSES.h.ses(0); api.sfx('ses/efekt-kandil-sonme.m4a', { ses: 0.85 }); }
+      } else if (v > 4 && KSES.sondu) KSES.sondu = false;
+      if (!KSES.sondu) KSES.h.ses(kandilKazanc(v));
+    }
     function kandilCiz(t, a, v, oKaranlik) {
       T.ciz('kandil', { x: KND.x, y: KND.y, g: KND.g, ax: 0.5, ay: 1, d: 1 });
       var h = alevBoy(v);
@@ -284,27 +309,51 @@
       var v = acik || t >= D.kandil ? kv : 50 + 30 * pencere(t, AN[25], AN[25] + 1.4, 0.5, 0.5) - 26 * pencere(t, AN[25] + 1.5, AN[26], 0.4, 0.5);
       kandilCiz(t, a, v, 0.97);
     }
+    /* Durak 3'te şıklara dokunmak sesi çaldırır; sahnede o kaynak yanar. Karınca şıkkı sessizdir: ses efekti ve halka yok. */
+    var SES_DOSYA = ['ses/efekt-damla.m4a', 'ses/efekt-guvercin.m4a', 'ses/efekt-tas-kapi.m4a', null];
+    var SESC = { i: -1, a0: -9, h: null };
+    function sesSec(i) {
+      if (SESC.h) SESC.h.dur();
+      SESC.i = i; SESC.a0 = aNow; SESC.h = SES_DOSYA[i] ? api.sfx(SES_DOSYA[i], { ses: 1 }) : null;
+    }
+    var TD = W.damliyor + 0.15, TD2 = TD + 2.8, DUS = 0.6;      // damlanın taşa değdiği anlar: ses efektiyle aynı saatte
+    function halkaIki(i0, x, y, f, o, yassi) {                   // tek bir halka: f 0-1 yayılma
+      var e = ekranR(x, y, Math.max(1, f * 260)); goster(dalgalar[i0], elips(e.x, e.y, e.r, e.r * yassi), o * (1 - f) * (1 - f)); kullan(dalgalar[i0]);
+    }
     function sesler(t, a) {
       var acik = api.acikDurak() === 'ses';
       T.bas(a, { x: 800, y: 450, z: kr(1.06, 1, tw(t, D.kandil, 4, Y.sin)) });
       plaka('yeralti-oda', { d: 1 });
-      // damla taşa düşer: halka halka yankı
-      var df = (a * 0.6) % 1, dx = DAMLA[0], dy0 = DAMLA[1] - 190, dyb = dy0 + df * 190;
-      if (df < 0.92) { var de = T.ekran(dx, dyb, 1); T.iz(de.x, de.y, 4, 7, 0, 0.8, 0.92, 1, 0.9); T.izBitir(); }
-      var dsO = pencere(t, W.damliyor - 0.2, acik ? 1e9 : AN[32], 0.4, 0.5);
-      dalga(0, 3, DAMLA[0], DAMLA[1], a, 0.6, 260, 0.75 * dsO, 0.35);
+      // damla taşa düşer: halka halka yankı. Anlatımda iki damla, ses efektiyle aynı anda değer; durakta kendi hâlinde sürer
+      var dy0 = DAMLA[1] - 190, dx = DAMLA[0], dyb = -1;
+      if (acik) { var df = (a * 0.6) % 1; if (df < 0.92) dyb = dy0 + df * df * 190; }
+      else [TD, TD2].forEach(function (ti) { var u = (t - (ti - DUS)) / DUS; if (u >= 0 && u < 1) dyb = dy0 + u * u * 190; });
+      if (dyb >= 0) { var de = T.ekran(dx, dyb, 1); T.iz(de.x, de.y, 4, 7, 0, 0.8, 0.92, 1, 0.9); T.izBitir(); }
+      if (!acik) [TD, TD2].forEach(function (ti) {
+        var u = (t - ti) / 1.7;
+        if (u >= 0 && u < 1) for (var i = 0; i < 3; i++) { var f = u - i * 0.16; if (f >= 0 && f < 1) halkaIki(i, DAMLA[0], DAMLA[1], f, 0.75, 0.35); }
+      });
       // hava bacasından güvercin sesi iner
-      var bO = pencere(t, W.baca - 0.2, acik ? 1e9 : AN[33], 0.4, 0.5);
+      var bO = pencere(t, W.baca - 0.2, AN[33], 0.4, 0.5);
       dalga(3, 3, BACA[0], BACA[1] + 40, a, 0.45, 300, 0.7 * bO, 0.5);
       // yarasa tavanda süzülür; ince sesi kulağa varmadan söner
-      var yO = pencere(t, W.yarasa - 0.3, acik ? 1e9 : AN[37], 0.5, 0.5), yx = 700 + Math.sin(a * 0.7) * 200, yy = TAVAN_Y + 60 + Math.sin(a * 1.9) * 18;
+      var yO = pencere(t, W.yarasa - 0.3, AN[37], 0.5, 0.5), yx = 700 + Math.sin(a * 0.7) * 200, yy = TAVAN_Y + 60 + Math.sin(a * 1.9) * 18;
       if (yO > 0.01) {
         isima(yx, yy, 130, [1, 0.8, 0.5], 0.12 * yO);   // kandilin ışığı yarasaya vurur
         T.ciz('yarasa', { x: yx, y: yy, g: 250, h: 77 * (0.7 + 0.3 * Math.abs(Math.sin(a * 9))), d: 1, o: yO });
         dalga(6, 3, yx, yy, a, 1.1, 150, 0.9 * yO * tw(t, W.yanki - 1.4, 0.4), 0);
       }
+      // durak açıkken karınca yerde yürür: yanı başımızda, ama ayak sesi yok
+      if (acik) { var kx = 560 + ((a * 16) % 480); T.ciz('karinca', { x: kx, y: KARINCA_Y, g: 96, d: 1, r: Math.sin(a * 4) * 3 }); isima(kx, KARINCA_Y, 60, [1, 0.85, 0.5], 0.1); }
+      // dokunulan şıkkın kaynağı yanar (karınca: hiçbir şey olmaz, ses de yoktur)
+      var su = (aNow - SESC.a0) / 2.2;
+      if (acik && SESC.i >= 0 && su >= 0 && su < 1) {
+        var kay = [DAMLA, [BACA[0], BACA[1] + 90], KAPI_OD][SESC.i];
+        if (kay) { for (var j = 0; j < 3; j++) { var ff = su * 1.2 - j * 0.2; if (ff >= 0 && ff < 1) halkaIki(j, kay[0], kay[1], ff, 0.9, SESC.i === 0 ? 0.35 : 0.8); } }
+      }
       kandilCiz(t, a, 50, 0.95);
     }
+    var MED = [AN[41], kel('karınca', 2), AN[42], kel('kedi')];   // yarasa, karınca, baykuş, kedi: anlatıcı hangisini söylüyorsa o belirir
     function karincaSahne(t, a) {
       var es = api.acikDurak() === 'yol';
       T.bas(a, { x: 800, y: 470, z: kr(1.12, 1.04, tw(t, KES.karinca, 5, Y.sin)) });
@@ -314,7 +363,7 @@
       kandilCiz(t, a, 50, 0.93);
       // karanlıkta yol bulan dört canlı; eşleştirme açıkken resimler kartlarda, madalyonlar çekilir
       [['yarasa', 380], ['karinca', 660], ['baykus', 940], ['kedi', 1220]].forEach(function (m, i) {
-        var o = es ? 0 : pencere(t, AN[39] + i * 0.3, D.yol + 1e-3, 0.5, 0.01) * (t < D.yol ? 1 : 0), p = [m[1], 320];
+        var o = es ? 0 : pencere(t, MED[i] - 0.25, D.yol + 1e-3, 0.5, 0.01) * (t < D.yol ? 1 : 0), p = [m[1], 320];
         madalyonCiz(i, p[0], p[1], 104 * kr(0.85, 1, o), o, function (oo) {
           if (m[0] === 'baykus') T.ciz('baykus', { x: p[0], y: p[1], h: 150, d: 1, o: oo });
           else T.ciz(m[0], { x: p[0], y: p[1], g: m[0] === 'kedi' ? 170 : m[0] === 'yarasa' ? 180 : 130, d: 1, o: oo });
@@ -346,12 +395,15 @@
     }
 
     /* ——— 7. Sabah vadisi: güvercinler dolu kaptan su içer (durak 5) ——— */
+    var GS = AN[51] + 0.3;                                         // güvercinin su içtiği ses efektinin başlangıcı
+    function sinPuls(t, a0, a1) { return t >= a0 && t < a1 ? Math.sin(Math.PI * (t - a0) / (a1 - a0)) : 0; }
     function sabah(t, a) {
       T.bas(a, kameraYolu(t, [[KES.sabah, { x: 900, y: 470, z: 1.15 }], [D.bildi - 0.4, { x: 800, y: 450, z: 1 }]]));
       plaka('vadi-sabah', { d: 1, parilti: 0.55, ruzgar: 0.08 });
       isima(1580, 280, 300, [1, 0.8, 0.5], 0.14);
       // güvercin kabın kenarında: başını eğip su içer, kaldırır
-      var gag = Math.max(0, Math.sin(a * 1.8));
+      var acik = api.acikDurak() === 'bildi';
+      var gag = acik ? Math.max(0, Math.sin(a * 1.8)) : Math.max(sinPuls(t, GS + 0.2, GS + 0.7), sinPuls(t, GS + 1.7, GS + 2.2));
       T.ciz('guvercin', { x: GUV[0], y: GUV[1] + 6, h: 78, ax: 0.5, ay: 1, d: 1, r: 18 * gag });
       dalga(0, 2, KAB[0] + 120, KAB[1], a, 0.4, 90, 0.5 * gag, 0.12);
     }
@@ -424,8 +476,9 @@
       // Allahü teâlâdan söz edilen kâğıt bölümlerinde yazı sahnenin kendisidir; altyazı ve dokunma oyunu yoktur
       altyazisiz: function (t) { return kagitYazisi || (t >= KES.kagit && t < KES.gece) || (t >= KES.kagit2 && t < KES.son); },
       durak: function (id, olay, veri) {
-        if (id === 'kandil' && olay === 'deger') { kv = veri; kvA = aNow; }
-        if (id === 'kandil' && olay === 'ac') { kv = 50; }
+        if (id === 'kandil' && olay === 'deger') { kv = veri; kvA = aNow; kandilSes(veri); }
+        if (id === 'kandil' && olay === 'ac') { kv = 50; KSES.sondu = false; KSES.h = null; kandilSes(50); }
+        if (id === 'ses' && olay === 'sec') sesSec(veri);
       },
       // Kandilin alevi: çocuk alevin ucunu tutup yukarı aşağı çeker (yukarı: fitil uzar, alev büyür)
       tutamac: function (id, deger) { return { x: FITIL[0], y: FITIL[1] - alevBoy(Math.max(deger, 8)) * 0.75, r: 80, ust: false }; },

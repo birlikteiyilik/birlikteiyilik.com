@@ -19,7 +19,7 @@
   };
   var gorulen = {}, gorulenSira = [], nabiz;   // aynı mesaj iki taşıyıcıdan gelirse bir kez işlenir
   function kurumOturumu() { return DO.LmsDers && DO.LmsDers.aktif && DO.LmsDers.session; }
-  var ogrenciOlaylari = ['merhaba', 'nabiz', 'tanit', 'ayrildi', 'konum', 'puan', 'el', 'cevap', 'ifade', 'bitti', 'yansi', 'yansiGunluk', 'durumIste', 'tahta-istek', 'kalem-istek', 'duraklatIste', 'okuma-istek', 'kayit-hazir', 'anlama', 'akis-cevap', 'akis-istek'];
+  var ogrenciOlaylari = ['merhaba', 'nabiz', 'tanit', 'ayrildi', 'konum', 'puan', 'el', 'cevap', 'ifade', 'bitti', 'yansi', 'yansiGunluk', 'durumIste', 'tahta-istek', 'kalem-istek', 'duraklatIste', 'okuma-istek', 'kayit-hazir', 'anlama', 'akis-cevap', 'akis-istek', 'ders-hazir'];
   var hizlar = Object.create(null);
   function kurumMesajiGecerli(m) {
     var v = m.veri, O = DO.Oynatici, sira = O && O.sira;
@@ -33,6 +33,9 @@
     if (m.tur === 'duraklatIste' && typeof v.deger !== 'boolean') return false;
     if (m.tur === 'akis-cevap' && ['warmup', 'exit', 'self'].indexOf(v.kind) < 0) return false;
     if (m.tur === 'akis' && (['warmup', 'main', 'closing'].indexOf(v.stage) < 0 || !Number.isSafeInteger(v.stageRevision))) return false;
+    // Öğrencinin ders yükleme durumu: blok kimliği, hazır olup olmadığı ve 0..1 ilerleme
+    if (m.tur === 'ders-hazir' && (typeof v.hazir !== 'boolean' || typeof v.oran !== 'number' || !isFinite(v.oran) || v.oran < 0 || v.oran > 1 ||
+        typeof v.blok !== 'string' || v.blok.length > 100 || /^(?:__proto__|constructor|prototype)$/.test(v.blok) || sira && !sira.some(function (b) { return b.id === v.blok; }))) return false;
     if (['cevap', 'bitti', 'yansi', 'yansiGunluk', 'durumIste', 'eylem', 'blokDurum', 'yansiIste'].indexOf(m.tur) >= 0 &&
         (typeof v.blok !== 'string' || sira && !sira.some(function (b) { return b.id === v.blok; }) || /^(?:__proto__|constructor|prototype)$/.test(v.blok))) return false;
     if (['yansi', 'eylem'].indexOf(m.tur) >= 0 && (typeof v.ad !== 'string' || v.ad.length > 100 || /^(?:__proto__|constructor|prototype)$/.test(v.ad))) return false;

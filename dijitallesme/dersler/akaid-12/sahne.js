@@ -1,7 +1,7 @@
 /* Akaid 12 · İlâhî Kitaplar — sahne: "Yaşayan Minyatür", Amasya; Yeşilırmak kıyısında bir gün sabahtan akşama.
    Ders tek sahnede dönmez: sabah ırmağında kamera kıyıdaki ahşap evlerden birine yaklaşır; evin üst odasında kitaplığın
    en üst rafında işlemeli bir kese durur, sır onun yeridir (durak 1); Allahü teâlâdan söz edilen bölümde boya çekilir,
-   kâğıt ve yazı kalır; kütüphane salonunda uzun masaya dört peygambere inen sayfalar (suhuf) dizilir, dört kemer dört
+   kâğıt ve yazı kalır; kütüphane salonunda uzun masaya dört peygambere inen suhuf (küçük kitaplar) dizilir, dört kemer dört
    büyük kitabı taşır, çocuk kemerlere dokunur (durak 2), Zebûr sorulur (durak 3); eski bir mektep sınıfında geçen yılın
    ve bu yılın ders programı (durak 4); salona dönülür, önceki kitapların emirleri dördüncü kemerde toplanır; gece masasında
    boş kâğıtlar boş kalır, okuma bitince ne yapılır (durak 5); oda: kese en üst rafta; akşam ırmağında büyük soru
@@ -77,7 +77,7 @@
       ['Hepsi Allahü teâlânın kelâmıdır. Hepsi doğrudur.', 'kagit', 800, 650, AN[17], AN[19] - 0.4],
       ['Kitaplara inanmak, îmânın altı şartından biridir.', 'kagit iri', 800, 450, AN[19], KES.salon - 0.4],
       ['bize bildirilen kitaplar: 104', 'etiket', 800, 96, AN[20], AN[22] - 0.1],
-      ['suhuf: sayfalar', 'etiket', 800, 96, AN[22], AN[24] - 0.1],
+      ['suhuf: küçük kitaplar', 'etiket', 800, 96, AN[22], AN[24] - 0.1],
       ['10 + 50 + 30 + 10 = 100', 'etiket', 800, 96, AN[24], AN[26] - 0.1],
       ['4 büyük kitap', 'etiket', 800, 96, AN[26], D.kemer - 0.7],
       ['önceki kitaplardaki emirleri de içinde toplar', 'etiket', 800, 96, AN[40], AN[41] - 0.1],
@@ -105,13 +105,13 @@
     var KEMER = KITAP.map(function (k, i) { return { kitap: yazi(k, 'etiket', AX[i], KITAP_Y), ad: yazi(PEYG[i], 'etiket', AX[i], AD_Y) }; });
     var dokunulan = {};
 
-    // Salon masası: dört peygambere inen sayfalar (suhuf); yığın, sayının beşte biri kadar yaprakla gösterilir
+    // Salon masası: dört peygambere inen suhuf (küçük kitaplar); yığın, sayının beşte biri kadar yaprakla gösterilir
     var SX = [429, 682, 936, 1190], TABAN = 744;
     var SUHUF = [
-      { ad: 'Âdem aleyhisselâm', sayi: '10 sayfa', yaprak: 2, w: 'adem', vur: 'on1' },
-      { ad: 'Şît aleyhisselâm', sayi: '50 sayfa', yaprak: 10, w: 'sit', vur: 'elli' },
-      { ad: 'İdrîs aleyhisselâm', sayi: '30 sayfa', yaprak: 6, w: 'idris', vur: 'otuz' },
-      { ad: 'İbrâhîm aleyhisselâm', sayi: '10 sayfa', yaprak: 2, w: 'ibrahim', vur: 'on2' }
+      { ad: 'Âdem aleyhisselâm', sayi: '10 suhuf', yaprak: 2, w: 'adem', vur: 'on1' },
+      { ad: 'Şît aleyhisselâm', sayi: '50 suhuf', yaprak: 10, w: 'sit', vur: 'elli' },
+      { ad: 'İdrîs aleyhisselâm', sayi: '30 suhuf', yaprak: 6, w: 'idris', vur: 'otuz' },
+      { ad: 'İbrâhîm aleyhisselâm', sayi: '10 suhuf', yaprak: 2, w: 'ibrahim', vur: 'on2' }
     ];
     // adlar zikzak durur: yan yana uzun adlar birbirine değmez
     function suhufY(i) { return TABAN - 205 - (i % 2) * 64; }

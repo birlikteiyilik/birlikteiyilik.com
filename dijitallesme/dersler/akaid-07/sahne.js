@@ -1,10 +1,11 @@
 /* Akaid 7 · Rahmân ve Rahîm — sahne: "Yaşayan Minyatür", Kars'ta Çıldır Gölü kıyısında karlı bir köy; bir kış günü.
    Üç katman sırayla gelir: evin içi ve köy (gün ilerler), karın altı (kesit sayfaları), yazın yaylası (sütün yolu).
    Ders tek sahnede dönmez: kış sabahı odada istemeden gelenler sayılır (ışık, süt); köyde sır kurulur, iki boş altın çerçeve;
-   odada nimet sayma (durak 1); köyün her yerinde altın kıvılcımlar; Allahü teâlâdan ve isimlerinden söz edilen bölümde boya
+   odada saklı altı iyiliği bulma (durak 1: altısına da dokunulur, sayaç n / 6); köyün her yerinde altın kıvılcımlar; Allahü teâlâdan ve isimlerinden söz edilen bölümde boya
    çekilir, kâğıt ve yazı kalır; kar yağan köy ve üç soru madalyonu; göl kesitinde buz parçası yüzer, balıklar dipte yüzer;
-   tarla kesitinde kar örtüsünün üstü soğuk, altı sıcak; ormanda sincap; inde uyuyan ayı (durak 2, eşleştirme); köyde dört
-   madalyon; sofrada süt bardağı; ahırda ot yiyen inek; yazın yaylası ve yağmur; bulut, ot ve inekten sütün yolu (durak 3);
+   tarla kesitinde kar örtüsünün üstü soğuk, altı sıcak; ormanda sincap, mantarları dallara asar (mantarlar altın halkada); inde uyuyan
+   ayı güzün yağ biriktirmiştir (durak 2, eşleştirme); köyde dört madalyon; sofrada süt bardağı; ahırda ot yiyen inek; yazın yaylası
+   ve yağmur; bulut, ot ve inekten sütün yolu (durak 3: resimler sahnede tutulup yerlerine sürüklenir);
    ahırda buzağısını yalayan inek (durak 4); yine kâğıt; karda üşüyen kedi (durak 5: doğru cevapta su ve yemek konur);
    akşam odası; besmele kâğıtta yazılır, içindeki iki isim altınla belirir; ders baharda biter.
    Her olay anlatıcının kelimesine bağlıdır (t); a ortam saatidir.
@@ -20,7 +21,7 @@
   DO.KodDersSahne['akaid-07'] = function (api) {
     var T = api.tuval, kel = api.kelime, C = api.cumle, el = DO.el, svg = api.svg, E2 = api.ciz.ogeler;
     var GORSELLER = ['oda', 'oda-aksam', 'koy', 'bahar', 'gol-kesit', 'orman', 'in', 'tarla', 'yayla', 'ahir', 'kapi', 'kagit',
-      'sut-gugumu', 'sut-bardagi', 'yun-corap', 'balik', 'sincap', 'ayi', 'filiz', 'inek', 'buzagi', 'kedi', 'kap', 'kaz', 'ot-yigini', 'bulut'];
+      'sut-bardagi', 'yun-corap', 'balik', 'sincap', 'ayi', 'filiz', 'inek', 'buzagi', 'kedi', 'kap', 'kaz', 'ot-yigini', 'bulut'];
     var liste = {};
     GORSELLER.forEach(function (a) { liste[a] = api.yol('gorsel/' + a + '.webp'); });
     var hazir = T.yukle(liste, api.yukleniyor);
@@ -51,25 +52,25 @@
 
     /* ——— anlatıcıya bağlı anlar ——— */
     var D = {}; ['nimet', 'kis', 'sut', 'veren', 'kedi'].forEach(function (id) { D[id] = api.durak(id); });
-    var AN = {}; for (var n0 = 0; n0 <= 85; n0++) AN[n0] = C(n0);
+    var AN = {}; for (var n0 = 0; n0 <= 91; n0++) AN[n0] = C(n0);
     var W = {
       isik: kel('ışık'), gunes: kel("Güneş'e"), sut1: kel('süt', 1), ver: kel('ver'), liste: kel('liste'), nerede: kel('nerede'),
       yuva: kel('yuva'), aile: kel('aile'), saymaya: kel('saymaya'), bitmez: kel('bitmez'),
-      rahman1: kel('rahmân', 1), rahim1: kel('rahîm', 1), herkese: kel('herkese'),
+      rahman1: kel('rahmân', 1), rahim1: kel('rahîm', 1), herkese: kel('herkese'), alti: kel('altı', 1), ahiret: kel('âhıret', 1),
       kar: kel('kar', 1), balik: kel('balık', 1), sincap1: kel('sincap', 1), ayi1: kel('ayı', 1), dondu: kel('dondu'),
       hafif: kel('hafiftir'), batmaz: kel('batmaz'), kapak: kel('kapak'), yuzer: kel('yüzer'), sardi: kel('sardı'),
       sincap2: kel('sincap', 2), ayi2: kel('ayı', 2), kuru: kel('kuru'), yaylada: kel('yaylada'), yagmur1: kel('yağmur', 1),
       inek2: kel('inek', 2), ot4: kel('ot', 4), yagmur2: kel('yağmur', 2), hicbiri: kel('hiçbiri'), sirayla: kel('sırayla'),
       sebeptir: kel('sebeptir'), yaliyor: kel('yalıyor'), kalkmaya: kel('kalkmaya'), sefkati: kel('şefkati', 1),
       kedi: kel('kedi'), usuyor: kel('üşüyor'), yemege: kel('yemeğe'), derse: kel('derse'), ise: kel('işe'), besmele: kel('besmele'),
-      rahman3: kel('rahmân', 3), rahim2: kel('rahîm', 2), lokmadan: kel('lokmadan')
+      rahman3: kel('rahmân', 3), rahim2: kel('rahîm', 3), lokmadan: kel('lokmadan'), mantar: kel('mantarları'), yag: kel('yağ', 1)
     };
     // bölümler arası kesmeler (cümle başlarına düşer)
     var KES = {
-      koy: AN[10] - 0.1, oda2: AN[16] - 0.1, koy2: AN[20] - 0.1, kagit: AN[24] - 0.3, kis: AN[33] - 0.1, gol: AN[36] - 0.1,
-      tarla: AN[39] - 0.1, orman: AN[41] - 0.1, inn: AN[42] - 0.1, azik: AN[43] - 0.1, sofra: AN[44] - 0.1, ahir1: AN[46] - 0.1,
-      yayla: AN[49] - 0.1, sebep: AN[52] - 0.1, ahir2: AN[59] - 0.1, kagit2: AN[64] - 0.3, kapi: AN[71] - 0.1, aksam: AN[76] - 0.1,
-      kagit3: AN[82] - 0.3, son: AN[84] - 0.2
+      koy: AN[10] - 0.1, oda2: AN[16] - 0.1, koy2: AN[22] - 0.1, kagit: AN[26] - 0.3, kis: AN[37] - 0.1, gol: AN[40] - 0.1,
+      tarla: AN[43] - 0.1, orman: AN[45] - 0.1, inn: AN[47] - 0.1, azik: AN[49] - 0.1, sofra: AN[50] - 0.1, ahir1: AN[52] - 0.1,
+      yayla: AN[55] - 0.1, sebep: AN[58] - 0.1, ahir2: AN[65] - 0.1, kagit2: AN[70] - 0.3, kapi: AN[77] - 0.1, aksam: AN[82] - 0.1,
+      kagit3: AN[88] - 0.3, son: AN[90] - 0.2
     };
 
     /* ——— yazılar ——— */
@@ -90,46 +91,52 @@
     var AKIS = [
       ['istemeden aldıkların', 'etiket', 800, 96, W.isik, KES.koy - 0.3],
       ['bugün iki isim', 'etiket', 800, 96, AN[11], AN[14] - 0.1],
-      ['nimet: sana verilen iyilik', 'etiket', 800, 96, AN[21], KES.kagit - 0.3],
-      ['Bütün bu nimetleri veren, Allahü teâlâdır.', 'kagit', 800, 420, AN[24], AN[25] - 0.4],
-      ['Allahü teâlânın güzel isimleri vardır. Bu isimleri bize kendisi bildirdi.', 'kagit', 800, 340, AN[25], AN[28] - 0.4],
-      ['Biz Ona kendimiz isim koyamayız.', 'kagit', 800, 560, AN[27], AN[28] - 0.4],
-      ['İsimleri çoktur; doksan dokuzu bize bildirildi.', 'kagit', 800, 340, AN[28], AN[30] - 0.4],
-      ['esmâ-i hüsnâ: en güzel isimler', 'kagit', 800, 540, AN[29], AN[30] - 0.4],
-      ['Rahmân', 'kagit iri', 560, 300, W.rahman1, KES.kis - 0.3, 'altin'],
-      ['Rahîm', 'kagit iri', 1040, 300, W.rahim1, KES.kis - 0.3, 'altin'],
-      ['Rahmân: dünyada bütün canlılara nimet veren.', 'kagit', 800, 520, AN[31], KES.kis - 0.3],
-      ['Hiç ayırmadan, herkese.', 'kagit', 800, 650, W.herkese, KES.kis - 0.3],
-      ['kar her yeri örttü', 'etiket', 800, 96, W.kar, AN[35] - 0.1],
-      ['göl üstten donar', 'etiket', 800, 96, W.dondu, AN[37]],
-      ['buz sudan hafif: üstte kalır', 'etiket', 800, 96, AN[37] + 0.2, AN[38]],
-      ['altında su donmaz', 'etiket', 800, 96, AN[38] + 0.1, KES.tarla - 0.2],
-      ['kar: kalın bir örtü', 'etiket', 800, 96, W.sardi - 0.4, AN[40]],
-      ['dışarısı buz gibi', 'etiket', 800, 96, AN[40], KES.orman - 0.2],
-      ['örtünün altı daha sıcak', 'etiket', 800, 700, AN[40] + 1.2, KES.orman - 0.2],
-      ['kuru ot', 'etiket', 800, 96, W.kuru, AN[49]],
-      ['yazın yaylada yeşerdi', 'etiket', 800, 96, AN[49] + 0.1, W.yagmur1 - 0.1],
+      ['nimet: sana verilen iyilik', 'etiket', 800, 96, AN[23], KES.kagit - 0.3],
+      ['Bütün bu nimetleri veren, Allahü teâlâdır.', 'kagit', 800, 420, AN[26], AN[27] - 0.4],
+      ['Allahü teâlânın güzel isimleri vardır. Bu isimleri bize kendisi bildirdi.', 'kagit', 800, 340, AN[27], AN[30] - 0.4],
+      ['Biz Ona kendimiz isim koyamayız.', 'kagit', 800, 560, AN[29], AN[30] - 0.4],
+      ['İsimleri çoktur; doksan dokuzu bize bildirildi.', 'kagit', 800, 340, AN[30], AN[32] - 0.4],
+      ['esmâ-i hüsnâ: en güzel isimler', 'kagit', 800, 540, AN[31], AN[32] - 0.4],
+      // iki sütun: solda Rahmân, sağda Rahîm; her sütun 520 px'e sarılır, ikisi birlikte kâğıda sığar
+      ['Rahmân', 'kagit iri', 520, 300, W.rahman1, KES.kis - 0.3, 'altin'],
+      ['Rahîm', 'kagit iri', 1080, 300, W.rahim1, KES.kis - 0.3, 'altin'],
+      ['Rahmân: dünyada bütün canlılara nimet veren.', 'kagit', 520, 480, AN[33], KES.kis - 0.3, null, [520]],
+      ['Hiç ayırmadan, herkese.', 'kagit', 520, 680, W.herkese, KES.kis - 0.3, null, [520]],
+      ['Rahîm: âhırette, Ona inananlara merhamet eden.', 'kagit', 1080, 480, AN[35], KES.kis - 0.3, null, [520]],
+      ['âhıret: öldükten sonraki sonsuz hayat', 'kagit', 1080, 690, W.ahiret - 0.1, KES.kis - 0.3, null, [520, 42]],
+      ['kar her yeri örttü', 'etiket', 800, 96, W.kar, AN[39] - 0.1],
+      ['göl üstten donar', 'etiket', 800, 96, W.dondu, AN[41]],
+      ['buz sudan hafif: üstte kalır', 'etiket', 800, 96, AN[41] + 0.2, AN[42]],
+      ['altında su donmaz', 'etiket', 800, 96, AN[42] + 0.1, KES.tarla - 0.2],
+      ['kar: kalın bir örtü', 'etiket', 800, 96, W.sardi - 0.4, AN[44]],
+      ['dışarısı buz gibi', 'etiket', 800, 96, AN[44], KES.orman - 0.2],
+      ['örtünün altı daha sıcak', 'etiket', 800, 700, AN[44] + 1.2, KES.orman - 0.2],
+      ['sincap: mantarları dallara asıp kuruttu', 'etiket', 800, 96, AN[46], AN[47] - 0.1],
+      ['ayı: güzün yağ biriktirdi', 'etiket', 800, 96, AN[47], AN[48] - 0.2],
+      ['kuru ot', 'etiket', 800, 96, W.kuru, AN[55]],
+      ['yazın yaylada yeşerdi', 'etiket', 800, 96, AN[55] + 0.1, W.yagmur1 - 0.1],
       ['yağmur yağdı', 'etiket', 800, 96, W.yagmur1, KES.sebep - 0.2],
       ['her biri bir sebep', 'etiket', 800, 96, W.sebeptir, D.sut - 0.7],
-      ['annesi yanından ayrılmıyor', 'etiket', 800, 96, AN[61] + 0.6, AN[62] - 0.1],
-      ['Yağmuru yağdıran, otu yeşerten, ineğe hem sütü hem şefkati veren Allahü teâlâdır.', 'kagit', 800, 330, AN[64], AN[66] - 0.4],
-      ['Bu sabahki sütü sana veren de Odur.', 'kagit', 800, 570, AN[65], AN[66] - 0.4],
-      ['Bir annenin yavrusuna merhameti büyüktür.', 'kagit', 800, 330, AN[66], AN[68] - 0.4],
-      ['Allahü teâlânın kullarına merhameti, bundan çok daha fazladır.', 'kagit', 800, 540, AN[67], AN[68] - 0.4],
-      ['O, Rahmândır: dünyada bütün canlılara nimet verir.', 'kagit', 800, 300, AN[68], KES.kapi - 0.4],
-      ['O, Rahîmdir: merhameti çoktur. Âhırette de Ona inanan kullarına sonsuz ikram edecektir.', 'kagit', 800, 540, AN[69], KES.kapi - 0.4],
-      ['merhametli olmak: güzel huy', 'etiket', 800, 96, AN[71] + 0.2, AN[72] - 0.1],
+      ['annesi yanından ayrılmıyor', 'etiket', 800, 96, AN[67] + 0.6, AN[68] - 0.1],
+      ['Yağmuru yağdıran, otu yeşerten, ineğe hem sütü hem şefkati veren Allahü teâlâdır.', 'kagit', 800, 330, AN[70], AN[72] - 0.4],
+      ['Bu sabahki sütü sana veren de Odur.', 'kagit', 800, 570, AN[71], AN[72] - 0.4],
+      ['Bir annenin yavrusuna merhameti büyüktür.', 'kagit', 800, 330, AN[72], AN[74] - 0.4],
+      ['Allahü teâlânın kullarına merhameti, bundan çok daha fazladır.', 'kagit', 800, 540, AN[73], AN[74] - 0.4],
+      ['O, Rahmândır: dünyada bütün canlılara nimet verir.', 'kagit', 800, 300, AN[74], KES.kapi - 0.4],
+      ['O, Rahîmdir: âhırette yalnız mü\'minlere merhamet eder. Ona inanan kullarına Cennette sonsuz ikram edecektir.', 'kagit', 800, 540, AN[75], KES.kapi - 0.4],
+      ['merhametli olmak: güzel huy', 'etiket', 800, 96, AN[77] + 0.2, AN[78] - 0.1],
       ['yemeğe başlarken', 'etiket', 380, 120, W.yemege, KES.kagit3 - 0.3],
       ['derse otururken', 'etiket', 800, 120, W.derse, KES.kagit3 - 0.3],
       ['bir işe başlarken', 'etiket', 1220, 120, W.ise, KES.kagit3 - 0.3],
       ['besmele', 'etiket', 800, 240, W.besmele, KES.kagit3 - 0.3],
       ['Rahmân', 'kagit iri', 560, 560, W.rahman3, KES.son - 0.4, 'altin'],
       ['Rahîm', 'kagit iri', 1040, 560, W.rahim2, KES.son - 0.4, 'altin'],
-      ['Yani her lokmadan önce, o nimeti verenin adını anıyorsun.', 'kagit', 800, 730, AN[83], KES.son - 0.4],
-      ['Gelecek ders: Bilir, görür, işitir, her şeye gücü yeter', 'etiket', 800, 110, AN[84] + 0.2, AN[85] + 0.9]
+      ['Yani her lokmadan önce, o nimeti verenin adını anıyorsun.', 'kagit', 800, 730, AN[89], KES.son - 0.4],
+      ['Gelecek ders: Bilir, görür, işitir, her şeye gücü yeter', 'etiket', 800, 110, AN[90] + 0.2, AN[91] + 0.9]
     ].map(function (s) {
       var e = yazi(s[0], s[1], s[2], s[3]);
       if (s[6] === 'altin') e.style.color = ALTIN;
+      if (s[7]) { e.style.width = s[7][0] + 'px'; if (s[7][1]) e.style.fontSize = s[7][1] + 'px'; }
       return { e: e, kagit: /^kagit/.test(s[1]), bas: s[4], son: s[5], x: s[2], y: s[3] };
     });
     // besmele: Latin harfle, sessiz; içindeki iki isim altınla belirir. Sabit durur, dokunulmaz.
@@ -145,8 +152,8 @@
         gos(s.e, o, s.kagit ? kr(8, 0, tw(t, s.bas, 0.8)) : 0);
         if (s.kagit && o > 0.2) kagitYazisi = true;
       });
-      var ob = pencere(t, AN[82], KES.son - 0.4, 0.9, 0.4);
-      gos(BES, ob, kr(8, 0, tw(t, AN[82], 0.9)));
+      var ob = pencere(t, AN[88], KES.son - 0.4, 0.9, 0.4);
+      gos(BES, ob, kr(8, 0, tw(t, AN[88], 0.9)));
       if (ob > 0.003) {
         BES_P[1].style.color = renkKar(tw(t, W.rahman3 - 0.1, 0.6));
         BES_P[3].style.color = renkKar(tw(t, W.rahim2 - 0.1, 0.6));
@@ -244,7 +251,7 @@
     }
 
     /* ——— durak durumu ——— */
-    var aNow = 0, sayilan = {}, sayilanA = {}, yerde = {}, yerdeA = {}, kediSec = -1, kediA = -9;
+    var aNow = 0, sayilan = {}, sayilanA = {}, hepsiA = 0, yerde = {}, yerdeA = {}, kediSec = -1, kediA = -9;
     function sayilanSay() { return Object.keys(sayilan).length; }
 
     /* ——— 0-1. Kış sabahı odası (kanca ve durak 1) ——— */
@@ -290,20 +297,29 @@
       sayiGos(n, pencere(t, W.isik, KES.koy - 0.3, 0.3, 0.3), 800, 190);
     }
     function oda2(t, a) {
-      var acik = api.acikDurak() === 'nimet';
+      var acik = api.acikDurak() === 'nimet', bitti = !acik && t > D.nimet, sol = 1 - tw(t, AN[21], 0.8);
       T.bas(a, kameraYolu(t, [[KES.oda2, { x: 800, y: 470, z: 1.08 }], [D.nimet, { x: 800, y: 450, z: 1 }]]));
       odaCiz(t, a, 0.9);
-      // durakta: sayılmamış nimetler hafifçe parlar, dokunulanların çevresine altın halka konur
-      var n = sayilanSay(), i = 0;
+      // "altı iyilik saklı": altı eşyanın üstünde yumuşak ışık sırayla belirir; durakta bulunmamış olanlar parlar, dokunulanlara altın halka konur.
+      // Durak geçtikten sonra (öğretmen ekranı ve sarma dahil) altısı da bulunmuş sayılır; halkalar "Ama bunlar yalnız bu odadakiler" cümlesinde söner.
+      var n = bitti ? 6 : sayilanSay(), i = 0, pulse = acik && hepsiA > 0 ? Math.sin(Math.PI * tw(aNow, hepsiA, 1.0)) : 0;
       Object.keys(NIMET).forEach(function (id) {
-        var p = NIMET[id], s = sayilan[id];
-        if (acik && !s) isima(p[0], p[1], 90, [1, 0.88, 0.55], 0.1 + 0.05 * Math.sin(a * 2.5 + i));
-        if (s) { var k = tw(aNow, sayilanA[id], 0.5); dunyaHalka(i, p[0], p[1], kr(40, 78, k), 0.9 * (acik ? 1 : 1 - tw(t, AN[19], 0.8))); kivilcim(p[0], p[1] - 70, a, acik ? 1 : 0, 1); }
+        var p = NIMET[id], s = sayilan[id] || bitti, gizli = tw(t, W.alti + i * 0.28, 0.6);
+        if (!s) {
+          isima(p[0], p[1], 110, [1, 0.88, 0.55], gizli * (0.26 + 0.08 * Math.sin(a * 2.5 + i)));
+          kivilcim(p[0], p[1] - 10, a + i * 1.7, gizli, 1.25);   // saklı iyilik: altın pırıltı
+        }
+        else {
+          var k = sayilan[id] ? tw(aNow, sayilanA[id], 0.5) : tw(t, D.nimet, 0.5);
+          if (sayilan[id] && bitti) k = 1;
+          dunyaHalka(i, p[0], p[1], kr(40, 78, k) + 12 * pulse, 0.9 * (bitti ? sol : 1));
+          kivilcim(p[0], p[1] - 70, a, bitti ? sol : 1, 1);
+        }
         i++;
       });
       T.izBitir();
-      var so = acik ? (n ? 1 : 0) : pencere(t, D.nimet, KES.koy2 - 0.2, 0.2, 0.3) * (n ? 1 : 0);
-      sayiGos(n, so, 600, 300);
+      // panelde "n / 6" sayacı var; sahnedeki büyük sayı yalnız durak bittikten sonra altıyı gösterir
+      sayiGos(n, acik ? 0 : pencere(t, D.nimet, KES.koy2 - 0.2, 0.2, 0.3), 800, 190);
     }
 
     /* ——— 2. Köy: sır (iki boş çerçeve) ve "sıcak bir yuva" ——— */
@@ -335,16 +351,16 @@
       var py = tw(t, W.yuva - 0.2, 1.2);
       PENCERELER.forEach(function (p, i) { isima(p[0], p[1], 34, [1, 0.78, 0.4], (0.22 + 0.06 * Math.sin(a * 2 + i)) * py); });
       // köyün her yerinde altın kıvılcımlar çoğalır
-      var cok = tw(t, AN[21], AN[23] + 1.4 - AN[21], Y.gir);
+      var cok = tw(t, AN[23], AN[25] + 1.4 - AN[23], Y.gir);
       var adet = Math.floor(6 + cok * 70);
       for (var i = 0; i < adet; i++) {
-        var p = P(80 + hash(i, 61) * 1520, 380 + hash(i, 62) * 520), dog = AN[21] + hash(i, 63) * (AN[23] + 1.4 - AN[21]) * 0.9;
-        kivilcim(p[0], p[1], a + i, tw(t, i < 6 ? AN[20] : dog, 0.4) * (1 - tw(t, KES.kagit - 0.6, 0.5)), 0.7 + hash(i, 64) * 0.5);
+        var p = P(80 + hash(i, 61) * 1520, 380 + hash(i, 62) * 520), dog = AN[23] + hash(i, 63) * (AN[25] + 1.4 - AN[23]) * 0.9;
+        kivilcim(p[0], p[1], a + i, tw(t, i < 6 ? AN[22] : dog, 0.4) * (1 - tw(t, KES.kagit - 0.6, 0.5)), 0.7 + hash(i, 64) * 0.5);
         if (i % 40 === 39) T.izBitir();
       }
       T.izBitir();
       // sayaç: çocuğun saydığından başlar, "saymaya kalksan" deyince hızlanıp bulanıklaşır
-      var n0 = Math.max(sayilanSay(), 2), u = Math.max(0, t - W.saymaya), n = n0 + Math.floor(Math.pow(u * 2.2, 3.2));
+      var n0 = 6, u = Math.max(0, t - W.saymaya), n = n0 + Math.floor(Math.pow(u * 2.2, 3.2));
       sayiGos(n, pencere(t, W.saymaya, W.bitmez + 0.2, 0.3, 0.6), 800, 190);
     }
 
@@ -370,7 +386,7 @@
     /* ——— 5. Göl kesiti: buz üstte kalır, balıklar dipte ——— */
     var BUZ_ALT = P(836, 226)[1];
     function gol(t, a) {
-      T.bas(a, kameraYolu(t, [[KES.gol, { x: 800, y: 380, z: 1.12 }], [AN[38], { x: 800, y: 470, z: 1.08 }], [KES.tarla, { x: 800, y: 520, z: 1.16 }]]));
+      T.bas(a, kameraYolu(t, [[KES.gol, { x: 800, y: 380, z: 1.12 }], [AN[42], { x: 800, y: 470, z: 1.08 }], [KES.tarla, { x: 800, y: 520, z: 1.16 }]]));
       plaka('gol-kesit', { d: 1, parilti: 0.35 });
       // buzun alt kenarında kristaller soldan sağa yayılır ("göl üstten dondu")
       var yay = tw(t, W.dondu - 0.4, 1.8);
@@ -399,34 +415,47 @@
     /* ——— 6. Tarla kesiti: kar örtüsünün üstü buz gibi, altı daha sıcak ——— */
     var FILIZ_Y = P(836, 520)[1];
     function tarla(t, a) {
-      T.bas(a, kameraYolu(t, [[KES.tarla, { x: 800, y: 330, z: 1.14 }], [AN[40], { x: 800, y: 470, z: 1.04 }], [KES.orman, { x: 800, y: 520, z: 1.08 }]]));
+      T.bas(a, kameraYolu(t, [[KES.tarla, { x: 800, y: 330, z: 1.14 }], [AN[44], { x: 800, y: 470, z: 1.04 }], [KES.orman, { x: 800, y: 520, z: 1.08 }]]));
       plaka('tarla', { d: 1, parilti: 0.3 });
       kar(a, 0.9, 360, 1, 1);
       // soğuk: örtünün üstünde mavi soğuk ışıma; sıcak: filizlerin dibinde amber ışıma
-      var so = tw(t, AN[40] - 0.2, 1.2), si = tw(t, AN[40] + 1.0, 1.4);
+      var so = tw(t, AN[44] - 0.2, 1.2), si = tw(t, AN[44] + 1.0, 1.4);
       for (var i = 0; i < 8; i++) isima(100 + i * 200, P(836, 250)[1], 190, [0.55, 0.75, 1], 0.22 * so);
       for (var j = 0; j < 13; j++) { var x = P(62 + j * 126.5, 0)[0]; isima(x, FILIZ_Y, 80, [1, 0.7, 0.32], (0.36 + 0.06 * Math.sin(a * 2 + j)) * si); }
     }
 
-    /* ——— 7. Orman: dalda sincap ——— */
+    /* ——— 7. Orman: dalda sincap; güzün asıp kuruttuğu mantarlar altın halkada ——— */
     var DAL = P(900, 432);
+    // plakadaki yedi mantarın başlıkları (ham görsel pikseli): üst dalda dört, alt dalda üç
+    var MANTAR = [P(470, 383), P(529, 365), P(588, 349), P(669, 353), P(491, 612), P(550, 631), P(611, 657)];
     function orman(t, a) {
-      T.bas(a, { x: kr(820, 760, tw(t, KES.orman, 3, Y.sin)), y: 440, z: kr(1.3, 1.2, tw(t, KES.orman, 3, Y.sin)) });
+      T.bas(a, kameraYolu(t, [[KES.orman, { x: 840, y: 450, z: 1.2 }], [W.mantar - 0.5, { x: 620, y: 470, z: 1.25 }], [KES.inn, { x: 620, y: 470, z: 1.25 }]]));
       plaka('orman', { d: 1, parilti: 0.45 });
       kar(a, 0.6, 260, 0.8, 1);
       var zp = Math.max(0, Math.sin(a * 1.7)) * 4;
       T.ciz('sincap', { x: DAL[0], y: DAL[1] + 2 - zp, h: 150, ax: 0.5, ay: 1, d: 1, r: Math.sin(a * 0.9) * 2 });
+      // "mantarları dallara asıp kurutmuştu": mantarların her birine sırayla altın halka konur
+      MANTAR.forEach(function (m, i) {
+        var o = pencere(t, W.mantar + i * 0.14, KES.inn - 0.1, 0.4, 0.3);
+        dunyaHalka(i, m[0], m[1], kr(24, 37, tw(t, W.mantar + i * 0.14, 0.5)) + 2 * Math.sin(a * 3 + i), 0.95 * o);
+        kivilcim(m[0] + 34, m[1] - 40, a + i, 0.9 * o, 0.6);
+      });
+      T.izBitir();
     }
 
-    /* ——— 8. İn: ayı uyur, yavaş nefes alır (durak 2 bu sahnede açılır) ——— */
+    /* ——— 8. İn: ayı uyur, yavaş nefes alır (durak 2 bu sahnede açılır); güzün biriktirdiği yağ ——— */
     var IN_TABAN = P(800, 772);
     function inn(t, a) {
-      var es = api.acikDurak() === 'kis';
-      T.bas(a, { x: 800, y: kr(560, 500, tw(t, KES.inn, 3, Y.sin)), z: kr(1.25, 1.1, tw(t, KES.inn, 3, Y.sin)) });
+      var es = api.acikDurak() === 'kis', k = tw(t, KES.inn, 5, Y.sin);
+      T.bas(a, { x: 800, y: kr(560, 500, k), z: kr(1.25, 1.1, k) });
       plaka('in', { d: 1, parilti: 0.35, carp: es ? [0.5, 0.52, 0.66] : null });
       var nf = Math.sin(a * 2 * Math.PI / 4.2);
       // eşleştirme açıkken ayı kartlarda; sahnedeki ayı çekilir
-      if (!es) T.ciz('ayi', { x: IN_TABAN[0], y: IN_TABAN[1], g: 560, h: 304 * (1 + 0.025 * nf), ax: 0.5, ay: 1, d: 1 });
+      if (!es) {
+        T.ciz('ayi', { x: IN_TABAN[0], y: IN_TABAN[1], g: 560, h: 304 * (1 + 0.025 * nf), ax: 0.5, ay: 1, d: 1 });
+        // "yağ biriktirmişti": ayının gövdesinde sıcak altın bir ışık yavaşça belirir
+        isima(IN_TABAN[0], IN_TABAN[1] - 120, 200, [1, 0.8, 0.38], 0.2 * tw(t, W.yag - 0.1, 1.4) * (0.85 + 0.15 * nf));
+      }
       kar(a, es ? 0.3 : 0.7, 200, 0.7, 1);
     }
 
@@ -450,7 +479,7 @@
 
     /* ——— 10. Sofra: süt bardağı ——— */
     function sofra(t, a) {
-      T.bas(a, kameraYolu(t, [[KES.sofra, { x: 820, y: 520, z: 1.16 }], [AN[45], { x: BARDAK[0], y: BARDAK[1] - 10, z: 1.7 }], [KES.ahir1, { x: BARDAK[0], y: BARDAK[1] - 10, z: 1.8 }]]));
+      T.bas(a, kameraYolu(t, [[KES.sofra, { x: 820, y: 520, z: 1.16 }], [AN[51], { x: BARDAK[0], y: BARDAK[1] - 10, z: 1.7 }], [KES.ahir1, { x: BARDAK[0], y: BARDAK[1] - 10, z: 1.8 }]]));
       odaCiz(t, a, 0.85);
       kivilcim(BARDAK[0] + 40, BARDAK[1] - 50, a, tw(t, KES.sofra + 0.4, 0.6), 1.2); T.izBitir();
     }
@@ -497,12 +526,14 @@
     }
 
     /* ——— 13. Sebepler ve sütün yolu (durak 3) ——— */
-    // dört durak madalyonlarda durur (yere basmayan şeyler havada asılı görünmesin); yol madalyonların altından geçer
+    // dört durak madalyonlarda durur (yere basmayan şeyler havada asılı görünmesin); yol madalyonların altından geçer.
+    // Durakta resimler sahnede değil, bekleme yerinde durur: çocuk onları tutup kesikli yerlere (madalyonların yeri) sürükler;
+    // yerleşen adımı sahne madalyonda kendisi çizer. Madalyon merkezleri ders.js içindeki yuvalarla aynıdır.
     var ST = [
-      { ad: 'bulut', x: 270, y: 330, g: 196, gel: function () { return W.yagmur2; } },
-      { ad: 'ot-yigini', x: 620, y: 330, h: 176, gel: function () { return W.ot4; } },
-      { ad: 'inek', x: 990, y: 330, g: 206, gel: function () { return W.inek2; } },
-      { ad: 'sut-gugumu', x: 1340, y: 330, h: 168, gel: function () { return W.sirayla; } }
+      { ad: 'bulut', x: 270, y: 300, g: 196, gel: function () { return W.yagmur2; } },
+      { ad: 'ot-yigini', x: 620, y: 300, h: 176, gel: function () { return W.ot4; } },
+      { ad: 'inek', x: 990, y: 300, g: 206, gel: function () { return W.inek2; } },
+      { ad: 'sut-bardagi', x: 1340, y: 300, h: 168, gel: function () { return W.sirayla; } }
     ];
     var ST_R = 118;
     var YOL_N = [[270, 470], [445, 488], [620, 470], [805, 488], [990, 470], [1165, 488], [1340, 470]];
@@ -514,12 +545,13 @@
       plaka('yayla', { d: 1, parilti: 0.4, ruzgar: 0.1, carp: [0.42, 0.44, 0.52] });
       var hb = pencere(t, W.hicbiri - 0.1, W.sirayla - 0.2, 0.3, 0.4);
       ST.forEach(function (s, i) {
-        var o = tw(t, s.gel() - 0.2, 0.6), yan = !!yerde[i];
+        var yan = !!yerde[i], o = acik ? (yan ? tw(aNow, yerdeA[i], 0.5) : 0) : tw(t, s.gel() - 0.2, 0.6);
+        if (o <= 0.01) return;
         madalyonCiz(i, s.x, s.y, ST_R * kr(0.85, 1, o), o, function (oo) {
           var sall = s.ad === 'inek' ? Math.sin(a * 1.6) * 0.8 : s.ad === 'ot-yigini' ? Math.sin(a * 1.1) * 0.6 : 0;
           T.ciz(s.ad, { x: s.x, y: s.y + (s.ad === 'bulut' ? -6 : 6), g: s.g, h: s.h, d: 1, o: oo * (1 - 0.35 * hb), r: sall });
         });
-        if (o > 0.01 && (acik || yan)) isima(s.x, s.y, 170, [1, 0.85, 0.5], (yan ? 0.16 : 0.05) + 0.04 * Math.sin(a * 2 + i));
+        if (acik && yan) isima(s.x, s.y, 170, [1, 0.85, 0.5], 0.16 + 0.04 * Math.sin(a * 2 + i));
         if (yan) dunyaHalka(i, s.x, s.y, ST_R + 16, 0.85 + 0.15 * Math.sin(a * 3));
       });
       // "hepsi sırayla birbirine yetişti": altın yol gökten sofraya çizilir; durakta yerleşen adımlara kadar dolar
@@ -547,8 +579,8 @@
     /* ——— 14. Ahır, gece: inek buzağısını yalar; buzağı kalkmayı dener (durak 4) ——— */
     function ahir2(t, a) {
       var acik = api.acikDurak() === 'veren';
-      T.bas(a, kameraYolu(t, [[KES.ahir2, { x: 820, y: 560, z: 1.12 }], [AN[61], { x: 880, y: 600, z: 1.32 }], [AN[63] - 0.3, { x: 860, y: 540, z: 1.16 }], [D.veren, { x: 800, y: 450, z: 1 }]]));
-      var los = tw(t, AN[62], 2.4);
+      T.bas(a, kameraYolu(t, [[KES.ahir2, { x: 820, y: 560, z: 1.12 }], [AN[67], { x: 880, y: 600, z: 1.32 }], [AN[69] - 0.3, { x: 860, y: 540, z: 1.16 }], [D.veren, { x: 800, y: 450, z: 1 }]]));
+      var los = tw(t, AN[68], 2.4);
       plaka('ahir', { d: 1, parilti: 0.4, carp: los > 0.01 ? [kr(1, 0.78, los), kr(1, 0.74, los), kr(1, 0.7, los)] : null });
       ahirIsik(t, a, 1 - 0.3 * los); kapiKar(a);
       // inek: başını buzağıya doğru indirip kaldırır (yalar)
@@ -569,7 +601,7 @@
     var KEDI = { x: P(700, 0)[0], y: P(0, 776)[1] }, KAP = { x: P(1000, 0)[0], y: P(0, 780)[1] };
     function kapi(t, a) {
       var acik = api.acikDurak() === 'kedi', iyi = kediSec === 3;
-      T.bas(a, kameraYolu(t, [[KES.kapi, { x: 860, y: 520, z: 1.14 }], [AN[72], { x: 820, y: 560, z: 1.24 }], [D.kedi - 0.3, { x: 800, y: 450, z: 1 }]]));
+      T.bas(a, kameraYolu(t, [[KES.kapi, { x: 860, y: 520, z: 1.14 }], [AN[78], { x: 820, y: 560, z: 1.24 }], [D.kedi - 0.3, { x: 800, y: 450, z: 1 }]]));
       plaka('kapi', { d: 1, parilti: 0.45 });
       var pc = P(595, 440); isima(pc[0], pc[1], 150, [1, 0.8, 0.4], 0.16 + 0.03 * Math.sin(a * 2));
       kar(a, 0.85, 420, 0.9, 1.1);
@@ -596,7 +628,7 @@
       var sb = NIMET.soba; isima(sb[0], sb[1], 130, [1, 0.55, 0.2], 0.18 + 0.05 * Math.sin(a * 7));
       buhar(BARDAK, a, 0.6, 2);
       // baştaki iki boş çerçeve yine gelir
-      var o = pencere(t, AN[77] - 0.1, KES.kagit3 - 0.2, 0.5, 0.3);
+      var o = pencere(t, AN[83] - 0.1, KES.kagit3 - 0.2, 0.5, 0.3);
       [[600, 400], [1000, 400]].forEach(function (c, i) {
         goster(cerceve[i], kutu(c[0], c[1], 300, 130, 22), o); kullan(cerceve[i]);
         goster(cerceveIc[i], kutu(c[0], c[1], 274, 104, 16), o * 0.9); kullan(cerceveIc[i]);
@@ -661,7 +693,8 @@
       altyazisiz: function (t) { return kagitYazisi || (t >= KES.kagit && t < KES.kis) || (t >= KES.kagit2 && t < KES.kapi) || (t >= KES.kagit3 && t < KES.son); },
       durak: function (id, olay, veri) {
         if (id === 'nimet') {
-          if (olay === 'ac') { sayilan = {}; sayilanA = {}; }
+          if (olay === 'ac') { sayilan = {}; sayilanA = {}; hepsiA = 0; }
+          if (olay === 'hepsi') hepsiA = aNow;
           if (olay === 'dene' && !sayilan[veri]) { sayilan[veri] = true; sayilanA[veri] = aNow; }
         }
         if (id === 'sut') { if (olay === 'ac') { yerde = {}; yerdeA = {}; } if (olay === 'dogru') { yerde[veri] = true; yerdeA[veri] = aNow; } }

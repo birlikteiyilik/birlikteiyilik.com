@@ -232,6 +232,10 @@ const POSES = {
     label: 'Merhaba', use: 'Sakin durur, göz kırpar, hafifçe nefes alır. Sayfa başlıkları ve boş alanlar.',
     eyes: 'open', mouth: 'smile', brows: 'calm', armL: REST, armR: REST
   },
+  bekle: {
+    label: 'Bekliyor', use: 'Kolları aşağıda, sakin; yavaş nefes alır, ara sıra etrafa bakıp göz kırpar. Bekleme ve ara verme ekranları.',
+    eyes: 'open', mouth: 'soft', brows: 'calm', armL: REST, armR: REST
+  },
   selam: {
     label: 'Selam', use: 'El sallar, başını hafif yana eğer. Giriş ve karşılama ekranı.',
     eyes: 'open', mouth: 'grin', brows: 'up', armL: REST, armR: {a: [-128, -40, -6], hand: 'open'}
@@ -605,21 +609,29 @@ module.exports = {giydir, KEP, KAPUSONLU, SPOR, CSS, K};
   var body = load('./govde.js'), poses = load('./pozlar.js').POSES, outfits = load('./kiyafetler.js').OUTFITS, kit = load('./genc.js');
   // Ekranlardaki duygu adları ile pozlar arasındaki köprü.
   var MOODS = {smile: 'durus', happy: 'selam', hello: 'selam', celebrate: 'aferin', think: 'dusun', wow: 'vay', sleep: 'uyku', sad: 'uzgun',
-    read: 'oku', love: 'iyilik', trophy: 'kupa', laugh: 'kahkaha', shy: 'utangac', run: 'kos', thanks: 'tesekkur', pray: 'dua'};
+    read: 'oku', love: 'iyilik', trophy: 'kupa', laugh: 'kahkaha', shy: 'utangac', run: 'kos', thanks: 'tesekkur', pray: 'dua', wait: 'bekle'};
   var LOGO = '<path d="M352 266A106 106 0 0 1 458 372V568H352Z" fill="#E20439"/><circle cx="496" cy="568" r="146" fill="#E20439"/><path d="M494.5 532C486 518 474 512 461 512C440 512 425 528 425 549C425 572 441 588 461 605C476 618 488 628 494.5 642C501 628 513 618 528 605C548 588 564 572 564 549C564 528 549 512 528 512C515 512 503 518 494.5 532Z" fill="#fff"/><path d="M455 527C459 527 461 530 459.5 535C457 542 455.5 550 456.5 560C457.5 568 459.5 574 462 579.5C455 576 449 570 445 563C441 556 440 548 441.5 541C443 533 448 527 455 527Z" fill="#E20439"/>';
   function theme() { return document.documentElement.getAttribute('data-tema') || 'cocuk'; }
   function resolve(name) { return poses[name] || outfits[name] ? name : MOODS[name] || 'durus'; }
   function escape(text) { return String(text).replace(/[&<>"]/g, function (c) { return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]; }); }
-  // Hicri takvime ve haftanın gününe göre günün kıyafeti; özel bir gün değilse boş döner.
+  // Ramazan ve bayram günleri Diyanet İşleri Başkanlığı'nın yayımladığı dini günler takvimine göredir
+  // (Suudi umm al-qura takvimi Türkiye'dekinden bir gün sapabilir, o yüzden Intl kullanılmaz).
+  // Kaynak: diyanet.gov.tr "Dini Günler" takvimi; 2026 ve 2027 Diyanet'in yayımladığı tarihlerdir.
+  // Bayram aralığı arefe hariç bayramın ilk ve son günüdür. Diyanet bir sonraki yılın takvimini
+  // yıl ortasında açıklar; yeni yıl yayımlanınca buraya satır eklenir. Tabloda olmayan yıllarda
+  // Ramazan ve bayram kıyafeti çıkmaz (tahminle tarih yazılmaz).
+  var DINI_GUNLER = {
+    ramazan: [['2026-02-19', '2026-03-19'], ['2027-02-08', '2027-03-08']],
+    bayram: [['2026-03-20', '2026-03-22'], ['2026-05-27', '2026-05-30'], ['2027-03-09', '2027-03-11'], ['2027-05-16', '2027-05-19']]
+  };
+  function within(list, key) { return list.some(function (range) { return key >= range[0] && key <= range[1]; }); }
+  // Diyanet takvimine ve haftanın gününe göre günün kıyafeti; özel bir gün değilse boş döner.
   function outfitOfDay(date) {
     date = date || new Date();
-    var month = 0, day = 0;
-    try {
-      var parts = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura-nu-latn', {month: 'numeric', day: 'numeric'}).formatToParts(date);
-      parts.forEach(function (part) { if (part.type === 'month') month = +part.value; if (part.type === 'day') day = +part.value; });
-    } catch (error) { month = 0; }
-    if ((month === 10 && day <= 3) || (month === 12 && day >= 10 && day <= 13)) return 'bayram';
-    if (month === 9) return 'ramazan';
+    var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+    var key = date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate());
+    if (within(DINI_GUNLER.bayram, key)) return 'bayram';
+    if (within(DINI_GUNLER.ramazan, key)) return 'ramazan';
     if (date.getDay() === 5) return 'cami';
     var m = date.getMonth(), d = date.getDate();
     if (m === 8 && d <= 21) return 'okul';

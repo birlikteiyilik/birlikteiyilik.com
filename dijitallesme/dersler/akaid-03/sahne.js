@@ -9,11 +9,39 @@
 (function () {
   'use strict';
   var DO = window.DO;
+
+  /* ——— Dünya'nın yılı: yörünge geometrisi (saf işlevler; test sahnesiz çalıştırır) ———
+     Yıl tek bir elips üzerindedir. f yıl kesri: 0 ocak (sol uç), 0,25 nisan (ön), 0,5 temmuz (sağ uç), 0,75 ekim (arka).
+     Yukarıdan bakınca saat yönünün tersine ilerler: sol → ön → sağ → arka. Durak değeri v (0-100): 50 nisan,
+     25 ocak, 75 temmuz; 0 ve 100 aynı yerdir (ekim, arka), yani çocuk bütün yılı yürüyebilir.
+     Yörünge neredeyse dairedir: Güneş merkezden 8 px kayıktır, ocak-temmuz uzaklık farkı %3 (gerçek: %3,4). */
+  var YOR = { x: 830, y: 455, rx: 520, ry: 165 };
+  var GUNES_YOR = { x: 822, y: 455, r: 105 };
+  function yilKonum(f) { var q = Math.PI - 2 * Math.PI * f; return { x: YOR.x + YOR.rx * Math.cos(q), y: YOR.y + YOR.ry * Math.sin(q), q: q }; }
+  function yilDegeri(v) { return 0.25 + (v - 50) / 100; }
+  // Küre ışığı: Güneş ekranda hangi yandaysa ışık oradan gelir; terminatör Güneş yönüne dik, aydınlık yarı Güneş'e bakar
+  function gunesIsigi(p, g) { var dx = g.x - p.x, dy = -(g.y - p.y), b = Math.hypot(dx, dy) || 1; return [dx / b, dy / b, 0]; }
+  // Teğet sürükleme: parmağın yörüngeye teğet hareketi yılı ilerletir. Tutulan yerden başlar (tutuş kaydı bas'a yazılır),
+  // sıçrama ve yapışma yoktur; uçlarda (ekim) durur.
+  function yorungeTut(bas, x, y) {
+    if (bas.v == null) { bas.v = bas.deger; bas.px = bas.x; bas.py = bas.y; }
+    var dx = x - bas.px, dy = y - bas.py, q = Math.PI - 2 * Math.PI * yilDegeri(bas.v);
+    bas.px = x; bas.py = y;
+    var tx = YOR.rx * Math.sin(q), ty = -YOR.ry * Math.cos(q), t2 = tx * tx + ty * ty;
+    bas.v = Math.min(100, Math.max(0, bas.v + 100 * (dx * tx + dy * ty) / (2 * Math.PI * t2)));
+    return bas.v;
+  }
+  // Öğle Güneşi'nin yüksekliği (radyan, 39° K): ocakta alçak, temmuzda yüksek
+  function gunesYuksek(f) { return 0.89 - 0.41 * Math.cos(2 * Math.PI * (f + 0.03)); }
+  var AYLAR = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+  var MEVSIMLER = ['kış', 'kış', 'ilkbahar', 'ilkbahar', 'ilkbahar', 'yaz', 'yaz', 'yaz', 'sonbahar', 'sonbahar', 'sonbahar', 'kış'];
+  function ayAdi(f) { return ((Math.floor((((f % 1) + 1) % 1) * 12 + 1e-6)) % 12 + 12) % 12; }
+
   DO.KodDersSahne['akaid-03'] = function (api) {
     var T = api.tuval, kel = api.kelime, C = api.cumle, el = DO.el, svg = api.svg, E2 = api.ciz.ogeler;
     var kureNokta = DO.KdTuval.kureNokta;
-    var GORSELLER = ['aksam-gok', 'gece-gok', 'tan-gok', 'gun-gok', 'kis-gok', 'kervansaray', 'kervansaray-gece', 'dam', 'bardak', 'ucak', 'gok-kuresi',
-      'dunya-harita', 'dunya', 'gunes', 'ay', 'uzay', 'kagit', 'kervan', 'araba', 'kalem', 'gezegen-1', 'gezegen-2', 'gezegen-3', 'gezegen-4', 'gezegen-5', 'gezegen-6', 'gezegen-7', 'gezegen-8'];
+    var GORSELLER = ['aksam-gok', 'gece-gok', 'tan-gok', 'gun-gok', 'kis-gok', 'kervansaray', 'kervansaray-gece', 'dam', 'bardak', 'ucak',
+      'dunya-harita', 'dunya', 'gunes', 'ay', 'ay-buyuyen', 'ay-kuculen', 'uzay', 'kagit', 'kervan', 'araba', 'kalem', 'gezegen-1', 'gezegen-2', 'gezegen-3', 'gezegen-4', 'gezegen-5', 'gezegen-6', 'gezegen-7', 'gezegen-8'];
     var liste = {};
     GORSELLER.forEach(function (a) { liste[a] = api.yol('gorsel/' + a + '.webp'); });
     var hazir = T.yukle(liste, api.yukleniyor);
@@ -74,17 +102,20 @@
       ['Güneş sönmedi.', 'etiket', 800, 96, AN.sonmedi, AN.donen - 0.1],
       ['Dönen bizdik.', 'etiket', 800, 96, AN.donen, AN.tur - 0.1],
       ['Bir tam tur, bir gün', 'etiket', 800, 96, AN.tur, AN.namaz + 1.6],
-      ['Kutup Yıldızı', 'etiket', 1180, 250, AN.kutup + 0.5, AN.ay - 0.2],
-      ['Işığı Güneş’ten', 'etiket', 1180, 300, AN.isik + 0.8, KES.ayYol - 0.1],
+      ['Kuzeye dönüyoruz', 'etiket', 800, 96, AN.yildiz - 0.1, AN.onlar - 0.2],      // damdan güneye bakılıyordu; Kutup Yıldızı kuzeydedir
+      ['Kutup Yıldızı: kuzey', 'etiket', 1180, 250, AN.kutup + 0.5, AN.ay - 0.2],
+      ['Güneye döndük: doğu solda', 'etiket', 800, 96, AN.ay, AN.isik - 0.1],
+      ['Işığı Güneş’ten', 'etiket', 400, 445, AN.isik + 0.8, KES.ayYol - 0.1],       // Ay'ın altında
       ['yaklaşık bir ay', 'etiket', 800, 96, AN.yolu + 1.6, AN.farkli - 0.1],
       ['Dünya’dan bakınca', 'etiket', 1340, 336, AN.farkli + 0.3, KES.hilal - 0.1],
       ['Ramazan: ince hilâl görülünce', 'etiket', 800, 96, AN.ramazan + 0.3, KES.haller - 0.1],
-      ['önce büyür', 'etiket', 520, 120, AN.buyur, D.ayyolu + 0.6],     // durakta ipucu olarak kalır
-      ['sonra küçülür', 'etiket', 1080, 120, AN.buyur + 1.1, D.ayyolu + 0.6],
+      ['bir ay boyunca', 'etiket', 800, 92, AN.buyur, D.ayyolu + 0.6],  // beş hâl bir gecenin değil, bir ayın gökyüzüdür
+      ['önce büyür', 'etiket', 430, 132, AN.buyur, D.ayyolu + 0.6],     // durakta ipucu olarak kalır
+      ['sonra küçülür', 'etiket', 1170, 132, AN.buyur + 1.1, D.ayyolu + 0.6],
       ['Kışın neden üşürüz?', 'etiket', 800, 96, AN.kis, AN.ocak - 0.1],
       ['Güneş uzaklaştığı için mi?', 'etiket', 800, 170, AN.uzak, AN.ocak - 0.1],
-      ['ocak: en yakın', 'etiket', 300, 205, kel('ocak'), AN.sir],
-      ['temmuz: en uzak', 'etiket', 1300, 205, AN.temmuz, AN.sir],
+      ['ocak: biraz daha yakın', 'etiket', 330, 300, kel('ocak'), AN.sir],
+      ['temmuz: biraz daha uzak', 'etiket', 1330, 300, AN.temmuz, AN.sir],
       ['Sır uzaklıkta değil, duruşta.', 'etiket', 800, 96, AN.sir + 0.4, AN.egik + 0.8],
       ['Işık dik gelince: yaz', 'etiket', 400, 96, AN.dik, AN.yatik - 0.1],     // Güneş sağ üstte, etiket ona binmesin
       ['Işık yatık gelince: kış', 'etiket', 400, 96, AN.yatik, AN.egiklik + 1.2],
@@ -119,6 +150,15 @@
       });
     }
     var hiz = yazi('0', 'sayi', 800, 170), hizBirim = yazi('km/saat', 'kucuk', 800, 245);
+    function yaziMetin(e, m) { if (e._m !== m) { e.textContent = m; e._m = m; } }
+    var etMevsim = yazi('', 'etiket', 830, 76);
+    // Ay'ın hâlleri bir ayın günlerine yazılır: beş hâl bir gecenin değil, bir ayın gökyüzüdür (durakta boş yuvalarınkini motor yazar)
+    var GUNLER = ['3. gün', '7. gün', '15. gün', '22. gün', '26. gün'];
+    var etGun = GUNLER.map(function (m, i) { return yazi(m, 'kucuk', [250, 525, 800, 1075, 1350][i], [400, 300, 260, 300, 400][i] + 92); });                        // yörüngede: hangi ay, hangi mevsim
+    var etOlcek = yazi('ölçekli değil', 'kucuk', 1330, 690);
+    // "olmasaydı" kanıtları: dönüş yoksa aylarca gece ve gündüz, eğiklik yoksa hava hep aynı, Ay yoksa gece daha karanlık
+    var etOlmasa = [yazi('aylarca gece', 'etiket', 250, 540), yazi('aylarca gündüz', 'etiket', 1040, 540)];
+    var etEksen = [yazi('Ocak', 'etiket', 250, 440), yazi('hava hep aynı', 'etiket', 250, 494)], etAy = yazi('gece daha karanlık', 'etiket', 1050, 400);
 
     /* ——— SVG: işaretler, yollar, eksen, ışınlar ——— */
     var defs = E2('defs', {}, svg);
@@ -126,7 +166,6 @@
       var g = E2('linearGradient', Object.assign({ id: id, x1: '0', y1: '0', x2: '1', y2: '1' }, yon || {}), defs);
       durak.forEach(function (d) { E2('stop', { offset: d[0], 'stop-color': d[1] }, g); });
     }
-    grad('kd3-bant', [['0', 'rgba(255,232,160,0.04)'], ['1', 'rgba(255,232,160,0.42)']], { x2: '1', y2: '0' });
     grad('kd3-demet', [['0', 'rgba(255,236,170,0.1)'], ['1', 'rgba(255,236,170,0.32)']], { x2: '0', y2: '1' });
     var hava = E2('radialGradient', { id: 'kd3-hava', cx: '0.5', cy: '0.55', r: '0.5' }, defs);
     [['0', 'rgba(190,235,255,0)'], ['0.72', 'rgba(190,235,255,0.06)'], ['0.94', 'rgba(205,240,255,0.32)'], ['1', 'rgba(220,245,255,0)']]
@@ -143,13 +182,12 @@
     var demet = yol({ fill: 'url(#kd3-demet)' });                       // ışık demetinin gövdesi
     var isinlar = [0, 1, 2, 3, 4, 5, 6].map(function () { return yol({ stroke: '#ffe08a', 'stroke-width': 5, 'stroke-linecap': 'round' }); });
     var isikHavuz = yol({ fill: 'rgba(255,214,110,1)', stroke: 'rgba(255,240,190,0.9)', 'stroke-width': 3 });
-    var bant = yol({ fill: 'url(#kd3-bant)' });                         // Güneş'ten Ay'a giden ışık
     var kubbe = yol({ fill: 'url(#kd3-hava)', stroke: 'rgba(225,246,255,0.55)', 'stroke-width': 3, 'stroke-dasharray': '3 10', 'stroke-linecap': 'round' });
     var iplikler = [0, 1, 2].map(function () { return yol({ stroke: '#ffe29a', 'stroke-width': 3 }); });
     var gezegenYol = [0, 1, 2, 3, 4, 5, 6, 7].map(function () { return yol({ stroke: 'rgba(255,226,154,0.55)', 'stroke-width': 2 }); });
     var cerceve = yol({ stroke: '#d9a93f', 'stroke-width': 6 });
     var halka = yol({ stroke: '#ffe29a', 'stroke-width': 4 });
-    var SVG_HEPSI = [noktaIz, noktaHale, nokta, yorunge, eksen, donusOku, okUcu, demet, isikHavuz, bant, kubbe, cerceve, halka].concat(isinlar, iplikler, gezegenYol);
+    var SVG_HEPSI = [noktaIz, noktaHale, nokta, yorunge, eksen, donusOku, okUcu, demet, isikHavuz, kubbe, cerceve, halka].concat(isinlar, iplikler, gezegenYol);
     function daire(cx, cy, r) { return 'M' + (cx - r) + ' ' + cy + ' a' + r + ' ' + r + ' 0 1 0 ' + 2 * r + ' 0 a' + r + ' ' + r + ' 0 1 0 ' + -2 * r + ' 0Z'; }
     function elips(cx, cy, rx, ry) { return 'M' + (cx - rx) + ' ' + cy + ' a' + rx + ' ' + ry + ' 0 1 0 ' + 2 * rx + ' 0 a' + rx + ' ' + ry + ' 0 1 0 ' + -2 * rx + ' 0Z'; }
     function f1(x) { return x.toFixed(1); }
@@ -157,14 +195,24 @@
     /* ——— ortak katmanlar ——— */
     var PG = 1696, PH = 954;
     function plaka(ad, o) { return T.ciz(ad, Object.assign({ g: PG, h: PH }, o || {})); }
-    var KURE = { x: 800, y: 536, g: 250 }, BARDAK = { x: 800, y: 700, g: 250 };
-    function yildizlar(a, o, merkez, donme, pay, sol, sag, ust) {
+    // Dam tepsisindeki küre dam görselinin içinde boyalıdır (kâseye oturur). Yaklaşırken dersin kendi Dünya'sı
+    // (aşağıdaki "dunya" gölgelendiricisi) tam boyalı kürenin üstünde belirir ve kamera ona iner.
+    var KURE = { x: 800, y: 527, R: 82 }; KURE.fy = KURE.y + KURE.R * 0.97;
+    var BARDAK = { x: 800, y: 700, g: 250 };
+    var Z_F = 2.93;                                      // yaklaşmanın sonundaki kamera yakınlığı: küre uzaydaki Dünya'nın boyuna gelir
+    function yildizlar(a, o, merkez, donme, pay, sol, sag, ust, donMerkezi) {
       if (o <= 0.01) return;
       var x0 = sol == null ? -20 : sol, x1 = sag == null ? 1620 : sag, y0 = ust == null ? -20 : ust;
       var mx = merkez ? merkez[0] : 1180, my = merkez ? merkez[1] : 170;
       for (var i = 0; i < 150; i++) {
-        var r = 40 + hash(i, 1) * 1250, f = hash(i, 2) * Math.PI * 2 - (donme || 0);   // kuzeye bakınca yıldızlar saat yönünün tersine döner
+        // kuzeye bakınca yıldızlar Kutup Yıldızı çevresinde saat yönünün tersine döner; güneye bakınca (donMerkezi) ufkun
+        // altındaki güney kutbu çevresinde, soldan sağa (saat yönünde) akar
+        var r = 40 + hash(i, 1) * 1250, f = hash(i, 2) * Math.PI * 2 - (donMerkezi ? 0 : (donme || 0));
         var x = mx + Math.cos(f) * r, y = my + Math.sin(f) * r * 0.82;
+        if (donMerkezi && donme) {
+          var rx0 = x - donMerkezi[0], ry0 = y - donMerkezi[1], cs = Math.cos(donme), sn = Math.sin(donme);
+          x = donMerkezi[0] + rx0 * cs - ry0 * sn; y = donMerkezi[1] + rx0 * sn + ry0 * cs;
+        }
         if (y > (pay || 640) || y < y0 || x < x0 || x > x1) continue;
         var p = 0.55 + 0.45 * Math.sin(a * (0.6 + hash(i, 3)) + i);
         T.iz(x, y, 2.4 + hash(i, 4) * 2.2, 2.4 + hash(i, 4) * 2.2, 0, 1, 0.94, 0.78, o * p);
@@ -191,9 +239,16 @@
       o = o || {};
       var d = o.d == null ? 1 : o.d, s = ekranR(cx, cy, R, d), op = o.o == null ? 1 : o.o;
       if (op <= 0.01) return;
-      if (!o.gecis) { T.iz(s.x, s.y, s.r * 1.13, s.r * 1.13, 0, 0.45, 0.8, 1, 0.3 * op); T.izBitir(); }
-      T.ciz('dunya-harita', { x: cx, y: cy, g: R * 2, d: d, o: op, parilti: 0.3, gecis: o.gecis,
+      if (!o.gecis && o.hale !== false) { T.iz(s.x, s.y, s.r * 1.13, s.r * 1.13, 0, 0.45, 0.8, 1, 0.3 * op); T.izBitir(); }
+      T.ciz('dunya-harita', { x: cx, y: cy, g: R * 2, d: d, o: op, parilti: 0.3, gecis: o.gecis, carp: o.carp,
         kure: { boylam: k.boylam || 0, egim: k.egim || 0, bakis: k.bakis || 0, gunes: k.gunes || [1, 0, 0], isik: k.isik == null ? 0.96 : k.isik, yedek: 'dunya' } });
+    }
+    // Tepsideki küre: temas gölgesi, küre ve yay. k: 0 akşam damı, 1 uzaydaki Dünya'nın ışığı (yaklaşmanın sonu)
+    function tepsiKure(carp, k) {
+      k = k || 0;
+      var op = Math.max(0, Math.min(1, (k - 0.2) / 0.3));          // yaklaşmada boyalı kürenin yerini canlı Dünya alır
+      if (op <= 0.01) return;
+      dunya(KURE.x, KURE.y, KURE.R, { boylam: KER.bo, bakis: EV.bakis, gunes: [kr(0.78, 1, k), kr(0.25, 0, k), kr(0.57, 0, k)], isik: kr(0.55, 0.96, k) }, { carp: carp, hale: false, o: op });
     }
     // Ay: f 0 yeni, 0.25 ilk dördün, 0.5 dolunay, 0.75 son dördün; ya da açıkça verilen Güneş yönü
     function ayYon(f) { var a = 2 * Math.PI * f; return [Math.sin(a), 0, -Math.cos(a)]; }
@@ -209,25 +264,31 @@
     var gv = 50, mv = 50, cikan = null, ayYer = {}, aSimdi = 0;
     // Kervansarayın haritadaki yeri (radyan): Anadolu, 39° K, 35° D
     var KER = { en: 0.68, bo: 0.61 };
-    var EV = { x: 650, y: 470, r: 250, bakis: 0.32 };           // uzaydaki Dünya; Güneş sağda
+    var EV = { x: 760, y: 420, r: KURE.R * Z_F, bakis: 0.32 };    // uzaydaki Dünya; Güneş sağda. Yaklaşmanın sonunda tepsideki küre tam bu boya ve yere gelir
     function lam(v) { return (v - 50) / 50 * 1.2; }             // noktanın ekrandaki boylamı: 0 gece (sol), 50 sabah çizgisi, 100 gündüz (sağ)
     function evKure(l) { return { boylam: KER.bo - l, bakis: EV.bakis, gunes: [1, 0, 0] }; }
     function noktaYer(v) { return kureNokta(EV.x, EV.y, EV.r, KER.en, KER.bo, evKure(lam(v))); }
-    var YOR = { x: 800, y: 400, rx: 560, ry: 170 };     // yörünge; Güneş biraz sola kayık
-    function dunyaYer(v) {   // v: 0 ocak (sol uç) · 50 nisan (ön) · 100 temmuz (sağ uç)
-      var q = Math.PI - v / 100 * Math.PI;
-      return { x: YOR.x + YOR.rx * Math.cos(q), y: YOR.y + YOR.ry * Math.sin(q), q: q };
-    }
-    var GUNES_YOR = { x: 760, y: 385 };
     var EGIM = 0.41;                                      // Dünya'nın ekseni: 23° eğik (olmasaydı sahnesi: sağa yatık)
     // Yörüngede kuzey kutbu yıl boyu sola yatık durur: ocakta Güneş sağda kalır, kuzey Güneş'ten uzağa bakar
     // (ışık yatık, kış); temmuzda Güneş solda, kuzey Güneş'e bakar (ışık dik, yaz)
     var EGIM_YOR = -0.41;
-    // eksenin kutuplardan dışarı taşan iki ucu (eksen kürenin içinden geçer, içi görünmez)
-    function eksenYol(cx, cy, R, e, uz) {
-      var sx = Math.sin(e), sy = -Math.cos(e), a = R * 1.02, b = R * (uz || 1.5);
-      return 'M' + f1(cx + sx * a) + ' ' + f1(cy + sy * a) + ' L' + f1(cx + sx * b) + ' ' + f1(cy + sy * b) +
-        ' M' + f1(cx - sx * a) + ' ' + f1(cy - sy * a) + ' L' + f1(cx - sx * b) + ' ' + f1(cy - sy * b);
+    // eksenin kutuplardan dışarı taşan iki ucu (eksen kürenin içinden geçer, içi görünmez). kes: Dünya Güneş'in
+    // arkasındaysa ucun Güneş'in önüne taşan parçası çizilmez
+    function diskDisi(x0, y0, x1, y1, c) {
+      var dx = x1 - x0, dy = y1 - y0, fx = x0 - c.x, fy = y0 - c.y, A = dx * dx + dy * dy, B = 2 * (fx * dx + fy * dy), D = B * B - 4 * A * (fx * fx + fy * fy - c.r * c.r);
+      if (D <= 0) return [[x0, y0, x1, y1]];
+      var s = Math.sqrt(D), u0 = (-B - s) / (2 * A), u1 = (-B + s) / (2 * A), o = [];
+      if (u0 >= 1 || u1 <= 0) return [[x0, y0, x1, y1]];
+      if (u0 > 0) o.push([x0, y0, x0 + dx * u0, y0 + dy * u0]);
+      if (u1 < 1) o.push([x0 + dx * u1, y0 + dy * u1, x1, y1]);
+      return o;
+    }
+    function eksenYol(cx, cy, R, e, uz, kes) {
+      var sx = Math.sin(e), sy = -Math.cos(e), a = R * 1.02, b = R * (uz || 1.5), d = '';
+      [[cx + sx * a, cy + sy * a, cx + sx * b, cy + sy * b], [cx - sx * a, cy - sy * a, cx - sx * b, cy - sy * b]].forEach(function (g) {
+        (kes ? diskDisi(g[0], g[1], g[2], g[3], kes) : [g]).forEach(function (p) { d += 'M' + f1(p[0]) + ' ' + f1(p[1]) + ' L' + f1(p[2]) + ' ' + f1(p[3]) + ' '; });
+      });
+      return d || 'M0 0';
     }
 
     /* ——— bölümler ——— */
@@ -256,22 +317,30 @@
       T.bas(a, { x: kr(800, 930, yak), y: kr(470, 380, yak), z: kr(1.02, 1.5, yak) });
       plaka('kervansaray', { d: 0.9, parilti: 0.7, carp: [kr(1, 0.85, ak), kr(1, 0.72, ak), kr(1, 0.78, ak)] });
     }
-    // 2. Dam: akşam göğü, batan Güneş, küre
-    function dam(t, a, kamera) {
+    // 2. Dam: akşam göğü, batan Güneş, tepsideki küre. Yaklaşırken kamera tepsiye iner; plaka büyütülmez bulanmasın diye
+    // sonunda dam çözülüp uzay açılır; canlı Dünya boyalı kürenin yerinde belirdiği için geçiş kesilmez.
+    // k yaklaşma (0-1, kamera), ge yakın planın görünürlüğü
+    function yaklasKamera(k) {
+      var cx = 800 - (EV.x - 800) / Z_F, cy = KURE.y - (EV.y - 450) / Z_F;
+      return { x: kr(800, cx, k), y: kr(450, cy, k), z: kr(1.04, Z_F, k) };
+    }
+    function dam(t, a, kamera, ge, k) {
       var ak = tw(t, AN.aksam, 6, Y.sin);
       T.bas(a, kamera || { x: 800 + Math.sin(a * 0.05) * 10, y: 450, z: kr(1.12, 1.04, tw(t, AN.aksam, 5, Y.sin)) });
       plaka('aksam-gok', { d: 0.25, parilti: 1 });
       T.ciz('gunes', { x: 1230, y: kr(300, 400, ak), g: 220, r: a * 1.5, d: 0.3, parilti: 1 });
-      plaka('dam', { d: 1 });
-      T.ciz('gok-kuresi', { x: KURE.x, y: KURE.y, g: KURE.g, ax: 0.5, ay: 1, d: 1, parilti: 0.8 });
+      if (ge > 0.001) plaka('uzay', { d: 0, o: ge });                 // sonunda dam çözülür, uzay açılır; Dünya yerinde kalır
+      if (!(ge > 0.999)) plaka('dam', { d: 1, o: 1 - (ge || 0) });
+      tepsiKure(null, k || 0);
     }
     // 3. Uzay: Güneş sağda, Dünya kendi ekseninde döner, kervansaray noktası haritaya yapışık
     function dunyaUzay(t, a, ac, l) {
       T.bas(a, { x: 800, y: 450, z: 1 });
-      plaka('uzay', { d: 0.2, parilti: 0.6, gecis: ac });
+      plaka('uzay', { d: 0.2, parilti: 0.6 });                     // yaklaşmanın sonunda uzay ve Dünya zaten ekranda: yeniden açılmaz
       yildizlar(a, 0.45, [800, 450], a * 0.004, 900);
-      T.ciz('gunes', { x: 1480, y: 420, g: 360, r: a * 2, d: 0.4, parilti: 1, gecis: ac });
-      dunya(EV.x, EV.y, EV.r, evKure(l), { gecis: ac });
+      // Güneş Dünya'dan çok daha büyüktür: ekrana yalnız bir yayı sığar (ölçekli değil)
+      T.ciz('gunes', { x: 1760, y: 420, g: 900, r: a * 1.2, d: 0.4, parilti: 1, gecis: ac });
+      dunya(EV.x, EV.y, EV.r, evKure(l));
       var go = ac ? ac.k : 1;
       // kervansarayın enlem yolu (yalnız önde kalan kısmı) ve nokta
       var d = '';
@@ -284,12 +353,13 @@
       return p;
     }
     // köşe penceresi: damdan o anki gök (ışığın açısı burada okunur, küçük kalmasın)
-    var PEN = { x: 250, y: 160, g: 420, h: 236 };
-    function pencereCiz(x, y, g, h, gokler, kar0, isinAci, yesil, yon, isinO) {
-      gokler.forEach(function (o) { if (o[1] > 0.01) T.ciz(o[0], { x: x, y: y, g: g, h: h, d: 0, o: o[1] }); });
-      T.ciz('dam', { x: x, y: y, g: g, h: h, d: 0, carp: kar0 > 0 ? [1 + 0.25 * kar0, 1 + 0.25 * kar0, 1 + 0.3 * kar0] : yesil ? [0.9, 1.08, 0.85] : null, ekle: kar0 > 0 ? [0.3 * kar0, 0.32 * kar0, 0.36 * kar0] : null });
-      goster(cerceve, 'M' + (x - g / 2) + ' ' + (y - h / 2) + ' h' + g + ' v' + h + ' h' + -g + 'Z', 1);
-      if (isinAci != null) isinCiz(x - (yon || 1) * g * 0.18, y + h * 0.4, isinAci, 40, h * 0.9, 0.6 * (isinO == null ? 1 : isinO), null, yon);
+    var PEN = { x: 230, y: 150, g: 380, h: 214 }, PEN_O = { x: 250, y: 300, g: 380, h: 214 };   // olmasa durağında sahne 130 px yukarı kayar
+    function pencereCiz(x, y, g, h, gokler, kar0, isinAci, yesil, yon, isinO, ao) {
+      ao = ao == null ? 1 : ao;
+      gokler.forEach(function (o) { if (o[1] * ao > 0.01) T.ciz(o[0], { x: x, y: y, g: g, h: h, d: 0, o: o[1] * ao }); });
+      T.ciz('dam', { x: x, y: y, g: g, h: h, d: 0, o: ao, carp: kar0 > 0 ? [1 + 0.25 * kar0, 1 + 0.25 * kar0, 1 + 0.3 * kar0] : yesil ? [0.9, 1.08, 0.85] : null, ekle: kar0 > 0 ? [0.3 * kar0, 0.32 * kar0, 0.36 * kar0] : null });
+      goster(cerceve, 'M' + (x - g / 2) + ' ' + (y - h / 2) + ' h' + g + ' v' + h + ' h' + -g + 'Z', ao);
+      if (isinAci != null) isinCiz(x - (yon || 1) * g * 0.18, y + h * 0.4, isinAci, 40, h * 0.9, 0.6 * ao * (isinO == null ? 1 : isinO), null, yon);
       else isinGizle();
     }
     // Paralel ışınlar: hep aynı genişlikte bir demet; yere dik gelince küçük ve parlak, yatık gelince geniş ve sönük bir yer aydınlatır
@@ -352,26 +422,15 @@
       yildizlar(a, 0.8, [1180, 170], 0, 560);
       // doğu solda: dolunay, Güneş'in battığı yerin karşısından doğar ve sağa doğru yükselir
       var mx = kr(300, 380, dog), my = kr(640, 270, dog);
-      // Ay'ın ışığı Güneş'ten: batıdaki, ufkun altındaki Güneş'ten gelen yumuşak bir demet.
-      // Gökte, damdaki kürenin arkasından geçer (tuvale çizilir, küre önde kalır)
+      // Dolunay Güneş'in tam karşısında doğar: Güneş'ten Ay'a düz bir ışık bandı çizilmez (ışık Dünya'nın yanından geçip Ay'a
+      // ulaşır, bu bölümde yalnız "ışığı Güneş'ten" yazısı ve Ay'ın hafifçe parlaması gösterilir)
       var li = pencere(t, AN.isik, KES.ayYol - 0.15, 0.8, 0.4);
-      if (li > 0.01) {
-        var e = T.ekran(mx, my, 0.3), sx = 1700, sy = 470, dx = e.x - sx, dy = e.y - sy, L = Math.hypot(dx, dy), aci = Math.atan2(dy, dx);
-        var ox = (sx + e.x) / 2, oy = (sy + e.y) / 2;
-        T.iz(ox, oy, L / 2, 120, aci, 1, 0.86, 0.55, 0.16 * li);
-        T.iz(ox, oy, L / 2, 70, aci, 1, 0.9, 0.62, 0.22 * li);
-        for (var k = 0; k < 6; k++) { var u = 0.35 + k * 0.12; T.iz(sx + dx * u, sy + dy * u, 70, 46, aci, 1, 0.92, 0.7, 0.05 * li * (k + 1)); }
-        T.iz(1610, 470, 230, 110, 0, 1, 0.78, 0.42, 0.32 * li);   // batıda, ufkun altında Güneş
-        T.izBitir();
-      }
-      isima(mx, my, 170, [1, 0.95, 0.8], 0.22 * dog, 0.3);
+      isima(mx, my, 170, [1, 0.95, 0.8], 0.22 * dog + 0.12 * li * (0.5 + 0.5 * Math.sin(a * 3)), 0.3);
       ay(mx, my, 100, null, 1, null, 0.3);                           // damın ardından yükselir
       plaka('dam', { d: 1, carp: [0.5, 0.55, 0.82] });
-      T.ciz('gok-kuresi', { x: KURE.x, y: KURE.y, g: KURE.g, ax: 0.5, ay: 1, d: 1, carp: [0.62, 0.68, 0.95] });
-      gizle(bant);
+      tepsiKure([0.62, 0.68, 0.95]);
     }
     function ayYorunge(t, a) {
-      gizle(bant);
       T.bas(a, { x: 800, y: 450, z: 1 });
       plaka('uzay', { d: 0.2, parilti: 0.6, carp: [0.8, 0.8, 0.9] });
       yildizlar(a, 0.5, [800, 450], 0, 900);
@@ -392,7 +451,7 @@
       } else gizle(cerceve);
     }
     function hilal(t, a) {
-      gizle(cerceve); gizle(bant);
+      gizle(cerceve);
       var hil = tw(t, KES.hilal, 1.4, Y.sin);
       T.bas(a, { x: 800, y: 450, z: kr(1.08, 1.03, hil) });
       plaka('aksam-gok', { d: 0.25, parilti: 1, carp: [0.7, 0.62, 0.78] });
@@ -400,18 +459,20 @@
       isima(1170, 400, 120, [1, 0.92, 0.78], 0.2 * hil, 0.3);
       ay(1170, 400, 66, [0.55, -0.3, -0.78], hil, 0.1, 0.3);
       plaka('dam', { d: 1, carp: [0.72, 0.62, 0.72] });
-      T.ciz('gok-kuresi', { x: KURE.x, y: KURE.y, g: KURE.g, ax: 0.5, ay: 1, d: 1, carp: [0.8, 0.7, 0.8] });
+      tepsiKure([0.8, 0.7, 0.8]);
     }
     function ayHalleri(t, a) {
-      gizle(cerceve); gizle(bant);
+      gizle(cerceve);
       T.bas(a, { x: 800, y: 450, z: 1.02 });
       plaka('gece-gok', { d: 0.25, parilti: 1 });
       yildizlar(a, 0.7, [1180, 170], 0, 600);
+      // Durakta boş yuvalara oturan Ay resimlerini motor kendisi çizer (canli): sahne yalnız ilk ve son hilâli ve
+      // yerine oturan resmin ışımasını çizer; durak kapanınca beş hâl de sahnenin kendisinden görünür
       var ac = acik === 'ayyolu';
       AY_YER.forEach(function (y, i) {
         var gorun = ac ? (i === 0 || i === 4 || ayYer[i] ? 1 : 0) : tw(t, AN.buyur + i * 0.35, 0.5);
         if (gorun > 0.01) isima(y.x, y.y, 95, [1, 0.95, 0.8], 0.14 * gorun, 0.25);
-        ayHal(y.x, y.y, 62, AY_HAL[i], gorun, 0.26, 0.25);
+        if (!ac || i === 0 || i === 4) { ayHal(y.x, y.y, 62, AY_HAL[i], gorun, 0.26, 0.25); gos(etGun[i], gorun * 0.95); } else gos(etGun[i], ayYer[i] ? 0.95 : 0);
       });
     }
     var AY_YER = [{ x: 250, y: 400 }, { x: 525, y: 300 }, { x: 800, y: 260 }, { x: 1075, y: 300 }, { x: 1350, y: 400 }];
@@ -424,39 +485,46 @@
         plaka('kis-gok', { d: 0.25, parilti: 0.4 });
         kar(a, 0.6 * (1 - yo), 0, 620);
         plaka('dam', { d: 1, carp: [1.12, 1.14, 1.24], ekle: [0.2, 0.22, 0.26] });
-        T.ciz('gok-kuresi', { x: KURE.x, y: KURE.y, g: KURE.g, ax: 0.5, ay: 1, d: 1, carp: [1.05, 1.08, 1.16] });
+        tepsiKure([1.05, 1.08, 1.16]);
         kar(a, 1 - yo);
-        if (yo <= 0) { gizle(yorunge); gizle(eksen); return; }
+        if (yo <= 0) { gizle(yorunge); gizle(eksen); gizle(cerceve); isinGizle(); gos(etMevsim, 0); return; }   // sarınca yörüngenin penceresi ve yazısı kalmasın
       }
-      yorungeCiz(t, a, acik === 'mevsim' ? mv : yorungeV(t), yo < 1 ? { k: yo, yon: 3, yumusak: 0.14, ac: true } : null);
+      yorungeCiz(t, a, acik === 'mevsim' ? yilDegeri(mv) : yorungeF(t), yo < 1 ? { k: yo, yon: 3, yumusak: 0.14, ac: true } : null);
     }
-    function yorungeV(t) {
+    // Anlatımdaki yıl: ocakta durur, temmuza yürür, eğik duruşunu bozmadan Ekim ve Ocak'tan geçip bahara döner
+    function yorungeF(t) {
       if (t < AN.temmuz) return 0;
-      if (t < AN.sir) return tw(t, AN.temmuz, 1.6, Y.ikili) * 100;
-      if (t < AN.egik) return 100;
-      return 100 - tw(t, AN.bozmaz, 3.4, Y.sin) * 50;
+      if (t < AN.sir) return tw(t, AN.temmuz, 1.6, Y.ikili) * 0.5;
+      if (t < AN.egik) return 0.5;
+      if (t < D.mevsim) return 0.5 + tw(t, AN.bozmaz, 3.4, Y.sin) * 0.75;
+      // durak kapandı: çocuğun bıraktığı yerden bahara yumuşakça döner
+      return kr(yilDegeri(mv), 0.25, Y.sin(ic(t, D.mevsim, 0.7)));
     }
-    function yorungeCiz(t, a, v, ac) {
+    // Yörünge: tuvalde noktalı bir yol (Dünya'nın ve Güneş'in altından geçer)
+    function yorungeNokta(o) {
+      for (var i = 0; i < 96; i++) { var q = i / 96 * Math.PI * 2; T.iz(YOR.x + YOR.rx * Math.cos(q), YOR.y + YOR.ry * Math.sin(q), 3.4, 3.4, 0, 1, 0.89, 0.6, o); }
+      T.izBitir();
+    }
+    function yorungeCiz(t, a, f, ac) {
       T.bas(a, { x: 800, y: 450, z: 1 });
       plaka('uzay', { d: 0.2, parilti: 0.6, gecis: ac, carp: [0.8, 0.8, 0.9] });
       yildizlar(a, 0.45, [800, 450], 0, 900);
       var go = ac ? ac.k : 1;
-      goster(yorunge, elips(YOR.x, YOR.y, YOR.rx, YOR.ry), 0.8 * go);
-      T.ciz('gunes', { x: GUNES_YOR.x, y: GUNES_YOR.y, g: 230, r: a * 2, d: 1, parilti: 1, gecis: ac });
-      var p = dunyaYer(v), r = 74 * kr(1, 1.1, Math.sin(p.q));
-      // Güneş yönü: ekranda Güneş'e doğru, önde iken biraz da arkaya
-      var gx = GUNES_YOR.x - p.x, gy = -(GUNES_YOR.y - p.y) * 2.4, gz = -Math.sin(p.q) * 0.35 * Math.hypot(gx, gy);
-      dunya(p.x, p.y, r, { boylam: -a * 0.9, egim: EGIM_YOR, bakis: 0.12, gunes: [gx, gy, gz] }, { gecis: ac });
-      goster(eksen, eksenYol(p.x, p.y, r, EGIM_YOR, 1.55), go);
-      // dam penceresi: ışık dikleşir, kar erir
-      var kisK = v < 40 ? 1 - v / 40 : 0, yazK = v > 60 ? (v - 60) / 40 : 0;
+      yorungeNokta(0.8 * go);
+      var p = yilKonum(f), r = 72 * (1 + 0.1 * Math.sin(p.q)), arkada = p.y < GUNES_YOR.y;
+      var kure = { boylam: -a * 0.9, egim: EGIM_YOR, bakis: 0.12, gunes: gunesIsigi(p, GUNES_YOR) };
+      // arkadaki Dünya Güneş'in arkasında kalır, öndeki Güneş'in önünden geçer
+      if (arkada) dunya(p.x, p.y, r, kure, { gecis: ac });
+      T.ciz('gunes', { x: GUNES_YOR.x, y: GUNES_YOR.y, g: 210, r: a * 2, d: 1, parilti: 1, gecis: ac });
+      if (!arkada) dunya(p.x, p.y, r, kure, { gecis: ac });
+      goster(eksen, eksenYol(p.x, p.y, r, EGIM_YOR, 1.55, arkada ? { x: GUNES_YOR.x, y: GUNES_YOR.y, r: 84 } : null), go);
+      // dam penceresi: ışık dikleşir, kar erir; üstte hangi ayda ve hangi mevsimde olduğumuz
       if (acik === 'mevsim' || t >= AN.bozmaz) {
-        // ışık Güneş'in olduğu taraftan gelir: ocakta Güneş Dünya'nın sağında, temmuzda solunda.
-        // Taraf değişirken ışınlar söner, öbür yandan yeniden belirir
-        var hx = (GUNES_YOR.x - p.x) / YOR.rx;
-        pencereCiz(PEN.x, PEN.y, PEN.g, PEN.h, [['kis-gok', kisK], ['gun-gok', 1 - kisK]], kisK, kr(0.42, 1.25, v / 100), yazK > 0.2, hx >= 0 ? 1 : -1, Math.min(1, Math.abs(hx) / 0.06));
+        var ek = gunesYuksek(f), kisK = sinirla((0.62 - ek) / 0.12, 0, 1), yazK = sinirla((ek - 1.0) / 0.2, 0, 1), m = ayAdi(f);
+        pencereCiz(PEN.x, PEN.y, PEN.g, PEN.h, [['kis-gok', kisK], ['gun-gok', 1 - kisK]], kisK, ek, yazK > 0.2, 1, 1);
         kar(a, kisK * 0.8, PEN.y - PEN.h / 2 + 4, PEN.y + PEN.h / 2 - 4, PEN.x - PEN.g / 2, PEN.x + PEN.g / 2);
-      } else { gizle(cerceve); isinGizle(); }
+        yaziMetin(etMevsim, AYLAR[m] + ' · ' + MEVSIMLER[m]); gos(etMevsim, go);
+      } else { gizle(cerceve); isinGizle(); gos(etMevsim, 0); }
       return p;
     }
     // 7. Işık: aynı demet dik ve yatık gelir
@@ -470,15 +538,19 @@
       kar(a, yatik * 0.85);
       isinCiz(P.x, P.y, aci, 150, kr(560, 800, yatik), cik, { uz: 120, g: 190 });
     }
-    // 8. Olmasaydı: dönen Dünya, eğik eksen, dönüş halkası, Ay
+    // 8. Olmasaydı: dönen Dünya, eğik eksen, dönüş halkası, Ay. Çıkarılan varlık doğru cevaptan sonra geri gelir (dondur),
+    // yanlış cevapta çıkık kalır; çıkarılan şeyin sonucu sahnede görünür:
+    //   dönüş yok: Dünya durur, bir yüzü aylarca gündüz, öbürü aylarca gece
+    //   eğik duruş yok: pencerede ay ay geçer ama ışık ve hava hiç değişmez
+    //   Ay yok: gece daha karanlık, Ay gökte yok
     function olmasaSahnesi(t, a) {
       T.bas(a, { x: 800, y: 450, z: kr(1.2, 1, tw(t, AN.uc - 0.4, 2, Y.sin)) });
       var yokAy = cikan === 'ay' ? 1 : 0, durdu = cikan === 'donus', duz = cikan === 'eksen';
-      AY_KARA += (yokAy - AY_KARA) * 0.06; EKSEN_DUZ += ((duz ? 1 : 0) - EKSEN_DUZ) * 0.06;
+      AY_KARA += (yokAy - AY_KARA) * 0.06; EKSEN_DUZ += ((duz ? 1 : 0) - EKSEN_DUZ) * 0.06; DON_K += ((durdu ? 1 : 0) - DON_K) * 0.06;
       if (!durdu) DON_A += 0.012;
       plaka('uzay', { d: 0.2, parilti: 0.6, carp: [0.85 - 0.3 * AY_KARA, 0.85 - 0.3 * AY_KARA, 0.92 - 0.26 * AY_KARA] });
       yildizlar(a, 0.6 + 0.4 * AY_KARA, [800, 450], 0, 900);
-      T.ciz('gunes', { x: 1640, y: 470, g: 380, r: a * 2, d: 0.6, parilti: 1 });
+      T.ciz('gunes', { x: 1760, y: 470, g: 900, r: a * 1.2, d: 0.6, parilti: 1 });
       var eg = EGIM * (1 - EKSEN_DUZ), O = { x: 640, y: 480, r: 180 };
       dunya(O.x, O.y, O.r, { boylam: -DON_A, egim: eg, bakis: 0.18, gunes: [1, 0.05, 0.15] });
       var ek = T.ekran(O.x, O.y, 1), er = ekranR(O.x, O.y, O.r, 1).r;
@@ -493,8 +565,17 @@
         goster(okUcu, 'M' + f1(sag[0] + ux * L) + ' ' + f1(sag[1] + uy * L) + ' L' + f1(sag[0] + wx * 15 - ux * 4) + ' ' + f1(sag[1] + wy * 15 - uy * 4) + ' L' + f1(sag[0] - wx * 15 - ux * 4) + ' ' + f1(sag[1] - wy * 15 - uy * 4) + 'Z', oo);
       } else { gizle(donusOku); gizle(okUcu); }
       ay(1250, 300, 66, [1, 0.05, 0.25], (1 - AY_KARA) * tw(t, AN.dAy - 0.3, 0.6), 0.3);
+      // kanıtlar
+      gos(etOlmasa[0], DON_K * 0.97); gos(etOlmasa[1], DON_K * 0.97); gos(etAy, AY_KARA * 0.97);
+      if (EKSEN_DUZ > 0.02) {
+        // ışık hep aynı açıdan gelir: pencere her ay aynı kalır, kar da yeşillik de olmaz
+        pencereCiz(PEN_O.x, PEN_O.y, PEN_O.g, PEN_O.h, [['gun-gok', 1]], 0, 0.9, false, 1, 1, EKSEN_DUZ);
+        yaziMetin(etEksen[0], AYLAR[[0, 3, 6, 9][Math.floor(a / 1.3) % 4]]);
+        gos(etEksen[0], EKSEN_DUZ * 0.97); gos(etEksen[1], EKSEN_DUZ * 0.97);
+      } else { gizle(cerceve); isinGizle(); gos(etEksen[0], 0); gos(etEksen[1], 0); }
     }
-    var AY_KARA = 0, EKSEN_DUZ = 0, DON_A = 0;
+    var OLMASA_SIRA = ['donus', 'eksen', 'ay'];     // ders verisindeki varlık sırası
+    var AY_KARA = 0, EKSEN_DUZ = 0, DON_A = 0, DON_K = 0;
     // 9. Geri çekilme: Dünya küçülür, dev Güneş, sekiz gezegen, yıldız kümeleri
     function geriSahnesi(t, a) {
       var g1 = tw(t, AN.geri, 2.4, Y.ikili), g2 = tw(t, AN.sekiz - 0.6, 1.6, Y.ikili), g3 = tw(t, AN.sistem + 0.4, 4, Y.ikili);
@@ -504,7 +585,7 @@
         // hepsi birbirine bağlı: Dünya, Ay, Güneş arasında altın ipler
         plaka('uzay', { d: 0.2, parilti: 0.6, carp: [0.85, 0.85, 0.92] });
         yildizlar(a, 0.6, [800, 450], 0, 900);
-        T.ciz('gunes', { x: 1640, y: 470, g: 380, r: a * 2, d: 0.6, parilti: 1 });
+        T.ciz('gunes', { x: 1760, y: 470, g: 900, r: a * 1.2, d: 0.6, parilti: 1 });
         dunya(640, 480, 180, { boylam: -DON_A - (t - AN.bagli) * 0.7, egim: EGIM, bakis: 0.18, gunes: [1, 0.05, 0.15] });
         ay(1250, 300, 66, [1, 0.05, 0.25], 1, 0.3);
         var ip = tw(t, AN.bagli, 1.4);
@@ -554,12 +635,12 @@
     function buyukSahne(t, a) {
       T.bas(a, { x: 800, y: kr(450, 420, tw(t, AN.buyuk, 6, Y.sin)), z: kr(1.02, 1.12, tw(t, AN.buyuk, 9, Y.sin)) });
       plaka('gece-gok', { d: 0.25, parilti: 1 });
-      yildizlar(a, 1, [1180, 170], (t - AN.buyuk) * 0.01, 600);
+      yildizlar(a, 1, [1180, 170], (t - AN.buyuk) * 0.01, 600, null, null, null, [800, 1500]);   // güneye bakılıyor: gök soldan sağa akar
       var ayk = ic(t, AN.buyuk - 1, 18), mx = kr(260, 1340, ayk), my = 330 - Math.sin(ayk * Math.PI) * 90;   // üstteki yazının altından geçer
       isima(mx, my, 100, [1, 0.95, 0.8], 0.18, 0.3);
       ay(mx, my, 60, null, 1, null, 0.3);
       plaka('dam', { d: 1, carp: [0.55, 0.6, 0.85] });
-      T.ciz('gok-kuresi', { x: KURE.x, y: KURE.y, g: KURE.g, ax: 0.5, ay: 1, d: 1, carp: [0.7, 0.75, 1] });
+      tepsiKure([0.7, 0.75, 1]);
     }
     // 12. Sır: bardak ve onu saran hava birlikte gider; arabada atılan kalem yine arabaya düşer
     function sirSahnesi(t, a) {
@@ -607,7 +688,7 @@
       // Güneş doğudan doğar: damdan güneye bakınca solda (akşam sağda batmıştı)
       if (tan > 0.2) T.ciz('gunes', { x: 370, y: kr(640, 300, tw(t, AN.sabah - 0.2, 6, Y.sin)), g: 260, r: a * 1.5, d: 0.3, parilti: 1, o: tan });
       plaka('dam', { d: 1, carp: [kr(0.6, 1, tan), kr(0.65, 0.96, tan), kr(0.9, 0.92, tan)] });
-      T.ciz('gok-kuresi', { x: KURE.x, y: KURE.y, g: KURE.g, ax: 0.5, ay: 1, d: 1, carp: [kr(0.7, 1, tan), kr(0.75, 1, tan), kr(1, 1, tan)] });
+      tepsiKure([kr(0.7, 1, tan), kr(0.75, 1, tan), kr(1, 1, tan)]);
     }
 
     /* ——— perde: kesmelerde kısa bir an lacivert (kâğıt bölümünde krem) karartma ——— */
@@ -653,8 +734,9 @@
         if (gc > 0) { T.bas2({ x: 800, y: 450, z: 1.12 }); plaka('aksam-gok', { d: 0.25, gecis: { k: gc, yon: 1, yumusak: 0.14, ac: true } }); plaka('dam', { d: 1, gecis: { k: gc, yon: 1, yumusak: 0.14, ac: true } }); }
       } else if (bol === 2) {
         // küreye yaklaşılır
-        var gir = tw(t, AN.kure, 1.6, Y.ikili);
-        dam(t, a, gir > 0 ? { x: kr(800, KURE.x, gir), y: kr(450, KURE.y - KURE.g * 1.05, gir), z: kr(1.04, 3.4, gir) } : null);
+        // 1 sn'de yaklaşılır (ikili yumuşatma), son 0,6 sn yakın plan sabit kalır; sonra uzaya geçilir
+        var gir = tw(t, AN.kure, 1.0, Y.ikili), ge = tw(t, AN.kure + 0.72, 0.22, Y.sin);
+        dam(t, a, gir > 0 ? yaklasKamera(gir) : null, ge, gir);
       } else if (bol === 3) {
         var ac3 = tw(t, AN.kure + 1.6, 1.1, Y.sin);
         // durakta çocuk çevirir; sonra Dünya bir tam tur döner ("bir tam tur, bir gün")
@@ -685,10 +767,13 @@
     function gorunurluk(bol, t) {
       if (bol !== 0) { gos(hiz, 0); gos(hizBirim, 0); }
       if (bol !== 3) { gizle(noktaIz); gizle(noktaHale); gizle(nokta); }
-      if (bol !== 3 && bol !== 5 && bol !== 6) gizle(cerceve);
-      if (bol !== 6 && bol !== 7) isinGizle();
+      if (bol !== 3 && bol !== 5 && bol !== 6 && bol !== 8) gizle(cerceve);
+      if (bol !== 6 && bol !== 7 && bol !== 8) isinGizle();
+      if (bol !== 6) gos(etMevsim, 0);
+      if (bol !== 5 || t < KES.haller) etGun.forEach(function (e) { gos(e, 0); });
+      if (bol !== 8) { etOlmasa.forEach(function (e) { gos(e, 0); }); etEksen.forEach(function (e) { gos(e, 0); }); gos(etAy, 0); }
+      gos(etOlcek, (bol === 3 || bol === 8 || (bol === 6 && t >= AN.ocak) || (bol === 5 && t >= KES.ayYol && t < KES.hilal)) ? 0.85 : 0);
       if (bol !== 5 && bol !== 6) gizle(yorunge);
-      if (bol !== 5) gizle(bant);
       if (bol !== 6 && bol !== 8) gizle(eksen);
       if (bol !== 8) { gizle(donusOku); gizle(okUcu); }
       if (bol !== 9) { iplikler.forEach(gizle); gezegenYol.forEach(gizle); gizle(halka); }
@@ -704,13 +789,18 @@
         if (id === 'donus' && olay === 'deger') gv = veri;
         if (id === 'mevsim' && olay === 'deger') mv = veri;
         if (id === 'ayyolu' && olay === 'dogru') ayYer[veri] = aSimdi;
-        if (id === 'olmasaydi') { if (olay === 'cikar') cikan = veri; if (olay === 'kapat') cikan = null; }
+        // olmasa (hepsi): doğru cevaptan sonra motor 'dondur' ile varlığın sırasını bildirir; çıkarılan geri gelir
+        if (id === 'olmasaydi') {
+          if (olay === 'cikar') cikan = veri;
+          if (olay === 'kapat') cikan = null;
+          if (olay === 'dondur' && cikan === OLMASA_SIRA[veri]) cikan = null;
+        }
       },
       // Küreyi çevirme: çocuk Dünya'yı herhangi bir yerinden tutup yana çeker. Kervansaray noktası haritada,
       // Anadolu'da yapışık kalır; dönen Dünya'dır, nokta onunla birlikte geceye ve gündüze geçer.
       tutamac: function (id, deger) {
         if (id === 'donus') return { x: EV.x, y: EV.y, r: EV.r * 1.04, ust: true };
-        var q = dunyaYer(deger); return { x: q.x, y: q.y, r: 92 };
+        var q = yilKonum(yilDegeri(deger)); return { x: q.x, y: q.y, r: 92 };
       },
       tutDeger: function (id, x, y, bas) {
         if (id === 'donus') {
@@ -719,10 +809,9 @@
           if (bas) return sinirla(bas.deger + (x - bas.x) / (cx * Math.max(0.45, Math.cos(lam(bas.deger)))) * 50 / 1.2, 0, 100);
           return sinirla(Math.asin(sinirla((x - EV.x) / cx, -1, 1)) / 1.2 * 50 + 50, 0, 100);
         }
-        var q = Math.atan2((y - YOR.y) / YOR.ry, (x - YOR.x) / YOR.rx);
-        if (q < 0) q = (x < YOR.x) ? Math.PI : 0;   // arka yarıya geçerse en yakın uca
-        return sinirla((Math.PI - q) / Math.PI * 100, 0, 100);
+        return yorungeTut(bas || { deger: 50, x: x, y: y }, x, y);   // teğet sürükleme: tutulan yerden, sıçramadan
       }
     };
   };
+  DO.KodDersSahne['akaid-03'].geo = { YOR: YOR, GUNES: GUNES_YOR, yilKonum: yilKonum, yilDegeri: yilDegeri, gunesIsigi: gunesIsigi, yorungeTut: yorungeTut, gunesYuksek: gunesYuksek, ayAdi: ayAdi };
 })();

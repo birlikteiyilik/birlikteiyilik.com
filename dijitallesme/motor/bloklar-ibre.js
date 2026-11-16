@@ -1048,30 +1048,4 @@
 
 })();
 
-/* ——— Dikey telefonda dersi 90° döndür (yalnız ibre-* dersleri) ———
-   Telefonun ekran kilidi açık/kapalı olsun, ders girişte tam ekran görünür; okumak için telefonu yan çevirmek yeter.
-   Telefon yatay olunca (ya da geniş ekranda) bu mod kendiliğinden kapanır. Ölçek/sürükleme düzeltmeleri oynatici.js'te (O.rot, O.delta). */
-(function () {
-  'use strict';
-  var d = new URLSearchParams(location.search).get('d') || '';
-  if (!/^ibre-/.test(d) || !window.matchMedia) return;
-  var mq = window.matchMedia('(orientation: portrait) and (max-width: 700px)');
-  function uygula() {
-    var dikey = mq.matches, O = window.DO && window.DO.Oynatici;
-    document.documentElement.classList.toggle('do-dikey', dikey);
-    if (O) O.rot = dikey ? 90 : 0;
-    window.dispatchEvent(new Event('resize'));
-    var n = 0, iv = setInterval(function () { window.dispatchEvent(new Event('resize')); if (++n > 25) clearInterval(iv); }, 300);   /* sahne geç kurulursa ölçek yenilensin */
-  }
-  var ipucuGosterildi = false;
-  function ipucu() {   /* dikey okunur kısa uyarı: içerik yan döndü, telefonu çevirince okunur */
-    if (ipucuGosterildi || !mq.matches) return; ipucuGosterildi = true;
-    var e = document.createElement('div'); e.className = 'do-dikey-ipucu'; e.innerHTML = '<span>📱↻</span> Ders yan yatık görünür: telefonunu yan çevirerek oku';
-    e.onclick = function () { if (e.parentNode) e.parentNode.removeChild(e); };
-    document.body.appendChild(e); setTimeout(function () { if (e.parentNode) e.parentNode.removeChild(e); }, 9000);
-  }
-  uygula();
-  window.addEventListener('load', function () { setTimeout(ipucu, 500); });
-  if (mq.addEventListener) mq.addEventListener('change', uygula); else if (mq.addListener) mq.addListener(uygula);
-  window.addEventListener('load', function () { uygula(); setTimeout(uygula, 600); });
-})();
+// Ekran yönü bütün derslerde ortak Atölye kabuğu tarafından yönetilir.

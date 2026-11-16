@@ -50,10 +50,13 @@
       try { var kayitli = JSON.parse(sessionStorage.getItem('do:oda:' + O.oda) || 'null'); if (kayitli) Object.assign(O.odaDurum, kayitli); } catch (e) { /* yok */ }
     }
 
-    // Düz sıra
+    // Düz sıra. Akademide (hesaplı ders) "Ders özeti" ekranı yoktur: ders pul makinesiyle biter,
+    // hocanın gördüğü süre ve işlendi bilgisi yönetim panelinde durur. Sondaki kapanış bloğu sıraya girmez.
+    O.ozetsiz = kurum();
     ders.bolumler.forEach(function (b, bi) {
       b.bloklar.forEach(function (blok) {
         blok._bolum = bi;
+        if (O.ozetsiz && blok.tur === 'kapanis') return;
         O.sira.push(blok);
       });
     });
@@ -96,7 +99,7 @@
     // Üst bilgi
     d.ilerleme = el('div', { class: 'hud-ilerleme' });
     O.ders.bolumler.forEach(function (b) {
-      var adet = b.bloklar.length;
+      var adet = sayilan(b);
       var parca = el('div', { class: 'hud-parca', style: { flex: adet, '--renk': b.renk || '#4f7a3a' } }, el('i'));
       parca.title = b.ad;
       d.ilerleme.appendChild(parca);
@@ -182,7 +185,52 @@
     var a = O.dom.alan;   /* yerleşim boyutu: dikey telefondaki CSS dönüşünden etkilenmez */
     var s = Math.min(a.clientWidth / GEN, a.clientHeight / YUK);
     O.olcek = s;
-    O.dom.sahne.style.transform = 'translate(-50%,-50%) scale(' + s + ')';
+    O.dom.sahne.classList.toggle('kompakt-kontrol', s < 0.65);
+    O.dom.sahne.style.setProperty('--sahne-ters-olcek', 1 / Math.max(s, 0.01));
+    O.dom.sahne.style.setProperty('--kontrol-genislik', (GEN * s) + 'px');
+    O.dom.sahne.style.setProperty('--kontrol-yukseklik', (YUK * s) + 'px');
+    /* Sahne, ders çubuğunun hemen altına yaslanır; boş kalan yükseklik altta toplanır (Mavi Atölye).
+       Küçük ekranda kodDers durağının tepsisi bu alt boşluğa iner: sahne küçülmez, yerinden oynamaz,
+       kenarlarda boşluk açılmaz. Boşluk yetmezse tepsi sahnenin altını örter. Büyük ekranda (hoca)
+       alttaki tepsi de aynı şekilde bu boşluğa iner; yüksekliği içeriği kadardır. */
+    var bosluk = Math.max(0, a.clientHeight - YUK * s), ustte = !!(O.dom.yerlesim && O.dom.yerlesim.classList.contains('atolye-yerlesim'));
+    var kayma = ustte ? bosluk / 2 : 0;
+    var genis = s >= 0.65 && ustte ? O.dom.sahne.querySelector('.kd.durakta[data-yer="alt"] > .kd-katman') : null;
+    var tepsi = s < 0.65 ? O.dom.sahne.querySelector('.kd.durakta > .kd-katman') : genis;
+    O.dom.sahne.classList.toggle('alt-tepsi', !!tepsi);
+    /* Sahnede açılan duraklar (eşleştirme, defter) bölünür: bir kısmı sahnede, bir kısmı altta.
+       Alttaki parça boşluğa sığmazsa sahnenin altına biner (--tam-ortu); sahnenin yarısına yakınını
+       fazlasını örtecekse o durak tek tepsi düzenine döner. */
+    var tamPanel = tepsi && tepsi.parentElement.dataset.yer === 'tam' ? tepsi.querySelector('.kd-panel') : null;
+    var bol = !!tamPanel && tamPanel.dataset.bolunmez !== '1', ortu = 0;
+    O.dom.sahne.classList.toggle('tam-bol', bol);
+    if (bol) {
+      var ust = parseFloat(getComputedStyle(tamPanel).paddingTop) || 0;
+      ortu = Math.max(0, tamPanel.offsetHeight - ust - (bosluk / 2 + kayma));
+      if (ortu > YUK * s * 0.55) { tamPanel.dataset.bolunmez = '1'; bol = false; ortu = 0; O.dom.sahne.classList.remove('tam-bol'); }
+    }
+    O.dom.sahne.style.setProperty('--tam-ortu', Math.round(ortu) + 'px');
+    // Tepsi alt boşluğun tamamını ve gerekirse sahnenin alt yarısını kullanabilir; içerik kaydırma istemez.
+    O.dom.sahne.style.setProperty('--tepsi-en-cok', Math.round(bosluk / 2 + kayma + YUK * s * 0.5) + 'px');
+    O.dom.sahne.style.setProperty('--alt-bos-css', Math.round(bosluk / 2 + kayma) + 'px');
+    if (tepsi) {
+      // Sahnede açılan duraklarda (eşleştirme, defter) katman sahnenin tepesinden başlar; tepsi payı sahnenin altıdır.
+      var tam = bol;
+      var h = tam ? Math.max(0, tepsi.offsetHeight - YUK * s) : tepsi.offsetHeight;
+      if (genis) {
+        // Büyük ekranda tepsi sahne ölçeğindedir: panelin gerçek yüksekliği ölçülür, sınıf kutusu da ona eşitlenir.
+        var panel = tepsi.querySelector(':scope > .kd-panel');
+        var ph = panel ? panel.offsetHeight : 0;
+        tepsi.parentElement.style.setProperty('--kd-tepsi-gercek', ph + 'px');
+        h = ph * s;
+      }
+      if (!ustte) kayma = Math.min(bosluk / 2, Math.max(0, h - bosluk / 2));
+      var alt = bosluk / 2 + kayma;
+      // Tepsi sahnenin hemen altına yapışır; alt boşluktan uzunsa alanın dibine dayanıp sahnenin altını örter.
+      O.dom.sahne.style.setProperty('--alt-bosluk', (Math.min(h, alt) / s) + 'px');
+      O.dom.sahne.style.setProperty('--alt-ortu', (Math.max(0, h - alt) / s) + 'px');
+    }
+    O.dom.sahne.style.transform = 'translate(-50%,-50%) translateY(' + (-kayma) + 'px) scale(' + s + ')';
   }
   O.olcekle = olcekle;
   /* Ekran koordinatını sahne koordinatına çevir (sürükle-bırak için) */
@@ -277,10 +325,12 @@
 
     var oturum = kurum() && DO.LmsDers.session, canliGiris = !!(O.dom.gorusme && DO.GirisMedya);
     var ilkAd = String(lms ? lms.ad : kayitliAd).trim().split(/\s+/)[0];
-    var selam = O.rol === 'ogretmen' ? (oturum ? 'Hoş geldin Hocam! Kimin hazır beklediğini burada görürsün.' : 'Hoş geldin Hocam! Oda kodunu öğrencilerinle paylaş.')
+    var selam = O.rol === 'ogretmen' ? (oturum ? 'Hoş geldiniz Hocam! Kimin hazır beklediğini burada görürsünüz.' : 'Hoş geldiniz Hocam! Oda kodunu öğrencilerinizle paylaşın.')
       : O.rol === 'ogrenci' ? 'Selam' + (ilkAd ? ' ' + ilkAd : '') + '! Hazır olunca derse katılalım.'
       : kitapGirisi ? 'Bugün de güzelce okuyalım.' : devam ? 'Kaldığın yerden devam edelim mi?' : 'Kendi hızında, adım adım ilerleyelim.';
-    var maskot = el('span', {class: 'giris-maskot', 'aria-hidden': 'true', html: window.BiriMaskot ? window.BiriMaskot.svg(O.rol === 'bireysel' ? 'read' : 'hello', {label: ''}) : ''});
+    // Elifbâ ve Kur’ân-ı Kerîm girişlerinde Biri kitap tutmaz; sade bir selamla karşılar.
+    var okumaGirisi = kitapGirisi || !!(oturum && oturum.mode === 'reading');
+    var maskot = el('span', {class: 'giris-maskot', 'aria-hidden': 'true', html: window.BiriMaskot ? window.BiriMaskot.svg(O.rol === 'bireysel' && !okumaGirisi ? 'read' : okumaGirisi ? 'selam' : 'hello', {label: ''}) : ''});
     var etiket = (kitapGirisi ? 'Okuma' : ders.seri || 'Ders') + ' · ' + (O.rol === 'bireysel' ? 'Kendi başına' : 'Canlı sınıf');
     var bilgiler = [kitapGirisi ? null : O.sira.length + ' ekran',
       devam && !oturum && !kitapGirisi ? 'Kaldığın yer: ' + (devam.b + 1) + '. ekran' : null,
@@ -288,7 +338,7 @@
       !kurum() && O.rol !== 'bireysel' ? 'Oda kodu · ' + DO.odaOkunus(O.oda) : null].filter(Boolean);
     var kimlik = lms ? el('div', {class: 'giris-kim'}, [
       el('span', {class: 'giris-kim-harf', 'aria-hidden': 'true', text: String(lms.ad || '?').slice(0, 1).toLocaleUpperCase('tr')}),
-      el('span', {class: 'giris-kim-metin'}, [el('small', {text: O.rol === 'ogretmen' ? 'Hoca olarak giriyorsun' : 'Bu adla giriyorsun'}), el('b', {text: lms.ad})]), adGirdi]) : null;
+      el('span', {class: 'giris-kim-metin'}, [el('small', {text: O.rol === 'ogretmen' ? 'Hoca olarak giriyorsunuz' : 'Bu adla giriyorsun'}), el('b', {text: lms.ad})]), adGirdi]) : null;
     if (lms) adGirdi.hidden = true;
     var dugmeler = oturum ? el('div', {class: 'giris-dugmeler'}, el('button', {class: 'dug ana', text: O.rol === 'ogretmen' ? 'Dersi aç' : 'Derse katıl', onclick: function () { basla(devam); }})) : el('div', { class: 'giris-dugmeler' }, [
       // Kitap kendi konumundan açılır; dersin "Baştan başla" seçeneği kitapta anlam taşımaz.
@@ -303,7 +353,7 @@
         el('div', { class: 'giris-selam' }, [maskot, el('p', { text: selam })]),
         el('span', { class: 'giris-etiket', text: etiket }),
         el('h1', { id: 'giris-baslik', text: girisAdi }),
-        el('p', { class: 'giris-alt', text: oturum ? '25 dakikalık canlı ders. Kaldığımız yerden birlikte devam ediyoruz.' : kitapGirisi ? 'Kendi hızında okuma' : kurum() ? 'Kendi hızında incele. Bu çalışma hocanla kaldığın yeri ve ders puanını değiştirmez.' : ders.ozet || '' }),
+        el('p', { class: 'giris-alt', text: oturum ? (devam ? '25 dakikalık canlı ders. Kaldığımız yerden birlikte devam ediyoruz.' : '25 dakikalık canlı ders. Birlikte başlıyoruz.') : kitapGirisi ? 'Kendi hızında okuma' : kurum() ? 'Kendi hızında incele. Bu çalışma hocanla kaldığın yeri ve ders puanını değiştirmez.' : ders.ozet || '' }),
         bilgiler.length ? el('ul', { class: 'giris-bilgi' }, bilgiler.map(function (b) { return el('li', { text: b }); })) : null,
         sinif ? sinif.kutu : null,
         kimlik || el('label', { class: 'giris-label', 'for': 'giris-ad', text: O.rol === 'ogretmen' ? 'Hocamızın adı' : 'Adın' }),
@@ -313,11 +363,11 @@
       ])
     ]);
     if (oturum && O.rol === 'ogretmen' && !Number.isFinite(DO.LmsDers.session.startedAt)) {
-      kart.querySelector('.giris-alt').textContent = 'Şimdi cihazlarını hazırlayabilirsin. 25 dakikalık süre sınıfa bağlandığında başlayacak.';
+      kart.querySelector('.giris-alt').textContent = (O.rol === 'ogretmen' ? 'Şimdi cihazlarınızı hazırlayabilirsiniz. 25 dakikalık süre sınıfa bağlandığında başlayacak.' : 'Şimdi cihazlarını hazırlayabilirsin. 25 dakikalık süre sınıfa bağlandığında başlayacak.');
       var cancelPreparation = el('button', {class: 'dug ikincil', text: 'Hazırlığı iptal et', type: 'button', onclick: async function () {
         cancelPreparation.disabled = true;
         try { await DO.LmsDers.cancelPreparation(); if (medyaGiris) medyaGiris.kapat(); location.assign('panel.html'); }
-        catch (error) { cancelPreparation.disabled = false; kart.querySelector('.giris-alt').textContent = error.message || 'Hazırlık kapatılamadı. Yeniden dene.'; }
+        catch (error) { cancelPreparation.disabled = false; kart.querySelector('.giris-alt').textContent = error.message || 'Hazırlık kapatılamadı. Yeniden deneyin.'; }
       }});
       kart.querySelector('.giris-dugmeler').append(cancelPreparation);
     }
@@ -339,7 +389,7 @@
         liste.replaceChildren.apply(liste, S.studentIds.map(function (uid) {
           var d = durumlar && durumlar[uid], burada = d === 'connected' || d === 'connecting';
           if (burada) hazir++;
-          var metin = !durumlar ? 'Bakılıyor…' : burada ? 'Hazır, seni bekliyor' : d === 'waiting' || !d ? 'Henüz gelmedi' : 'Bağlantısı koptu';
+          var metin = !durumlar ? 'Bakılıyor…' : burada ? 'Hazır, sizi bekliyor' : d === 'waiting' || !d ? 'Henüz gelmedi' : 'Bağlantısı koptu';
           return el('li', {class: 'giris-sinif-kisi' + (burada ? ' hazir' : '')}, [
             el('span', {class: 'giris-sinif-harf', 'aria-hidden': 'true', text: adi(uid).slice(0, 1).toLocaleUpperCase('tr')}),
             el('b', {text: adi(uid)}), el('small', {text: metin})]);
@@ -356,18 +406,20 @@
         if (!basladi && perde.isConnected) setTimeout(yokla, 8000);
       }
       ciz(null);
-      return {yokla: yokla, kutu: el('section', {class: 'giris-sinif', 'aria-label': 'Sınıfın'}, [
-        el('div', {class: 'giris-sinif-ust'}, [el('b', {text: 'Sınıfın'}), sayi]), liste])};
+      return {yokla: yokla, kutu: el('section', {class: 'giris-sinif', 'aria-label': 'Sınıfınız'}, [
+        el('div', {class: 'giris-sinif-ust'}, [el('b', {text: 'Sınıfınız'}), sayi]), liste])};
     }
     setTimeout(function () { if (!basladi && !adGirdi.disabled) adGirdi.focus(); }, 300);
     // Deneme öğrencisi (hayalî): adı hazır, kendiliğinden derse girer
     if (!kurum() && DO.param('bot')) { adGirdi.value = DO.param('ad', 'Deneme Öğrencisi'); setTimeout(function () { basla(null); }, 400); }
-    adGirdi.addEventListener('keydown', function (e) { if (e.key === 'Enter') basla(devam); });
-    if (panelden && DO.param('devam') === '1' && devam && (kayitliAd || bolumGirisi) && !DO.param('bot')) setTimeout(function () { basla(devam); }, 0);
-
-    var basladi = false;
     // Sunum kipi: ad sorulmaz, ders hemen açılır; anlatım dersin kendi başlat düğmesiyle başlar
     if (window.DO_SUNUM) { adGirdi.value = 'Misafir'; setTimeout(function () { basla(null); }, 0); }
+    adGirdi.addEventListener('keydown', function (e) { if (e.key === 'Enter') basla(devam); });
+    if (panelden && DO.param('devam') === '1' && devam && (kayitliAd || bolumGirisi) && !DO.param('bot')) setTimeout(function () { basla(devam); }, 0);
+    // Okuma + ders oturumunda bölüm değişince sayfa diğer derse geçer; hazırlık ekranı yeniden sorulmaz.
+    if (oturum && DO.LmsDers.bolumGecisi && DO.LmsDers.bolumGecisi()) setTimeout(function () { basla(devam); }, 0);
+
+    var basladi = false;
     function basla(devamVerisi) {
       if (basladi) return;
       var ad = adGirdi.value.replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, 30);
@@ -519,11 +571,12 @@
     if (yeni === O.sira.length - 1) dersBitti();
   };
 
+  function sayilan(b) { return b.bloklar.filter(function (x) { return O.sira.indexOf(x) >= 0; }).length; }
   function ilerlemeYaz() {
     var parcalar = O.dom.ilerleme.children, sayac = 0;
     O.ders.bolumler.forEach(function (b, bi) {
       var ic = parcalar[bi].firstChild;
-      var bas = sayac, adet = b.bloklar.length;
+      var bas = sayac, adet = sayilan(b);
       var oran = O.i < bas ? 0 : O.i >= bas + adet ? 1 : (O.i - bas + 1) / adet;
       ic.style.width = (oran * 100) + '%';
       parcalar[bi].classList.toggle('aktif', O.i >= bas && O.i < bas + adet);
@@ -583,7 +636,7 @@
       var ifade = ctx.kaydet('cevapladi', { id: c.oge, ad: c.ad, tur: 'cmi.interaction', etkilesim: c.etkilesim || 'choice', dogruYanit: c.dogruYanit },
         { basari: c.dogru, yanit: c.yanit, sureMs: sure, puan: c.puan, max: c.max }, { deneme: c.deneme || 1 });
       if (DO.Canli.acik) {
-        DO.Canli.gonder('cevap', { blok: blok.id, blokSira: O.i, oge: c.oge, ad: c.ad, yanit: c.yanit, dogru: c.dogru, puan: c.puan || 0 });
+        DO.Canli.gonder('cevap', { blok: blok.id, blokSira: O.i, oge: c.oge, ad: c.ad, yanit: c.yanit, dogru: c.dogru, puan: c.puan || 0, max: c.max, deneme: c.deneme || 1, etkilesim: c.etkilesim || 'choice', answerId: ifade.id, answeredAt: ifade._.t });
         if (O.rol === 'ogrenci') DO.Canli.gonder('ifade', ifade);
       }
       return ifade;
@@ -737,7 +790,7 @@
   O.canliMi = canliMi;
   /* Anlatım ve video sesi bu cihazda mı çalsın? Görüşmede çift ses ve yankı olmasın diye tek yerde çalar. */
   function sesBende() {
-    if (DO.LmsOkuma && DO.LmsOkuma.okumada) return false;
+    if (DO.LmsOkuma && DO.LmsOkuma.kitapta) return false;
     if (!canliMi()) return true;
     if (O.odaDurum.ses === 'herkes') return true;
     return O.odaDurum.ses === (O.rol === 'ogretmen' ? 'ogretmen' : 'ogrenci');
@@ -788,19 +841,25 @@
   var bildirimZaman;
   function bildir(metin, tur) {
     var b = O.dom.bildirim;
+    delete b.dataset.sozIsteyen;
     b.textContent = metin;
     b.className = 'bildirim gorunur ' + (tur || '');
     clearTimeout(bildirimZaman);
     bildirimZaman = setTimeout(function () { b.className = 'bildirim'; }, 2200);
   }
   O.bildir = bildir;
+  function sozBildirimKapat(id) {
+    var b = O.dom.bildirim;
+    if (b.dataset.sozIsteyen !== id) return;
+    clearTimeout(bildirimZaman); b.className = 'bildirim'; b.textContent = ''; delete b.dataset.sozIsteyen;
+  }
 
   function dersBitti() {
     var top = toplamPuan();
     Kayit().kaydet('tamamladi', { id: '', ad: O.ders.ad, tur: 'lesson' },
       { tamam: true, puan: top, max: O.maxToplam, basari: O.maxToplam ? top / O.maxToplam >= (O.ders.basariEsigi || 0.6) : true, sureMs: Date.now() - Kayit().baslangic });
     Kayit().durum({ puan: top, max: O.maxToplam, tamam: true, ilerleme: 1, esik: O.ders.basariEsigi });
-    // Canlı derste ders özetine gelinince kapanış kendiliğinden açılır; Hocamız ayrıca "Kapanışa geç" demez
+    // Canlı derste ders özetine gelinince kapanış kendiliğinden açılır; Hocamız yalnız "Dersi bitir" der
     if (DO.DersAkisi && DO.DersAkisi.dersSonu) DO.DersAkisi.dersSonu();
   }
 
@@ -888,7 +947,7 @@
       O.kilit = true;
       ['katilim', 'cevap', 'puan', 'el', 'konum', 'tanit', 'merhaba', 'baglanti', 'bitti', 'medya'].forEach(function (t) { C.olay.on(t, panelYaz); });
       C.olay.on('ifade', function (m) { if (m.veri && m.veri.id) Kayit().disaridanSakla(m.veri); });
-      C.olay.on('el', function (m) { if (m.veri.kalkik) { bildir('✋ ' + m.gonderen.ad + ' söz istiyor', 'bilgi'); DO.efekt.tik(); } });
+      C.olay.on('el', function (m) { if (m.veri.kalkik) { bildir('✋ ' + m.gonderen.ad + ' söz istiyor', 'bilgi'); O.dom.bildirim.dataset.sozIsteyen = m.gonderen.id; DO.efekt.tik(); } else sozBildirimKapat(m.gonderen.id); });
       C.olay.on('cevap', function (m) {
         var c = m.veri;
         (O.canliCevaplar = O.canliCevaplar || []).push({ id: m.gonderen.id, ad: m.gonderen.ad, blok: c.blok, oge: c.oge, soru: c.ad, yanit: c.yanit, dogru: c.dogru, t: Date.now() });
@@ -1136,7 +1195,7 @@
           bitirdi ? el('span', { class: 'ogr-bitti', text: '✓ bitirdi' }) : null,
           kurum() && DO.LmsDers.bekleyenSonuc(o.id) ? el('button', {class: 'soz-dug', text: 'Puanı onayla', title: 'Öğrencinin etkinlik sonucunu inceledim', onclick: function () { DO.LmsDers.puanOnayla(o.id); panelYaz(); }}) : null,
           o.el || sozde ? el('button', { class: 'soz-dug', text: sozde ? 'Sözü al' : 'Söz ver', onclick: function () {
-            if (!sozde) o.el = false;
+            if (!sozde) { o.el = false; sozBildirimKapat(o.id); }
             O.odaDegistir({ yonetici: sozde ? 'ogretmen' : o.id });
           } }) : null
         ].concat(kurum() && DO.DersAkisi ? DO.DersAkisi.kartEki(o) : []))
@@ -1179,7 +1238,7 @@
     ogrenciler.forEach(function (o) { yon.push({ d: o.id, ad: (o.el ? '✋ ' : '') + o.ad }); });
     if (O.odaDurum.yonetici !== 'ogretmen' && O.odaDurum.yonetici !== 'herkes' && !ogrenciler.some(function (o) { return o.id === O.odaDurum.yonetici; })) O.odaDurum.yonetici = 'ogretmen';
     detay.appendChild(secim('Ekrana kim dokunsun', yon, O.odaDurum.yonetici, function (d) {
-      if (d !== 'ogretmen' && d !== 'herkes' && C.katilimcilar[d]) C.katilimcilar[d].el = false;
+      if (d !== 'ogretmen' && d !== 'herkes' && C.katilimcilar[d]) { C.katilimcilar[d].el = false; sozBildirimKapat(d); }
       O.odaDegistir({ yonetici: d });
     }));
     detay.appendChild(secim('Anlatım ve video sesi', [
@@ -1210,9 +1269,9 @@
     hizli.appendChild(el('button', { class: 'dug kucuk', text: 'Gönder', onclick: function () { if (mg.value.trim()) { C.gonder('mesaj', { metin: mg.value.trim() }); bildir('Mesaj gönderildi', 'bilgi'); mg.value = ''; O.panelMesaj = ''; } } }));
     detay.appendChild(hizli);
     detay.appendChild(el('p', { class: 'panel-ipucu', html: 'Sunum kumandası ya da klavye: <b>▶ / Page Down</b> sonraki, <b>◀ / Page Up</b> önceki ekran.' }));
-    // Eski rapor sayfası kapandı; kurum dersinde özet panelde açılır, oda kodlu derste kayıt tutulmaz.
-    if (kurum() && DO.LmsDers.session) detay.appendChild(el('a', { class: 'dug kucuk ikincil tam', href: 'panel.html?summary=' + encodeURIComponent(DO.LmsDers.session.id), target: '_blank', rel: 'noopener', text: 'Ders özetini aç ↗' }));
-    p.appendChild(detay);
+    // Mavi Atölye'de sınıf paneli gizlidir; "Kontrol ve ayarlar" görüntü panelinde, çıkış düğmelerinin üstünde açılır.
+    if (O.dom.kontrolYeri) { var kontrolKaydir = O.dom.kontrolYeri.scrollTop; O.dom.kontrolYeri.replaceChildren(detay); O.dom.kontrolYeri.scrollTop = kontrolKaydir; }
+    else p.appendChild(detay);
     p.scrollTop = ustKaydir;
   }
   O.panelYaz = panelYaz;

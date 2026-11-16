@@ -7,7 +7,9 @@
    dereyle kuma döner, ders akşam kumsalında biter. Her olay anlatıcının kelimesine bağlıdır (t); a ortam saatidir.
    Fizik: yaprak şekeri yalnız ışıkta yapar; su sapın içinden yaprağa çıkar, şeker aynı damarın öbür şeridinden
    elmaya iner; karbondioksit gözenekten girer, oksijen çıkar. Düşen yaprak salınarak iner, rüzgâr hep soldan eser.
-   Kayan yıldız gökte söner, yere ulaşmaz (yalnız "hava çok ince" ucunda ulaşır). Dere taşı aşağı indikçe küçülür.
+   Kayan yıldız gökte söner, yere ulaşmaz (yalnız kalınlık ALT eşiğinin altında, Mars gibi ince havada ulaşır).
+   Hava durağı (16 Kasım 2026): ince uç Mars (basınç Dünya'nın %0,6'sı), kalın uç Venüs (92 kat, ~464 °C); bölge sınırları
+   çizilen kalınlıktan türer; köşe penceresi üç yüzeyi (Mars, Dünya, Venüs) bölgeye göre karıştırır. Dere taşı aşağı indikçe küçülür.
    İnsan figürü yoktur. Güneş'te ve Ay'da yüz yoktur. Gece göğünde hilâl yoktur. */
 (function () {
   'use strict';
@@ -15,7 +17,8 @@
   DO.KodDersSahne['akaid-04'] = function (api) {
     var T = api.tuval, kel = api.kelime, C = api.cumle, el = DO.el, svg = api.svg, E2 = api.ciz.ogeler;
     var GORSELLER = ['vadi-yaz', 'vadi-kis', 'vadi-bahar', 'bahce', 'bahce-sonbahar', 'yaprak-ici', 'toprak', 'dag-gece', 'uzay-kenar', 'dere', 'deniz', 'kagit',
-      'dal', 'yaprak', 'yaprak-sari', 'solucan', 'mantar', 'gunes', 'kabuk', 'plankton', 'kum-taneleri', 'kaya', 'tas', 'cakil', 'kum-grup'];
+      'dal', 'yaprak', 'yaprak-sari', 'solucan', 'mantar', 'gunes', 'plankton', 'kum-taneleri', 'kaya', 'tas', 'cakil', 'kum-grup',
+      'gok-yaz', 'kumsal-yakin', 'elma-dali-yakin', 'hava-mars', 'hava-normal', 'hava-venus'];
     var liste = {};
     GORSELLER.forEach(function (a) { liste[a] = api.yol('gorsel/' + a + '.webp'); });
     var hazir = T.yukle(liste, api.yukleniyor);
@@ -112,8 +115,8 @@
       ['Hava tam ölçüsünde.', 'etiket', 800, 96, AN.olcu + 0.3, KES.dere - 0.2],
       ['gözle görülmeyen yeşil canlılar', 'etiket', 1150, 380, AN.denizF + 2.2, AN.kumsala - 0.2, 1],
       ['oksijenin yaklaşık yarısı', 'etiket', 800, 96, AN.yarisi + 0.6, AN.kumsala - 0.1],
-      ['taş parçası', 'etiket', 700, 592, AN.kimi + 0.2, AN.isci - 0.1, 1],
-      ['kabuk parçası', 'etiket', 945, 655, kel('kabuğunun'), AN.isci - 0.1, 1],
+      ['taş parçası', 'etiket', 279, 688, AN.kimi + 0.2, AN.isci - 0.1, 1],
+      ['kabuk parçası', 'etiket', 992, 716, kel('kabuğunun'), AN.isci - 0.1, 1],
       ['Hepsi birbirine yetişiyor.', 'etiket', 800, 96, AN.hepsi + 1.2, AN.kimVerdi - 0.1],
       ['Dağları, denizleri, ağaçları ve meyveleri yaratan, Allahü teâlâdır.', 'kagit iri', 800, 330, AN.yaratan, AN.sanat - 0.4],
       ['Her şeyi bir ölçüyle yaratmış, her birini bir iş için var etmiştir.', 'kagit', 800, 560, AN.olcuyle, AN.sanat - 0.4],
@@ -189,8 +192,8 @@
     var TS = 1.25, TY = 570;
     function PT(px, py) { return [800 + (px - 836) * K * TS, TY + (py - 470.5) * K * TS]; }
     function plaka(ad, o) { return T.ciz(ad, Object.assign({ g: PG, h: PH }, o || {})); }
-    // sade gök: yaz vadisinin sağ üstü (bulutlar ve uzak tepeler); yakın plan nesnelerin arkasında kalabalık etmez
-    function gok(d, carp) { T.ciz('vadi-yaz', { x: -159, y: 813, g: PG * 2.1, h: PH * 2.1, d: d, carp: carp, doy: 0.85 }); }
+    // sade gök: kendi plakası (16 Kasım 2026'ya kadar vadi plakasının köşesi 2,3× büyütülüyor, bulanık görünüyordu)
+    function gok(d, carp) { T.ciz('gok-yaz', { x: 800, y: 450, g: PG, h: PH, d: d, carp: carp, doy: 0.9 }); }
     function ekranR(x, y, r) { var e = T.ekran(x, y, 1), e2 = T.ekran(x + r, y, 1); return { x: e.x, y: e.y, r: e2.x - e.x }; }
     function isima(x, y, r, renk, o) { var s = ekranR(x, y, r); T.iz(s.x, s.y, s.r, s.r, 0, renk[0], renk[1], renk[2], o); T.izBitir(); }
     // çoklu çizgi üzerinde s (0..1) oranındaki nokta
@@ -283,22 +286,22 @@
       }
       T.izBitir();
     }
-    // 1. Açık sır: kumsal, büyüteçte kum taneleri
+    // 1. Açık sır: kumsal (kendi yakın plan plakası), büyüteçte kum taneleri; büyüteç kumun üstünde durur
     function sirAcilis(t, a) {
       var k = ic(t, KES.sir, KES.vadi - KES.sir);
-      T.bas(a, { x: kr(560, 720, k), y: 722, z: 2.2 });
-      plaka('deniz', { d: 1, su: 0.8, parilti: 0.6 });
+      T.bas(a, { x: kr(650, 710, k), y: kr(520, 546, k), z: kr(1.12, 1.2, k) });
+      plaka('kumsal-yakin', { d: 1, su: 0.35, parilti: 0.5 });
       var b = tw(t, AN.wKum, 0.7) * (1 - tw(t, AN.cevap + 0.6, 0.6));
       if (b > 0.01) {
-        var r = 215 * kr(0.85, 1, b);
-        T.ciz('kum-taneleri', { x: 800, y: 450, g: r * 2, d: 0, o: b, parilti: 0.4 });
-        buyutec(800, 450, r, b);
+        var r = 190 * kr(0.85, 1, b);
+        T.ciz('kum-taneleri', { x: 600, y: 560, g: r * 2, d: 0, o: b, parilti: 0.4 });
+        buyutec(600, 560, r, b);
       }
     }
     // 2. Vadi: dağdan denize uzanan geniş plan, dere soldan sağa akar
     function vadiSahne(t, a) {
-      var kam = kameraYolu(t, [[KES.vadi, { x: 430, y: 300, z: 1.7 }], [AN.wDag + 0.6, { x: 450, y: 300, z: 1.7 }], [AN.wBahce + 0.2, { x: 760, y: 480, z: 1.45 }],
-        [AN.wDeniz + 0.3, { x: 1150, y: 560, z: 1.45 }], [AN.tahmin - 0.6, { x: 800, y: 450, z: 1.02 }]]);
+      var kam = kameraYolu(t, [[KES.vadi, { x: 520, y: 300, z: 1.4 }], [AN.wDag + 0.6, { x: 530, y: 300, z: 1.4 }], [AN.wBahce + 0.2, { x: 760, y: 470, z: 1.35 }],
+        [AN.wDeniz + 0.3, { x: 1070, y: 560, z: 1.35 }], [AN.tahmin - 0.6, { x: 800, y: 450, z: 1.02 }]]);
       T.bas(a, kam);
       plaka('vadi-yaz', { d: 1, parilti: 0.6 });
       akis(VADI_DERE, a, 22, 0.035, [0.92, 1, 1], 3, 0.7, true);
@@ -307,25 +310,31 @@
     var ELMA = P(700, 355);
     function bahceSahne(t, a) {
       var yak = tw(t, AN.elma, AN.yan - AN.elma - 0.4, Y.ikili);
-      T.bas(a, { x: kr(800, ELMA[0], yak), y: kr(450, ELMA[1] + 10, yak), z: kr(1.02, 2.4, yak) });
+      T.bas(a, { x: kr(800, ELMA[0], yak), y: kr(450, ELMA[1] + 10, yak), z: kr(1.02, 1.4, yak) });
       plaka('bahce', { d: 1, ruzgar: 0.35, parilti: 0.5 });
       akis(BAHCE_DERE, a, 12, 0.05, [0.92, 1, 1], 3, 0.6, true);
       var h = pencere(t, AN.elma + 1.2, AN.yan - 0.2, 0.5, 0.3);
       if (h > 0.01) { var e = ekranR(ELMA[0], ELMA[1], 24); halka(0, e.x, e.y, e.r * (1 + 0.08 * Math.sin(a * 4)), h); }
     }
-    // 4. Elma dalı: yaprak parlar, sonra yaprağın içine dalınır
+    // 4. Elma dalı: yaprak parlar, dal 1,6'ya kadar yaklaşır, yakın plan plakasına karışır; ardından yaprağın içine geçilir
+    //    (eski: dal parçası 4,2× büyütülüyordu; şimdi kendi yakın planı var)
     var DAL = { x: 800, y: 450, g: 700 }, DAL_YAPRAK = [908, 278];
     function dalSahne(t, a) {
-      var dal = tw(t, AN.gir + 0.2, KES.ic - AN.gir - 0.2, Y.gir);
-      T.bas(a, { x: kr(800, DAL_YAPRAK[0], dal), y: kr(450, DAL_YAPRAK[1], dal), z: kr(1, 4.2, dal) });
+      var dal = tw(t, AN.gir - 0.8, 1.4, Y.ikili), gec = tw(t, AN.gir + 0.0, 0.9, Y.sin);
+      T.bas(a, { x: kr(800, DAL_YAPRAK[0], dal), y: kr(450, DAL_YAPRAK[1], dal), z: kr(1, 1.6, dal) });
       gok(0.3, [0.7, 0.78, 0.94]);
       var parla = pencere(t, AN.yan + 0.2, KES.ic, 0.6, 0.3);
-      if (parla > 0.01) isima(DAL_YAPRAK[0], DAL_YAPRAK[1], 230, [0.85, 1, 0.55], 0.28 * parla);
+      if (parla > 0.01 && gec < 0.5) isima(DAL_YAPRAK[0], DAL_YAPRAK[1], 230, [0.85, 1, 0.55], 0.28 * parla * (1 - gec * 2));
       T.ciz('dal', { x: DAL.x, y: DAL.y, g: DAL.g, d: 1, r: Math.sin(a * 0.7) * 1.4, parilti: 0.3 });
+      if (gec > 0.01) {
+        var it = ic(t, AN.gir, KES.ic - AN.gir), s = 1 + 0.05 * Y.sin(it);
+        T.ciz('elma-dali-yakin', { x: 800, y: 450, g: PG * s, h: PH * s, d: 0, parilti: 0.3, gecis: { k: gec, yon: 0, yumusak: 0.2, ac: true } });
+        if (gec > 0.5) { var q = P(900, 230), pr = pencere(t, AN.gir + 0.3, KES.ic, 0.5, 0.3); T.iz(800 + (q[0] - 800) * s, 450 + (q[1] - 450) * s, 280, 170, 0, 0.85, 1, 0.55, 0.2 * pr); T.izBitir(); }
+      }
     }
     // 5. Yaprağın içi: su kanalda yukarı, şeker öbür şeritte aşağı; gözeneklerden gaz girer, oksijen çıkar
     function icSahne(t, a) {
-      var kam = kameraYolu(t, [[KES.ic, { x: 800, y: 450, z: 1.35 }], [KES.ic + 1.4, { x: 800, y: 450, z: 1.06 }], [AN.delik - 0.2, { x: 800, y: 450, z: 1.06 }],
+      var kam = kameraYolu(t, [[KES.ic, { x: 800, y: 450, z: 1.3 }], [KES.ic + 1.4, { x: 800, y: 450, z: 1.06 }], [AN.delik - 0.2, { x: 800, y: 450, z: 1.06 }],
         [AN.delik + 1, { x: 800, y: 567, z: 1.25 }], [AN.guc - 0.4, { x: 800, y: 567, z: 1.25 }], [AN.guc + 0.6, { x: 700, y: 360, z: 1.2 }],
         [AN.seker + 0.4, { x: 920, y: 400, z: 1.15 }], [AN.oksijen - 0.3, { x: 920, y: 400, z: 1.15 }], [AN.oksijen + 0.6, { x: 800, y: 567, z: 1.25 }],
         [AN.yani + 1.5, { x: 800, y: 567, z: 1.25 }], [KES.fab - 0.3, { x: 800, y: 470, z: 1.06 }]]);
@@ -392,7 +401,7 @@
     }
     // 7. Sonbahar: bahçe sararır, yapraklar salınarak düşer (rüzgâr soldan)
     function sonbaharSahne(t, a) {
-      var kam = kameraYolu(t, [[KES.sonbahar, { x: 800, y: 450, z: 1.02 }], [AN.cop, { x: 760, y: 470, z: 1.15 }], [KES.toprak, { x: 600, y: 640, z: 1.6 }]]);
+      var kam = kameraYolu(t, [[KES.sonbahar, { x: 800, y: 450, z: 1.02 }], [AN.cop, { x: 760, y: 470, z: 1.12 }], [KES.toprak, { x: 640, y: 580, z: 1.35 }]]);
       T.bas(a, kam);
       plaka('bahce', { d: 1 });
       var g = tw(t, AN.sonbahar + 0.3, 2.2, Y.sin);
@@ -413,7 +422,7 @@
     function toprakSahne(t, a) {
       var P = PT;                                                   // bu bölümde ham görsel noktası büyük kesite göre çevrilir
       var durakta = acik === 'toprak', c = durakta ? cikan : null;
-      var kam = kameraYolu(t, [[KES.toprak, { x: 485, y: 300, z: 1.5 }], [AN.solucanlar + 0.4, { x: 800, y: 450, z: 1.02 }], [AN.olmasa - 1.2, { x: 800, y: 450, z: 1.02 }], [AN.olmasa - 0.2, { x: 800, y: 450, z: 1 }]]);
+      var kam = kameraYolu(t, [[KES.toprak, { x: 680, y: 400, z: 1.12 }], [AN.solucanlar + 0.4, { x: 800, y: 450, z: 1.02 }], [AN.olmasa - 1.2, { x: 800, y: 450, z: 1.02 }], [AN.olmasa - 0.2, { x: 800, y: 450, z: 1 }]]);
       T.bas(a, kam);
       var sert = c === 'solucan' ? 1 : 0, fakir = c === 'yaprak' || c === 'mantar' ? 1 : 0;
       plaka('toprak', { y: TY, g: PG * TS, h: PH * TS, d: 1, carp: sert ? [0.78, 0.72, 0.68] : fakir ? [1.08, 1.0, 0.86] : [1, 1, 1], doy: fakir ? 0.72 : 1 });
@@ -489,7 +498,7 @@
     }
     // 8b. Bahar: aynı bahçe çiçek açmış, taze yapraklar
     function baharAni(t, a) {
-      T.bas(a, { x: kr(700, 760, ic(t, KES.bahar, 3.3)), y: 480, z: 1.9 });
+      T.bas(a, { x: kr(700, 780, ic(t, KES.bahar, 3.3)), y: 480, z: 1.35 });
       plaka('vadi-bahar', { d: 1, parilti: 0.5 });
       for (var i = 0; i < 30; i++) {                                    // çiçek yaprakları rüzgârla sağa savrulur
         var k = (a * (0.08 + hash(i, 101) * 0.05) + hash(i, 102)) % 1, x = -40 + k * 1700, y = 160 + hash(i, 103) * 460 + Math.sin(k * 9 + i) * 30;
@@ -499,8 +508,8 @@
     }
     // 9. Dağ: kışın kar yağar, kar aylarca kalır, bahar gelince azar azar erir
     function dagSahne(t, a) {
-      var kam = kameraYolu(t, [[KES.dag, { x: 760, y: 520, z: 1.6 }], [AN.yukari + 0.3, { x: 760, y: 500, z: 1.6 }], [AN.kis, { x: 420, y: 250, z: 1.8 }],
-        [AN.sel - 0.2, { x: 560, y: 330, z: 1.4 }], [AN.erir, { x: 640, y: 420, z: 1.25 }], [KES.gece, { x: 800, y: 450, z: 1.02 }]]);
+      var kam = kameraYolu(t, [[KES.dag, { x: 700, y: 480, z: 1.35 }], [AN.yukari + 0.3, { x: 680, y: 450, z: 1.35 }], [AN.kis, { x: 560, y: 320, z: 1.4 }],
+        [AN.sel - 0.2, { x: 620, y: 380, z: 1.3 }], [AN.erir, { x: 700, y: 430, z: 1.2 }], [KES.gece, { x: 800, y: 450, z: 1.02 }]]);
       T.bas(a, kam);
       var kis = tw(t, AN.kis, 1.6, Y.sin), bahar = tw(t, AN.erir + 0.6, 2.4, Y.sin), yaz = tw(t, AN.erir + 3.4, 1.6, Y.sin);
       plaka('vadi-yaz', { d: 1, parilti: 0.5 });
@@ -553,85 +562,133 @@
         T.izBitir();
       }
     }
-    // 11. Uzay: Dünya'nın kenarı ve ince mavi hava çizgisi; durakta çocuk kalınlığı değiştirir
-    var LIMB = { x: 800 + (831 - 836) * K, y: 450 + (2498 - 470.5) * K, r: 2058.4 * K };
-    function kalinlik(v) { return v < 50 ? 4 + v / 50 * 26 : 30 + (v - 50) / 50 * 110; }
-    function kalinliktanDeger(th) { th = sinirla(th, 4, 140); return th < 30 ? (th - 4) / 26 * 50 : 50 + (th - 30) / 110 * 50; }
+    // 11. Uzay: Dünya'nın kenarı ve ince mavi hava çizgisi; durakta çocuk kalınlığı değiştirir.
+    //     Uçlar gerçek dünyalara bağlıdır: çok ince hava Mars gibi (Dünya'nın basıncının yüzde 0,6'sı kadar), çok kalın hava
+    //     Venüs gibi (Dünya'nın yaklaşık 92 katı, yüzey ~464 °C). Bölge sınırları çizilen kalınlıktan türer:
+    //     meteorların yere ulaşması, pencerenin Mars'a geçmesi ve yazı aynı eşikte (kalınlık < ALT) olur.
+    var SH = 120;                                                      // Dünya'nın kenarı aşağı alınır: üstte büyük pencereye yer açılır
+    var LIMB = { x: 800 + (831 - 836) * K, y: 450 + (2498 - 470.5) * K + SH, r: 2058.4 * K };
+    // değer (0-100) → kalınlık (sahne pikseli); parça parça doğrusal, tersi de var
+    var KAL = [[0, 3], [40, 12], [50, 30], [60, 55], [100, 150]];
+    function kalinlik(v) {
+      v = sinirla(v, 0, 100);
+      for (var i = 1; i < KAL.length; i++) if (v <= KAL[i][0]) return kr(KAL[i - 1][1], KAL[i][1], (v - KAL[i - 1][0]) / (KAL[i][0] - KAL[i - 1][0]));
+      return KAL[KAL.length - 1][1];
+    }
+    function kalinliktanDeger(th) {
+      th = sinirla(th, KAL[0][1], KAL[KAL.length - 1][1]);
+      for (var i = 1; i < KAL.length; i++) if (th <= KAL[i][1]) return kr(KAL[i - 1][0], KAL[i][0], (th - KAL[i - 1][1]) / (KAL[i][1] - KAL[i - 1][1]));
+      return 100;
+    }
+    var HAVA_ARALIK = [40, 60], ALT = kalinlik(HAVA_ARALIK[0]), UST = kalinlik(HAVA_ARALIK[1]);   // ALT: bunun altı Mars gibi, UST: üstü Venüs gibi
     function limbY(x, r) { var dx = x - LIMB.x; return LIMB.y - Math.sqrt(Math.max(0, r * r - dx * dx)); }
-    var PEN = { x: 265, y: 170, g: 420, h: 236 };
+    var PEN = { x: 330, y: 213, g: 600, h: 338 };                      // köşe penceresi (eskisi 420×236)
+    var HAVA_YAZI = [['Mars gibi: hava çok ince', 'etiket'], ['Dünya: hava tam ölçüsünde', 'etiket'], ['Venüs gibi: hava çok kalın', 'etiket']]
+      .map(function (s) { return yazi(s[0], s[1], PEN.x, PEN.y - PEN.h / 2 + 34); });
+    var havaYaziO = [0, 0, 0];
+    function penceKarisim(v) {                                         // bölge geçişleri sınırın iki yanında yumuşar
+      var m = 1 - Y.sin(ic(v, HAVA_ARALIK[0] - 6, 12)), k = Y.sin(ic(v, HAVA_ARALIK[1] - 6, 12));
+      return [m, 1 - m - k, k];
+    }
     function uzaySahne(t, a) {
       var g = tw(t, KES.uzay, 2.2, Y.cik);
       T.bas(a, { x: 800, y: 450, z: kr(1.12, 1, g) });
-      plaka('uzay-kenar', { d: 1, parilti: 0.4 });
       var v = acik === 'hava' ? hv : (t > D.hava && api.bitti('hava') ? hv : 50);
+      var w = penceKarisim(v);
+      T.ciz('kagit', { x: 800, y: 40, g: 1800, h: 260, d: 0, carp: [0, 0, 0] });      // plakanın üstü (SH kadar kayınca açılan şerit) siyah
+      // Dünya'nın yüzü: ince havada soğuk, kalın havada kızgın bir ton
+      T.ciz('uzay-kenar', { x: 800, y: 450 + SH, g: PG, h: PH, d: 1, parilti: 0.4,
+        carp: [kr(kr(1, 0.9, w[0]), 1.12, w[2]), kr(kr(1, 0.96, w[0]), 0.78, w[2]), kr(kr(1, 1.1, w[0]), 0.55, w[2])] });
       var th = kalinlik(v), c = T.ekran(LIMB.x, LIMB.y, 1), Rs = ekranR(LIMB.x, LIMB.y, LIMB.r).r, z = Rs / LIMB.r;
       var thS = th * z, Rm = Rs + thS / 2;
       var x0 = -40, x1 = 1640, y0 = c.y - Math.sqrt(Rm * Rm - (x0 - c.x) * (x0 - c.x)), y1 = c.y - Math.sqrt(Rm * Rm - (x1 - c.x) * (x1 - c.x));
       var d = 'M' + f1(x0) + ' ' + f1(y0) + ' A' + f1(Rm) + ' ' + f1(Rm) + ' 0 0 1 ' + f1(x1) + ' ' + f1(y1);
       havaSerit.setAttribute('stroke-width', f1(Math.max(2, thS))); havaParilti.setAttribute('stroke-width', f1(thS * 2.2 + 10));
       goster(havaParilti, d, 0.9); goster(havaSerit, d, 0.95); kullan(havaParilti); kullan(havaSerit);
-      // uzaydan gelen küçük taşlar: kalın havada yukarıda yanar, çok ince havada yere ulaşır
-      var ulasir = th < 10;
+      // uzaydan gelen küçük taşlar: ince havada (th < ALT) yanmadan yere çarpar, ötesinde havanın içinde yanıp söner
+      var ulasir = th < ALT, yanma = sinirla((th - 3) / 27, 0.12, 1);
       for (var i = 0; i < 7; i++) {
-        var per = 2.4 + hash(i, 131) * 1.6, f = ((a + hash(i, 132) * 10) % per) / per, xs = 120 + hash(i, 133) * 1360;
-        var sonR = ulasir ? Rs : Rs + thS * 0.55, yh = c.y - Math.sqrt(Math.max(0, sonR * sonR - (xs - c.x) * (xs - c.x)));
+        var per = 2.4 + hash(i, 131) * 1.6, f = ((a + hash(i, 132) * 10) % per) / per, xs = 760 + hash(i, 133) * 800;
+        var sonR = ulasir ? Rs : Rs + thS * (th > UST ? 0.8 : 0.55), yh = c.y - Math.sqrt(Math.max(0, sonR * sonR - (xs - c.x) * (xs - c.x)));
         var ys = yh - 330, y = kr(ys, yh, Math.min(1, f * 1.25)), x = xs + (y - ys) * 0.35;
         if (f * 1.25 > 1.18) continue;
         var vur = f * 1.25 >= 1;
         if (vur && ulasir) { T.iz(x, y, 16, 8, 0, 1, 0.75, 0.4, 0.8); continue; }
-        var parla = Math.max(0, (y - (yh - 70)) / 70);
-        for (var j = 0; j < 8; j++) T.iz(x - j * 6 * 0.35, y - j * 6, 2.2 + parla * 3 - j * 0.2, 2.2 + parla * 3 - j * 0.2, 0, 1, 0.9 - parla * 0.3, 0.7 - parla * 0.4, (0.5 + parla * 0.5) * (1 - j / 8));
+        if (vur) continue;                                             // havada yandı, kayboldu
+        var parla = Math.max(0, (y - (yh - 70)) / 70) * yanma;
+        for (var j = 0; j < 8; j++) T.iz(x - j * 6 * 0.35, y - j * 6, 2.2 + parla * 3 - j * 0.2, 2.2 + parla * 3 - j * 0.2, 0, 1, 0.9 - parla * 0.3, 0.7 - parla * 0.4, (0.35 + parla * 0.5) * (1 - j / 8));
       }
       T.izBitir();
       // elma: kabuğu kadar ince
       var el2 = pencere(t, AN.elmaK + 0.8, D.hava - 0.5, 0.6, 0.4);
       if (el2 > 0.01) T.ciz('dal', { x: 1200, y: 190, g: 170, d: 0, o: el2 });
-      // köşe penceresi: vadinin gecesi
+      // köşe penceresi: aynı gecenin yüzeyi, havaya göre üç dünya
       var pe = acik === 'hava' ? 1 : pencere(t, D.hava - 0.4, AN.olcu + 2.2, 0.4, 0.5);
-      if (pe > 0.01) penceredeVadi(a, v, pe);
+      havaYaziO = [0, 0, 0];
+      if (pe > 0.01) { penceredeYuzey(a, w, pe); havaYaziO = [w[0] * pe, w[1] * pe, w[2] * pe]; }
       else gizle(cerceve);
     }
-    function penceredeVadi(a, v, o) {
-      var ince = sinirla((40 - v) / 40, 0, 1), kalin = sinirla((v - 60) / 40, 0, 1);
-      T.ciz('vadi-yaz', { x: PEN.x, y: PEN.y, g: PEN.g, h: PEN.h, d: 0, o: o, ruzgar: kalin * 0.8,
-        carp: [kr(kr(0.3, 0.42, ince), 0.95, kalin), kr(kr(0.34, 0.5, ince), 0.5, kalin), kr(kr(0.6, 0.72, ince), 0.3, kalin)],
-        ekle: [0.12 * ince + 0.22 * kalin, 0.14 * ince + 0.08 * kalin, 0.2 * ince] });
-      var x0 = PEN.x - PEN.g / 2, y0 = PEN.y - PEN.h / 2;
-      goster(cerceve, 'M' + x0 + ' ' + y0 + ' h' + PEN.g + ' v' + PEN.h + ' h' + -PEN.g + 'Z', o); kullan(cerceve);
-      if (kalin < 0.4) {
-        for (var i = 0; i < 30; i++) { var b = 1 + hash(i, 141) * 1.4; T.iz(x0 + 8 + hash(i, 142) * (PEN.g - 16), y0 + 6 + hash(i, 143) * PEN.h * 0.4, b, b, 0, 1, 0.95, 0.85, o * (1 - kalin * 2.5) * (0.6 + 0.4 * Math.sin(a * 2 + i))); }
-        T.izBitir();
+    function penceredeYuzey(a, w, o) {
+      var x0 = PEN.x - PEN.g / 2, y0 = PEN.y - PEN.h / 2, sw = PEN.g / 1672;
+      function N(u, vv) { return [x0 + u * sw, y0 + vv * sw]; }          // plaka pikseli → sahne
+      T.ciz('hava-normal', { x: PEN.x, y: PEN.y, g: PEN.g, h: PEN.h, d: 0, o: o, parilti: 0.3 });
+      if (w[0] > 0.01) T.ciz('hava-mars', { x: PEN.x, y: PEN.y, g: PEN.g, h: PEN.h, d: 0, o: o * w[0] });
+      if (w[2] > 0.01) T.ciz('hava-venus', { x: PEN.x, y: PEN.y, g: PEN.g, h: PEN.h, d: 0, o: o * w[2], parilti: 0.3 });
+      // Dünya: taşlar gökte yanıp söner, yere ulaşmaz
+      if (w[1] > 0.01) {
+        for (var i = 0; i < 2; i++) {
+          var per = 3.2 + i * 0.9, f = ((a * 0.9 + i * 1.7) % per) / per; if (f > 0.5) continue; var u = f / 0.5;
+          var p = N(420 + i * 520 + u * 150, 60 + u * 150), p0 = N(420 + i * 520 + u * 150 - 40, 60 + u * 150 - 26);
+          T.iz(p0[0], p0[1], 14 * sw * 2, 2.2, 0.55, 1, 0.8, 0.5, o * w[1] * Math.sin(u * Math.PI) * 0.5);
+          T.iz(p[0], p[1], 3, 3, 0, 1, 0.92, 0.7, o * w[1] * Math.sin(u * Math.PI));
+        }
       }
-      var f = (a * 0.7) % 1;
-      if (ince > 0.5) {                     // taşlar yanmadan iner, yere çarpar
-        var x = x0 + 90 + f * 200, y = y0 + 10 + f * (PEN.h - 40);
-        T.iz(x, y, 4, 4, 0, 1, 0.8, 0.5, o); if (f > 0.9) T.iz(x, y0 + PEN.h - 30, 14, 6, 0, 1, 0.7, 0.4, o * 0.8);
-      } else if (kalin < 0.5) {             // tam ölçü: yukarıda yanıp söner
-        if (f < 0.4) { var u = f / 0.4; T.iz(x0 + 120 + u * 120, y0 + 14 + u * 36, 3, 3, 0, 1, 0.92, 0.7, o * Math.sin(u * Math.PI)); }
+      // Mars: küçük taşlar yanmadan yere çarpar, toz kalkar
+      if (w[0] > 0.01) {
+        [[700, 560], [1120, 610], [470, 690]].forEach(function (h, i) {
+          var per = 3 + i * 0.7, f = ((a * 0.9 + i * 1.3) % per) / per;
+          var yer = N(h[0], h[1]);
+          if (f < 0.35) { var u = f / 0.35, p = N(h[0] - 90 + 90 * u, 40 + (h[1] - 40) * u), q = N(h[0] - 90 + 90 * u - 24, 40 + (h[1] - 40) * u - 40);
+            T.iz(q[0], q[1], 10, 2, 1.2, 1, 0.9, 0.7, o * w[0] * 0.55); T.iz(p[0], p[1], 3.4, 3.4, 0, 1, 0.95, 0.8, o * w[0]); }
+          else if (f < 0.65) { var k = (f - 0.35) / 0.3; T.iz(yer[0], yer[1] - 8 * k, 12 + 22 * k, 6 + 8 * k, 0, 0.92, 0.7, 0.55, o * w[0] * 0.55 * (1 - k)); }
+        });
+      }
+      // Venüs: yerden yükselen sıcak dalgası
+      if (w[2] > 0.01) {
+        for (var n = 0; n < 12; n++) {
+          var s = (a * 0.12 + hash(n, 151)) % 1, q2 = N(180 + hash(n, 152) * 1300 + Math.sin(s * 14 + n) * 14, 900 - s * 560);
+          T.iz(q2[0], q2[1], 3.5, 9, 0, 1, 0.82, 0.45, o * w[2] * 0.32 * Math.sin(s * Math.PI));
+        }
       }
       T.izBitir();
+      goster(cerceve, 'M' + f1(x0) + ' ' + f1(y0) + ' h' + PEN.g + ' v' + PEN.h + ' h' + -PEN.g + 'Z', o); kullan(cerceve);
     }
     // 12. Dere: sabah, akıntı yönünde; taşlar aşağı indikçe küçülür
     function dereSahne(t, a) {
       var k = ic(t, KES.dere, KES.deniz - KES.dere);
-      T.bas(a, { x: kr(485, 1115, Y.sin(k)), y: kr(280, 620, Y.sin(k)), z: 1.5 });
+      T.bas(a, { x: kr(570, 1030, Y.sin(k)), y: kr(330, 580, Y.sin(k)), z: 1.3 });
       plaka('dere', { d: 1, su: 0.9, parilti: 0.7 });
       akis(DERE_TAS, a, 26, 0.06, [0.95, 1, 1], 3.2, 0.75, true);
     }
-    // 13. Deniz: büyüteçte minik yeşil canlılar; kumsalda kum taneleri ve kabuk
+    // 13. Deniz: büyüteçte minik yeşil canlılar; kumsala geçilince kumsalın kendi yakın planı (eski: deniz plakası 1,6×)
+    //     Kumsal nesneleri (taş, kabuk) yakın plan plakasının kendi nesneleridir: halka ve yazı onlara bağlanır
+    var KUM_LENS = [470, 690], KUM_TAS = P(322, 760), KUM_KABUK = P(1025, 835);
     function denizSahne(t, a) {
-      var kam = kameraYolu(t, [[KES.deniz, { x: 900, y: 450, z: 1.05 }], [AN.denizF + 1.2, { x: 1050, y: 500, z: 1.3 }], [AN.kumsala - 0.2, { x: 1050, y: 500, z: 1.3 }],
-        [AN.buyutec, { x: 680, y: 646, z: 1.6 }], [AN.isci, { x: 700, y: 640, z: 1.6 }], [D.gorev - 0.3, { x: 800, y: 450, z: 1 }]]);
+      var kam = kameraYolu(t, [[KES.deniz, { x: 900, y: 450, z: 1.05 }], [AN.denizF + 1.2, { x: 1030, y: 500, z: 1.3 }], [AN.kumsala - 0.2, { x: 1030, y: 500, z: 1.3 }],
+        [AN.buyutec, { x: 700, y: 560, z: 1.15 }], [AN.isci, { x: 700, y: 550, z: 1.2 }], [D.gorev - 0.3, { x: 800, y: 450, z: 1 }]]);
       T.bas(a, kam);
       // eşleştirme durağında sahne kararır: kartlardaki yazılar okunur
-      var es = acik === 'gorev' ? 1 : 0;
-      plaka('deniz', { d: 1, su: 0.9, parilti: 0.7, carp: es ? [0.42, 0.46, 0.6] : [1, 1, 1] });
-      var pl = pencere(t, AN.denizF + 1.4, AN.kumsala - 0.1, 0.6, 0.4);
+      var es = acik === 'gorev' ? 1 : 0, carp = es ? [0.42, 0.46, 0.6] : [1, 1, 1];
+      var kum = tw(t, AN.kumsala - 0.2, 1.6, Y.sin);
+      if (kum < 0.995) plaka('deniz', { d: 1, su: 0.9, parilti: 0.7, carp: carp });
+      var pl = pencere(t, AN.denizF + 1.4, AN.kumsala - 0.4, 0.6, 0.4);
       if (pl > 0.01) { var p = ekranR(1150, 520, 120); T.ciz('plankton', { x: 1150, y: 520, g: 240, d: 1, o: pl, parilti: 0.3 }); buyutec(p.x, p.y, p.r, pl); }
+      if (kum > 0.01) plaka('kumsal-yakin', { d: 1, su: 0.35, parilti: 0.5, carp: carp, gecis: kum < 0.995 ? { k: kum, yon: 0, yumusak: 0.2, ac: true } : undefined });
       var ku = pencere(t, AN.buyutec + 0.4, D.gorev - 0.4, 0.6, 0.4);
-      if (ku > 0.01) { var q = ekranR(700, 715, 115); T.ciz('kum-taneleri', { x: 700, y: 715, g: 230, d: 1, o: ku }); buyutec(q.x, q.y, q.r, ku); }
-      var kb = pencere(t, kel('kabuğunun') - 0.3, D.gorev - 0.4, 0.5, 0.4);
-      if (kb > 0.01) { T.ciz('kabuk', { x: 945, y: 740, g: 110, d: 1, o: kb, r: -12 }); var w = ekranR(945, 740, 72); halka(0, w.x, w.y, w.r, kb); }
+      if (ku > 0.01) { var q = ekranR(KUM_LENS[0], KUM_LENS[1], 115); T.ciz('kum-taneleri', { x: KUM_LENS[0], y: KUM_LENS[1], g: 230, d: 1, o: ku }); buyutec(q.x, q.y, q.r, ku); }
+      var ts = pencere(t, AN.kimi + 0.1, D.gorev - 0.4, 0.5, 0.4), kb = pencere(t, kel('kabuğunun') - 0.3, D.gorev - 0.4, 0.5, 0.4);
+      if (ts > 0.01) { var w1 = ekranR(KUM_TAS[0], KUM_TAS[1], 34); halka(0, w1.x, w1.y, w1.r * (1 + 0.05 * Math.sin(a * 3)), ts); }
+      if (kb > 0.01) { var w2 = ekranR(KUM_KABUK[0], KUM_KABUK[1], 62); halka(1, w2.x, w2.y, w2.r * (1 + 0.05 * Math.sin(a * 3 + 1)), kb); }
     }
     // 14. Büyük soru: akşam ışığında bütün vadi; dağ, dere, bahçe ve deniz birbirine yetişir
     function buyukSahne(t, a) {
@@ -654,7 +711,7 @@
     function kayaNokta(p) { var s = KAYA.g / 420; return [KAYA.x + (p[0] - 210) * s, KAYA.y - (380 - p[1]) * s]; }
     function sirKaya(t, a) {
       var gece = pencere(t, AN.dondu, AN.catlatti, 0.6, 0.8);
-      T.bas(a, { x: 352 + Math.sin(a * 0.1) * 4, y: 198, z: 2.0 });
+      T.bas(a, { x: 490 + Math.sin(a * 0.1) * 4, y: 273, z: 1.5 });
       var cp = [kr(1, 0.32, gece), kr(1, 0.38, gece), kr(1, 0.66, gece)];
       plaka('vadi-yaz', { d: 1, carp: cp });
       if (gece > 0.3) { for (var i = 0; i < 40; i++) { var q = T.ekran(P(hash(i, 151) * 700, 0)[0], P(0, hash(i, 152) * 120)[1], 1); T.iz(q.x, q.y, 1.6, 1.6, 0, 1, 0.95, 0.85, (gece - 0.3) * (0.6 + 0.4 * Math.sin(a * 2 + i))); } T.izBitir(); }
@@ -699,7 +756,7 @@
     }
     function sirDere(t, a) {
       var s = tw(t, AN.dereAldi + 0.2, KES.sirDeniz - AN.dereAldi - 0.6, Y.sin), q = uzerinde(DERE_TAS, s);
-      T.bas(a, { x: q[0], y: q[1] - 40, z: 1.6 });
+      T.bas(a, { x: q[0], y: q[1] - 40, z: 1.3 });
       plaka('dere', { d: 1, su: 0.9, parilti: 0.6 });
       akis(DERE_TAS, a, 26, 0.06, [0.95, 1, 1], 3.2, 0.7, true);
       // taş yuvarlandıkça döner, küçülür, yuvarlaklaşır: taş → çakıl → kum
@@ -712,19 +769,19 @@
     }
     function sirDeniz(t, a) {
       var k = tw(t, KES.sirDeniz, 2.4, Y.sin);
-      T.bas(a, { x: kr(560, 700, k), y: 646, z: kr(1.9, 1.6, k) });
-      plaka('deniz', { d: 1, su: 0.9, parilti: 0.7 });
-      var p = [kr(520, 700, k), kr(700, 770, k) - Math.sin(k * Math.PI) * 30];
+      T.bas(a, { x: kr(640, 700, k), y: kr(560, 546, k), z: kr(1.2, 1.15, k) });
+      plaka('kumsal-yakin', { d: 1, su: 0.35, parilti: 0.5 });
+      var p = [kr(250, KUM_LENS[0], k), kr(700, KUM_LENS[1] + 8, k) - Math.sin(k * Math.PI) * 24];   // tane kumsalda yuvarlanıp büyüteçteki yerine gelir
       T.ciz('kum-grup', { x: p[0], y: p[1], g: 22, d: 1 });
       var e = ekranR(p[0], p[1], 36); halka(0, e.x, e.y, e.r * (1 + 0.06 * Math.sin(a * 3)), 1 - tw(t, AN.yolcu + 1.6, 0.6));
       var bu = tw(t, AN.yolcu + 1.4, 0.8);
-      if (bu > 0.01) { var q = ekranR(700, 715, 110); T.ciz('kum-taneleri', { x: 700, y: 715, g: 220, d: 1, o: bu }); buyutec(q.x, q.y, q.r, bu); }
+      if (bu > 0.01) { var q = ekranR(KUM_LENS[0], KUM_LENS[1], 115); T.ciz('kum-taneleri', { x: KUM_LENS[0], y: KUM_LENS[1], g: 230, d: 1, o: bu }); buyutec(q.x, q.y, q.r, bu); }
     }
     // 17. Kapanış: akşam kumsalı, dalgalar
     function kapanis(t, a) {
       var ak = tw(t, KES.son, 4, Y.sin);
-      T.bas(a, { x: kr(700, 800, ak), y: kr(600, 450, ak), z: kr(1.5, 1.02, ak) });
-      plaka('deniz', { d: 1, su: 0.9, parilti: 0.9, carp: [kr(1, 1.0, ak), kr(1, 0.8, ak), kr(1, 0.72, ak)], ekle: [0.06 * ak, 0.02 * ak, 0] });
+      T.bas(a, { x: kr(680, 800, ak), y: kr(540, 450, ak), z: kr(1.25, 1.02, ak) });
+      plaka('kumsal-yakin', { d: 1, su: 0.5, parilti: 0.9, carp: [kr(1, 1.0, ak), kr(1, 0.8, ak), kr(1, 0.72, ak)], ekle: [0.06 * ak, 0.02 * ak, 0] });
     }
 
     /* ——— perde: kesmelerde kısa bir an lacivert (kâğıt bölümünde krem) karartma ——— */
@@ -796,6 +853,7 @@
       SVG_HEPSI.forEach(function (p) { if (kullanildi.indexOf(p) < 0) gizle(p); });
       perde(t);
       yazilar(t);
+      HAVA_YAZI.forEach(function (e, i) { gos(e, b === 12 ? havaYaziO[i] : 0, 0); });
     }
 
     return {
@@ -805,16 +863,18 @@
       altyazisiz: function (t) { return kagitYazisi || (t >= KES.kagit && t < KES.sir2) || (t >= KES.kagit2 && t < KES.son); },
       durak: function (id, olay, veri) {
         if (id === 'fabrika') { if (olay === 'dogru') dolu[veri] = true; if (olay === 'ac') dolu = {}; }
-        if (id === 'toprak') { if (olay === 'cikar') cikan = veri; if (olay === 'kapat' || olay === 'ac') cikan = null; }
+        if (id === 'toprak') { if (olay === 'cikar') cikan = veri; if (olay === 'dondur' || olay === 'kapat' || olay === 'ac') cikan = null; }
         if (id === 'hava' && olay === 'deger') hv = veri;
       },
-      // Havanın kenarı: çocuk mavi şeridin dış kenarını tutup yukarı (kalınlaştır) ya da aşağı (incelt) çeker
+      // Havanın kenarı: çocuk mavi şeridin dış kenarını tutup yukarı (kalınlaştır) ya da aşağı (incelt) çeker.
+      // Halka şeridin kalınlığına göre büyür (ince şeritte küçük, kalın şeritte geniş).
       tutamac: function (id, deger) {
         var th = kalinlik(deger);
-        return { x: 800, y: limbY(800, LIMB.r + th), r: 62, ust: true };
+        return { x: 800, y: limbY(800, LIMB.r + th), r: 30 + 26 * sinirla(th / 150, 0, 1), ust: true };
       },
-      tutDeger: function (id, x, y) {
-        var th = limbY(800, LIMB.r) - y;
+      // Tutulan yerden başlar: bant parmağın altına sıçramaz, parmak ne kadar kaydıysa kenar o kadar kayar.
+      tutDeger: function (id, x, y, bas) {
+        var th = bas ? kalinlik(bas.deger) + (bas.y - y) : limbY(800, LIMB.r) - y;
         return kalinliktanDeger(th);
       }
     };

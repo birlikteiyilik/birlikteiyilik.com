@@ -12,6 +12,10 @@
      buk      gövde bükülmesi (piksel), sal salınım (piksel), faz
      gecis    {k, ac, sil, yumusak, yon} katman altındakini açarak silinir ya da belirir; k 0..1
               yon 0 lekeyle, 1 alttan, 2 soldan, 3 ortadan
+     odak     T.odak(ad, {k, x, y, g|h, kararma, renk, r, parilti, s0, golge, gecis}) nesneyi sahnenin parçası olarak çizer, k 0..1
+              ilerledikçe hafif saydam bir karartmanın önünde merkeze alıp yaklaştırır (ayrıntılı incelemek için). Kameradan
+              bağımsızdır (d:0). {x, y, g, h, nokta(px, py)} döner: nokta, görselin piksel koordinatını sahne noktasına çevirir
+              (etiket ve halka bağlamak için). T.dolgu(renk, o) tüm sahneyi düz renkle örter (görselsiz karartma).
      kure     {boylam, egim, bakis, isik, gunes:[x,y,z], gece, duz, yedek} görseli küre olarak çizer.
               Adı "-harita" ile biten görsel eşdikdörtgen haritadır: kendi ekseninde döner (boylam, radyan),
               ekseni ekranda egim kadar sağa yatar, bakis kadar yukarıdan görülür (kuzey kutbu izleyene eğilir).
@@ -112,12 +116,23 @@
     kap.insertBefore(canvas, kap.firstChild);
     var gl = null, c2 = null, tex = {}, resim = {}, zaman = 0, kam = { x: 800, y: 450, z: 1 };
     var ana, iz, kafes, kafesN = 0, iu = {}, izu = {}, izTampon, izVeri = new Float32Array(8 * 6 * 900), izN = 0;
-    var olcek = 1, kareler = 0, sayac = 0;
+    var olcek = 1, kareler = 0, sayac = 0, sonGorunen = 0, glEn = 0;
+    // Düz renk dolgusu için 4×4 beyaz doku (carp ile boyanır): görselsiz karartma, perde
+    var bosTuval = document.createElement('canvas'); bosTuval.width = bosTuval.height = 4;
+    var bc = bosTuval.getContext && bosTuval.getContext('2d'); if (bc) { bc.fillStyle = '#fff'; bc.fillRect(0, 0, 4, 4); }
+    resim.__bos = bosTuval;
+    function gen(im) { return im.naturalWidth || im.width; }
+    function yuk(im) { return im.naturalHeight || im.height; }
 
     function glKur() {
       var ayar = { alpha: false, antialias: false, premultipliedAlpha: true, powerPreference: 'default' };
       gl = canvas.getContext('webgl2', ayar) || canvas.getContext('webgl', ayar);
       if (!gl) { c2 = canvas.getContext('2d'); return; }
+      // Tampon sınırı: ekran kartının görüntü alanı ve renderbuffer sınırını aşma (en çok 2× çözünürlük)
+      try {
+        var vd = gl.getParameter(gl.MAX_VIEWPORT_DIMS), rb = gl.getParameter(gl.MAX_RENDERBUFFER_SIZE);
+        glEn = Math.min(rb || 4096, vd ? Math.min(vd[0], Math.floor(vd[1] * 16 / 9)) : 4096);
+      } catch (e) { glEn = 2048; }
       ana = program(gl, KOSE, PARCA); iz = program(gl, IZ_KOSE, IZ_PARCA);
       ['m', 'olcu', 'buk', 't0', 'carp', 'ekle', 'doy', 'etki', 'gec', 'kure', 'kure2', 'kgece'].forEach(function (a) { iu[a] = gl.getUniformLocation(ana, a); });
       izu.olcu = gl.getUniformLocation(iz, 'olcu');
@@ -145,7 +160,7 @@
       // Küre haritası boylam dikişinde mipmap seviyesi sıçramasın diye düz süzülür
       if (iki && !/-harita$/.test(ad)) { gl.generateMipmap(gl.TEXTURE_2D); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR); }
       else gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-      tex[ad] = { t: t, g: im.naturalWidth, h: im.naturalHeight };
+      tex[ad] = { t: t, g: gen(im), h: yuk(im) };
     }
     canvas.addEventListener('webglcontextlost', function (e) { e.preventDefault(); gl = null; tex = {}; });
     canvas.addEventListener('webglcontextrestored', glKur);
@@ -173,18 +188,23 @@
           });
         }));
       },
-      boyut: function (ad) { var i = resim[ad]; return i ? { g: i.naturalWidth, h: i.naturalHeight } : { g: 1, h: 1 }; },
-      /* görünen boyuta göre tuval çözünürlüğü; yavaş cihazda kendiliğinden düşer */
+      boyut: function (ad) { var i = resim[ad]; return i ? { g: gen(i), h: yuk(i) } : { g: 1, h: 1 }; },
+      /* görünen boyuta göre tuval çözünürlüğü: yoğun (retina) ekranda 2× tampona kadar çıkar, yavaş cihazda
+         kendiliğinden düşer. Gölgelendirici ve koordinatlar hep sahne birimindedir (GEN×YUK); yalnız tampon büyür. */
       olcekle: function (gorunen) {
-        var dpr = Math.min(window.devicePixelRatio || 1, 2), hedef = Math.min(1, Math.max(0.5, gorunen * dpr / GEN)) * olcek;
-        var g = Math.round(GEN * Math.max(hedef, 0.5)), h = Math.round(g * 9 / 16);
+        sonGorunen = gorunen;
+        var dpr = Math.min(window.devicePixelRatio || 1, 2), tavan = gl ? 2 : 1;   // 2B yedek yavaştır: 1×'te kalır
+        var hedef = Math.min(tavan, Math.max(0.5, gorunen * dpr / GEN)) * olcek;
+        var g = Math.round(GEN * Math.max(hedef, 0.5));
+        if (gl && glEn) g = Math.min(g, glEn);
+        var h = Math.round(g * 9 / 16);
         if (canvas.width !== g) { canvas.width = g; canvas.height = h; }
       },
       sureBildir: function (ms) {
         kareler++; sayac += ms;
         if (kareler < 90) return;
         var ort = sayac / kareler; kareler = 0; sayac = 0;
-        if (ort > 34 && olcek > 0.6) olcek -= 0.15;
+        if (ort > 34 && olcek > 0.6) { olcek -= 0.15; if (sonGorunen) api.olcekle(sonGorunen); }
       },
       /* sahne noktasının ekrandaki yeri: yazılar kamerayla birlikte gitsin */
       ekran: function (x, y, d) {
@@ -209,7 +229,7 @@
         var kure = o.kure;
         if (kure && !gl && kure.yedek && resim[kure.yedek]) { bilgi = resim[kure.yedek]; kure = { duz: true }; }
         var saydam = o.o == null ? 1 : o.o; if (saydam <= 0.002) return;
-        var og = bilgi.naturalWidth, oh = bilgi.naturalHeight;
+        var og = gen(bilgi), oh = yuk(bilgi);
         var g = o.g || (o.h ? o.h * og / oh : og), h = o.h || (o.g ? o.g * oh / og : oh);
         if (kure && !kure.duz) h = g;   // harita küre olarak kare içine çizilir
         var s = o.s == null ? 1 : o.s, ax = o.ax == null ? 0.5 : o.ax, ay = o.ay == null ? 0.5 : o.ay;
@@ -278,6 +298,40 @@
         izN = 0;
         gl.useProgram(ana); gl.bindBuffer(gl.ARRAY_BUFFER, kafes);
         var yer = gl.getAttribLocation(ana, 'p'); gl.enableVertexAttribArray(yer); gl.vertexAttribPointer(yer, 2, gl.FLOAT, false, 0, 0);
+      },
+      /* Tüm sahneyi düz renkle örter (kameradan bağımsız): renk [r,g,b] 0..1, o saydamlık */
+      dolgu: function (renk, o) {
+        if (!(o > 0.002)) return;
+        renk = renk || [0.07, 0.11, 0.3];
+        if (gl) { api.ciz('__bos', { x: 800, y: 450, g: 1800, h: 1012, d: 0, carp: renk, o: o }); return; }
+        if (!c2) return;
+        var k = canvas.width / GEN;
+        c2.save(); c2.scale(k, k); c2.globalAlpha = Math.min(1, o);
+        c2.fillStyle = 'rgb(' + Math.round(renk[0] * 255) + ',' + Math.round(renk[1] * 255) + ',' + Math.round(renk[2] * 255) + ')';
+        c2.fillRect(-100, -100, 1800, 1100); c2.restore();
+      },
+      /* Odak: nesne sahnenin parçasıdır; hafif saydam bir karartmanın önünde merkeze alınıp yaklaştırılır.
+         o: {k 0..1 ilerleme, x=800, y=450, g|h (yoksa h=620), kararma=.64, renk=[.07,.11,.3], r derece, parilti=.6,
+             s0=.86 başlangıç ölçeği, golge=true, gecis}. smoothstep eğrisi; k=0'da hiçbir şey çizilmez.
+         Döner {x, y, g, h, k, nokta(px, py)}: nokta görselin piksel koordinatını sahne noktasına çevirir. */
+      odak: function (ad, o) {
+        o = o || {};
+        var k = Math.min(1, Math.max(0, o.k || 0)), e = k * k * (3 - 2 * k);
+        var x = o.x == null ? 800 : o.x, y = o.y == null ? 450 : o.y, s0 = o.s0 == null ? 0.86 : o.s0, r = o.r || 0;
+        var b = api.boyut(ad), g, h;
+        if (o.g) { g = o.g; h = g * b.h / b.g; } else { h = o.h || 620; g = h * b.g / b.h; }
+        var s = s0 + (1 - s0) * e, gg = g * s, hh = h * s, co = Math.cos(r * Math.PI / 180), si = Math.sin(r * Math.PI / 180);
+        var sonuc = { x: x, y: y, g: gg, h: hh, k: k, nokta: function (px, py) {
+          var ux = (px / b.g - 0.5) * gg, uy = (py / b.h - 0.5) * hh;
+          return { x: x + ux * co - uy * si, y: y + ux * si + uy * co };
+        } };
+        if (k <= 0.001) return sonuc;
+        api.dolgu(o.renk || [0.07, 0.11, 0.3], (o.kararma == null ? 0.64 : o.kararma) * e);
+        var gor = Math.min(1, e * 2.5);
+        // Yumuşak gölge: nesnenin koyu kopyaları biraz büyük ve aşağıda, çok saydam (yalnız WebGL'de; 2B yedek carp bilmez)
+        if (o.golge !== false && gl) for (var i = 1; i <= 3; i++) api.ciz(ad, { x: x, y: y + 10 + i * 7, g: gg * (1 + 0.03 * i), h: hh * (1 + 0.03 * i), r: r, d: 0, carp: [0, 0, 0], o: 0.15 * gor });
+        api.ciz(ad, { x: x, y: y, g: gg, h: hh, r: r, d: 0, o: gor, parilti: o.parilti == null ? 0.6 : o.parilti, gecis: o.gecis });
+        return sonuc;
       },
       temizle: function () {
         Object.keys(tex).forEach(function (ad) { if (gl) gl.deleteTexture(tex[ad].t); });

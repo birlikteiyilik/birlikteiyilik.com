@@ -30,28 +30,34 @@
 .sunum-hata h1 { margin: 0 0 12px; font: 800 28px/1.2 'Alegreya', serif; }
 .sunum-hata a { display: inline-block; margin-top: 12px; padding: 12px 20px; border-radius: 14px; background: #17307f; color: #fbf2dd; text-decoration: none; font-weight: 800; }
 
-/* Durakta da sarılır: oynatma şeridi üstte, soluk durur; üzerine gelince belirginleşir */
-.sunum .kd.basladi.durakta .kd-bar { top: 10px; bottom: auto; left: 50%; right: auto; width: 760px; margin-left: -380px; opacity: .85 !important; pointer-events: auto !important;
+/* Durakta da sarılır: oynatma şeridi üstte, soluk durur; üzerine gelince belirginleşir.
+   Sahne dar ekranda küçülünce (sahne.kompakt-kontrol, yaklaşık 1040 px altı) motor kontrolleri kendisi gerçek
+   piksele geri büyütür ve tepsiyi sahnenin altına indirir; o düzende üstteki şerit kuralları geçerli olmaz. */
+.sunum .sahne:not(.kompakt-kontrol) .kd.basladi.durakta .kd-bar { top: 10px; bottom: auto; left: 50%; right: auto; width: 760px; margin-left: -380px; opacity: .85 !important; pointer-events: auto !important;
   background: rgba(11, 17, 44, .94); box-shadow: 0 6px 22px rgba(4, 8, 30, .4); }
-.sunum .kd.basladi.durakta .kd-bar:hover, .sunum .kd.basladi.durakta .kd-bar:focus-within { opacity: 1 !important; }
+.sunum .sahne:not(.kompakt-kontrol) .kd.basladi.durakta .kd-bar:hover, .sunum .sahne:not(.kompakt-kontrol) .kd.basladi.durakta .kd-bar:focus-within { opacity: 1 !important; }
 /* Defter ve eşleştirme bütün sahneyi kullanır: şerit alttaki boşluğa iner */
-.sunum .kd.basladi.durakta[data-yer="tam"] .kd-bar { top: auto; bottom: 12px; }
+.sunum .sahne:not(.kompakt-kontrol) .kd.basladi.durakta[data-yer="tam"] .kd-bar { top: auto; bottom: 12px; }
+/* Dar ekranda (kompakt düzen) şerit motorun yerinde, sahnenin sol altında kalır; durakta da görünür ve dokunulur */
+.sunum .sahne.kompakt-kontrol .kd.basladi.durakta .kd-bar { opacity: .92 !important; pointer-events: auto !important; z-index: 40;
+  background: rgba(11, 17, 44, .94); box-shadow: 0 -4px 18px rgba(4, 8, 30, .35); }
 
-/* ——— Dokunmatik (tablet): sahne ekrana sığmak için küçülür (1024 genişlikte yaklaşık 0,64),
-   bu yüzden oynatma şeridi, düğmeler ve ilerleme çizgisi sahne ölçüsünde büyütülür ——— */
-.dokunmatik .sunum .kd-bar { height: 78px; left: 32px; right: 32px; bottom: 18px; gap: 16px; padding: 0 18px; border-radius: 20px; }
-.dokunmatik .sunum .kd-oynat, .dokunmatik .sunum .kd-geri { height: 64px; min-width: 88px; border-radius: 14px; font-size: 27px; }
-.dokunmatik .sunum .kd.oynuyor .kd-oynat::before { font-size: 22px; }
+/* ——— Dokunmatik (tablet): sahne ekrana sığmak için küçülür (1180 genişlikte yaklaşık 0,74),
+   bu yüzden oynatma şeridi, düğmeler ve ilerleme çizgisi sahne ölçüsünde büyütülür. Kompakt düzende
+   (sahne 0,65 altına inince) motor bunları zaten gerçek pikselde 44 px'e çıkarır, burada tekrar büyütülmez. ——— */
+.dokunmatik .sunum .sahne:not(.kompakt-kontrol) .kd-bar { height: 78px; left: 32px; right: 32px; bottom: 18px; gap: 16px; padding: 0 18px; border-radius: 20px; }
+.dokunmatik .sunum .sahne:not(.kompakt-kontrol) .kd-oynat, .dokunmatik .sunum .sahne:not(.kompakt-kontrol) .kd-geri { height: 64px; min-width: 88px; border-radius: 14px; font-size: 27px; }
+.dokunmatik .sunum .sahne:not(.kompakt-kontrol) .kd.oynuyor .kd-oynat::before { font-size: 22px; }
 .dokunmatik .sunum .kd-oynat:active, .dokunmatik .sunum .kd-geri:active { background: rgba(243, 213, 132, .25); }
 .dokunmatik .sunum .kd-serit { height: 12px; border-radius: 6px; }
 .dokunmatik .sunum .kd-serit::before { content: ''; position: absolute; left: -10px; right: -10px; top: -28px; bottom: -28px; }
 .dokunmatik .sunum .kd-serit i { border-radius: 6px; }
-.dokunmatik .sunum .kd-sure { font-size: 25px; }
-.dokunmatik .sunum .kd.basladi.durakta .kd-bar { top: 12px; bottom: auto; width: 1040px; margin-left: -520px; }
-.dokunmatik .sunum .kd.basladi.durakta[data-yer="tam"] .kd-bar { top: auto; bottom: 14px; }
-.dokunmatik .sunum .dug-yuvarlak { width: 96px; height: 96px; }
-.dokunmatik .sunum .dug-yuvarlak svg { width: 42px; height: 42px; }
-.dokunmatik .sunum .dug-kucuk { min-width: 72px; height: 72px; font-size: 24px; }
+.dokunmatik .sunum .sahne:not(.kompakt-kontrol) .kd-sure { font-size: 25px; }
+.dokunmatik .sunum .sahne:not(.kompakt-kontrol) .kd.basladi.durakta .kd-bar { top: 12px; bottom: auto; width: 1040px; margin-left: -520px; }
+.dokunmatik .sunum .sahne:not(.kompakt-kontrol) .kd.basladi.durakta[data-yer="tam"] .kd-bar { top: auto; bottom: 14px; }
+.dokunmatik .sunum .sahne:not(.kompakt-kontrol) .dug-yuvarlak { width: 96px; height: 96px; }
+.dokunmatik .sunum .sahne:not(.kompakt-kontrol) .dug-yuvarlak svg { width: 42px; height: 42px; }
+.dokunmatik .sunum .sahne:not(.kompakt-kontrol) .dug-kucuk { min-width: 72px; height: 72px; font-size: 24px; }
 .dokunmatik .sunum-geri { height: 46px; padding: 0 18px 0 12px; font-size: 17px; opacity: .8; }
 
 /* Dik tutulan tablette sahne şerit gibi kalır: yatay çevirme ipucu */
