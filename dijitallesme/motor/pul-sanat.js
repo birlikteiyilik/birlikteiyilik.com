@@ -62,6 +62,13 @@
     do { c.font = agirlik + ' ' + b + 'px ' + YAZI; b -= 1; } while (c.measureText(metin).width > enFazla && b > 12);
   }
 
+  /* Resmin pul yüzündeki yeri: üst yazıyla alt bant arasındaki alana sığar, iç çerçeveye küçük pay bırakır.
+     Kareye yakın resim (yeni 1024 px'lik çizimler) alanı doldurur; geniş eski resimler (340 px) ortalanır, kırpılmaz. */
+  function resimKutusu(rg, rh, g, h, x, y) {
+    var kutuG = g - 22, kutuH = h - 104, o = Math.min(kutuG / rg, kutuH / rh), w = rg * o, t = rh * o;
+    return { x: x + g / 2 - w / 2, y: y + 38 + (kutuH - t) / 2, g: w, h: t };
+  }
+
   /* Pulun yüzü: dörtgen, kâğıt kenarlı. g genişlik, Y boy; bütün çizim ölçekle büyür */
   function yuz(pul, resim, olcek) {
     var k = tuval(G * olcek, Y * olcek), c = k.getContext('2d'), P = PALET[pul.renk] || PALET.firuze;
@@ -76,16 +83,19 @@
     c.strokeStyle = 'rgba(245,216,140,.75)'; c.lineWidth = 1; c.strokeRect(x + 8, y + 8, g - 16, h - 16);
 
     var ust = (pul.seri || 'Birlikte İyilik').toLocaleUpperCase('tr');
-    c.textAlign = 'center'; c.textBaseline = 'alphabetic'; c.fillStyle = '#fbeec7';
-    yaziSig(c, ust, g - 40, 15, 800);
+    // Üst yazı açık zeminde (firuze, zümrüt) kaybolmasın: pulun koyu tonunda şerit üstüne yazılır
+    c.save(); c.fillStyle = P.koyu; c.globalAlpha = 0.88;
+    c.beginPath(); if (c.roundRect) c.roundRect(x + 14, y + 12, g - 28, 26, 13); else c.rect(x + 14, y + 12, g - 28, 26); c.fill();
+    c.restore();
+    c.textAlign = 'center'; c.textBaseline = 'alphabetic'; c.fillStyle = '#fff6dc';
+    yaziSig(c, ust, g - 48, 15, 800);
     c.fillText(ust, G / 2, y + 30);
 
     if (resim && resim.naturalWidth) {
-      var kutuG = g - 40, kutuH = h - 112, o = Math.min(kutuG / resim.naturalWidth, kutuH / resim.naturalHeight);
-      var rg = resim.naturalWidth * o, rh = resim.naturalHeight * o;
+      var rk = resimKutusu(resim.naturalWidth, resim.naturalHeight, g, h, x, y);
       c.save();
       c.shadowColor = 'rgba(8,14,40,.45)'; c.shadowBlur = 14; c.shadowOffsetY = 6;
-      c.drawImage(resim, G / 2 - rg / 2, y + 40 + (kutuH - rh) / 2, rg, rh);
+      c.drawImage(resim, rk.x, rk.y, rk.g, rk.h);
       c.restore();
     }
 
@@ -115,37 +125,56 @@
     disYol(e, 2, 2, G, Y, DELIK); e.clip(); e.drawImage(f, 2, 2, G, Y);
     return kes;
   }
-  function pul(p, resim, olcek) { return kesikCiz(yuz(p, resim, olcek), olcek); }
+  function pul(p, resim, olcek) { var f = yuz(p, resim, olcek), k = kesikCiz(f, olcek); birak(f); return k; }
 
-  /* Üç hâl: ham (düz kenarlı dörtgen), delikli (zımba geçti), kesik (tırtıklı pul) ve kenar şeritleri */
-  function kur(pul, resim, olcek) {
-    olcek = olcek || 1;
-    var f = yuz(pul, resim, olcek), W = G + PAY * 2, H = Y + PAY * 2, ks = olcek;
+  /* Makine için dört aşama, her biri gerektiğinde ayrı çizilir ve işi bitince bırakılır (bellek: iPad):
+     baski    düz kenarlı, kâğıt payı olan ham baskı (yüz çizimi geçici kalır)
+     delikli  zımba geçti: kenar boyunca delikler
+     kesik    tırtıklı pul (ham ya da delikli baskıdan alınır)
+     seritler kopan dört kenar şeridi; yalnız şeridin kapladığı dikdörtgen kadar yer tutar
+     birak    çizimi sıfırlar: tarayıcı belleği hemen geri alır */
+  function baski(pul, resim, olcek) {
+    var ks = olcek || 1, f = yuz(pul, resim, ks), W = G + PAY * 2, H = Y + PAY * 2;
     var ham = tuval(W * ks, H * ks), c = ham.getContext('2d');
     c.scale(ks, ks); kagit(c, W, H);
     c.drawImage(f, PAY, PAY, G, Y);
+    birak(f);
     c.strokeStyle = 'rgba(70,52,28,.55)'; c.lineWidth = 1.2;
     [[PAY, 10, PAY, 26], [W - PAY, 10, W - PAY, 26], [PAY, H - 26, PAY, H - 10], [W - PAY, H - 26, W - PAY, H - 10], [10, PAY, 26, PAY], [W - 26, PAY, W - 10, PAY], [10, H - PAY, 26, H - PAY], [W - 26, H - PAY, W - 10, H - PAY]].forEach(function (s) {
       c.beginPath(); c.moveTo(s[0], s[1]); c.lineTo(s[2], s[3]); c.stroke();
     });
-
-    var del = tuval(W * ks, H * ks), d = del.getContext('2d');
+    return ham;
+  }
+  function delikli(ham, olcek) {
+    var ks = olcek || 1, del = tuval(ham.width, ham.height), d = del.getContext('2d');
     d.drawImage(ham, 0, 0);
     d.setTransform(ks, 0, 0, ks, 0, 0);
     d.globalCompositeOperation = 'destination-out'; d.fillStyle = '#000';
     delikler(d, PAY, PAY, G, Y, DELIK);
-
-    var serit = [[0, 0, W, 0, W - PAY, PAY, PAY, PAY], [W, 0, W, H, W - PAY, H - PAY, W - PAY, PAY], [W, H, 0, H, PAY, H - PAY, W - PAY, H - PAY], [0, H, 0, 0, PAY, PAY, PAY, H - PAY]].map(function (p) {
-      var t = tuval(W * ks, H * ks), s = t.getContext('2d');
-      s.setTransform(ks, 0, 0, ks, 0, 0);
+    return del;
+  }
+  function kesik(kaynak, olcek) {
+    var ks = olcek || 1, k = tuval((G + 4) * ks, (Y + 4) * ks), e = k.getContext('2d');
+    e.setTransform(ks, 0, 0, ks, 0, 0);
+    disYol(e, 2, 2, G, Y, DELIK); e.clip();
+    e.drawImage(kaynak, PAY * ks, PAY * ks, G * ks, Y * ks, 2, 2, G, Y);
+    return k;
+  }
+  function seritler(del, olcek) {
+    var ks = olcek || 1, W = G + PAY * 2, H = Y + PAY * 2;
+    // [kutu x, y, g, h, çokgen (sırayla): üst, sağ, alt, sol]
+    return [[0, 0, W, PAY, [0, 0, W, 0, W - PAY, PAY, PAY, PAY]], [W - PAY, 0, PAY, H, [W, 0, W, H, W - PAY, H - PAY, W - PAY, PAY]],
+      [0, H - PAY, W, PAY, [W, H, 0, H, PAY, H - PAY, W - PAY, H - PAY]], [0, 0, PAY, H, [0, H, 0, 0, PAY, PAY, PAY, H - PAY]]].map(function (b) {
+      var p = b[4], t = tuval(b[2] * ks, b[3] * ks), s = t.getContext('2d');
+      s.setTransform(ks, 0, 0, ks, -b[0] * ks, -b[1] * ks);
       s.beginPath(); s.moveTo(p[0], p[1]); s.lineTo(p[2], p[3]); s.lineTo(p[4], p[5]); s.lineTo(p[6], p[7]); s.closePath(); s.clip();
       s.drawImage(del, 0, 0, W, H);
       s.globalCompositeOperation = 'destination-out'; s.fillStyle = '#000';
       disYol(s, PAY, PAY, G, Y, DELIK); s.fill();
-      return t;
+      return { c: t, x: b[0], y: b[1], g: b[2], h: b[3] };
     });
-    return { ham: ham, delikli: del, kesik: kesikCiz(f, ks), serit: serit };
   }
+  function birak(c) { if (c) { c.width = 0; c.height = 0; } }
 
   function resimYukle(adres) {
     return new Promise(function (coz) {
@@ -160,5 +189,5 @@
     return Promise.race([document.fonts.load('800 26px Alegreya', 'Çğıöşü'), new Promise(function (coz) { setTimeout(coz, 1500); })]).catch(function () { /* yedek yazı */ });
   }
 
-  root.PulSanat = { G: G, Y: Y, PAY: PAY, ADIM: ADIM, DELIK: DELIK, PALET: PALET, kur: kur, pul: pul, disYol: disYol, adimlar: adimlar, resimYukle: resimYukle, yaziHazir: yaziHazir };
+  root.PulSanat = { resimKutusu: resimKutusu, G: G, Y: Y, PAY: PAY, ADIM: ADIM, DELIK: DELIK, PALET: PALET, baski: baski, delikli: delikli, kesik: kesik, seritler: seritler, birak: birak, pul: pul, disYol: disYol, adimlar: adimlar, resimYukle: resimYukle, yaziHazir: yaziHazir };
 })(window);

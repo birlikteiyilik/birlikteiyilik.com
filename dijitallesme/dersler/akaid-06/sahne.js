@@ -23,7 +23,7 @@
     var T = api.tuval, kel = api.kelime, C = api.cumle, el = DO.el, svg = api.svg, E2 = api.ciz.ogeler;
     var GORSELLER = ['gece-pencere', 'safak-pencere', 'avlu', 'teras', 'oda-ikindi', 'kuyumcu', 'aksam-mardin', 'organ-sayfa', 'alveol',
       'deri-yara', 'deri-iyi', 'kagit', 'kalp', 'akciger', 'diyafram', 'sindirim', 'mide', 'beyin', 'nar', 'nar-agaci', 'bisiklet-yatik',
-      'bisiklet', 'top', 'yara-bandi', 'ekmek', 'terazi-ayak', 'terazi-kol', 'terazi-kefe', 'balon', 'tuy'];
+      'bisiklet', 'top', 'yara-bandi', 'ekmek', 'terazi-ayak', 'terazi-kol', 'terazi-kefe', 'tuy'];
     var liste = {};
     GORSELLER.forEach(function (a) { liste[a] = api.yol('gorsel/' + a + '.webp'); });
     var hazir = T.yukle(liste, api.yukleniyor);
@@ -119,7 +119,7 @@
       ['Atan kalbin, aldığın nefes, düşünen aklın; hepsi Onun sana verdiği nimetlerdir.', 'kagit', 800, 560, AN[61], AN[62] - 0.5],
       ['tıpa', 'etiket', 800, 96, W.tipa, AN[65]],
       ['kabuk', 'etiket', 800, 96, W.kabuk, AN[66]],
-      ['bekçi hücreler', 'etiket', 800, 96, W.bekci, AN[67]],
+      ['bekçi hücreler', 'etiket', 800, 96, W.bekci, W.kenar - 0.5],
       ['kenarlardan yeni deri', 'etiket', 800, 96, W.kenar, AN[68]],
       ['O terziyi içine koyan, yarayı kapatan Allahü teâlâdır.', 'kagit', 800, 420, AN[70], AN[71] - 0.5],
       ['Gelecek ders: Rahmân ve Rahîm', 'etiket', 800, 110, AN[71] + 0.2, AN[72] + 0.9]
@@ -693,7 +693,7 @@
 
     /* ——— 16. Kuyumcu: hassas terazi; çocuğun seçtiği şey kefeye konur (durak 5) ——— */
     var TZ = { x: 800, taban: P(836, 760)[1], h: 430, kol: 460, kefe: 260 };
-    var EGIM = [-9, -3, -1.5, 0];   // balon, tüy, köpük, hatıra (sol kefe iner)
+    var EGIM = [-9, -3, -1.5, 0];   // şişkin top, tüy, köpük, hatıra (sol kefe iner)
     function teraziEgim() {
       var hedef = secilen >= 0 && secilen < 3 ? EGIM[secilen] : 0, dt = Math.max(0, aNow - secA);
       return hedef + (egimOnce - hedef) * Math.exp(-dt * 2.2) * Math.cos(dt * 5.5);   // sönümlü salınım
@@ -716,7 +716,7 @@
         T.ciz('terazi-kefe', { x: u[0], y: u[1], h: TZ.kefe, ax: 0.5, ay: 0.03, d: 1 });
         if (i === 0 && acik && secilen >= 0 && secilen < 3) {
           var kenar = [u[0], u[1] + TZ.kefe * 0.77];
-          if (secilen === 0) T.ciz('balon', { x: kenar[0] + 10, y: kenar[1] - 52, h: 150, r: -78, d: 1 });
+          if (secilen === 0) T.ciz('top', { x: kenar[0], y: kenar[1] - 32, g: 102, r: -20, d: 1 });          // şişkin top kefede durur
           else if (secilen === 1) T.ciz('tuy', { x: kenar[0], y: kenar[1] - 14, h: 70, r: 8, d: 1 });
           else {
             var e = ekranR(kenar[0], kenar[1] - 2, 1), R = 46 * e.r;

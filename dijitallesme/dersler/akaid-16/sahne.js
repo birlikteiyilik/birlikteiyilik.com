@@ -67,7 +67,7 @@
       // kâğıt üç sayfa: kabir; kıyamet; diriliş
       ['Dünya hayatı bitince, ilk durak kabir hayatıdır.', 'kagit iri', 800, 330, AN[13], AN[15] - 0.4],
       ['İnsan, yeniden dirilene kadar orada bekler.', 'kagit', 800, 560, AN[14], AN[15] - 0.4],
-      ['Sonra kıyamet kopar. İsrâfîl aleyhisselâm Sûr\'a üfler; dünyanın ve bütün varlıkların sonu gelir.', 'kagit', 800, 300, AN[15], AN[18] - 0.4],
+      ['Sonra kıyamet kopar. İsrâfîl aleyhisselâm Sûr\'a üfler; dünyanın ve içindekilerin sonu gelir.', 'kagit', 800, 300, AN[15], AN[18] - 0.4],
       ['Kıyametin ne zaman kopacağını, yalnız Allahü teâlâ bilir.', 'kagit iri', 800, 560, AN[17], AN[18] - 0.4],
       ['Sûr\'a ikinci kez üflenince, herkes yeniden diriltilir.', 'kagit iri', 800, 420, AN[18], D.kim - 0.6],
       ['mahşer: herkes bir meydanda toplanır', 'etiket', 800, 96, AN[21], AN[22] - 0.1],

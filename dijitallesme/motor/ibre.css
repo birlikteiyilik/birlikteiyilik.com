@@ -102,9 +102,3 @@
 .ib-karsi-m { font: 800 22px/1.25 var(--yazi); } .ib-karsi-s { font: 700 21px/1.3 var(--yazi); opacity: .95; }
 .ib-hub-alt { z-index: 7; }
 
-/* ---- Dikey telefonda (ibre-* dersleri) sahneyi 90° döndürüp ekranı doldur ---- */
-html.do-dikey .yerlesim { position: fixed; top: 0; left: 100vw; width: 100vh; width: 100dvh; height: 100vw; transform: rotate(90deg); transform-origin: 0 0; }
-html.do-dikey .dondur-uyari { display: none !important; }
-html.do-dikey .do-dikey-ipucu { display: flex; }
-.do-dikey-ipucu { display: none; position: fixed; left: 12px; right: 12px; bottom: 14px; z-index: 9999; align-items: center; gap: 10px; background: #14264A; color: #fff; border: 2px solid #F4C95D; border-radius: 18px; padding: 12px 16px; font: 800 15px/1.3 Nunito, system-ui, sans-serif; box-shadow: 0 8px 24px rgba(0,0,0,.4); }
-.do-dikey-ipucu span { font-size: 26px; }

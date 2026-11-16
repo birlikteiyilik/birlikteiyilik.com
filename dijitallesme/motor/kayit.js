@@ -123,6 +123,7 @@
       nesneAd: nesne ? nesne.ad : null,
       blok: nesne ? nesne.blok : null,
       etkilesimTuru: nesne ? nesne.etkilesim : null,
+      deneme: ek && ek.deneme || 1, puan: sonuc && sonuc.puan != null ? sonuc.puan : null, max: sonuc && sonuc.max != null ? sonuc.max : null,
       dogruYanit: nesne ? nesne.dogruYanit : null,
       t: Date.now()
     };

@@ -140,3 +140,6 @@
   .giris-lobi .giris-kart { animation: none; }
   .giris-lobi .giris-dugmeler .dug, .giris-ayar summary::after, .giris-seviye i { transition: none; }
 }
+
+/* Diğer derslerin aynı adlı animasyonu giriş kartını soluk bırakamaz. */
+.giris-lobi .giris-kart { animation: none; opacity: 1; }

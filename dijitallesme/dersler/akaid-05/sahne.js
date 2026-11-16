@@ -80,6 +80,14 @@
       e.style.transform = 'translate(' + e._x.toFixed(1) + 'px,' + (e._y + (dy || 0)).toFixed(1) + 'px) translate(-50%,-50%)' + (s ? ' scale(' + s.toFixed(3) + ')' : '');
     }
     var PG = 1696, PH = 954, K = PG / 1672;
+    // Yerleştirme durağı (yer): canlıların bekleme noktası (bek), yaşam alanının merkezi (alan) ve yerleştikten sonraki duruşu (yer)
+    // ders.js'teki canli[i] {x, y}, yuvalar[i] {x, y, ix, iy} ile aynı sayılardır; hepsi sahne düzlemindedir (1600×900), kamera o sırada çarpıksız.
+    // bek ve yer canlının resim MERKEZİDİR: durakta DOM resmi bekleme noktasında durur, doğru yere bırakılınca yer noktasına kayar ve sahne devralır.
+    var YER = [
+      { ad: 'yarasa', bek: [512, 239], alan: [1000, 235], yer: [1000, 235], g: 200 },       // gök: ağacın yanında bekler, akşam göğünde uçar
+      { ad: 'ordek', bek: [630, 400], alan: [1240, 480], yer: [1240, 437], h: 170 },        // gölet: kıyıda bekler, suyun üstünde yüzer (su çizgisi y 485)
+      { ad: 'kostebek', bek: [215, 444], alan: [330, 722], yer: [320, 690], g: 230 }        // tünel: çimende bekler, toprağın altında kazar
+    ];
     function P(px, py) { return [800 + (px - 836) * K, 450 + (py - 470.5) * K]; }   // ham görsel pikseli → sahne noktası
     var KOZA = P(872, 385);                                                           // dal demetinde kozanın yeri (oda)
     var MAYA = P(462, 400);                                                           // orta rafın ikinci tepsisi (oda)
@@ -111,9 +119,9 @@
       ['bir noktadan bile küçük', 'etiket', 800, 96, AN[42], AN[43] - 0.1],
       ['nokta', 'kucuk', 870, 515, AN[42] + 0.9, AN[43] - 0.1],
       ['binlerce kirpik, kürek gibi', 'etiket', 800, 96, AN[43] + 0.4, KES.aksam - 0.2],
-      ['?', 'sor', 1000, 215, AN[49], D.yer - 0.7, 1],
-      ['?', 'sor', 1250, 500, AN[49] + 0.25, D.yer - 0.7, 1],
-      ['?', 'sor', 400, 705, AN[49] + 0.5, D.yer - 0.7, 1],
+      ['?', 'sor', YER[0].alan[0], YER[0].alan[1], AN[49], D.yer - 0.7, 1],
+      ['?', 'sor', YER[1].alan[0], YER[1].alan[1], AN[49] + 0.25, D.yer - 0.7, 1],
+      ['?', 'sor', YER[2].alan[0], YER[2].alan[1], AN[49] + 0.5, D.yer - 0.7, 1],
       ['her birine yaşadığı yere uygun bir beden', 'etiket', 800, 96, AN[51] + 0.3, KES.gece - 0.2],
       ['Ateş böceğini ışığıyla, ipek böceğini ipliğiyle, her canlıyı yaşadığı yere uygun bir bedenle yaratan, Allahü teâlâdır.', 'kagit', 800, 330, AN[59], AN[62] - 0.5],
       ['Bütün insanlar bir araya gelse, küçücük bir karıncayı bile yoktan var edemez.', 'kagit', 800, 580, AN[60], AN[61] - 0.3],
@@ -618,66 +626,70 @@
       gizle(dugme.tut);
     }
     // 16. Akşamüstü: bahçenin kesiti; köstebek, ördek, yarasa kendi yerine (durak 4)
-    var YER = [
-      { ad: 'yarasa', bekle: P(552, 262), yer: [1000, 205] },
-      { ad: 'ordek', bekle: P(669, 500), yer: [1250, 432] },
-      { ad: 'kostebek', bekle: P(250, 498), yer: [290, 705] }
-    ];
-    function yerlesti(i, t) { return yerde[i] || (t > D.yer + 0.05 && api.acikDurak() !== 'yer'); }
+    // Durak açıkken çocuk canlıların resmini tutup yaşam alanına (gök, gölet, tünel) götürür: bu resimler DOM'dadır, o sürede sahne
+    // bekleyen kopyayı çizmez. Doğru bırakılınca resim yer noktasına kayar (0,4 sn) ve söner; sahne aynı noktada kendi kopyasını
+    // yumuşakça açar ve yaşam alanı canlanır (yarasa uçar, ördek yüzer, köstebek kazar). Hareket bırakma anından başlar: sıçrama olmaz.
+    var yerdeA = {}, tutulan = -1;
+    function yerlesti(i, t) { return (!!yerde[i] && t >= D.yer - 0.01) || (t > D.yer + 0.05 && acik !== 'yer'); }
+    function yerSuresi(i, a) { return yerdeA[i] == null ? a : a - yerdeA[i]; }                  // yerleştikten beri geçen ortam saati
+    function yerGelis(i, a) { return yerdeA[i] == null ? 1 : tw(a - yerdeA[i], 0.3, 0.5); }     // DOM resmi sönerken sahne kopyası açılır
     function aksam(t, a) {
       T.bas(a, { x: 800, y: 450, z: kr(1.08, 1, tw(t, KES.aksam, 3)) });
       plaka('kesit', { d: 1, parilti: 0.5 });
       var gor = [tw(t, W.yarasa - 0.2, 0.6), tw(t, W.ordek - 0.2, 0.6), tw(t, W.kostebek - 0.2, 0.6)];
-      // ? işaretleri: yerler (durak öncesi)
+      var bekler = acik !== 'yer';                                          // durakta bekleyen canlıların yerinde çocuğun tuttuğu resimler durur
       // yarasa
       var y0 = YER[0], ky = yerlesti(0, t);
       if (gor[0] > 0.01) {
-        if (!ky) {                                                          // ağacın yanında küçük daireler çizerek bekler
-          var wx = y0.bekle[0] + Math.sin(a * 0.8) * 22, wy = y0.bekle[1] + Math.cos(a * 1.1) * 9, wk = 1 + Math.sin(a * 11) * 0.1;
-          T.ciz('yarasa', { x: wx, y: wy, g: 150 * wk, h: 150 / 2.417, d: 1, o: gor[0] });
+        if (!ky) {
+          if (bekler) {                                                     // ağacın yanında küçük daireler çizerek bekler; durağa yaklaşırken durulur
+            var sak = 1 - tw(t, D.yer - 1.4, 1.2, Y.sin);
+            var wx = y0.bek[0] + Math.sin(a * 0.8) * 22 * sak, wy = y0.bek[1] + Math.cos(a * 1.1) * 9 * sak, wk = 1 + Math.sin(a * 11) * 0.1 * sak;
+            T.ciz('yarasa', { x: wx, y: wy, g: y0.g * wk, h: y0.g / 2.417, d: 1, o: gor[0] });
+          }
         } else {
-          var u = a * 0.5, bx = y0.yer[0] + Math.cos(u) * 120, by = y0.yer[1] + Math.sin(u * 2) * 22, kan = 1 + Math.sin(a * 12) * 0.12;
-          T.ciz('yarasa', { x: bx, y: by, g: 190 * kan, h: 190 / 2.417, d: 1 });
+          var yg = yerGelis(0, a), u = yerSuresi(0, a) * 0.5, bx = y0.yer[0] + Math.sin(u) * 120, by = y0.yer[1] + Math.sin(u * 2) * 22, kan = 1 + Math.sin(a * 12) * 0.12;
+          T.ciz('yarasa', { x: bx, y: by, g: y0.g * kan, h: y0.g / 2.417, d: 1, o: yg });
           // yankı: yarasadan yayılan ince ses halkaları; ağaca çarpınca daha soluk halkalar geri döner
           var ag = P(330, 200);
           yankilar.forEach(function (p, i) {
             var f = (a * 0.8 + (i % 2) * 0.5) % 1, cik = i < 2, merkez = cik ? [bx, by] : ag, e = ekranR(merkez[0], merkez[1], 1);
             var r = (cik ? 20 + f * 300 : 16 + f * 220) * e.r;
-            goster(p, daire(e.x, e.y, r), (cik ? 0.75 : 0.32) * (1 - f)); kullan(p);
+            goster(p, daire(e.x, e.y, r), (cik ? 0.75 : 0.32) * (1 - f) * yg); kullan(p);
           });
         }
       }
       // ördek
       var o0 = YER[1], ko = yerlesti(1, t);
       if (gor[1] > 0.01) {
-        if (!ko) T.ciz('ordek', { x: o0.bekle[0], y: o0.bekle[1], h: 170, ax: 0.5, ay: 0.97, d: 1, o: gor[1] });
+        if (!ko) { if (bekler) T.ciz('ordek', { x: o0.bek[0], y: o0.bek[1], h: o0.h, d: 1, o: gor[1] }); }
         else {
-          var ox = o0.yer[0] + Math.sin(a * 0.3) * 60, oy = o0.yer[1] + Math.sin(a * 1.6) * 2;
-          T.ciz('ordek', { x: ox, y: oy, h: 170, ax: 0.5, ay: 0.78, d: 1 });               // gövde suyun üstünde, ayaklar suyun altında
-          for (var j = 0; j < 8; j++) { var f2 = (a * 0.8 + j / 8) % 1, e2 = T.ekran(ox - 80 - f2 * 140, oy + (j % 2 ? -1 : 1) * f2 * 26, 1); T.iz(e2.x, e2.y, 10 * (1 - f2) + 2, 2, 0, 0.9, 1, 1, 0.6 * (1 - f2)); }
-          for (var b = 0; b < 6; b++) { var f3 = (a * 0.6 + b / 6) % 1, e3 = T.ekran(ox + 10 + Math.sin(b * 2 + a * 3) * 8, oy + 40 - f3 * 36, 1); T.iz(e3.x, e3.y, 3, 3, 0, 0.9, 1, 1, 0.5 * (1 - f3)); }
+          var og = yerGelis(1, a), ox = o0.yer[0] + Math.sin(yerSuresi(1, a) * 0.3) * 60, oy = o0.yer[1] + 0.28 * o0.h + Math.sin(a * 1.6) * 2;   // oy su çizgisidir
+          T.ciz('ordek', { x: ox, y: oy, h: o0.h, ax: 0.5, ay: 0.78, d: 1, o: og });               // gövde suyun üstünde, ayaklar suyun altında
+          for (var j = 0; j < 8; j++) { var f2 = (a * 0.8 + j / 8) % 1, e2 = T.ekran(ox - 80 - f2 * 140, oy + (j % 2 ? -1 : 1) * f2 * 26, 1); T.iz(e2.x, e2.y, 10 * (1 - f2) + 2, 2, 0, 0.9, 1, 1, 0.6 * (1 - f2) * og); }
+          for (var b = 0; b < 6; b++) { var f3 = (a * 0.6 + b / 6) % 1, e3 = T.ekran(ox + 10 + Math.sin(b * 2 + a * 3) * 8, oy + 40 - f3 * 36, 1); T.iz(e3.x, e3.y, 3, 3, 0, 0.9, 1, 1, 0.5 * (1 - f3) * og); }
           T.izBitir();
         }
       }
       // köstebek
       var k0 = YER[2], kk = yerlesti(2, t);
       if (gor[2] > 0.01) {
-        if (!kk) T.ciz('kostebek', { x: k0.bekle[0], y: k0.bekle[1], g: 230, ax: 0.5, ay: 0.92, d: 1, o: gor[2] });
+        if (!kk) { if (bekler) T.ciz('kostebek', { x: k0.bek[0], y: k0.bek[1], g: k0.g, d: 1, o: gor[2] }); }
         else {
-          var kx = k0.yer[0] + 30 + Math.sin(a * 0.4) * 34, kyy = k0.yer[1];            // tünelin içinde ileri geri kazar, yüzü solda
-          T.ciz('kostebek', { x: kx, y: kyy, g: 230, ax: 0.5, ay: 0.7, d: 1, r: Math.sin(a * 8) * 2 });
-          for (var q = 0; q < 10; q++) { var f4 = (a * 1.3 + q / 10) % 1, e4 = T.ekran(kx - 40 + f4 * 150, kyy + 10 - Math.sin(f4 * Math.PI) * 30 + (hash(q, 81) - 0.5) * 20, 1); T.iz(e4.x, e4.y, 4, 3, 0, 0.42, 0.28, 0.16, 0.8 * (1 - f4)); }
+          var kg = yerGelis(2, a), kx = k0.yer[0] + Math.sin(yerSuresi(2, a) * 0.4) * 34, kyy = k0.yer[1];   // tünelin içinde ileri geri kazar, yüzü solda
+          T.ciz('kostebek', { x: kx, y: kyy, g: k0.g, d: 1, r: Math.sin(a * 8) * 2, o: kg });
+          for (var q = 0; q < 10; q++) { var f4 = (a * 1.3 + q / 10) % 1, e4 = T.ekran(kx - 40 + f4 * 150, kyy + 26 - Math.sin(f4 * Math.PI) * 30 + (hash(q, 81) - 0.5) * 20, 1); T.iz(e4.x, e4.y, 4, 3, 0, 0.42, 0.28, 0.16, 0.8 * (1 - f4) * kg); }
           T.izBitir();
         }
       }
       // özellik halkaları: ad geçerken altın halka
       var hk = [pencere(t, W.yarasa, AN[49], 0.3, 0.4), pencere(t, W.ordek, AN[48], 0.3, 0.4), pencere(t, W.kostebek, AN[47], 0.3, 0.4)];
-      if (hk[2] > 0.01 && !kk) dunyaHalka(0, k0.bekle[0] - 80, k0.bekle[1] - 18, 46, hk[2]);       // kürek gibi ön ayaklar
-      if (hk[1] > 0.01 && !ko) dunyaHalka(1, o0.bekle[0] + 6, o0.bekle[1] - 10, 50, hk[1]);        // perdeli ayaklar
-      if (hk[0] > 0.01 && !ky) dunyaHalka(2, y0.bekle[0], y0.bekle[1] - 6, 52, hk[0]);             // büyük kulaklar
-      // adlar: bekleyen canlıların altında
-      [[0, y0.bekle[0] + 150, y0.bekle[1] + 10, ky], [1, o0.bekle[0] - 10, o0.bekle[1] + 28, ko], [2, k0.bekle[0] + 20, k0.bekle[1] + 46, kk]].forEach(function (s) {
-        var e = ADLAR[s[0]], o = (s[3] || t > KES.gece) ? 0 : gor[s[0]];
+      if (hk[2] > 0.01 && !kk) dunyaHalka(0, k0.bek[0] - 80, k0.bek[1] + 16, 46, hk[2]);       // kürek gibi ön ayaklar
+      if (hk[1] > 0.01 && !ko) dunyaHalka(1, o0.bek[0] + 6, o0.bek[1] + 70, 50, hk[1]);        // perdeli ayaklar
+      if (hk[0] > 0.01 && !ky) dunyaHalka(2, y0.bek[0], y0.bek[1] - 6, 52, hk[0]);             // büyük kulaklar
+      // adlar: bekleyen canlıların altında (çocuk canlıyı tutarken o canlının adı kalkar)
+      [[0, y0.bek[0], y0.bek[1] + 74, ky], [1, o0.bek[0], o0.bek[1] + 114, ko], [2, k0.bek[0], k0.bek[1] + 72, kk]].forEach(function (s) {
+        var e = ADLAR[s[0]], o = (s[3] || t > KES.gece || tutulan === s[0]) ? 0 : gor[s[0]];
         if (o > 0.003) { var p = T.ekran(s[1], s[2], 1); e._x = p.x; e._y = p.y; }
         gos(e, o);
       });
@@ -777,7 +789,12 @@
       altyazisiz: function (t) { return kagitYazisi || (t >= KES.kagit && t < KES.sirCoz) || (t >= KES.kagit2 && t < KES.son); },
       durak: function (id, olay, veri) {
         if (id === 'mikroskop' && olay === 'deger') mv = veri;
-        if (id === 'yer') { if (olay === 'dogru') yerde[veri] = true; if (olay === 'ac') yerde = {}; }
+        if (id === 'yer') {
+          if (olay === 'dogru') { yerde[veri] = true; yerdeA[veri] = aNow; }
+          if (olay === 'ac') { yerde = {}; yerdeA = {}; tutulan = -1; }
+          if (olay === 'tut') tutulan = veri;
+          if (olay === 'birak') tutulan = -1;
+        }
       },
       // Mikroskobun büyütme düğmesi: çocuk tutamacı düğmenin çevresinde döndürür (saat yönünde büyütür)
       tutamac: function (id, deger) {

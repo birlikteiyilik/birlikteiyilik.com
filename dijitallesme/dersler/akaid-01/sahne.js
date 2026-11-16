@@ -11,7 +11,7 @@
   DO.KodDersSahne['akaid-01'] = function (api) {
     var T = api.tuval, kel = api.kelime, C = api.cumle, CS = api.cumleSon, el = DO.el, svg = api.svg, E2 = api.ciz.ogeler;
     var GORSELLER = ['vadi-gece', 'vadi-gece-on', 'vadi-yaz', 'vadi-sonbahar', 'vadi-kis', 'vadi-taban', 'vadi-on', 'gok-altin', 'kagit', 'dergah', 'su-haritasi',
-      'bahce', 'bahce-kuru', 'defter-cayirda', 'cayir', 'gunes', 'kalp', 'cicek-acik', 'cicek-soguk', 'cicek-yanik', 'defter', 'defter-kapali', 'takvim', 'agac', 'agac-yalin',
+      'bahce', 'bahce-kuru', 'defter-cayirda', 'cayir', 'gunes', 'kalp', 'cicek-acik', 'cicek-soguk', 'cicek-yanik', 'defter', 'takvim', 'agac', 'agac-yalin',
       'ari', 'ari-yan', 'tohum', 'filiz', 'damla', 'petek', 'canli-kus', 'canli-balik', 'canli-deve', 'canli-ari', 'bulut-1', 'bulut-2', 'bulut-3', 'bulut-yagmur',
       'sepet-1', 'sepet-2', 'sepet-3', 'sepet-bos', 'cini-a'];
     var liste = {};
@@ -113,13 +113,14 @@
     var solSayfa = satirBlok(274, 140.7, 470), sagSayfa = satirBlok(856, 140.7, 474);
     var ogrenciBas = el('span', { class: 'kd-satir', text: 'Senin ipucun:' });
     var ogrenciSatir = el('span', { class: 'kd-satir ogrenci' });
-    var ogrenciResim = el('img', { class: 'kd-satir-resim', alt: '', hidden: true });
-    solSayfa.appendChild(ogrenciBas); solSayfa.appendChild(ogrenciSatir); solSayfa.appendChild(ogrenciResim);
+    var ogrenciResim = null;
+    solSayfa.appendChild(ogrenciBas); solSayfa.appendChild(ogrenciSatir);
     // Çocuğun seçtiği ipucu defterde görünür
     function ogrenciYaz() {
       var not = api.not('defter'), res = api.notResim('defter');
       if (ogrenciSatir._m !== not) { ogrenciSatir._m = not; ogrenciSatir.textContent = not; }
-      if (ogrenciResim._r !== res) { ogrenciResim._r = res; ogrenciResim.hidden = !res; if (res) ogrenciResim.src = res; }
+      if (res && !ogrenciResim) ogrenciResim = solSayfa.appendChild(el('img', { class: 'kd-satir-resim', alt: '', src: res }));
+      if (ogrenciResim && ogrenciResim._r !== res) { ogrenciResim._r = res; if (res) ogrenciResim.src = res; else { ogrenciResim.remove(); ogrenciResim = null; } }
       return not;
     }
     var IPUCLARI = ['Dakikası dakikasına işleyen bir düzen', 'Tam bir ölçü', 'Dönen su', 'Görevli küçükler', 'Herkese uygun özellikler'];
@@ -129,14 +130,6 @@
       e.style.visibility = 'visible'; e.style.opacity = o.toFixed(3);
       e.style.transform = 'translate(' + (e._x * (s || 1) + (dx || 0)).toFixed(1) + 'px,' + (e._y * (s || 1) + (dy || 0)).toFixed(1) + 'px) scale(' + (s || 1).toFixed(3) + ')';
     }
-
-    /* ——— ipucu izleği ——— */
-    var izlek = el('div', { class: 'kd-ipuclari' }, [el('img', { class: 'd', src: api.yol('gorsel/defter-kapali.webp'), alt: '' })]);
-    var IKON = ['gunes', 'cicek-acik', 'damla', 'ari-yan', 'canli-kus'], ANLAR = [AN.donus - 0.4, AN.ikinci + 2.2, AN.ucuncu + 0.2, AN.nefes - 2.6, D.canli + 0.9];
-    var NOTLAR = ['ipucu: düzen', 'ipucu: ölçü', 'ipucu: dönen su', 'ipucu: görevli küçükler', 'ipucu: uygun özellikler'];
-    var noktalar = IKON.map(function (a) { var i = el('i', { style: "background-image:url('" + api.yol('gorsel/' + a + '.webp') + "')" }); i.style.backgroundImage = 'none'; i._ikon = "url('" + api.yol('gorsel/' + a + '.webp') + "')"; izlek.appendChild(i); return i; });
-    var notKutu = el('div', { class: 'kd-ipucu-not' });
-    api.yazi.appendChild(izlek); api.yazi.appendChild(notKutu);
 
     /* ——— altın çizgiler ——— */
     function yol(d, oz) { var p = E2('path', Object.assign({ d: d, fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, oz || {}), svg); p._boy = 0; return p; }
@@ -224,8 +217,8 @@
     }
 
     /* ——— durak durumu ——— */
-    var gv = 50, gvSon = 50, cikan = null, kuru = 0, agacYok = 0, meyveYok = 0, ariYok = 0, bulutYok = 0, suTamam = {}, aSimdi = 0;
-    var GP0 = [1490, 120], GP1 = [820, 320];
+    var gv = 50, gvSon = 50, cikan = null, kuru = 0, agacYok = 0, meyveYok = 0, ariYok = 0, bulutYok = 0, suTamam = {}, aSimdi = 0, geriAn = 0;
+    var GP0 = [1400, 215], GP1 = [820, 320];   // uzak uç pul tepsisinin (sağ üst) altında kalır
     function gunesBoy(v) { return 74 * Math.pow(9.6, v / 100); }
     function gunesYer(v) { var k = v / 100; return [kr(GP0[0], GP1[0], k), kr(GP0[1], GP1[1], k)]; }
     function gunesEgri(t) {   // ders akarken Güneş'in değeri: yakar, donar, yerine oturur
@@ -285,7 +278,8 @@
       var x = 800, yy = kr(430, 176, yuks), g = kr(240, 260, yuks);
       if (dd > 0) { var f = dd * 2 % 1, s = Math.PI * f; x = 800 - Math.cos(s) * 780; yy = 430 - Math.sin(s) * 330; }
       var bit = tw(t, AN.mevsim, 2.2, Y.ikili);
-      return { x: kr(x, 1150, bit), y: kr(yy, 225, bit), g: kr(g, gunesBoy(50), bit) };
+      var s50 = gunesYer(50);
+      return { x: kr(x, s50[0], bit), y: kr(yy, s50[1], bit), g: kr(g, gunesBoy(50), bit) };
     }
     function gunesSahnesi(t, a) {
       var s = gunesYolu(t), sabah = tw(t, AN.gunes - 0.6, 7, Y.sin);
@@ -386,7 +380,7 @@
         var yolO = 1 - tw(t, AN.kucul - 0.1, 0.4);
         cizgiCiz(dongu[0], 1, yolO);
         cizgiCiz(dongu[1], d1 ? 1 : 0, yolO); cizgiCiz(dongu[2], d2 ? 1 : 0, yolO); cizgiCiz(dongu[3], d3 ? 1 : 0, yolO);
-        if (d1) T.ciz('bulut-1', { x: 1060, y: 130, g: 400, s: Math.min(1, d1) });
+        if (d1) T.ciz('bulut-3', { x: 1060, y: 130, g: 400, s: Math.min(1, d1) });
         if (d2) { T.ciz('bulut-yagmur', { x: 430, y: 124, g: 400, s: Math.min(1, d2) }); yagmurCiz(a, 230, 400, 150, 280, 70, Math.min(1, d2)); }
         if (d3 && yolO > 0) {
           var p = nokta(dongu[3], (a * 0.11) % 1);
@@ -531,7 +525,9 @@
       // durakların sahneye etkisi yavaşça oturur
       var kh = cikan === 'yagmur' || cikan === 'toprak' ? 1 : 0;
       kuru += (kh - kuru) * 0.05; agacYok += ((cikan === 'toprak' ? 1 : 0) - agacYok) * 0.05;
-      meyveYok += ((cikan === 'ari' ? 0.62 : 0) - meyveYok) * 0.05;   // arı yoksa meyve azalır, hepsi gitmez ariYok += ((cikan === 'ari' ? 1 : 0) - ariYok) * 0.06;
+      meyveYok += ((cikan === 'ari' ? 0.62 : 0) - meyveYok) * 0.05;   // arı yoksa meyve azalır, hepsi gitmez
+      ariYok += ((cikan === 'ari' ? 1 : 0) - ariYok) * 0.06;            // arı sahneden çıkar
+      if (geriAn && a >= geriAn) { cikan = null; geriAn = 0; }           // hepsi: doğru cevaptan sonra varlık yavaşça geri gelir
       bulutYok += ((cikan === 'yagmur' ? 1 : 0) - bulutYok) * 0.05;
 
       var gerek = t < AN.sir + 1.5 ? acilis(t) : null;
@@ -635,7 +631,6 @@
 
       // bölüm dışına çıkan yazılar ve çizgiler kapanır
       gorunurluk(t, bol);
-      ipucuIzlek(t);
     }
     function gorunurluk(t, bol) {
       if (bol !== 0) { gos(y.sayi, 0); gos(y.yaklasik, 0); gos(y.gunde, 0); }
@@ -662,19 +657,6 @@
       if (bol !== 9) iplikKapat();
       if (bol !== 10) gos(y.gelecek, 0);
     }
-    var notSon = -1;
-    function ipucuIzlek(t) {
-      var defterAcik = t > AN.ilk - 0.3 && t < AN.gunes - 0.2;
-      var gor = t > AN.defter && t < AN.doldu - 0.2 && !defterAcik && !api.acikDurak();   // durakta etkinlik öne çıkar
-      izlek.classList.toggle('gor', gor);
-      ANLAR.forEach(function (an, i) {
-        var d = t >= an;
-        if (noktalar[i]._d !== d) { noktalar[i]._d = d; noktalar[i].classList.toggle('dolu', d); noktalar[i].style.backgroundImage = d ? noktalar[i]._ikon : 'none'; }
-      });
-      var aktif = ANLAR.findIndex(function (an) { return t >= an && t < an + 2.3; });
-      if (aktif !== notSon) { notSon = aktif; notKutu.classList.toggle('gor', aktif >= 0); if (aktif >= 0) notKutu.textContent = NOTLAR[aktif]; }
-    }
-
     return {
       hazir: hazir,
       ciz: ciz,
@@ -687,8 +669,9 @@
         }
         if (id === 'su' && olay === 'dogru') suTamam[veri] = aSimdi;
         if (id === 'bahce') {
-          if (olay === 'cikar') cikan = veri;
-          if (olay === 'kapat') cikan = null;
+          if (olay === 'cikar') { cikan = veri; geriAn = 0; }
+          if (olay === 'dondur') geriAn = aSimdi + 1.3;   // varlık sahneye döner (hepsi: true); çocuk sonucu görsün diye kısa bekler
+          if (olay === 'kapat') { cikan = null; geriAn = 0; }
         }
       },
       tutamac: function (id, deger) {
