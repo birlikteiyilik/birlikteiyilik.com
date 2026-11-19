@@ -12,8 +12,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/liste.css?v=6">
-  <script defer src="/js/liste.js?v=4"></script>
+  <link rel="stylesheet" href="/css/liste.css?v=7">
+  <script defer src="/js/liste.js?v=5"></script>
   <script>if ('serviceWorker' in navigator) { window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js', { scope: '/liste' }).catch(() => {})); }</script>
 </head>
 <body>
@@ -27,6 +27,7 @@
     <symbol id="i-check" viewBox="0 0 24 24"><path d="m4 12 5 5L20 6"/></symbol>
     <symbol id="i-close" viewBox="0 0 24 24"><path d="M5 5 19 19M19 5 5 19"/></symbol>
     <symbol id="i-person" viewBox="0 0 24 24"><circle cx="12" cy="7.5" r="3.5"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11m-5-5 5 5 5-5M5 20h14"/></symbol>
     <symbol id="i-teacher" viewBox="0 0 24 24"><circle cx="8" cy="8" r="3"/><path d="M2.5 20a5.5 5.5 0 0 1 11 0M15 4h6v11h-6m-2-7h5"/></symbol>
   </svg>
 
@@ -74,6 +75,7 @@
           <div class="search-controls"><span class="control-label">Arama türü</span><div class="mode-switch" role="group" aria-label="Arama türü"><button id="studentMode" type="button" class="mode-button is-active" aria-pressed="true"><svg><use href="#i-person"></use></svg> Öğrenci</button><button id="teacherMode" type="button" class="mode-button" aria-pressed="false"><svg><use href="#i-teacher"></use></svg> Öğretmen</button></div>
             <label for="searchInput" id="searchLabel">Öğrenci adı</label><div class="search-field"><svg class="search-field__icon"><use href="#i-search"></use></svg><input id="searchInput" type="search" autocomplete="off" spellcheck="false" maxlength="100" placeholder="Ad veya soyad yazın" aria-describedby="searchHint"><button id="clearSearch" type="button" aria-label="Aramayı temizle" hidden><svg><use href="#i-close"></use></svg></button></div><p class="search-hint" id="searchHint">En az iki harf yazın.</p>
           </div>
+          <div class="report-box"><span class="control-label">2027 takvim teslimi</span><p>Takvimi teslim edilen ve henüz edilmeyen tüm öğrencileri tek bir Excel listesinde indirin.</p><button id="calendarReport" class="report-button" type="button"><svg><use href="#i-download"></use></svg><span>Takvim listesini indir</span></button><p class="report-feedback" id="calendarReportFeedback" role="status"></p></div>
           <p class="search-panel__foot">Yalnızca kaydı tamamlanan yüz yüze öğrenciler listelenir.</p>
         </aside>
         <section class="results-panel" aria-labelledby="resultsTitle"><div class="results-heading"><div><p class="overline" id="resultsEyebrow">Arama</p><h2 id="resultsTitle">Kayıtlar</h2></div><span class="result-count" id="resultCount" aria-live="polite"></span></div><div id="results" class="results" aria-live="polite"></div></section>

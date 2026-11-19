@@ -594,26 +594,15 @@ export default async function handler(req) {
     return payload;
   }
 
-  async function directoryResults(query, mode) {
-    const planning = await getArchive(PLANNING_FILE);
-    const teachers = new Map(planning.records.filter((item) => item.kind === 'teacher')
-      .map((item) => [item.id, item]));
-    const needle = searchableName(query);
-    const matchingTeachers = [...teachers.values()].filter((item) => searchableName(item.name).includes(needle));
-    const matchingIds = new Set(matchingTeachers.map((item) => item.id));
-    const placements = planning.records.filter((item) => item.kind === 'placement' && item.applicationType === 'yuz-yuze' &&
-      (mode === 'teacher'
-        ? (item.schedule || []).some((entry) => matchingIds.has(entry.teacherId))
-        : searchableName(item.studentName).includes(needle)));
-    const limited = placements.slice(0, 60);
-    const months = [...new Set(limited.map((item) => String(item.applicationCreatedAt || '').slice(0, 7))
+  async function directoryItems(planning, teachers, placements) {
+    const months = [...new Set(placements.map((item) => String(item.applicationCreatedAt || '').slice(0, 7))
       .filter((item) => /^\d{4}-\d{2}$/.test(item)))];
     const archives = await Promise.all(months.map((month) => getArchive(`${month}.enc.json`)));
     const applications = new Map(archives.flatMap((archive) => archive.records).map((item) => [item.id, item]));
     const calendarDeliveries = new Map(planning.records
       .filter((item) => item.kind === 'calendar-delivery' && item.year === CALENDAR_DELIVERY_YEAR)
       .map((item) => [item.applicationId, item]));
-    const items = limited.flatMap((placement) => {
+    const items = placements.flatMap((placement) => {
       const application = applications.get(placement.applicationId);
       if (!application || application.status !== 'kayit-tamamlandi') return [];
       const teacherDetails = [...new Set((placement.schedule || []).map((entry) => entry.teacherId))]
@@ -638,13 +627,46 @@ export default async function handler(req) {
         }
       }];
     });
-    items.sort((a, b) => a.studentName.localeCompare(b.studentName, 'tr'));
+    return items.sort((a, b) => a.studentName.localeCompare(b.studentName, 'tr'));
+  }
+
+  function planningTeachers(planning) {
+    return new Map(planning.records.filter((item) => item.kind === 'teacher').map((item) => [item.id, item]));
+  }
+
+  async function directoryResults(query, mode) {
+    const planning = await getArchive(PLANNING_FILE);
+    const teachers = planningTeachers(planning);
+    const needle = searchableName(query);
+    const matchingTeachers = [...teachers.values()].filter((item) => searchableName(item.name).includes(needle));
+    const matchingIds = new Set(matchingTeachers.map((item) => item.id));
+    const placements = planning.records.filter((item) => item.kind === 'placement' && item.applicationType === 'yuz-yuze' &&
+      (mode === 'teacher'
+        ? (item.schedule || []).some((entry) => matchingIds.has(entry.teacherId))
+        : searchableName(item.studentName).includes(needle)));
+    const items = await directoryItems(planning, teachers, placements.slice(0, 60));
     const visible = items.slice(0, 40);
     const groups = mode === 'teacher' ? matchingTeachers.map((teacher) => ({
       teacher: { id: teacher.id, name: teacher.name, phone: teacher.phone },
       students: visible.filter((item) => item.teachers.some((entry) => entry.id === teacher.id))
     })).filter((group) => group.students.length) : [];
     return { items: visible, groups, hasMore: placements.length > 60 || items.length > 40 };
+  }
+
+  // Tüm kayıtlı yüz yüze öğrenciler ve takvim teslim durumları (Excel raporu için).
+  async function calendarDeliveryReport() {
+    const planning = await getArchive(PLANNING_FILE);
+    const placements = planning.records.filter((item) => item.kind === 'placement' && item.applicationType === 'yuz-yuze');
+    const items = await directoryItems(planning, planningTeachers(planning), placements);
+    return {
+      year: CALENDAR_DELIVERY_YEAR,
+      generatedAt: new Date().toISOString(),
+      items: items.map(({ id, studentName, grade, school, guardianPhone, teachers, calendarDelivery }) => ({
+        id, studentName, grade, school, guardianPhone,
+        teachers: teachers.map((teacher) => teacher.name),
+        delivered: calendarDelivery.delivered, deliveredAt: calendarDelivery.deliveredAt
+      }))
+    };
   }
 
   async function requireTeacherSession() {
@@ -857,6 +879,15 @@ export default async function handler(req) {
         return json({ ok: true, ...(await directoryResults(query, mode)) }, 200, cors);
       } catch (error) {
         return json({ error: error.message || 'Arama şu anda yapılamıyor.' }, error.status || 500, cors);
+      }
+    }
+
+    if (body.action === 'directory-calendar-report') {
+      try {
+        await directorySession();
+        return json({ ok: true, ...(await calendarDeliveryReport()) }, 200, cors);
+      } catch (error) {
+        return json({ error: error.message || 'Rapor hazırlanamadı.' }, error.status || 500, cors);
       }
     }
 

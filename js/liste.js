@@ -10,8 +10,10 @@
     showPassword: $('showPassword'), remember: $('rememberSession'), logout: $('logoutButton'),
     studentMode: $('studentMode'), teacherMode: $('teacherMode'), searchLabel: $('searchLabel'),
     input: $('searchInput'), clear: $('clearSearch'), hint: $('searchHint'),
-    results: $('results'), count: $('resultCount'), eyebrow: $('resultsEyebrow'), title: $('resultsTitle')
+    results: $('results'), count: $('resultCount'), eyebrow: $('resultsEyebrow'), title: $('resultsTitle'),
+    report: $('calendarReport'), reportFeedback: $('calendarReportFeedback')
   };
+  let excelLoading = null;
   let token = '';
   let mode = 'student';
   let timer = 0;
@@ -325,6 +327,106 @@
     timer = setTimeout(search, 280);
   }
 
+  function loadExcel() {
+    if (window.ExcelJS) return Promise.resolve(window.ExcelJS);
+    excelLoading = excelLoading || new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = '/js/vendor/exceljs-4.4.0.min.js';
+      script.onload = () => window.ExcelJS ? resolve(window.ExcelJS) : reject(new Error('Excel bileşeni yüklenemedi.'));
+      script.onerror = () => { script.remove(); reject(new Error('Excel bileşeni yüklenemedi. Yeniden deneyin.')); };
+      document.head.append(script);
+    }).catch((error) => { excelLoading = null; throw error; });
+    return excelLoading;
+  }
+  function localDate(value, withTime = false) {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    return date.toLocaleString('tr-TR', withTime
+      ? { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }
+      : { day: '2-digit', month: '2-digit', year: 'numeric' });
+  }
+  function calendarWorkbook(ExcelJS, report) {
+    const year = report.year || '2027';
+    const rows = [...(report.items || [])].sort((a, b) => Number(b.delivered) - Number(a.delivered) ||
+      String(a.studentName).localeCompare(String(b.studentName), 'tr'));
+    const deliveredCount = rows.filter((row) => row.delivered).length;
+    const colors = { ink: 'FF17385C', white: 'FFFFFFFF', border: 'FFD5DFE8', muted: 'FF526579', done: 'FFC9E8D5', doneText: 'FF134C32', wait: 'FFF4E3D3', waitText: 'FF7A3E12', stripe: 'FFF7F9FB' };
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = 'Birlikte İyilik Akademi';
+    workbook.created = new Date();
+    const sheet = workbook.addWorksheet(`${year} Takvim Teslim`, { views: [{ state: 'frozen', ySplit: 4, showGridLines: false }] });
+    const headers = ['Sıra', 'Öğrenci', 'Sınıf', 'Okul', 'Veli telefonu', 'Öğretmen', 'Takvim durumu', 'Teslim tarihi'];
+    sheet.columns = [7, 28, 9, 30, 17, 30, 18, 15].map((width) => ({ width }));
+    const paint = (cell, { fill = colors.white, color = colors.ink, bold = false, size = 11, center = false } = {}) => {
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: fill } };
+      cell.font = { name: 'Calibri', size, bold, color: { argb: color } };
+      cell.alignment = { vertical: 'middle', horizontal: center ? 'center' : 'left', wrapText: true, indent: center ? 0 : 1 };
+      cell.border = { bottom: { style: 'thin', color: { argb: colors.border } }, right: { style: 'thin', color: { argb: colors.border } } };
+    };
+    sheet.mergeCells(1, 1, 1, headers.length);
+    sheet.getCell(1, 1).value = `${year} YILI TAKVİM TESLİM LİSTESİ`;
+    paint(sheet.getCell(1, 1), { fill: colors.ink, color: colors.white, bold: true, size: 17 });
+    sheet.getRow(1).height = 40;
+    sheet.mergeCells(2, 1, 2, headers.length);
+    sheet.getCell(2, 1).value = `Birlikte İyilik Akademi · Yüz yüze kayıtlı öğrenciler · ${localDate(report.generatedAt || Date.now(), true)}\n` +
+      `Toplam ${rows.length} öğrenci · ${deliveredCount} teslim edildi · ${rows.length - deliveredCount} teslim edilmedi`;
+    paint(sheet.getCell(2, 1), { color: colors.muted, size: 10 });
+    sheet.getRow(2).height = 36;
+    sheet.getRow(3).height = 8;
+    sheet.getRow(4).values = headers;
+    headers.forEach((header, index) => paint(sheet.getCell(4, index + 1), { fill: colors.ink, color: colors.white, bold: true, center: true }));
+    sheet.getRow(4).height = 28;
+    rows.forEach((row, index) => {
+      const excelRow = sheet.getRow(index + 5);
+      excelRow.values = [index + 1, row.studentName, row.grade ? `${row.grade}. sınıf` : '', row.school || '',
+        phoneParts(row.guardianPhone).label, (row.teachers || []).join(', '),
+        row.delivered ? 'Teslim edildi' : 'Teslim edilmedi', row.delivered ? localDate(row.deliveredAt) : ''];
+      const fill = index % 2 ? colors.stripe : colors.white;
+      excelRow.eachCell({ includeEmpty: true }, (cell, col) => {
+        if (col === 7) paint(cell, { fill: row.delivered ? colors.done : colors.wait, color: row.delivered ? colors.doneText : colors.waitText, bold: true, center: true });
+        else paint(cell, { fill, center: col === 1 || col === 3 || col === 8 });
+      });
+      excelRow.height = 24;
+    });
+    sheet.autoFilter = { from: { row: 4, column: 1 }, to: { row: Math.max(4, rows.length + 4), column: headers.length } };
+    sheet.pageSetup = { paperSize: 9, orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0, printTitlesRow: '4:4',
+      margins: { left: 0.25, right: 0.25, top: 0.35, bottom: 0.35, header: 0.15, footer: 0.15 } };
+    sheet.headerFooter = { oddFooter: '&LBirlikte İyilik Akademi&R&P / &N' };
+    return { workbook, total: rows.length, delivered: deliveredCount };
+  }
+  async function downloadCalendarReport() {
+    if (ui.report.disabled) return;
+    const label = ui.report.querySelector('span');
+    ui.report.disabled = true;
+    ui.report.dataset.loading = 'true';
+    label.textContent = 'Liste hazırlanıyor…';
+    ui.reportFeedback.classList.remove('is-error');
+    ui.reportFeedback.textContent = '';
+    try {
+      const [report, ExcelJS] = await Promise.all([api({ action: 'directory-calendar-report' }, token), loadExcel()]);
+      const result = calendarWorkbook(ExcelJS, report);
+      const buffer = await result.workbook.xlsx.writeBuffer();
+      const url = URL.createObjectURL(new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${report.year || '2027'}-takvim-teslim-listesi-${new Date().toISOString().slice(0, 10)}.xlsx`;
+      document.body.append(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      ui.reportFeedback.textContent = `İndirildi: ${result.total} öğrenci, ${result.delivered} teslim.`;
+    } catch (error) {
+      if (error.status === 401) { showLogin(); setLoginError('Oturum süresi doldu. Yeniden giriş yapın.'); return; }
+      ui.reportFeedback.classList.add('is-error');
+      ui.reportFeedback.textContent = error.message || 'Liste hazırlanamadı. Yeniden deneyin.';
+    } finally {
+      ui.report.disabled = false;
+      ui.report.dataset.loading = 'false';
+      label.textContent = 'Takvim listesini indir';
+    }
+  }
+
+  ui.report.addEventListener('click', downloadCalendarReport);
   ui.loginForm.addEventListener('submit', login);
   ui.password.addEventListener('input', () => { if (ui.password.getAttribute('aria-invalid') === 'true') setLoginError(''); });
   ui.showPassword.addEventListener('click', () => {

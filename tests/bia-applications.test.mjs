@@ -382,6 +382,20 @@ const calendarAfterClear = await (await handler(new Request('http://localhost:41
 }))).json();
 assert.equal(calendarAfterClear.items.find((item) => item.id === directoryStudent.id).calendarDelivery.delivered, false);
 assert.equal((await calendarRequest(directoryHeaders, true)).status, 200);
+const reportRequest = (headers) => handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'POST', headers, body: JSON.stringify({ action: 'directory-calendar-report' })
+}));
+assert.equal((await reportRequest({ 'Content-Type': 'application/json', 'Origin': 'http://localhost:4173' })).status, 401);
+const calendarReportResponse = await reportRequest(directoryHeaders);
+assert.equal(calendarReportResponse.status, 200);
+const calendarReport = await calendarReportResponse.json();
+assert.equal(calendarReport.year, '2027');
+const reportRow = calendarReport.items.find((item) => item.id === directoryStudent.id);
+assert.equal(reportRow.studentName, validSubmission.studentName);
+assert.equal(reportRow.delivered, true);
+assert.ok(reportRow.deliveredAt);
+assert.deepEqual(reportRow.teachers.length, 2);
+assert.ok(!('tckn' in reportRow));
 const directoryTeacherResponse = await handler(new Request('http://localhost:4173/api/bia-applications', {
   method: 'POST', headers: directoryHeaders,
   body: JSON.stringify({ action: 'directory-search', mode: 'teacher', query: 'Meryem' })
