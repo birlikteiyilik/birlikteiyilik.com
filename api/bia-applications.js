@@ -32,6 +32,8 @@ const ONLINE_TIME_RANGES = [
 ];
 const REFERRAL_SOURCES = ['arkadas', 'aile', 'bilgilendirme-mesaji', 'sosyal-medya', 'diger', 'ogrenci-arkadasi', 'arkadas-tavsiyesi', 'kendi-arastirmam'];
 const ATTENDANCE_STATUSES = ['katildi', 'gelmedi', 'mazeretli'];
+// Kayıt rehberinde (/liste) veliye takvim teslimi işaretlenir; kayıt planlama arşivinde ayrı tutulur.
+const CALENDAR_DELIVERY_YEAR = '2027';
 const PASSWORD_ITERATIONS = 210000;
 const DIRECTORY_PASSWORD_ITERATIONS = 600000;
 // The directory access code is never stored in plaintext in this public repository.
@@ -592,23 +594,15 @@ export default async function handler(req) {
     return payload;
   }
 
-  async function directoryResults(query, mode) {
-    const planning = await getArchive(PLANNING_FILE);
-    const teachers = new Map(planning.records.filter((item) => item.kind === 'teacher')
-      .map((item) => [item.id, item]));
-    const needle = searchableName(query);
-    const matchingTeachers = [...teachers.values()].filter((item) => searchableName(item.name).includes(needle));
-    const matchingIds = new Set(matchingTeachers.map((item) => item.id));
-    const placements = planning.records.filter((item) => item.kind === 'placement' && item.applicationType === 'yuz-yuze' &&
-      (mode === 'teacher'
-        ? (item.schedule || []).some((entry) => matchingIds.has(entry.teacherId))
-        : searchableName(item.studentName).includes(needle)));
-    const limited = placements.slice(0, 60);
-    const months = [...new Set(limited.map((item) => String(item.applicationCreatedAt || '').slice(0, 7))
+  async function directoryItems(planning, teachers, placements) {
+    const months = [...new Set(placements.map((item) => String(item.applicationCreatedAt || '').slice(0, 7))
       .filter((item) => /^\d{4}-\d{2}$/.test(item)))];
     const archives = await Promise.all(months.map((month) => getArchive(`${month}.enc.json`)));
     const applications = new Map(archives.flatMap((archive) => archive.records).map((item) => [item.id, item]));
-    const items = limited.flatMap((placement) => {
+    const calendarDeliveries = new Map(planning.records
+      .filter((item) => item.kind === 'calendar-delivery' && item.year === CALENDAR_DELIVERY_YEAR)
+      .map((item) => [item.applicationId, item]));
+    const items = placements.flatMap((placement) => {
       const application = applications.get(placement.applicationId);
       if (!application || application.status !== 'kayit-tamamlandi') return [];
       const teacherDetails = [...new Set((placement.schedule || []).map((entry) => entry.teacherId))]
@@ -625,16 +619,54 @@ export default async function handler(req) {
       return [{
         id: application.id, studentName: application.studentName,
         grade: application.grade, school: application.school,
-        guardianPhone: application.guardianPhone, teachers: teacherDetails
+        guardianPhone: application.guardianPhone, teachers: teacherDetails,
+        calendarDelivery: {
+          year: CALENDAR_DELIVERY_YEAR,
+          delivered: calendarDeliveries.has(application.id),
+          deliveredAt: calendarDeliveries.get(application.id)?.deliveredAt || ''
+        }
       }];
     });
-    items.sort((a, b) => a.studentName.localeCompare(b.studentName, 'tr'));
+    return items.sort((a, b) => a.studentName.localeCompare(b.studentName, 'tr'));
+  }
+
+  function planningTeachers(planning) {
+    return new Map(planning.records.filter((item) => item.kind === 'teacher').map((item) => [item.id, item]));
+  }
+
+  async function directoryResults(query, mode) {
+    const planning = await getArchive(PLANNING_FILE);
+    const teachers = planningTeachers(planning);
+    const needle = searchableName(query);
+    const matchingTeachers = [...teachers.values()].filter((item) => searchableName(item.name).includes(needle));
+    const matchingIds = new Set(matchingTeachers.map((item) => item.id));
+    const placements = planning.records.filter((item) => item.kind === 'placement' && item.applicationType === 'yuz-yuze' &&
+      (mode === 'teacher'
+        ? (item.schedule || []).some((entry) => matchingIds.has(entry.teacherId))
+        : searchableName(item.studentName).includes(needle)));
+    const items = await directoryItems(planning, teachers, placements.slice(0, 60));
     const visible = items.slice(0, 40);
     const groups = mode === 'teacher' ? matchingTeachers.map((teacher) => ({
       teacher: { id: teacher.id, name: teacher.name, phone: teacher.phone },
       students: visible.filter((item) => item.teachers.some((entry) => entry.id === teacher.id))
     })).filter((group) => group.students.length) : [];
     return { items: visible, groups, hasMore: placements.length > 60 || items.length > 40 };
+  }
+
+  // Tüm kayıtlı yüz yüze öğrenciler ve takvim teslim durumları (Excel raporu için).
+  async function calendarDeliveryReport() {
+    const planning = await getArchive(PLANNING_FILE);
+    const placements = planning.records.filter((item) => item.kind === 'placement' && item.applicationType === 'yuz-yuze');
+    const items = await directoryItems(planning, planningTeachers(planning), placements);
+    return {
+      year: CALENDAR_DELIVERY_YEAR,
+      generatedAt: new Date().toISOString(),
+      items: items.map(({ id, studentName, grade, school, guardianPhone, teachers, calendarDelivery }) => ({
+        id, studentName, grade, school, guardianPhone,
+        teachers: teachers.map((teacher) => teacher.name),
+        delivered: calendarDelivery.delivered, deliveredAt: calendarDelivery.deliveredAt
+      }))
+    };
   }
 
   async function requireTeacherSession() {
@@ -847,6 +879,42 @@ export default async function handler(req) {
         return json({ ok: true, ...(await directoryResults(query, mode)) }, 200, cors);
       } catch (error) {
         return json({ error: error.message || 'Arama şu anda yapılamıyor.' }, error.status || 500, cors);
+      }
+    }
+
+    if (body.action === 'directory-calendar-report') {
+      try {
+        await directorySession();
+        return json({ ok: true, ...(await calendarDeliveryReport()) }, 200, cors);
+      } catch (error) {
+        return json({ error: error.message || 'Rapor hazırlanamadı.' }, error.status || 500, cors);
+      }
+    }
+
+    if (body.action === 'directory-calendar-delivery') {
+      try {
+        await directorySession();
+        const applicationId = cleanText(body.applicationId, 80);
+        if (!applicationId || typeof body.delivered !== 'boolean') throw new RequestError('Takvim teslim bilgisi geçersiz.');
+        const delivered = body.delivered;
+        historyActor = 'Kayıt rehberi';
+        const result = await mutateArchive(PLANNING_FILE, (records) => {
+          const placement = records.find((item) => item.kind === 'placement' && item.applicationId === applicationId &&
+            item.applicationType === 'yuz-yuze');
+          if (!placement) throw new RequestError('Öğrenci kaydı bulunamadı.', 404);
+          const isTarget = (item) => item.kind === 'calendar-delivery' && item.applicationId === applicationId &&
+            item.year === CALENDAR_DELIVERY_YEAR;
+          const existing = records.find(isTarget);
+          const rest = records.filter((item) => !isTarget(item));
+          if (!delivered) return { records: rest, value: { delivered: false, deliveredAt: '' } };
+          const deliveredAt = existing?.deliveredAt || new Date().toISOString();
+          rest.push({ kind: 'calendar-delivery', id: existing?.id || crypto.randomUUID(), applicationId,
+            year: CALENDAR_DELIVERY_YEAR, deliveredAt });
+          return { records: rest, value: { delivered: true, deliveredAt } };
+        }, `BIA: ${CALENDAR_DELIVERY_YEAR} takvim teslim durumu güncellendi`);
+        return json({ ok: true, year: CALENDAR_DELIVERY_YEAR, ...result }, 200, cors);
+      } catch (error) {
+        return json({ error: error.message || 'Teslim durumu kaydedilemedi.' }, error.status || 500, cors);
       }
     }
 
@@ -1206,7 +1274,7 @@ export default async function handler(req) {
         const planningResult = await mutateArchive(PLANNING_FILE, (records) => {
           const assignments = records.filter((item) => item.kind === 'placement' && item.applicationId === applicationId);
           return {
-            records: records.filter((item) => !(['placement', 'attendance', 'application-event'].includes(item.kind) && item.applicationId === applicationId)),
+            records: records.filter((item) => !(['placement', 'attendance', 'application-event', 'calendar-delivery'].includes(item.kind) && item.applicationId === applicationId)),
             value: assignments.length
           };
         }, `BIA: ${application.reference} öğrenci ataması silindi`);
@@ -1277,7 +1345,7 @@ export default async function handler(req) {
             const removedAssignments = records.filter((item) => item.kind === 'placement').length;
             const removedAttendance = records.filter((item) => item.kind === 'attendance').length;
             return {
-              records: records.filter((item) => !['placement', 'attendance', 'application-event'].includes(item.kind)),
+              records: records.filter((item) => !['placement', 'attendance', 'application-event', 'calendar-delivery'].includes(item.kind)),
               value: { removedAssignments, removedAttendance }
             };
           }, 'BIA: tüm öğrenci ders atamaları silindi');

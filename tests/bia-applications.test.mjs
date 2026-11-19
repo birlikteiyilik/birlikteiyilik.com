@@ -354,6 +354,48 @@ assert.deepEqual(directoryStudent.teachers[1].schedule, [
   { day: 'cuma', slot: '15:00-15:20' }
 ]);
 assert.ok(!('tckn' in directoryStudent));
+assert.deepEqual(directoryStudent.calendarDelivery, { year: '2027', delivered: false, deliveredAt: '' });
+const calendarRequest = (headers, delivered, applicationId = directoryStudent.id) => handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'POST', headers, body: JSON.stringify({ action: 'directory-calendar-delivery', applicationId, delivered })
+}));
+assert.equal((await calendarRequest({ 'Content-Type': 'application/json', 'Origin': 'http://localhost:4173' }, true)).status, 401);
+assert.equal((await calendarRequest(directoryHeaders, 'evet')).status, 400);
+assert.equal((await calendarRequest(directoryHeaders, true, 'olmayan-kayit')).status, 404);
+const calendarMarked = await calendarRequest(directoryHeaders, true);
+assert.equal(calendarMarked.status, 200);
+const calendarMarkedData = await calendarMarked.json();
+assert.equal(calendarMarkedData.delivered, true);
+assert.ok(calendarMarkedData.deliveredAt);
+const calendarMarkedAgain = await (await calendarRequest(directoryHeaders, true)).json();
+assert.equal(calendarMarkedAgain.deliveredAt, calendarMarkedData.deliveredAt);
+const calendarSearch = await (await handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'POST', headers: directoryHeaders,
+  body: JSON.stringify({ action: 'directory-search', mode: 'student', query: 'öğrenci' })
+}))).json();
+assert.deepEqual(calendarSearch.items.find((item) => item.id === directoryStudent.id).calendarDelivery,
+  { year: '2027', delivered: true, deliveredAt: calendarMarkedData.deliveredAt });
+const calendarCleared = await (await calendarRequest(directoryHeaders, false)).json();
+assert.equal(calendarCleared.delivered, false);
+const calendarAfterClear = await (await handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'POST', headers: directoryHeaders,
+  body: JSON.stringify({ action: 'directory-search', mode: 'student', query: 'öğrenci' })
+}))).json();
+assert.equal(calendarAfterClear.items.find((item) => item.id === directoryStudent.id).calendarDelivery.delivered, false);
+assert.equal((await calendarRequest(directoryHeaders, true)).status, 200);
+const reportRequest = (headers) => handler(new Request('http://localhost:4173/api/bia-applications', {
+  method: 'POST', headers, body: JSON.stringify({ action: 'directory-calendar-report' })
+}));
+assert.equal((await reportRequest({ 'Content-Type': 'application/json', 'Origin': 'http://localhost:4173' })).status, 401);
+const calendarReportResponse = await reportRequest(directoryHeaders);
+assert.equal(calendarReportResponse.status, 200);
+const calendarReport = await calendarReportResponse.json();
+assert.equal(calendarReport.year, '2027');
+const reportRow = calendarReport.items.find((item) => item.id === directoryStudent.id);
+assert.equal(reportRow.studentName, validSubmission.studentName);
+assert.equal(reportRow.delivered, true);
+assert.ok(reportRow.deliveredAt);
+assert.deepEqual(reportRow.teachers.length, 2);
+assert.ok(!('tckn' in reportRow));
 const directoryTeacherResponse = await handler(new Request('http://localhost:4173/api/bia-applications', {
   method: 'POST', headers: directoryHeaders,
   body: JSON.stringify({ action: 'directory-search', mode: 'teacher', query: 'Meryem' })
