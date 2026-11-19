@@ -123,6 +123,19 @@ h1, h2, h3, p { margin-top: 0; }
 .copy-button { width: 2rem; min-width: 2rem; height: 2rem; border: 0; border-radius: .4rem; background: var(--color-paper-2); color: var(--color-ink-soft); display: grid; place-items: center; }
 .copy-button:hover { background: var(--color-accent-pale); color: var(--color-accent-deep); }
 .copy-button svg { width: .85rem; height: .85rem; }
+.delivery-check { display: flex; align-items: center; flex-wrap: wrap; gap: .35rem .9rem; margin-top: 1rem; }
+.delivery-check__option { position: relative; display: inline-flex; align-items: center; gap: .6rem; min-height: 2.5rem; padding: .45rem .8rem .45rem .55rem; border: 1px solid var(--color-rule); border-radius: .5rem; background: var(--color-paper-2); color: var(--color-ink-soft); font-size: .82rem; font-weight: 700; cursor: pointer; transition: background var(--dur-control) var(--ease-out), border-color var(--dur-control) var(--ease-out), color var(--dur-control) var(--ease-out); }
+.delivery-check__option:hover { border-color: var(--color-accent-deep); color: var(--color-ink); }
+.delivery-check__option input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.delivery-check__option input:disabled { cursor: progress; }
+.delivery-check__box { display: grid; place-items: center; width: 1.25rem; height: 1.25rem; border: 1.5px solid var(--color-muted); border-radius: .3rem; background: var(--color-surface); color: transparent; transition: background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out); }
+.delivery-check__box svg { width: .85rem; height: .85rem; stroke-width: 2.6; }
+.delivery-check__option input:focus-visible ~ .delivery-check__box { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.delivery-check.is-done .delivery-check__option { border-color: color-mix(in oklch, var(--color-positive) 45%, var(--color-rule)); background: color-mix(in oklch, var(--color-positive) 9%, var(--color-surface)); color: var(--color-ink); }
+.delivery-check.is-done .delivery-check__box { border-color: var(--color-positive); background: var(--color-positive); color: var(--color-on-dark); }
+.delivery-check[data-saving="true"] .delivery-check__option { opacity: .7; }
+.delivery-check__status { color: var(--color-muted); font-size: .74rem; font-weight: 500; }
+.delivery-check__status.is-error { color: var(--color-error); font-weight: 600; }
 .teacher-list { margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--color-rule); }
 .teacher-list__heading { font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .09em; color: var(--color-muted); margin-bottom: .6rem; }
 .teacher-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .5rem 1rem; padding: .5rem 0; }

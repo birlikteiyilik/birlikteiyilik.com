@@ -187,13 +187,60 @@
     wrap.append(entries);
     return wrap;
   }
+  function deliveryDate(value) {
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+  function calendarDelivery(item) {
+    const state = item.calendarDelivery || { year: '2027', delivered: false, deliveredAt: '' };
+    const year = state.year || '2027';
+    const wrap = node('div', 'delivery-check');
+    const label = node('label', 'delivery-check__option');
+    const input = node('input');
+    input.type = 'checkbox';
+    input.checked = Boolean(state.delivered);
+    const box = node('span', 'delivery-check__box');
+    box.setAttribute('aria-hidden', 'true');
+    box.append(icon('check'));
+    const text = node('span', 'delivery-check__text', `${year} yılı takvimi Veliye teslim edildi`);
+    label.append(input, box, text);
+    const status = node('span', 'delivery-check__status');
+    status.setAttribute('aria-live', 'polite');
+    const paint = (delivered, deliveredAt, message = '', error = false) => {
+      wrap.classList.toggle('is-done', delivered);
+      status.classList.toggle('is-error', error);
+      status.textContent = message || (delivered && deliveryDate(deliveredAt) ? `${deliveryDate(deliveredAt)} tarihinde işaretlendi` : '');
+    };
+    paint(input.checked, state.deliveredAt);
+    input.addEventListener('change', async () => {
+      const delivered = input.checked;
+      input.disabled = true;
+      wrap.dataset.saving = 'true';
+      paint(delivered, '', 'Kaydediliyor…');
+      try {
+        const data = await api({ action: 'directory-calendar-delivery', applicationId: item.id, delivered }, token);
+        item.calendarDelivery = { year: data.year || year, delivered: data.delivered, deliveredAt: data.deliveredAt };
+        input.checked = data.delivered;
+        paint(data.delivered, data.deliveredAt, data.delivered ? '' : 'Teslim işareti kaldırıldı');
+      } catch (error) {
+        if (error.status === 401) { showLogin(); setLoginError('Oturum süresi doldu. Yeniden giriş yapın.'); return; }
+        input.checked = !delivered;
+        paint(!delivered, item.calendarDelivery?.deliveredAt || '', error.message || 'Kaydedilemedi. Yeniden deneyin.', true);
+      } finally {
+        input.disabled = false;
+        wrap.dataset.saving = 'false';
+      }
+    });
+    wrap.append(label, status);
+    return wrap;
+  }
   function studentCard(item, showTeachers = true, selectedTeacherId = '') {
     const article = node('article', 'result-card');
     const top = node('div', 'result-card__top');
     top.append(node('h3', '', item.studentName), node('span', 'grade-badge', item.grade ? `${item.grade}. sınıf` : 'Sınıf yok'));
     const grid = node('div', 'detail-grid');
     grid.append(detail('Okul', item.school), detail('Veli telefonu', phoneLine(item.guardianPhone, 'Veli')));
-    article.append(top, grid);
+    article.append(top, grid, calendarDelivery(item));
     if (selectedTeacherId) {
       const teacher = item.teachers.find((entry) => entry.id === selectedTeacherId);
       article.append(lessonTimes(teacher?.schedule));

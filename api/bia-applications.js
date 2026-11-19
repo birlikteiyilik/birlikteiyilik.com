@@ -32,6 +32,8 @@ const ONLINE_TIME_RANGES = [
 ];
 const REFERRAL_SOURCES = ['arkadas', 'aile', 'bilgilendirme-mesaji', 'sosyal-medya', 'diger', 'ogrenci-arkadasi', 'arkadas-tavsiyesi', 'kendi-arastirmam'];
 const ATTENDANCE_STATUSES = ['katildi', 'gelmedi', 'mazeretli'];
+// Kayıt rehberinde (/liste) veliye takvim teslimi işaretlenir; kayıt planlama arşivinde ayrı tutulur.
+const CALENDAR_DELIVERY_YEAR = '2027';
 const PASSWORD_ITERATIONS = 210000;
 const DIRECTORY_PASSWORD_ITERATIONS = 600000;
 // The directory access code is never stored in plaintext in this public repository.
@@ -608,6 +610,9 @@ export default async function handler(req) {
       .filter((item) => /^\d{4}-\d{2}$/.test(item)))];
     const archives = await Promise.all(months.map((month) => getArchive(`${month}.enc.json`)));
     const applications = new Map(archives.flatMap((archive) => archive.records).map((item) => [item.id, item]));
+    const calendarDeliveries = new Map(planning.records
+      .filter((item) => item.kind === 'calendar-delivery' && item.year === CALENDAR_DELIVERY_YEAR)
+      .map((item) => [item.applicationId, item]));
     const items = limited.flatMap((placement) => {
       const application = applications.get(placement.applicationId);
       if (!application || application.status !== 'kayit-tamamlandi') return [];
@@ -625,7 +630,12 @@ export default async function handler(req) {
       return [{
         id: application.id, studentName: application.studentName,
         grade: application.grade, school: application.school,
-        guardianPhone: application.guardianPhone, teachers: teacherDetails
+        guardianPhone: application.guardianPhone, teachers: teacherDetails,
+        calendarDelivery: {
+          year: CALENDAR_DELIVERY_YEAR,
+          delivered: calendarDeliveries.has(application.id),
+          deliveredAt: calendarDeliveries.get(application.id)?.deliveredAt || ''
+        }
       }];
     });
     items.sort((a, b) => a.studentName.localeCompare(b.studentName, 'tr'));
@@ -847,6 +857,33 @@ export default async function handler(req) {
         return json({ ok: true, ...(await directoryResults(query, mode)) }, 200, cors);
       } catch (error) {
         return json({ error: error.message || 'Arama şu anda yapılamıyor.' }, error.status || 500, cors);
+      }
+    }
+
+    if (body.action === 'directory-calendar-delivery') {
+      try {
+        await directorySession();
+        const applicationId = cleanText(body.applicationId, 80);
+        if (!applicationId || typeof body.delivered !== 'boolean') throw new RequestError('Takvim teslim bilgisi geçersiz.');
+        const delivered = body.delivered;
+        historyActor = 'Kayıt rehberi';
+        const result = await mutateArchive(PLANNING_FILE, (records) => {
+          const placement = records.find((item) => item.kind === 'placement' && item.applicationId === applicationId &&
+            item.applicationType === 'yuz-yuze');
+          if (!placement) throw new RequestError('Öğrenci kaydı bulunamadı.', 404);
+          const isTarget = (item) => item.kind === 'calendar-delivery' && item.applicationId === applicationId &&
+            item.year === CALENDAR_DELIVERY_YEAR;
+          const existing = records.find(isTarget);
+          const rest = records.filter((item) => !isTarget(item));
+          if (!delivered) return { records: rest, value: { delivered: false, deliveredAt: '' } };
+          const deliveredAt = existing?.deliveredAt || new Date().toISOString();
+          rest.push({ kind: 'calendar-delivery', id: existing?.id || crypto.randomUUID(), applicationId,
+            year: CALENDAR_DELIVERY_YEAR, deliveredAt });
+          return { records: rest, value: { delivered: true, deliveredAt } };
+        }, `BIA: ${CALENDAR_DELIVERY_YEAR} takvim teslim durumu güncellendi`);
+        return json({ ok: true, year: CALENDAR_DELIVERY_YEAR, ...result }, 200, cors);
+      } catch (error) {
+        return json({ error: error.message || 'Teslim durumu kaydedilemedi.' }, error.status || 500, cors);
       }
     }
 
@@ -1206,7 +1243,7 @@ export default async function handler(req) {
         const planningResult = await mutateArchive(PLANNING_FILE, (records) => {
           const assignments = records.filter((item) => item.kind === 'placement' && item.applicationId === applicationId);
           return {
-            records: records.filter((item) => !(['placement', 'attendance', 'application-event'].includes(item.kind) && item.applicationId === applicationId)),
+            records: records.filter((item) => !(['placement', 'attendance', 'application-event', 'calendar-delivery'].includes(item.kind) && item.applicationId === applicationId)),
             value: assignments.length
           };
         }, `BIA: ${application.reference} öğrenci ataması silindi`);
@@ -1277,7 +1314,7 @@ export default async function handler(req) {
             const removedAssignments = records.filter((item) => item.kind === 'placement').length;
             const removedAttendance = records.filter((item) => item.kind === 'attendance').length;
             return {
-              records: records.filter((item) => !['placement', 'attendance', 'application-event'].includes(item.kind)),
+              records: records.filter((item) => !['placement', 'attendance', 'application-event', 'calendar-delivery'].includes(item.kind)),
               value: { removedAssignments, removedAttendance }
             };
           }, 'BIA: tüm öğrenci ders atamaları silindi');
