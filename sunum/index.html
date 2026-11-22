@@ -2,74 +2,342 @@
 <html lang="tr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Sunum · Birlikte İyilik Akademi</title>
-<meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#F8F6F4">
-<link rel="icon" href="/sunum/b.png">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Birlikte İyilik Akademi</title>
+<meta name="description" content="Birlikte İyilik Akademi sunumu">
+<link rel="icon" href="/sunum/assets/img/bmark.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
-<style>
-:root { --krem: #F8F6F4; --kart: #FFFFFF; --murekkep: #1D1519; --gri: #74686E; --kirmizi: #E20439; --koyu: #B4002E; --cizgi: #ECE6E3; }
-* { box-sizing: border-box; }
-html, body { margin: 0; background: var(--krem); color: var(--murekkep); font-family: 'Nunito', system-ui, sans-serif; }
-main { max-width: 1280px; margin: 0 auto; padding: clamp(20px, 4vw, 48px) clamp(16px, 4vw, 40px) 56px; }
-header { display: flex; align-items: center; gap: 18px; margin-bottom: clamp(20px, 3vw, 36px); }
-header img.b { width: clamp(44px, 5vw, 64px); height: auto; }
-header img.yazi { width: clamp(220px, 34vw, 440px); height: auto; }
-.bolumler { display: grid; gap: clamp(18px, 2.4vw, 28px); }
-@media (min-width: 960px) { .bolumler { grid-template-columns: 1fr 1fr; } }
-.bolum { background: var(--kart); border-radius: 22px; padding: 14px 14px 18px; box-shadow: 0 1px 2px rgba(29,21,25,.05), 0 12px 32px rgba(29,21,25,.08), inset 0 0 0 1px var(--cizgi); }
-.bolum video { display: block; width: 100%; aspect-ratio: 16 / 9; border-radius: 14px; background: #000; }
-.bilgi { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 14px; padding: 0 4px; }
-.bilgi h2 { margin: 0; font-size: clamp(19px, 2vw, 24px); font-weight: 900; letter-spacing: -.01em; }
-.bilgi p { margin: 2px 0 0; color: var(--gri); font-weight: 700; font-size: 15px; }
-button { flex: none; min-height: 48px; padding: 0 20px; border: 0; border-radius: 14px; background: var(--kirmizi); color: #fff; font: 800 16px/1 'Nunito', sans-serif; cursor: pointer; box-shadow: 0 6px 16px rgba(226,4,57,.25); }
-button:hover { background: var(--koyu); }
-button:focus-visible { outline: 3px solid var(--murekkep); outline-offset: 3px; }
-.ipucu { margin: 24px 4px 0; color: var(--gri); font-weight: 700; font-size: 14px; }
-kbd { display: inline-block; min-width: 1.6em; padding: 1px 6px; border-radius: 6px; background: var(--kart); box-shadow: inset 0 0 0 1px var(--cizgi); font: 800 13px/1.5 'Nunito', sans-serif; text-align: center; }
-</style>
+<link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400..800;1,400..700&family=Nunito:wght@400..800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/sunum/css/fonts.css">
+<link rel="stylesheet" href="/sunum/css/sunum.css">
+<script>document.documentElement.classList.add('js')</script>
 </head>
 <body>
-<main>
-  <header>
-    <img class="b" src="/sunum/b.png" alt="">
-    <img class="yazi" src="/sunum/yazi.png" alt="Birlikte İyilik Akademi">
-  </header>
-  <div class="bolumler">
-    <section class="bolum">
-      <video id="v1" src="/sunum/1-bolum.mp4" poster="/sunum/1-bolum-kapak.jpg" controls preload="metadata" playsinline></video>
-      <div class="bilgi">
-        <div><h2>1. bölüm</h2><p>Canlı demodan önce · 1 dk 55 sn</p></div>
-        <button type="button" data-oynat="v1">Tam ekran oynat</button>
-      </div>
-    </section>
-    <section class="bolum">
-      <video id="v2" src="/sunum/2-bolum.mp4" poster="/sunum/2-bolum-kapak.jpg" controls preload="metadata" playsinline></video>
-      <div class="bilgi">
-        <div><h2>2. bölüm</h2><p>Canlı demodan sonra · 56 sn</p></div>
-        <button type="button" data-oynat="v2">Tam ekran oynat</button>
-      </div>
-    </section>
+
+<div id="paper" aria-hidden="true"></div>
+
+<main id="deck">
+
+<!-- 1 · Kapak -->
+<section class="slide" id="s1" data-bg="cream" aria-label="Kapak">
+  <div class="in center">
+    <div class="cv-disc"></div>
+    <div class="cv-lockup">
+      <img class="cv-mark" src="/sunum/assets/img/bmark.png" alt="Birlikte İyilik">
+      <img class="cv-word" src="/sunum/assets/img/wordmark-siyah.png" alt="Birlikte İyilik Akademi">
+    </div>
+    <p class="cv-tag" data-split>Çocuklar için hocalı, çevrim içi eğitim</p>
+    <p class="cv-sub">Kur’ân-ı Kerîm · Temel dinî bilgiler</p>
+    <p class="cv-hint"><span>Kaydırarak ilerleyin</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></p>
   </div>
-  <p class="ipucu">Klavye ya da kumandayla: <kbd>1</kbd> birinci bölümü, <kbd>2</kbd> ikinci bölümü tam ekran başlatır. <kbd>Esc</kbd> tam ekrandan çıkar.</p>
+</section>
+
+<!-- 2 · Neden -->
+<section class="slide" id="s2" data-bg="cream2" aria-label="Neden">
+  <div class="in split">
+    <div class="txt stack">
+      <h2 class="big b1" data-split>Bir çocuğun Kur’ân-ı Kerîm’le ilk karşılaşması, <em>yıllarca aklında kalır.</em></h2>
+      <h2 class="big b2" data-split>O ilk adım <em>bir hocanın yanında</em> atılsın istedik.</h2>
+    </div>
+    <figure class="vcard tilt-r">
+      <span class="tape"></span>
+      <div class="vwrap"><video id="v-neden" muted playsinline preload="auto" poster="/sunum/assets/video/neden.jpg" src="/sunum/assets/video/neden.mp4"></video></div>
+    </figure>
+  </div>
+</section>
+
+<!-- 3 · Mesafe -->
+<section class="slide" id="s3" data-bg="cream" aria-label="Mesafe">
+  <div class="in split rev">
+    <figure class="vcard tilt-l">
+      <span class="tape"></span>
+      <div class="vwrap"><video id="v-mesafe" muted playsinline preload="auto" poster="/sunum/assets/video/mesafe.jpg" src="/sunum/assets/video/mesafe.mp4"></video></div>
+    </figure>
+    <div class="txt stack">
+      <h2 class="big b1" data-split>Hoca bir şehirde, <em>çocuk başka bir şehirde.</em></h2>
+      <h2 class="big b2" data-split>Birlikte İyilik Akademi bu mesafeyi <em>kapatıyor.</em></h2>
+    </div>
+  </div>
+</section>
+
+<!-- 4 · Nasıl -->
+<section class="slide" id="s4" data-bg="pink" aria-label="Nasıl">
+  <div class="in col">
+    <div class="cards3">
+      <article class="card3">
+        <div class="c-top"></div>
+        <div class="c-num"><b class="cn" data-to="25">25</b></div>
+        <div class="c-unit">dakika</div>
+        <div class="c-sub">her buluşma</div>
+      </article>
+      <article class="card3">
+        <div class="c-top">Haftada</div>
+        <div class="c-num"><b class="cn" data-to="3">3</b></div>
+        <div class="c-unit">buluşma</div>
+        <div class="c-sub"></div>
+      </article>
+      <article class="card3">
+        <div class="c-top"></div>
+        <div class="c-num"><b class="cn" data-to="1">1</b><span class="dash">–</span><b class="cn" data-to="5">5</b></div>
+        <div class="c-unit">çocuk</div>
+        <div class="c-sub">hocayla birebir ya da küçük grup</div>
+      </article>
+    </div>
+    <div class="splitbar">
+      <div class="sb-clip">
+        <div class="seg a"><span>Kur’ân-ı Kerîm · 15 dk</span></div>
+        <div class="seg b"><span>Temel dinî bilgiler · 10 dk</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5 · Derste -->
+<section class="slide" id="s5" data-bg="cream2" aria-label="Derste">
+  <div class="in split">
+    <div class="txt">
+      <h2 class="h1" data-split>Derste çocuk hep işin içinde.</h2>
+      <ol class="points">
+        <li class="pt"><span class="pn">1</span><p>Birkaç dakikada bir durak: soru, sürükle-bırak, sahneyi değiştirme</p><i class="pbar"><b></b></i></li>
+        <li class="pt"><span class="pn">2</span><p>Yanlış cevap utandırmaz; yeniden denenir</p><i class="pbar"><b></b></i></li>
+        <li class="pt"><span class="pn">3</span><p>Emeği pul olarak defterine yapışır</p><i class="pbar"><b></b></i></li>
+      </ol>
+    </div>
+    <figure class="vcard tilt-r">
+      <span class="tape"></span>
+      <div class="vwrap"><video id="v-derste" muted playsinline loop preload="auto" poster="/sunum/assets/video/derste.jpg" src="/sunum/assets/video/derste.mp4"></video></div>
+    </figure>
+  </div>
+</section>
+
+<!-- 6 · Pul defteri -->
+<section class="slide" id="s6" data-bg="cream" aria-label="Pul defteri">
+  <div class="in split album-split">
+    <div class="txt">
+      <h2 class="h1 xl" data-split>Pul defteri</h2>
+      <p class="lead" data-split>Hocayla işlenen her ders defterde bir sayfayı doldurur. Devam ve gayret, hatıra pullarıyla görünür.</p>
+    </div>
+    <div class="album">
+      <div class="al-cover"></div>
+      <div class="al-pages">
+        <div class="al-page l">
+          <p class="al-cap">Ders pulları</p>
+          <div class="grid3">
+            <div class="slot"><div class="sw"><div class="stamp"><img src="/sunum/assets/stamps/gelincik.webp" alt=""></div></div></div>
+            <div class="slot"><div class="sw"><div class="stamp"><img src="/sunum/assets/stamps/bal-arisi.webp" alt=""></div></div></div>
+            <div class="slot"><div class="sw"><div class="stamp"><img src="/sunum/assets/stamps/yagmur-damlasi.webp" alt=""></div></div></div>
+            <div class="slot"></div><div class="slot"></div><div class="slot"></div>
+            <div class="slot"></div><div class="slot"></div><div class="slot"></div>
+          </div>
+        </div>
+        <div class="al-spine"></div>
+        <div class="al-page r">
+          <p class="al-cap">Hatıra pulları</p>
+          <div class="grid3">
+            <div class="slot"><div class="sw"><div class="stamp"><img src="/sunum/assets/stamps/ilk-ders.webp" alt=""></div></div></div>
+            <div class="slot"><div class="sw"><div class="stamp"><img src="/sunum/assets/stamps/vaktinde.webp" alt=""></div></div></div>
+            <div class="slot"><div class="sw"><div class="stamp"><img src="/sunum/assets/stamps/tam-hafta.webp" alt=""></div></div></div>
+            <div class="slot"><div class="sw"><div class="stamp"><img src="/sunum/assets/stamps/uc-hafta.webp" alt=""></div></div></div>
+            <div class="slot"><div class="sw"><div class="stamp"><img src="/sunum/assets/stamps/on-ders.webp" alt=""></div></div></div>
+            <div class="slot"><div class="sw"><div class="stamp"><img src="/sunum/assets/stamps/yirmi-bes-ders.webp" alt=""></div></div></div>
+            <div class="slot"><div class="sw"><div class="stamp"><img src="/sunum/assets/stamps/elifba-tamam.webp" alt=""></div></div></div>
+            <div class="slot"><div class="sw"><div class="stamp"><img src="/sunum/assets/stamps/akaid-yarisi.webp" alt=""></div></div></div>
+            <div class="slot"><div class="sw"><div class="stamp"><img src="/sunum/assets/stamps/akaid-tamam.webp" alt=""></div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 7 · Başvurudan ilk derse -->
+<section class="slide" id="s7" data-bg="cream" aria-label="Başvurudan ilk derse">
+  <div class="in col7">
+    <div class="rail">
+      <p class="eyebrow">Başvurudan ilk derse</p>
+      <div class="rail-steps">
+        <i class="rail-line"><b></b></i>
+        <div class="rs"><b>1</b><span>Başvuru</span></div>
+        <div class="rs"><b>2</b><span>Hoca</span></div>
+        <div class="rs"><b>3</b><span>Kayıt</span></div>
+        <div class="rs"><b>4</b><span>Ders günleri</span></div>
+      </div>
+    </div>
+    <div class="s7-main">
+      <div class="s7-txt stack">
+        <div class="s7s"><h2 class="h2" data-split>Veli telefondan başvurur</h2><p class="lead2">Üç kısa adım, iki dakika.</p></div>
+        <div class="s7s"><h2 class="h2" data-split>Gönüllü hoca başvurur</h2><p class="lead2">Hangi seviyede okutabileceğini ve kaç öğrenciye vakit ayırabileceğini yazar.</p></div>
+        <div class="s7s"><h2 class="h2" data-split>Yönetici hocayı atar</h2><p class="lead2">Hesap saniyeler içinde açılır; giriş bilgileri WhatsApp’tan veliye gider.</p></div>
+        <div class="s7s"><h2 class="h2" data-split>Hoca ders günlerini girer</h2><p class="lead2">Takvim kendiliğinden dolar.</p></div>
+      </div>
+      <div class="dev">
+        <div class="dev-phone">
+          <div class="pscr"><video id="v-k1" muted playsinline loop preload="auto" poster="/sunum/assets/video/kayit1.jpg" src="/sunum/assets/video/kayit1.mp4"></video></div>
+          <img src="/sunum/assets/img/telefon.png" alt="">
+        </div>
+        <div class="dev-lap">
+          <div class="scr">
+            <video id="v-k2" muted playsinline loop preload="auto" poster="/sunum/assets/video/kayit2.jpg" src="/sunum/assets/video/kayit2.mp4"></video>
+            <video id="v-k3" muted playsinline loop preload="auto" poster="/sunum/assets/video/kayit3.jpg" src="/sunum/assets/video/kayit3.mp4"></video>
+            <video id="v-k4" muted playsinline loop preload="auto" poster="/sunum/assets/video/kayit4.jpg" src="/sunum/assets/video/kayit4.mp4"></video>
+          </div>
+          <img src="/sunum/assets/img/laptop.png" alt="">
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 8 · Canlı ders -->
+<section class="slide" id="s8" data-bg="pink" aria-label="Canlı ders">
+  <div class="in center">
+    <div class="lv-disc"></div>
+    <img class="lv-mark" src="/sunum/assets/img/bmark.png" alt="">
+    <h2 class="lv-title" data-split>Canlı ders</h2>
+    <p class="lv-sub"><span class="live"><i></i><i></i><i></i></span><span class="lv-txt">Şimdi bir dersi birlikte açalım.</span></p>
+  </div>
+</section>
+
+<!-- 9 · Aile ve yönetim -->
+<section class="slide" id="s9" data-bg="cream2" aria-label="Aile ve yönetim">
+  <div class="in center">
+    <div class="duo">
+      <article class="panel">
+        <h3 class="ph" data-split>Veli, çocuğunun hesabından takip eder</h3>
+        <div class="win">
+          <div class="chrome"><i></i><i></i><i></i></div>
+          <div class="rows">
+            <div class="row"><span class="ic c1"></span><span class="lb">Ders günleri</span>
+              <span class="viz days"><i class="on"></i><i></i><i class="on"></i><i></i><i class="on"></i></span></div>
+            <div class="row"><span class="ic c2"></span><span class="lb">Katılım</span>
+              <span class="viz dots"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div>
+            <div class="row"><span class="ic c3"></span><span class="lb">İşlenen dersler</span>
+              <span class="viz minis"><img src="/sunum/assets/stamps/gelincik.webp" alt=""><img src="/sunum/assets/stamps/bal-arisi.webp" alt=""><img src="/sunum/assets/stamps/yagmur-damlasi.webp" alt=""></span></div>
+            <div class="row"><span class="ic c4"></span><span class="lb">Hocanın aileye notu</span>
+              <span class="viz note"><b class="ln w1"></b><b class="ln w2"></b></span></div>
+          </div>
+        </div>
+      </article>
+      <article class="panel">
+        <h3 class="ph" data-split>Yönetim her şeyi tek ekranda görür</h3>
+        <div class="win">
+          <div class="chrome"><i></i><i></i><i></i></div>
+          <div class="rows">
+            <div class="row"><span class="ic c1"></span><span class="lb">Etkin öğrenci ve hoca</span>
+              <span class="viz avs"><i class="av a1"></i><i class="av a2"></i><i class="av a3"></i><i class="av a4"></i><i class="av a5"></i></span></div>
+            <div class="row"><span class="ic c2"></span><span class="lb">Devam oranı</span>
+              <span class="viz prog"><b></b></span></div>
+            <div class="row"><span class="ic c3"></span><span class="lb">Haftalık ders sayısı</span>
+              <span class="viz bars"><i style="--h:45%"></i><i style="--h:70%"></i><i style="--h:55%"></i><i style="--h:90%"></i><i style="--h:65%"></i><i style="--h:80%"></i></span></div>
+            <div class="row"><span class="ic c4"></span><span class="lb">Hoca ve öğrenci eşleşmesi</span>
+              <span class="viz where"><i class="d1"></i><i class="d2"></i><i class="d3"></i><i class="d4"></i><b class="thread"></b></span></div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- 10 · Bugün -->
+<section class="slide" id="s10" data-bg="navy" aria-label="Bugün">
+  <div class="in col">
+    <p class="eyebrow light">Bugün</p>
+    <div class="twin">
+      <article class="big-card">
+        <div class="bc-num"><b class="cn" data-to="8">8</b></div>
+        <div class="bc-name">Elifbâ dersi</div>
+        <div class="bc-ready"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7"/></svg>hazır</div>
+      </article>
+      <article class="big-card">
+        <div class="bc-num"><b class="cn" data-to="8">8</b></div>
+        <div class="bc-name">Akaid dersi</div>
+        <div class="bc-ready"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7"/></svg>hazır</div>
+      </article>
+    </div>
+    <p class="livenote"><span class="gdot"></span>Sistem canlıda: <b>akademi.birlikteiyilik.com</b></p>
+  </div>
+</section>
+
+<!-- 11 · Kapalı pilot -->
+<section class="slide" id="s11" data-bg="cream" aria-label="Kapalı pilot">
+  <div class="in col stack">
+    <div class="grpA">
+      <h2 class="h1 ctr" data-split>İlk adım: kapalı pilot</h2>
+      <div class="cards2">
+        <article class="pc"><div class="pc-num"><b class="cn" data-to="3">3</b><span class="dash">–</span><b class="cn" data-to="5">5</b></div><div class="pc-lb">öğrenci</div></article>
+        <article class="pc g"><div class="pc-num"><b class="cn" data-to="3">3</b><span class="dash">–</span><b class="cn" data-to="5">5</b></div><div class="pc-lb">hoca</div></article>
+      </div>
+    </div>
+    <div class="grpB">
+      <h2 class="h2 ctr" data-split>Her hafta bakacağımız dört rakam</h2>
+      <div class="tiles">
+        <div class="tile"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="22"/><path d="M22 33l7 7 14-15"/></svg><span>Devam oranı</span></div>
+        <div class="tile"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M10 17c8-4 15-4 22 1 7-5 14-5 22-1v33c-8-4-15-4-22 1-7-5-14-5-22-1z"/><path d="M32 18v33"/></svg><span>İşlenen ders</span></div>
+        <div class="tile"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M8 52h13V40h13V28h13V16h9"/><path d="M44 10l12 6-7 11"/></svg><span>Çocukların ilerlemesi</span></div>
+        <div class="tile"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M10 12h44v31H31l-11 10V43h-10z"/><path d="M32 36c-6-4-10-7-10-11a5.5 5.5 0 0 1 10-3 5.5 5.5 0 0 1 10 3c0 4-4 7-10 11z"/></svg><span>Hocaların değerlendirmesi</span></div>
+      </div>
+      <p class="verdict" data-split>Büyüme kararını bu rakamlar verecek.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 12 · Ölçeklenme hesabı -->
+<section class="slide" id="s12" data-bg="pink" aria-label="Ölçeklenme hesabı">
+  <div class="in col scl">
+    <p class="eyebrow">Ölçeklenme hesabı</p>
+    <p class="assume" data-split>Haftada 4 saat ayıran bir gönüllü hoca <span class="w"><span class="wi"><svg class="ar" viewBox="0 0 48 24" aria-hidden="true"><path d="M2 12h40M32 3l11 9-11 9"/></svg></span></span> 3 çocuk.</p>
+    <div class="sc-row">
+      <div class="sc-n r"><b id="n-hoca">1</b><span>hoca</span></div>
+      <svg class="sc-ar" viewBox="0 0 48 24" aria-hidden="true"><path d="M2 12h40M32 3l11 9-11 9"/></svg>
+      <div class="sc-n g"><b id="n-cocuk">3</b><span>çocuk</span></div>
+    </div>
+    <div class="field" id="field"></div>
+    <p class="endline" data-split>Her yeni hoca sisteme dakikalar içinde eklenir.</p>
+  </div>
+</section>
+
+<!-- 13 · Müfredat -->
+<section class="slide" id="s13" data-bg="cream2" aria-label="Müfredat">
+  <div class="in col">
+    <h2 class="h1 xl ctr" data-split>Müfredat</h2>
+    <div class="shelf">
+      <div class="books">
+        <div class="book ready bk-red" style="--h:25rem"><svg class="chk" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11"/><path d="M7 12.5l3.2 3.2L17 9"/></svg><span class="spine">Elifbâ</span></div>
+        <div class="book ready bk-navy" style="--h:28rem"><svg class="chk" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11"/><path d="M7 12.5l3.2 3.2L17 9"/></svg><span class="spine">Akaid</span></div>
+        <div class="book soon bk-navy" style="--h:26rem"><span class="tag">Hazırlanıyor</span><span class="spine">Akaid'in devamı</span></div>
+        <div class="book soon bk-green" style="--h:23rem"><span class="tag">Hazırlanıyor</span><span class="spine">Fıkıh</span></div>
+        <div class="book soon bk-gold" style="--h:27rem"><span class="tag">Hazırlanıyor</span><span class="spine">Ahlak</span></div>
+        <div class="book soon bk-pink" style="--h:24rem"><span class="tag">Hazırlanıyor</span><span class="spine">Siyer</span></div>
+      </div>
+      <div class="plank"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 14 · Kapanış -->
+<section class="slide" id="s14" data-bg="cream" aria-label="Kapanış">
+  <div class="in center">
+    <div class="cv-disc"></div>
+    <div class="cv-lockup">
+      <img class="cv-mark" src="/sunum/assets/img/bmark.png" alt="Birlikte İyilik">
+      <img class="cv-word" src="/sunum/assets/img/wordmark-siyah.png" alt="Birlikte İyilik Akademi">
+    </div>
+    <p class="cl-thanks" data-split>Teşekkür ederiz.</p>
+    <p class="cl-url">akademi.birlikteiyilik.com</p>
+  </div>
+</section>
+
 </main>
-<script>
-  // Bir bölüm başlarken öteki durur; tam ekran açılmazsa video yine oynar.
-  function oynat(id) {
-    var v = document.getElementById(id);
-    document.querySelectorAll('video').forEach(function (o) { if (o !== v) o.pause(); });
-    var tam = v.requestFullscreen || v.webkitRequestFullscreen || v.webkitEnterFullscreen;
-    try { if (tam) tam.call(v); } catch (e) {}
-    v.play().catch(function () {});
-  }
-  document.querySelectorAll('[data-oynat]').forEach(function (b) { b.addEventListener('click', function () { oynat(b.dataset.oynat); }); });
-  document.addEventListener('keydown', function (e) {
-    if (e.key === '1') oynat('v1');
-    if (e.key === '2') oynat('v2');
-  });
-</script>
+
+<div id="grain" aria-hidden="true"></div>
+
+<nav class="hud" aria-label="Slayt ilerlemesi">
+  <span class="count"><b id="hud-n">01</b><i>/</i><span id="hud-t">14</span></span>
+  <div class="dots" id="hud-dots"></div>
+</nav>
+
+<script src="/sunum/js/vendor/gsap.min.js"></script>
+<script src="/sunum/js/sunum.js"></script>
 </body>
 </html>
