@@ -151,9 +151,11 @@
       enter: function (tl) {
         tl.fromTo(disc, { scale: .55, opacity: 0 }, { scale: 1, opacity: .9, duration: 1.9, ease: 'expo.out' }, 0);
         pop(tl, $('.cv-lockup', el), .1);
-        revealWords(tl, $('.cv-tag', el), 1.15, { stagger: .06 });
-        tl.fromTo($('.cv-sub', el), { opacity: 0, y: 1.2 * R() }, { opacity: 1, y: 0, duration: 1.1, ease: 'power3.out' }, 1.7)
-          .fromTo(hint, { opacity: 0 }, { opacity: 1, duration: 1 }, 2.4)
+        var kind = $('.cv-kind', el), by = $('.cv-by', el);
+        tl.fromTo(kind, { opacity: 0, letterSpacing: '.6em' }, { opacity: 1, letterSpacing: '.32em', duration: 1.3, ease: 'expo.out' }, .95);
+        revealWords(tl, $('.cv-tag', el), 1.3, { stagger: .06 });
+        tl.fromTo(by, { opacity: 0, y: 1.4 * R() }, { opacity: 1, y: 0, duration: 1.2, ease: 'power3.out' }, 2.0)
+          .fromTo(hint, { opacity: 0 }, { opacity: 1, duration: 1 }, 2.8)
           .to(hint, { opacity: 0, duration: 1.4 }, 8);
       }
     };
@@ -590,6 +592,7 @@
     if (G && nw.in) G.set(nw.in, { opacity: 1, y: 0, scale: 1 });
     nw.el.classList.add('is-active');
     startSlide(nw, dir);
+    vReset(true);
     if (old) {
       if (G) {
         if (old.tl) old.tl.pause();
@@ -605,14 +608,80 @@
 
   function next() {
     var s = S[cur];
-    if (G && step < s.steps) { step++; s.step(step, RM); }
+    if (G && step < s.steps) { step++; s.step(step, RM); vReset(false); }
     else goTo(cur + 1);
   }
   function prev() {
     var s = S[cur];
-    if (G && step > 0) { step--; s.step(step, RM); }
+    if (G && step > 0) { step--; s.step(step, RM); vReset(false); }
     else goTo(cur - 1);
   }
+
+  /* ------------------------------------------------------------ video denetimi
+     Video olan slaytta sol altta durdur/oynat ve hız seçimi; videoya tıklamak da durdurur.
+     Seçilen hız slayt içinde (alt adımlarda) korunur, başka slayta geçince 1×'e döner. */
+  var vctl = $('#vctl'), vpp = $('#vc-pp'), spBtns = $$('#vctl .vc-sp button'), RATES = [.5, .75, 1, 1.5], rate = 1, userPaused = false;
+  function effOpacity(el) {
+    var o = 1;
+    for (var n = el; n && n !== document.body; n = n.parentElement) {
+      var cs = getComputedStyle(n);
+      if (cs.visibility === 'hidden' || cs.display === 'none') return 0;
+      o *= parseFloat(cs.opacity);
+    }
+    return o;
+  }
+  function activeVideo() {
+    var s = S[cur], best = null, bo = .05;
+    if (!s) return null;
+    s.vidList.forEach(function (v) { var o = effOpacity(v); if (o > bo) { bo = o; best = v; } });
+    return best;
+  }
+  function vSync() {
+    var v = activeVideo();
+    document.body.classList.toggle('has-video', !!v);
+    document.body.classList.toggle('vpaused', !!v && userPaused);
+    var paused = !v || v.paused;
+    vctl.classList.toggle('is-paused', paused);
+    vpp.setAttribute('aria-label', paused ? 'Oynat' : 'Durdur');
+    spBtns.forEach(function (b) { b.classList.toggle('on', +b.getAttribute('data-r') === rate); });
+  }
+  function setRate(r) {
+    rate = r;
+    $$('video').forEach(function (v) { v.defaultPlaybackRate = r; v.playbackRate = r; });
+    vSync();
+  }
+  function vReset(slideChanged) {
+    userPaused = false;
+    if (slideChanged && rate !== 1) setRate(1);
+    setTimeout(vSync, 60); setTimeout(vSync, 1300);
+  }
+  function flash(v, kind) {
+    if (!G || !v || !v.parentElement) return;
+    var f = document.createElement('div'); f.className = 'vflash';
+    f.innerHTML = kind === 'pause'
+      ? '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1.2"/><rect x="14" y="5" width="4" height="14" rx="1.2"/></svg>'
+      : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.2-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>';
+    v.parentElement.appendChild(f);
+    G.fromTo(f, { opacity: .95, scale: .7 }, { opacity: 0, scale: 1.3, duration: .75, ease: 'power2.out', onComplete: function () { f.remove(); } });
+  }
+  function togglePlay() {
+    var v = activeVideo();
+    if (!v) return;
+    if (v.paused) { userPaused = false; v.playbackRate = rate; var p = v.play(); if (p && p.catch) p.catch(function () {}); flash(v, 'play'); }
+    else { userPaused = true; v.pause(); flash(v, 'pause'); }
+    vSync();
+  }
+  function stepRate(d) {
+    var i = RATES.indexOf(rate) + d;
+    if (i >= 0 && i < RATES.length) setRate(RATES[i]);
+  }
+  vpp.addEventListener('click', function (e) { e.stopPropagation(); togglePlay(); });
+  spBtns.forEach(function (b) { b.addEventListener('click', function (e) { e.stopPropagation(); setRate(+b.getAttribute('data-r')); }); });
+  $$('.vwrap,.scr,.pscr').forEach(function (h) { h.addEventListener('click', function () { togglePlay(); }); });
+  $$('video').forEach(function (v) {
+    ['play', 'pause', 'ended'].forEach(function (ev) { v.addEventListener(ev, vSync); });
+    v.addEventListener('play', function () { if (v.playbackRate !== rate) v.playbackRate = rate; });
+  });
   function act(fn, ms) {
     var now = performance.now();
     if (now < lockUntil) return;
@@ -639,6 +708,9 @@
     else if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'PageUp' || k === 'Backspace') { e.preventDefault(); act(prev, 750); }
     else if (k === 'Home') { e.preventDefault(); act(function () { goTo(0); }, 750); }
     else if (k === 'End') { e.preventDefault(); act(function () { goTo(N - 1); }, 750); }
+    else if (k === 'k' || k === 'K' || k === 'p' || k === 'P') { e.preventDefault(); togglePlay(); }
+    else if (k === '-' || k === '_') { e.preventDefault(); stepRate(-1); }
+    else if (k === '+' || k === '=') { e.preventDefault(); stepRate(1); }
     else if (k === 'f' || k === 'F') {
       e.preventDefault();
       if (document.fullscreenElement) document.exitFullscreen && document.exitFullscreen();
