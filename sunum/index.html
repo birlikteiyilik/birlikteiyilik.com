@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sunum · Birlikte İyilik Akademi</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#F8F6F4">
+<link rel="icon" href="/sunum/b.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root { --krem: #F8F6F4; --kart: #FFFFFF; --murekkep: #1D1519; --gri: #74686E; --kirmizi: #E20439; --koyu: #B4002E; --cizgi: #ECE6E3; }
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--krem); color: var(--murekkep); font-family: 'Nunito', system-ui, sans-serif; }
+main { max-width: 1280px; margin: 0 auto; padding: clamp(20px, 4vw, 48px) clamp(16px, 4vw, 40px) 56px; }
+header { display: flex; align-items: center; gap: 18px; margin-bottom: clamp(20px, 3vw, 36px); }
+header img.b { width: clamp(44px, 5vw, 64px); height: auto; }
+header img.yazi { width: clamp(220px, 34vw, 440px); height: auto; }
+.bolumler { display: grid; gap: clamp(18px, 2.4vw, 28px); }
+@media (min-width: 960px) { .bolumler { grid-template-columns: 1fr 1fr; } }
+.bolum { background: var(--kart); border-radius: 22px; padding: 14px 14px 18px; box-shadow: 0 1px 2px rgba(29,21,25,.05), 0 12px 32px rgba(29,21,25,.08), inset 0 0 0 1px var(--cizgi); }
+.bolum video { display: block; width: 100%; aspect-ratio: 16 / 9; border-radius: 14px; background: #000; }
+.bilgi { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 14px; padding: 0 4px; }
+.bilgi h2 { margin: 0; font-size: clamp(19px, 2vw, 24px); font-weight: 900; letter-spacing: -.01em; }
+.bilgi p { margin: 2px 0 0; color: var(--gri); font-weight: 700; font-size: 15px; }
+button { flex: none; min-height: 48px; padding: 0 20px; border: 0; border-radius: 14px; background: var(--kirmizi); color: #fff; font: 800 16px/1 'Nunito', sans-serif; cursor: pointer; box-shadow: 0 6px 16px rgba(226,4,57,.25); }
+button:hover { background: var(--koyu); }
+button:focus-visible { outline: 3px solid var(--murekkep); outline-offset: 3px; }
+.ipucu { margin: 24px 4px 0; color: var(--gri); font-weight: 700; font-size: 14px; }
+kbd { display: inline-block; min-width: 1.6em; padding: 1px 6px; border-radius: 6px; background: var(--kart); box-shadow: inset 0 0 0 1px var(--cizgi); font: 800 13px/1.5 'Nunito', sans-serif; text-align: center; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <img class="b" src="/sunum/b.png" alt="">
+    <img class="yazi" src="/sunum/yazi.png" alt="Birlikte İyilik Akademi">
+  </header>
+  <div class="bolumler">
+    <section class="bolum">
+      <video id="v1" src="/sunum/1-bolum.mp4" poster="/sunum/1-bolum-kapak.jpg" controls preload="metadata" playsinline></video>
+      <div class="bilgi">
+        <div><h2>1. bölüm</h2><p>Canlı demodan önce · 1 dk 55 sn</p></div>
+        <button type="button" data-oynat="v1">Tam ekran oynat</button>
+      </div>
+    </section>
+    <section class="bolum">
+      <video id="v2" src="/sunum/2-bolum.mp4" poster="/sunum/2-bolum-kapak.jpg" controls preload="metadata" playsinline></video>
+      <div class="bilgi">
+        <div><h2>2. bölüm</h2><p>Canlı demodan sonra · 56 sn</p></div>
+        <button type="button" data-oynat="v2">Tam ekran oynat</button>
+      </div>
+    </section>
+  </div>
+  <p class="ipucu">Klavye ya da kumandayla: <kbd>1</kbd> birinci bölümü, <kbd>2</kbd> ikinci bölümü tam ekran başlatır. <kbd>Esc</kbd> tam ekrandan çıkar.</p>
+</main>
+<script>
+  // Bir bölüm başlarken öteki durur; tam ekran açılmazsa video yine oynar.
+  function oynat(id) {
+    var v = document.getElementById(id);
+    document.querySelectorAll('video').forEach(function (o) { if (o !== v) o.pause(); });
+    var tam = v.requestFullscreen || v.webkitRequestFullscreen || v.webkitEnterFullscreen;
+    try { if (tam) tam.call(v); } catch (e) {}
+    v.play().catch(function () {});
+  }
+  document.querySelectorAll('[data-oynat]').forEach(function (b) { b.addEventListener('click', function () { oynat(b.dataset.oynat); }); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === '1') oynat('v1');
+    if (e.key === '2') oynat('v2');
+  });
+</script>
+</body>
+</html>
