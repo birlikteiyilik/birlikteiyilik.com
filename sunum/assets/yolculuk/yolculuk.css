@@ -1,0 +1,139 @@
+/* Yolculuk haritası · yılan yolu. Yerleşim ve hareket app/yolculuk.js içindedir. */
+.jm { position: relative; margin-top: 14px; border-radius: 32px; overflow: hidden; isolation: isolate;
+  background: radial-gradient(120% 60% at 50% 0%, color-mix(in srgb, var(--tone-soft) 75%, #fff) 0%, var(--cream-50) 55%), var(--cream-50);
+  box-shadow: inset 0 0 0 1px var(--line), 0 18px 40px rgba(122, 84, 38, .07); }
+.jm-ground { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; z-index: 0; }
+.jm-ground path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.jm-road-shadow { stroke: rgba(122, 84, 38, .13); stroke-width: 30px; }
+.jm-road-edge { stroke: #e7c993; stroke-width: 28px; }
+.jm-road { stroke: #f9eed6; stroke-width: 21px; }
+.jm-road-dots { stroke: #fffaf0; stroke-width: 3.6px; stroke-dasharray: .1 13; }
+.jm-lit-edge { stroke: #e2a12a; stroke-width: 28px; }
+.jm-lit { stroke: #ffd25e; stroke-width: 20px; }
+.jm-lit-flow { stroke: #fff7d4; stroke-width: 4.2px; stroke-dasharray: .1 22; animation: jm-flow 1.3s linear infinite; }
+@keyframes jm-flow { to { stroke-dashoffset: -22.1; } }
+
+.jm-wait { opacity: 0; }
+
+/* Duraklar */
+.jm-node { position: absolute; z-index: 3; display: grid; justify-items: center; gap: 8px; width: calc(var(--slot) - 6px); margin-left: calc((var(--slot) - 6px) / -2); margin-top: calc(var(--disc) / -2);
+  padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.jm-node:focus-visible { outline: 0; }
+.jm-node:focus-visible .jm-disc { box-shadow: 0 0 0 4px #fff, 0 0 0 7px var(--gold-500); }
+.jm-disc { --lift: 0px; --rot: 0deg; position: relative; display: grid; place-items: center; width: var(--disc); height: var(--disc); border-radius: 50%; color: #fff;
+  background: radial-gradient(circle at 34% 28%, color-mix(in srgb, var(--tone) 45%, #fff), var(--tone) 58%, var(--tone-deep));
+  box-shadow: 0 6px 0 color-mix(in srgb, var(--tone-deep) 82%, #000), 0 14px 22px color-mix(in srgb, var(--tone) 30%, transparent);
+  transform: translateY(var(--lift)) rotate(var(--rot)); transition: transform .22s var(--spring), box-shadow .22s var(--ease); }
+.jm-face { display: grid; place-items: center; transform: rotate(calc(var(--rot) * -1)); }
+.jm-face svg { width: calc(var(--disc) * .44); height: calc(var(--disc) * .44); }
+.jm-number { font: 800 calc(var(--disc) * .36)/1 var(--font-display); text-shadow: 0 2px 0 rgba(0, 0, 0, .12); }
+.jm-node:hover .jm-disc { --lift: -4px; }
+.jm-node:active .jm-disc { --lift: 3px; box-shadow: 0 2px 0 color-mix(in srgb, var(--tone-deep) 82%, #000), 0 6px 12px color-mix(in srgb, var(--tone) 24%, transparent); }
+
+.jm-node.is-taught .jm-disc { color: #6b4300; background: radial-gradient(circle at 34% 28%, #fff4c6, var(--gold-400) 52%, var(--gold-600)); box-shadow: 0 6px 0 var(--gold-700), 0 14px 22px rgba(245, 183, 58, .38); }
+.jm-node.is-taught .jm-disc::before { content: ''; position: absolute; inset: 6px; border-radius: inherit; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .55), inset 0 -3px 0 rgba(168, 106, 12, .18); }
+.jm-node.is-taught .jm-disc::after { content: ''; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(115deg, transparent 40%, rgba(255, 255, 255, .7) 50%, transparent 60%) no-repeat; background-size: 300% 100%; background-position: 120% 0; animation: jm-shine 6s ease-in-out var(--shine, 0s) infinite; }
+@keyframes jm-shine { 0%, 70% { background-position: 120% 0; } 88%, 100% { background-position: -20% 0; } }
+.jm-node.is-locked .jm-disc { color: var(--ink-300); background: radial-gradient(circle at 34% 28%, #fff, #efe8db 66%, #e4dac8); box-shadow: 0 6px 0 #d5c9b3, 0 12px 18px rgba(122, 84, 38, .1), inset 0 0 0 2px #eadfcb; }
+.jm-node.is-locked .jm-number { text-shadow: none; }
+.jm-node.is-current .jm-disc { box-shadow: 0 0 0 5px #fff, 0 6px 0 5px color-mix(in srgb, var(--tone-deep) 40%, #fff), 0 18px 28px color-mix(in srgb, var(--tone) 40%, transparent); }
+.jm-node.is-current .jm-disc::after { content: ''; position: absolute; inset: -5px; border-radius: inherit; animation: jm-ring 2s ease-out infinite; }
+@keyframes jm-ring { from { box-shadow: 0 0 0 0 color-mix(in srgb, var(--tone) 60%, transparent); } to { box-shadow: 0 0 0 20px transparent; } }
+.jm-node.is-milestone .jm-disc { --rot: 45deg; width: calc(var(--disc) * .9); height: calc(var(--disc) * .9); margin: calc(var(--disc) * .05) 0; border-radius: 28%; }
+.jm-node.is-milestone.is-locked .jm-face { color: #c9b796; }
+.jm-node.is-milestone.is-taught .jm-face { color: #8a5a06; }
+
+.jm-badge { position: absolute; right: -3px; top: -3px; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; color: #fff; box-shadow: 0 0 0 3px var(--cream-50); transform: rotate(calc(var(--rot) * -1)); }
+.jm-badge svg { width: 14px; height: 14px; }
+.jm-badge.is-done { background: var(--success); }
+.jm-badge.is-lock { top: auto; bottom: -3px; width: 22px; height: 22px; background: #c9bea9; }
+.jm-badge.is-lock svg { width: 12px; height: 12px; }
+/* Döndürülmüş karede sol üst köşe yukarıya, sağ alt köşe aşağıya düşer. */
+.jm-node.is-milestone .jm-badge { right: auto; left: -9px; top: -9px; }
+.jm-node.is-milestone .jm-badge.is-lock { left: auto; top: auto; right: -8px; bottom: -8px; }
+
+.jm-label { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; max-width: 100%; padding: 3px 9px; border-radius: 10px;
+  background: rgba(255, 251, 243, .95); box-shadow: 0 2px 8px rgba(122, 84, 38, .1); color: var(--ink-900); font: 800 12.5px/1.25 var(--font-body); text-align: center; transition: color .2s, box-shadow .2s; }
+.jm.is-wide .jm-label { font-size: 13.5px; }
+.jm-node.is-locked .jm-label { color: var(--ink-500); background: rgba(255, 251, 243, .88); }
+.jm-node.is-current .jm-label { color: var(--tone-deep); box-shadow: 0 0 0 2px color-mix(in srgb, var(--tone) 45%, transparent), 0 4px 12px color-mix(in srgb, var(--tone) 20%, transparent); }
+.jm-node:hover .jm-label { box-shadow: 0 0 0 2px color-mix(in srgb, var(--tone) 35%, transparent), 0 4px 12px rgba(122, 84, 38, .12); }
+
+/* Biri */
+.jm-hilal { position: absolute; left: 0; top: 0; z-index: 4; width: 58px; pointer-events: none; will-change: transform; }
+.jm.is-wide .jm-hilal { width: 64px; }
+.jm-hilal-body { display: block; filter: drop-shadow(0 6px 8px rgba(106, 0, 32, .22)); }
+.jm-hilal-body svg { display: block; width: 100%; height: auto; }
+.jm-hilal.is-left .jm-hilal-body svg { transform: scaleX(-1); }
+.jm-hilal.is-walking .jm-hilal-body { animation: none; }
+
+/* Başlangıç, hedef, üniteler */
+.jm-start { position: absolute; z-index: 2; width: 44px; height: 58px; pointer-events: none; }
+.jm-start svg { width: 100%; height: 100%; overflow: visible; }
+.jm-finish { position: absolute; z-index: 2; display: grid; justify-items: center; gap: 4px; width: 128px; margin: -98px 0 0 -64px; pointer-events: none; }
+.jm-gate { display: block; width: 112px; height: 112px; }
+.jm-gate svg { width: 100%; height: 100%; overflow: visible; }
+.jm-finish-label { padding: 3px 10px; border-radius: 10px; background: #fffaf2; box-shadow: 0 2px 8px rgba(122, 84, 38, .1); color: var(--tone-deep); font: 900 12.5px/1.3 var(--font-body); letter-spacing: .02em; }
+.jm-finish.is-done .jm-finish-label { color: #6b4300; background: var(--gold-300); }
+.jm-unit { position: absolute; z-index: 2; display: flex; width: max-content; align-items: center; gap: 10px; min-height: 46px; padding: 6px 12px 6px 6px; border-radius: 18px; background: #fffaf2;
+  box-shadow: 0 8px 18px rgba(122, 84, 38, .1), inset 0 0 0 1.5px color-mix(in srgb, var(--tone) 32%, transparent); }
+.jm-unit.is-center { transform: translateX(-50%); }
+.jm-unit-number { display: grid; flex: none; place-items: center; width: 34px; height: 34px; border-radius: 12px; color: #fff; background: linear-gradient(160deg, var(--tone), var(--tone-deep)); font: 800 17px/1 var(--font-display); }
+.jm-unit-copy { display: grid; min-width: 0; line-height: 1.2; }
+.jm-unit-copy small { color: var(--tone-deep); font: 900 10.5px/1.2 var(--font-body); letter-spacing: .12em; }
+.jm-unit-copy strong { overflow: hidden; color: var(--ink-900); font: 800 14px/1.25 var(--font-body); text-overflow: ellipsis; white-space: nowrap; }
+.jm-unit-count { flex: none; padding: 3px 8px; border-radius: 999px; background: var(--cream-200); color: var(--ink-500); font: 900 11.5px/1.2 var(--font-body); }
+.jm-unit-count.is-full { background: var(--gold-300); color: #6b4300; }
+
+/* Manzara ve boşta hareketler */
+.jm-decor { position: absolute; z-index: 1; pointer-events: none; transform-origin: 50% 100%; }
+.jm-decor.is-sky { z-index: 0; opacity: .95; }
+.jm-flip { display: block; width: 100%; height: 100%; }
+/* Dersin kendi çizimi: pul resmi ya da harf karosu. Kutu boyu sabit olduğundan resim geç yüklense de yerleşim kaymaz. */
+.jm-lesson { z-index: 2; }
+.jm-lesson .jm-art { filter: drop-shadow(0 4px 5px rgba(122, 84, 38, .2)); }
+.jm-stamp { object-fit: contain; max-width: 100%; user-select: none; -webkit-user-drag: none; }
+.jm-flip.is-flipped { transform: scaleX(-1); }
+.jm-art { display: block; width: 100%; height: 100%; overflow: visible; transform-origin: 50% 100%; }
+.jm-a-sway { animation: jm-sway var(--dur, 5s) ease-in-out var(--delay, 0s) infinite alternate; }
+.jm-a-bob { animation: jm-bob var(--dur, 4s) ease-in-out var(--delay, 0s) infinite; }
+.jm-a-float { animation: jm-float var(--dur, 5s) ease-in-out var(--delay, 0s) infinite; }
+.jm-a-drift { animation: jm-drift calc(var(--dur, 5s) * 2) ease-in-out var(--delay, 0s) infinite alternate; }
+@keyframes jm-sway { from { transform: rotate(-2.2deg); } to { transform: rotate(2.2deg); } }
+@keyframes jm-bob { 50% { transform: translateY(-2.5px); } }
+@keyframes jm-float { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-8px) rotate(2deg); } }
+@keyframes jm-drift { from { transform: translateX(-10px); } to { transform: translateX(10px); } }
+.jm-art .jm-twinkle, .jm-art .jm-bob, .jm-art .jm-flap, .jm-art .jm-hop, .jm-art .jm-flag, .jm-art .jm-smoke, .jm-art .jm-beam, .jm-art .jm-tail, .jm-start .jm-flag, .jm-gate .jm-twinkle, .jm-gate .jm-glow { transform-box: fill-box; transform-origin: center; }
+.jm-art .jm-twinkle, .jm-gate .jm-twinkle { animation: jm-twinkle 2.4s ease-in-out var(--d, 0s) infinite; }
+@keyframes jm-twinkle { 0%, 100% { opacity: 1; transform: scale(1) rotate(0); } 50% { opacity: .45; transform: scale(.7) rotate(18deg); } }
+.jm-art .jm-swing { animation: jm-swing 3.2s ease-in-out infinite alternate; }
+@keyframes jm-swing { from { transform: rotate(-7deg); } to { transform: rotate(7deg); } }
+.jm-art .jm-tilt { animation: jm-tilt 4.4s ease-in-out infinite alternate; }
+@keyframes jm-tilt { from { transform: rotate(-5deg); } to { transform: rotate(5deg); } }
+.jm-art .jm-needle { animation: jm-needle 3.6s cubic-bezier(.5, 0, .3, 1.4) infinite alternate; }
+@keyframes jm-needle { from { transform: rotate(-48deg); } to { transform: rotate(40deg); } }
+.jm-art .jm-flag, .jm-start .jm-flag { transform-origin: left center; animation: jm-flag 1.6s ease-in-out infinite alternate; }
+@keyframes jm-flag { from { transform: skewY(-4deg) scaleX(.94); } to { transform: skewY(4deg) scaleX(1.04); } }
+.jm-art .jm-water { animation: jm-water .9s linear infinite; }
+@keyframes jm-water { to { stroke-dashoffset: -14; } }
+.jm-art .jm-smoke { animation: jm-smoke 3s ease-in-out infinite; }
+@keyframes jm-smoke { 0% { opacity: 0; transform: translateY(4px); } 40% { opacity: .9; } 100% { opacity: 0; transform: translateY(-6px); } }
+.jm-art .jm-bob { animation: jm-bob 2.6s ease-in-out var(--d, 0s) infinite; }
+.jm-art .jm-flap { animation: jm-flap .9s ease-in-out var(--d, 0s) infinite alternate; }
+@keyframes jm-flap { from { transform: scaleY(1); } to { transform: scaleY(.45) translateY(2px); } }
+.jm-art .jm-hop { animation: jm-hop 2.8s ease-in-out infinite; }
+@keyframes jm-hop { 0%, 60%, 100% { transform: translateY(0); } 70% { transform: translateY(-5px); } 80% { transform: translateY(0); } 88% { transform: translateY(-3px); } }
+.jm-art .jm-beam { animation: jm-beam 3s ease-in-out infinite; }
+@keyframes jm-beam { 0%, 100% { opacity: .15; } 50% { opacity: .7; } }
+.jm-art .jm-tail { animation: jm-sway 1.8s ease-in-out infinite alternate; }
+.jm-gate .jm-glow { animation: jm-glow 2.6s ease-in-out infinite; }
+@keyframes jm-glow { 50% { opacity: .5; transform: scale(1.06); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .jm *, .jm *::before, .jm *::after { animation: none !important; transition: none !important; }
+}
+@media (max-width: 420px) {
+  .jm { margin-left: -6px; margin-right: -6px; border-radius: 26px; }
+  .jm-label { padding: 2px 7px; font-size: 12px; }
+  .jm-unit-copy strong { font-size: 13px; white-space: normal; }
+}
