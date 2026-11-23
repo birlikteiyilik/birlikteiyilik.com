@@ -381,6 +381,7 @@
           p.style.strokeDasharray = L;
           tl.fromTo(p, { strokeDashoffset: L }, { strokeDashoffset: 0, duration: 1.6, ease: 'power2.inOut' }, 1.4 + i * .15);
         });
+        tl.fromTo($$('.kn-r i', el), { scale: .7, opacity: 0 }, { scale: 1, opacity: 1, duration: .5, ease: 'back.out(1.8)', stagger: .04 }, 1.4);
         tl.fromTo($('.pnote', el), { opacity: 0 }, { opacity: 1, duration: 1 }, 2.6);
       }
     };

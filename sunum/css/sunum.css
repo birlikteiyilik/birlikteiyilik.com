@@ -374,6 +374,16 @@ body[data-theme=dark] .dots button.on{background:#fff}
 .gc-legend .l1::before{background:var(--red)}.gc-legend .l2::before{background:var(--green)}.gc-legend .l3::before{background:var(--navy)}.gc-legend .l4::before{background:#d9a03a}
 .vt .pnote{margin-top:2.6rem;padding:0;font-size:1.7rem}
 
+.kn{margin-top:1.4rem;display:flex;flex-direction:column;gap:.45rem}
+.kn-r{display:grid;grid-template-columns:6.4rem repeat(4,1fr);gap:.4rem;align-items:center}
+.kn-r b{font-size:1.4rem;font-weight:800;color:var(--ink)}
+.kn-r i{font-style:normal;text-align:center;white-space:nowrap;font-size:1.1rem;font-weight:800;padding:.6rem .1rem;border-radius:.7rem}
+.kn-h span{text-align:center;font-size:1.1rem;font-weight:700;color:var(--mute)}
+.kn-r i.d1{background:#fbe1e6;color:#9b1c3a}
+.kn-r i.d2{background:#fcefd2;color:#8a5a06}
+.kn-r i.d3{background:#e2f2e8;color:#1d6a4d}
+.kn-r i.d4{background:#1f7a5a;color:#fff}
+
 /* ---------- video denetimi ---------- */
 .scr,.pscr{cursor:pointer}
 body.idle .vwrap,body.idle .scr,body.idle .pscr{cursor:none}
