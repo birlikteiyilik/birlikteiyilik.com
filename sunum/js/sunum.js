@@ -368,6 +368,7 @@
           add('.bars i', { scaleY: 0 }, { scaleY: 1, duration: .8, ease: 'expo.out', stagger: .07 }, b + .3);
           add('.where i', { scale: 0 }, { scale: 1, duration: .5, ease: 'back.out(2)', stagger: .08 }, b + .45);
           add('.thread', { scaleX: 0 }, { scaleX: 1, duration: .9, ease: 'power3.out' }, b + .8);
+          add('.pnote', { opacity: 0, y: .8 * r }, { opacity: 1, y: 0, duration: .9, ease: 'power3.out' }, b + 1);
         });
       }
     };
