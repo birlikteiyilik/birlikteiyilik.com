@@ -344,38 +344,50 @@
     };
   };
 
-  /* 9 · Aile ve yönetim */
+  /* 9 · Veli takibi */
   defs[8] = function (el) {
-    var panels = $$('.panel', el);
+    var cards = $$('.ac', el);
     return {
       steps: 0,
       enter: function (tl) {
         var r = R();
-        panels.forEach(function (p, pi) {
-          var base = pi * .35, win = $('.win', p);
-          revealWords(tl, $('.ph', p), base + .1, { stagger: .05 });
-          G.set(win, { transformPerspective: 1800 });
-          tl.fromTo(win, { rotationX: -32, y: 5 * r, opacity: 0 }, { rotationX: 0, y: 0, opacity: 1, duration: 1.4, ease: 'expo.out' }, base + .3);
-          tl.fromTo($$('.row', p), { opacity: 0, x: -1.6 * r }, { opacity: 1, x: 0, duration: .8, ease: 'power3.out', stagger: .16 }, base + .9);
-          var b = base + 1.2;
-          var add = function (sel, from, to, at) { var a = $$(sel, p); if (a.length) tl.fromTo(a, from, to, at); };
-          add('.days i', { scale: 0 }, { scale: 1, duration: .5, ease: 'back.out(2)', stagger: .06 }, b);
-          add('.dots i', { scale: 0 }, { scale: 1, duration: .45, ease: 'back.out(2)', stagger: .05 }, b + .15);
-          add('.minis img', { scale: 0, rotation: -20 }, { scale: 1, rotation: 0, duration: .6, ease: 'back.out(1.8)', stagger: .1 }, b + .3);
-          add('.ln', { scaleX: 0, transformOrigin: '100% 50%' }, { scaleX: 1, duration: .8, ease: 'expo.out', stagger: .12 }, b + .45);
-          add('.av', { scale: 0 }, { scale: 1, duration: .5, ease: 'back.out(2)', stagger: .07 }, b);
-          add('.prog b', { scaleX: 0 }, { scaleX: 1, duration: 1.3, ease: 'expo.out' }, b + .15);
-          add('.bars i', { scaleY: 0 }, { scaleY: 1, duration: .8, ease: 'expo.out', stagger: .07 }, b + .3);
-          add('.where i', { scale: 0 }, { scale: 1, duration: .5, ease: 'back.out(2)', stagger: .08 }, b + .45);
-          add('.thread', { scaleX: 0 }, { scaleX: 1, duration: .9, ease: 'power3.out' }, b + .8);
-          add('.pnote', { opacity: 0, y: .8 * r }, { opacity: 1, y: 0, duration: .9, ease: 'power3.out' }, b + 1);
-        });
+        tl.fromTo($('.eyebrow', el), { opacity: 0, y: -1 * r }, { opacity: 1, y: 0, duration: 1 }, 0);
+        revealWords(tl, $('.h1', el), .1, { stagger: .05 });
+        tl.fromTo($('.lead2', el), { opacity: 0, y: 1 * r }, { opacity: 1, y: 0, duration: 1, ease: 'power3.out' }, .55);
+        fold(tl, cards, .7, { stagger: .2, dur: 1.3 });
+        tl.fromTo($$('.ac-list li', el), { opacity: 0, x: -1.2 * r }, { opacity: 1, x: 0, duration: .7, ease: 'power3.out', stagger: .08 }, 1.5)
+          .fromTo($$('.ac-bar b', el), { scaleX: 0 }, { scaleX: 1, duration: 1.3, ease: 'expo.out', stagger: .15 }, 1.6)
+          .fromTo($$('.ac-chip', el), { scale: .6, opacity: 0 }, { scale: 1, opacity: 1, duration: .6, ease: 'back.out(2)', stagger: .08 }, 1.8)
+          .fromTo($('.ac-quote', el), { opacity: 0, y: 1 * r }, { opacity: 1, y: 0, duration: 1, ease: 'power3.out' }, 2.3);
       }
     };
   };
 
-  /* 10 · Bugün */
+  /* 10 · Ölçme */
   defs[9] = function (el) {
+    var cards = $$('.oc', el), lines = $$('.gc-line', el);
+    return {
+      steps: 0,
+      enter: function (tl) {
+        var r = R();
+        tl.fromTo($('.eyebrow', el), { opacity: 0, y: -1 * r }, { opacity: 1, y: 0, duration: 1 }, 0);
+        revealWords(tl, $('.h1', el), .1, { stagger: .06 });
+        fold(tl, cards, .5, { stagger: .2, dur: 1.3 });
+        $$('.cn', el).forEach(function (n, i) { count(tl, n, 1 + i * .2, 1.5); });
+        tl.fromTo($$('.oc-weeks i', el), { scaleY: 0 }, { scaleY: 1, duration: .9, ease: 'expo.out', stagger: .1 }, 1.3)
+          .fromTo($$('.oc-mini b', el), { scaleX: 0 }, { scaleX: 1, duration: 1.1, ease: 'expo.out', stagger: .12 }, 1.5);
+        lines.forEach(function (p, i) {
+          var L = p.getTotalLength ? p.getTotalLength() : 400;
+          p.style.strokeDasharray = L;
+          tl.fromTo(p, { strokeDashoffset: L }, { strokeDashoffset: 0, duration: 1.6, ease: 'power2.inOut' }, 1.4 + i * .15);
+        });
+        tl.fromTo($('.pnote', el), { opacity: 0 }, { opacity: 1, duration: 1 }, 2.6);
+      }
+    };
+  };
+
+  /* 11 · Bugün */
+  defs[10] = function (el) {
     var cards = $$('.big-card', el);
     return {
       steps: 0,
@@ -392,8 +404,8 @@
     };
   };
 
-  /* 11 · Kapalı pilot */
-  defs[10] = function (el) {
+  /* 12 · Kapalı pilot */
+  defs[11] = function (el) {
     var A = $('.grpA', el), B = $('.grpB', el), cardsA = $$('.pc', el), tiles = $$('.tile', el), verdict = $('.verdict', el), hA = $('.h1', A), hB = $('.h2', B);
     var svgs = $$('.tile svg', el), sub;
     function toB(tl, at) {
@@ -441,8 +453,8 @@
     };
   };
 
-  /* 12 · Ölçeklenme hesabı */
-  defs[11] = function (el) {
+  /* 13 · Ölçeklenme hesabı */
+  defs[12] = function (el) {
     var field = $('#field'), nh = $('#n-hoca'), nk = $('#n-cocuk'), endline = $('.endline', el), assume = $('.assume', el), row = $('.sc-row', el);
     var grps = [], state = 0, sub, nums = [{ h: 1, k: 3 }, { h: 10, k: 30 }, { h: 100, k: 300 }], shown = { h: 0, k: 0 };
     for (var i = 0; i < 100; i++) {
@@ -508,8 +520,8 @@
     };
   };
 
-  /* 13 · Müfredat */
-  defs[12] = function (el) {
+  /* 14 · Müfredat */
+  defs[13] = function (el) {
     var ready = $$('.book.ready', el), soon = $$('.book.soon', el), plank = $('.plank', el);
     return {
       steps: 0,
@@ -527,8 +539,8 @@
     };
   };
 
-  /* 14 · Kapanış */
-  defs[13] = function (el) {
+  /* 15 · Kapanış */
+  defs[14] = function (el) {
     return {
       steps: 0,
       enter: function (tl) {
