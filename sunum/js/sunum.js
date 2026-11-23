@@ -523,7 +523,7 @@
 
   /* 14 · Müfredat */
   defs[13] = function (el) {
-    var ready = $$('.book.ready', el), soon = $$('.book.soon', el), plank = $('.plank', el);
+    var ready = $$('.book.ready', el), soon = $$('.book.soon', el), plank = $('.plank', el), hint = $('.shelf-hint', el);
     return {
       steps: 0,
       enter: function (tl) {
@@ -536,6 +536,7 @@
           .fromTo(soon, { x: 16 * r, opacity: 0 }, { x: 0, opacity: 1, duration: 1.2, ease: 'expo.out', stagger: .3 }, 2.6)
           .fromTo($$('.tag', el), { scale: 0, rotation: -25, transformOrigin: '50% 100%' }, { scale: 1, rotation: -3, duration: .7, ease: 'back.out(2)', stagger: .3 }, 3.1);
         G.set($$('.tag', el), { xPercent: -50 });
+        if (hint) tl.fromTo(hint, { opacity: 0, y: 1.2 * r }, { opacity: 1, y: 0, duration: 1, ease: 'power3.out' }, 3.6);
       }
     };
   };
@@ -703,9 +704,13 @@
     fn();
   }
 
+  /* Müfredat yolculuğu katmanı (js/yolculuk-sunum.js) açıkken sunumun kumandası susar. */
+  function jOpen() { return !!(window.__yolculuk && window.__yolculuk.isOpen()); }
+
   /* tekerlek: bir hareket = bir adım */
   var lastWheel = 0, lastMag = 0;
   addEventListener('wheel', function (e) {
+    if (jOpen()) return;   // yolculuk katmanı açıkken tekerlek katmanı kaydırır, slayt değişmez
     e.preventDefault();
     var d = Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
     var m = Math.abs(d), now = performance.now(), gap = now - lastWheel, spike = m > lastMag * 1.7 + 8;
@@ -715,9 +720,17 @@
     if (gap > 140 || spike) act(function () { d > 0 ? next() : prev(); });
   }, { passive: false });
 
+  function fullscreenToggle() {
+    if (document.fullscreenElement) document.exitFullscreen && document.exitFullscreen();
+    else if (root.requestFullscreen) root.requestFullscreen().catch(function () {});
+  }
   addEventListener('keydown', function (e) {
     if (e.metaKey || e.ctrlKey || e.altKey) return;
     var k = e.key;
+    if (jOpen()) {   // yolculuk katmanı açık: yalnız tam ekran çalışır; ok ve boşluk katmanı kaydırır
+      if (k === 'f' || k === 'F') { e.preventDefault(); fullscreenToggle(); }
+      return;
+    }
     if (k === 'ArrowRight' || k === 'ArrowDown' || k === 'PageDown' || k === ' ' || k === 'Enter') { e.preventDefault(); act(next, 750); }
     else if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'PageUp' || k === 'Backspace') { e.preventDefault(); act(prev, 750); }
     else if (k === 'Home') { e.preventDefault(); act(function () { goTo(0); }, 750); }
@@ -727,14 +740,14 @@
     else if (k === '+' || k === '=') { e.preventDefault(); stepRate(1); }
     else if (k === 'f' || k === 'F') {
       e.preventDefault();
-      if (document.fullscreenElement) document.exitFullscreen && document.exitFullscreen();
-      else if (root.requestFullscreen) root.requestFullscreen().catch(function () {});
+      fullscreenToggle();
     }
   });
 
   var tx = 0, ty = 0, tt = 0;
   addEventListener('touchstart', function (e) { tx = e.touches[0].clientX; ty = e.touches[0].clientY; tt = Date.now(); }, { passive: true });
   addEventListener('touchend', function (e) {
+    if (jOpen()) return;
     var dx = e.changedTouches[0].clientX - tx, dy = e.changedTouches[0].clientY - ty;
     if (Math.max(Math.abs(dx), Math.abs(dy)) < 50) return;
     var d = Math.abs(dy) > Math.abs(dx) ? -dy : -dx;
