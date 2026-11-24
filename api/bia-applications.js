@@ -65,6 +65,39 @@ class RequestError extends Error {
   }
 }
 
+// Depolama/şifre çözme hatalarını sınıflandırır. Önceden tüm hatalar sessizce
+// "şifreleme anahtarı" mesajına dönüşüyordu ve Vercel loglarına hiçbir şey düşmüyordu.
+function classifyStorageError(error) {
+  const name = String(error?.name || '');
+  const text = [error?.message, error?.sourceError?.message, error?.cause?.message].filter(Boolean).join(' ');
+  if (name === 'OperationError') {
+    return { reason: 'sifre-cozme', message: 'Şifreli arşiv mevcut anahtarla açılamadı. Vercel\'deki BIA_APPLICATIONS_ENCRYPTION_KEY (yoksa BIA_JWT_SECRET / BIA_ADMIN_PASSWORD) değeri değişmiş olabilir.' };
+  }
+  if (/quota/i.test(text)) {
+    return { reason: 'neon-kota', message: 'Neon veritabanı kullanım kotası dolmuş. Neon hesabındaki kullanım ve plan sayfasını kontrol edin.' };
+  }
+  if (/password authentication failed|authentication failed|role "?[^"\s]*"? does not exist/i.test(text)) {
+    return { reason: 'neon-kimlik', message: 'Neon veritabanı giriş bilgisi geçersiz. Vercel\'deki DATABASE_URL değerini kontrol edin.' };
+  }
+  if (/relation "?bia_encrypted_archives"? does not exist|database "?[^"\s]*"? does not exist/i.test(text)) {
+    return { reason: 'neon-bos-veritabani', message: 'DATABASE_URL başvuru tablosu olmayan bir veritabanını gösteriyor. Vercel\'deki DATABASE_URL değerini kontrol edin.' };
+  }
+  if (/endpoint[^.]*(disabled|not found|does not exist)|project[^.]*(not found|suspended|disabled)/i.test(text)) {
+    return { reason: 'neon-proje', message: 'Neon veritabanı projesi bulunamadı veya devre dışı. Neon panelini kontrol edin.' };
+  }
+  if (name === 'NeonDbError' || /fetch failed|ECONN|ETIMEDOUT|timed? ?out|network|connect/i.test(text)) {
+    return { reason: 'neon-baglanti', message: 'Neon veritabanına ulaşılamadı. Neon durumunu ve Vercel\'deki DATABASE_URL değerini kontrol edin.' };
+  }
+  return null;
+}
+
+function logStorageError(context, error) {
+  const classified = classifyStorageError(error);
+  const detail = [error?.name, error?.message, error?.sourceError?.message].filter(Boolean).join(': ').slice(0, 500);
+  console.error(`[bia-applications] ${context} başarısız (${classified?.reason || 'bilinmiyor'}) ${detail}`);
+  return classified;
+}
+
 function json(data, status, corsHeaders) {
   return new Response(JSON.stringify(data), {
     status: status || 200,
@@ -491,6 +524,7 @@ export default async function handler(req) {
   const useNeonStorage = process.env.BIA_APPLICATIONS_STORAGE === 'neon';
   let historyActor = 'Veli başvurusu';
   let deletingApplications = false;
+  let requestAction = req.method;
 
   const requestOrigin = req.headers.get('origin') || '';
   const allowedOrigin = requestOrigin === 'https://birlikteiyilik.com' || requestOrigin === 'https://www.birlikteiyilik.com' ||
@@ -504,6 +538,15 @@ export default async function handler(req) {
   if (requestOrigin && !allowedOrigin) return json({ error: 'İzin verilmeyen istek kaynağı.' }, 403, cors);
   if ((!useNeonStorage && !githubToken) || (useNeonStorage && !process.env.DATABASE_URL) || !jwtSecret || !encryptionSecret) {
     return json({ error: 'Başvuru sistemi henüz yapılandırılmadı.' }, 503, cors);
+  }
+
+  // Beklenen (RequestError) hatalar olduğu gibi döner; diğerleri Vercel loguna yazılır
+  // ve tanınan depolama sorunlarında kullanıcıya gerçek sebep gösterilir.
+  function failure(error, fallback) {
+    // RequestError ve yardımcı modüllerin kendi durum kodlu hataları (ör. ders saatleri 409).
+    if (Number.isInteger(error?.status)) return json({ error: error.message }, error.status, cors);
+    const classified = logStorageError(requestAction, error);
+    return json({ error: classified?.message || error?.message || fallback }, 500, cors);
   }
 
   async function github(path, method, body) {
@@ -830,7 +873,10 @@ export default async function handler(req) {
       try {
         const planning = await getArchive(PLANNING_FILE);
         return json({ ok: true, slots: availableProgramSlots(planning.records), revision: programHours(planning.records).revision }, 200, cors);
-      } catch (_) { return json({ error: 'Ders saatleri yüklenemedi.' }, 503, cors); }
+      } catch (error) {
+        logStorageError('program-hours', error);
+        return json({ error: 'Ders saatleri yüklenemedi.' }, 503, cors);
+      }
     }
     const admin = await checkAdmin();
     if (!admin) return json({ error: 'Yetkisiz erişim.' }, 401, cors);
@@ -844,14 +890,20 @@ export default async function handler(req) {
         holidays: planning.records.filter((item) => item.kind === 'holiday'),
         meta: { weekdays: WEEKDAYS, timeSlots: programHours(planning.records).slots, programRevision: programHours(planning.records).revision, onlineTimeSlots: ONLINE_TIME_SLOTS, onlineTimeRanges: ONLINE_TIME_RANGES, attendanceStatuses: ATTENDANCE_STATUSES }
       }, 200, cors);
-    } catch (_) {
-      return json({ error: 'Şifreli başvuru arşivi açılamadı. Şifreleme anahtarını kontrol edin.' }, 500, cors);
+    } catch (error) {
+      // Yalnızca yönetici görür: gerçek sebebi göster, tanınmayan hatada teknik ayrıntıyı ekle.
+      const classified = logStorageError('panel-verileri', error);
+      const detail = String(error?.message || '').slice(0, 160);
+      return json({
+        error: classified?.message || `Başvuru verileri yüklenemedi.${detail ? ` Teknik ayrıntı: ${detail}` : ''}`
+      }, 500, cors);
     }
   }
 
   if (req.method === 'POST') {
     let body = {};
     try { body = await req.json(); } catch (_) { return json({ error: 'İstek biçimi geçersiz.' }, 400, cors); }
+    requestAction = cleanText(body.action, 60) || 'POST';
 
     if (body.action === 'directory-login') {
       if (directoryPassword && directoryPassword.length < 12) {
@@ -878,7 +930,7 @@ export default async function handler(req) {
         if (!mode || searchableName(query).length < 2) throw new RequestError('En az iki harfli bir ad yazın.');
         return json({ ok: true, ...(await directoryResults(query, mode)) }, 200, cors);
       } catch (error) {
-        return json({ error: error.message || 'Arama şu anda yapılamıyor.' }, error.status || 500, cors);
+        return failure(error, 'Arama şu anda yapılamıyor.');
       }
     }
 
@@ -887,7 +939,7 @@ export default async function handler(req) {
         await directorySession();
         return json({ ok: true, ...(await calendarDeliveryReport()) }, 200, cors);
       } catch (error) {
-        return json({ error: error.message || 'Rapor hazırlanamadı.' }, error.status || 500, cors);
+        return failure(error, 'Rapor hazırlanamadı.');
       }
     }
 
@@ -914,7 +966,7 @@ export default async function handler(req) {
         }, `BIA: ${CALENDAR_DELIVERY_YEAR} takvim teslim durumu güncellendi`);
         return json({ ok: true, year: CALENDAR_DELIVERY_YEAR, ...result }, 200, cors);
       } catch (error) {
-        return json({ error: error.message || 'Teslim durumu kaydedilemedi.' }, error.status || 500, cors);
+        return failure(error, 'Teslim durumu kaydedilemedi.');
       }
     }
 
@@ -926,7 +978,10 @@ export default async function handler(req) {
       let allowedSlots = TIME_SLOTS;
       try {
         if (body.applicationType !== 'online') allowedSlots = availableProgramSlots((await getArchive(PLANNING_FILE)).records);
-      } catch (_) { return json({ error: 'Ders saatleri yüklenemedi. Lütfen tekrar deneyin.' }, 503, cors); }
+      } catch (error) {
+        logStorageError('submit-program-hours', error);
+        return json({ error: 'Ders saatleri yüklenemedi. Lütfen tekrar deneyin.' }, 503, cors);
+      }
       const validationError = validateSubmission(body, allowedSlots);
       if (validationError) return json({ error: validationError }, 400, cors);
       const now = new Date();
@@ -946,7 +1001,8 @@ export default async function handler(req) {
           return { records, value: record.reference };
         }, `BIA: ${now.toISOString().slice(0, 7)} başvuru arşivi güncellendi`);
         return json({ ok: true, reference }, 201, cors);
-      } catch (_) {
+      } catch (error) {
+        logStorageError('submit', error);
         return json({ error: 'Başvuru güvenli arşive kaydedilemedi.' }, 500, cors);
       }
     }
@@ -969,8 +1025,9 @@ export default async function handler(req) {
           sub: teacher.id, role: 'teacher', name: teacher.name, iat: now, exp: now + (12 * 60 * 60)
         }, jwtSecret);
         return json({ ok: true, token, teacher: publicTeacher(teacher) }, 200, cors);
-      } catch (_) {
-        return json({ error: 'Öğretmen oturumu şu anda açılamadı.' }, 500, cors);
+      } catch (error) {
+        logStorageError('teacher-login', error);
+        return json({ error: 'Öğretmen oturumu şu anda açılamadı. Veri deposuna ulaşılamıyor; yöneticiye haber verin.' }, 500, cors);
       }
     }
 
@@ -1001,7 +1058,7 @@ export default async function handler(req) {
           meta: { weekdays: WEEKDAYS, timeSlots: programHours(planning.records).slots, onlineTimeSlots: ONLINE_TIME_SLOTS, attendanceStatuses: ATTENDANCE_STATUSES }
         }, 200, cors);
       } catch (error) {
-        return json({ error: error.message || 'Dersler yüklenemedi.' }, error.status || 500, cors);
+        return failure(error, 'Dersler yüklenemedi.');
       }
     }
 
@@ -1056,7 +1113,7 @@ export default async function handler(req) {
         }, `BIA: ${date} öğretmen yoklaması güncellendi`);
         return json({ ok: true, data: saved }, 200, cors);
       } catch (error) {
-        return json({ error: error.message || 'Yoklama kaydedilemedi.' }, error.status || 500, cors);
+        return failure(error, 'Yoklama kaydedilemedi.');
       }
     }
 
@@ -1081,7 +1138,7 @@ export default async function handler(req) {
           history: applicationHistory(application, planning.records)
         } }, 200, cors);
       } catch (error) {
-        return json({ error: error.message || 'Öğrenci geçmişi yüklenemedi.' }, error.status || 500, cors);
+        return failure(error, 'Öğrenci geçmişi yüklenemedi.');
       }
     }
 
@@ -1089,7 +1146,7 @@ export default async function handler(req) {
       try {
         return json(await migrateEncryptedArchivesToNeon(), 200, cors);
       } catch (error) {
-        return json({ error: error.message || 'Şifreli arşivler Neon veritabanına taşınamadı.' }, error.status || 500, cors);
+        return failure(error, 'Şifreli arşivler Neon veritabanına taşınamadı.');
       }
     }
 
@@ -1116,7 +1173,7 @@ export default async function handler(req) {
         }, `BIA: uyarı mesajı ${sent ? 'gönderildi olarak işaretlendi' : 'işareti kaldırıldı'}`);
         return json({ ok: true, data: saved }, 200, cors);
       } catch (error) {
-        return json({ error: error.message || 'Uyarı mesajı durumu kaydedilemedi.' }, error.status || 500, cors);
+        return failure(error, 'Uyarı mesajı durumu kaydedilemedi.');
       }
     }
 
@@ -1144,7 +1201,7 @@ export default async function handler(req) {
         }, `BIA: ${date} tatil günü ${body.holiday ? 'işaretlendi' : 'kaldırıldı'}`);
         return json({ ok: true, data: saved }, 200, cors);
       } catch (error) {
-        return json({ error: error.message || 'Tatil günü kaydedilemedi.' }, error.status || 500, cors);
+        return failure(error, 'Tatil günü kaydedilemedi.');
       }
     }
 
@@ -1186,7 +1243,7 @@ export default async function handler(req) {
         }, `BIA: yönetici yoklama durumu güncellendi`);
         return json({ ok: true, data: saved }, 200, cors);
       } catch (error) {
-        return json({ error: error.message || 'Yoklama durumu güncellenemedi.' }, error.status || 500, cors);
+        return failure(error, 'Yoklama durumu güncellenemedi.');
       }
     }
 
@@ -1263,7 +1320,7 @@ export default async function handler(req) {
           ok: true, data: { applications: demoApplications, teachers: demoTeachers, placements: [] }
         }, 200, cors);
       } catch (error) {
-        return json({ error: error.message || 'Test verisi oluşturulamadı.' }, error.status || 500, cors);
+        return failure(error, 'Test verisi oluşturulamadı.');
       }
     }
 
@@ -1286,7 +1343,7 @@ export default async function handler(req) {
         }, `BIA: ${application.reference} öğrenci başvurusu silindi`);
         return json({ ok: true, data: deleted, removedAssignments: planningResult }, 200, cors);
       } catch (error) {
-        return json({ error: error.message || 'Öğrenci başvurusu silinemedi.' }, error.status || 500, cors);
+        return failure(error, 'Öğrenci başvurusu silinemedi.');
       }
     }
 
@@ -1309,7 +1366,7 @@ export default async function handler(req) {
         }, 'BIA: öğretmen ve bağlı ders atamaları silindi');
         return json({ ok: true, data: deleted }, 200, cors);
       } catch (error) {
-        return json({ error: error.message || 'Öğretmen silinemedi.' }, error.status || 500, cors);
+        return failure(error, 'Öğretmen silinemedi.');
       }
     }
 
@@ -1385,7 +1442,7 @@ export default async function handler(req) {
           data: { removedApplications: removedApplications.length, ...planningResult }
         }, 200, cors);
       } catch (error) {
-        return json({ error: error.message || 'Toplu silme işlemi tamamlanamadı.' }, error.status || 500, cors);
+        return failure(error, 'Toplu silme işlemi tamamlanamadı.');
       }
     }
 
@@ -1433,7 +1490,7 @@ export default async function handler(req) {
         }, 'BIA: öğretmen bilgisi güncellendi');
         return json({ ok: true, data: saved }, 200, cors);
       } catch (error) {
-        return json({ error: error.message || 'Öğretmen kaydedilemedi.' }, error.status || 500, cors);
+        return failure(error, 'Öğretmen kaydedilemedi.');
       }
     }
 
@@ -1466,7 +1523,7 @@ export default async function handler(req) {
         }, `BIA: online öğrencisine öğretmen atandı`);
         return json({ ok: true, data: saved }, 200, cors);
       } catch (error) {
-        return json({ error: error.message || 'Öğretmen ataması kaydedilemedi.' }, error.status || 500, cors);
+        return failure(error, 'Öğretmen ataması kaydedilemedi.');
       }
     }
 
@@ -1477,7 +1534,7 @@ export default async function handler(req) {
         const saved = await mutateArchive(PLANNING_FILE, (records) =>
           applyProgramHours(records, body.changes, body.revision, adminIdentity(admin), { scope: body.scope, teacherIds: body.teacherIds, reset: body.reset }), 'BIA: ders saatleri düzenlendi');
         return json({ ok: true, data: saved }, 200, cors);
-      } catch (error) { return json({ error: error.message || 'Ders saatleri kaydedilemedi.' }, error.status || 500, cors); }
+      } catch (error) { return failure(error, 'Ders saatleri kaydedilemedi.'); }
     }
 
     if (body.action === 'placement-save') {
@@ -1527,7 +1584,7 @@ export default async function handler(req) {
         }, 'BIA: haftalık öğrenci programı güncellendi');
         return json({ ok: true, data: saved }, 200, cors);
       } catch (error) {
-        return json({ error: error.message || 'Ders programı kaydedilemedi.' }, error.status || 500, cors);
+        return failure(error, 'Ders programı kaydedilemedi.');
       }
     }
 
@@ -1544,7 +1601,7 @@ export default async function handler(req) {
         }, 'BIA: haftalık öğrenci programı kaldırıldı');
         return json({ ok: true, data: removed }, 200, cors);
       } catch (error) {
-        return json({ error: error.message || 'Ders programı kaldırılamadı.' }, error.status || 500, cors);
+        return failure(error, 'Ders programı kaldırılamadı.');
       }
     }
 
@@ -1567,7 +1624,7 @@ export default async function handler(req) {
         }, `BIA: veli mesajı durumu ${body.sent ? 'gönderildi' : 'bekliyor'} olarak işaretlendi`);
         return json({ ok: true, data: updated }, 200, cors);
       } catch (error) {
-        return json({ error: error.message || 'Veli mesajı durumu kaydedilemedi.' }, error.status || 500, cors);
+        return failure(error, 'Veli mesajı durumu kaydedilemedi.');
       }
     }
 
@@ -1599,7 +1656,7 @@ export default async function handler(req) {
         }, 'BIA: başvuru durumu güncellendi');
         return json({ ok: true, data: updated }, 200, cors);
       } catch (error) {
-        return json({ error: error.message || 'Başvuru güncellenemedi.' }, error.status || 500, cors);
+        return failure(error, 'Başvuru güncellenemedi.');
       }
     }
 
