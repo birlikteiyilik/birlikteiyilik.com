@@ -8,7 +8,7 @@
   "topicCount": 59,
   "pdfFile": "birlikte-iyilik-ahlak-egitim-programi-11-14-yas.pdf",
   "sourceSha256": "18469302f9d3951c003889f5659550b05700d489c3aab8e25467d1fa31368bd4",
-  "pdfSha256": "ac5960f701c3a44306c21975950a87fb6b89a429d4e55b7285dc350bc55c16c2",
+  "pdfSha256": "907be0b512e841183c8ed18d67066f5bd74b542f2c182a26694c444a1c95e3f3",
   "topics": [
     {
       "number": 1,
@@ -1422,7 +1422,7 @@
         },
         {
           "key": "materials",
-          "text": "https://wordwall.net/tr/resource/10789139/aile-oyunu/karde%C5%9Flik",
+          "text": "https://wordwall.net/id/resource/57993169/muhacir-ve-ensar-aras%C4%B1ndaki-karde%C5%9Flik-antla%C5%9Fmas%C4%B1",
           "pages": [
             42
           ]
@@ -1487,7 +1487,7 @@
         }
       ],
       "links": [
-        "https://wordwall.net/tr/resource/10789139/aile-oyunu/karde%C5%9Flik",
+        "https://wordwall.net/id/resource/57993169/muhacir-ve-ensar-aras%C4%B1ndaki-karde%C5%9Flik-antla%C5%9Fmas%C4%B1",
         "https://www.hakikatkitabevi.net/book.php?bookCode=001",
         "https://cocukpinari.com/?s=%C3%B6fke",
         "https://dinimizislam.com/"
@@ -1614,7 +1614,7 @@
         },
         {
           "key": "materials",
-          "text": "https://wordwall.net/tr/resource/28325043",
+          "text": "https://wordwall.net/resource/70514559/dini-k%C3%BClt%C3%BCr-ve-etik/temel-de%C4%9Ferlerimiz-6s%C4%B1n%C4%B1f\nhttps://wordwall.net/tr/resource/89880710/sosyal-bilgiler/k%C3%BClt%C3%BCrel-ba%C4%9Flar%C4%B1m%C4%B1z",
           "pages": [
             47
           ]
@@ -1672,7 +1672,8 @@
         }
       ],
       "links": [
-        "https://wordwall.net/tr/resource/28325043",
+        "https://wordwall.net/resource/70514559/dini-k%C3%BClt%C3%BCr-ve-etik/temel-de%C4%9Ferlerimiz-6s%C4%B1n%C4%B1f",
+        "https://wordwall.net/tr/resource/89880710/sosyal-bilgiler/k%C3%BClt%C3%BCrel-ba%C4%9Flar%C4%B1m%C4%B1z",
         "https://www.hakikatkitabevi.net/book.php?bookCode=001",
         "https://cocukpinari.com/?s=%C3%B6fke",
         "https://dinimizislam.com/"
@@ -1801,7 +1802,7 @@
         },
         {
           "key": "materials",
-          "text": "https://wordwall.net/tr/resource/28323897",
+          "text": "https://wordwall.net/resource/83836795/insan-ili%C5%9Fkileri-sevgi-ve-sayg%C4%B1",
           "pages": [
             54
           ]
@@ -1862,7 +1863,7 @@
         }
       ],
       "links": [
-        "https://wordwall.net/tr/resource/28323897",
+        "https://wordwall.net/resource/83836795/insan-ili%C5%9Fkileri-sevgi-ve-sayg%C4%B1",
         "https://www.hakikatkitabevi.net/book.php?bookCode=001",
         "https://cocukpinari.com/?s=%C3%B6fke",
         "https://dinimizislam.com/"
@@ -1991,7 +1992,7 @@
         },
         {
           "key": "materials",
-          "text": "https://wordwall.net/tr/resource/28323897",
+          "text": "https://wordwall.net/tr/resource/79821292/olumlu-olumsuz-arkada%C5%9Fl%C4%B1k-ili%C5%9Fkileri",
           "pages": [
             64
           ]
@@ -2052,7 +2053,7 @@
         }
       ],
       "links": [
-        "https://wordwall.net/tr/resource/28323897",
+        "https://wordwall.net/tr/resource/79821292/olumlu-olumsuz-arkada%C5%9Fl%C4%B1k-ili%C5%9Fkileri",
         "https://www.hakikatkitabevi.net/book.php?bookCode=001",
         "https://cocukpinari.com/?s=%C3%B6fke",
         "https://dinimizislam.com/"
@@ -2273,7 +2274,7 @@
         },
         {
           "key": "materials",
-          "text": "https://wordwall.net/tr/resource/9718215a",
+          "text": "https://wordwall.net/resource/27768041/adab-ve-nezaket-kurallar%C4%B1-tekrar-oyunu-5-s%C4%B1n%C4%B1f\nhttps://wordwall.net/tr/resource/88133149/g%C3%B6rg%C3%BC-ve-nezaket/g%C3%B6rg%C3%BC-kurallar%C4%B1-ve-nezaket-7-s%C4%B1n%C4%B1f",
           "pages": [
             76
           ]
@@ -2332,7 +2333,8 @@
         }
       ],
       "links": [
-        "https://wordwall.net/tr/resource/9718215",
+        "https://wordwall.net/resource/27768041/adab-ve-nezaket-kurallar%C4%B1-tekrar-oyunu-5-s%C4%B1n%C4%B1f",
+        "https://wordwall.net/tr/resource/88133149/g%C3%B6rg%C3%BC-ve-nezaket/g%C3%B6rg%C3%BC-kurallar%C4%B1-ve-nezaket-7-s%C4%B1n%C4%B1f",
         "https://www.hakikatkitabevi.net/book.php?bookCode=001",
         "https://cocukpinari.com/?s=%C3%B6fke",
         "https://dinimizislam.com/"
@@ -2556,7 +2558,7 @@
         },
         {
           "key": "materials",
-          "text": "https://wordwall.net/tr/resource/28325043",
+          "text": "https://wordwall.net/tr/resource/89097948/ahilik-ve-lonca",
           "pages": [
             89
           ]
@@ -2614,7 +2616,7 @@
         }
       ],
       "links": [
-        "https://wordwall.net/tr/resource/28325043",
+        "https://wordwall.net/tr/resource/89097948/ahilik-ve-lonca",
         "https://www.hakikatkitabevi.net/book.php?bookCode=001",
         "https://cocukpinari.com/?s=%C3%B6fke",
         "https://dinimizislam.com/"
@@ -5418,7 +5420,7 @@
         },
         {
           "key": "materials",
-          "text": "https://wordwall.net/tr/resource/28325043",
+          "text": "https://wordwall.net/tr/resource/87214016/sosyal-bilgiler/hak-ve-sorumluluk",
           "pages": [
             185
           ]
@@ -5476,7 +5478,7 @@
         }
       ],
       "links": [
-        "https://wordwall.net/tr/resource/28325043",
+        "https://wordwall.net/tr/resource/87214016/sosyal-bilgiler/hak-ve-sorumluluk",
         "https://www.hakikatkitabevi.net/book.php?bookCode=001",
         "https://cocukpinari.com/?s=%C3%B6fke",
         "https://dinimizislam.com/"

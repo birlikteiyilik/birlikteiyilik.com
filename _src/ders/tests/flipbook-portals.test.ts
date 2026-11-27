@@ -10,6 +10,28 @@ import type { ArchiveData } from "../src/lesson-guide.ts";
 const read = (path: string) => JSON.parse(readFileSync(new URL(path, import.meta.url), "utf8"));
 const archive: ArchiveData = read("../public/data/archive.json");
 const newVatanActivity = "https://wordwall.net/tr/resource/12756846/vatan-sevgisi";
+const brokenActivities = [
+  "https://wordwall.net/tr/resource/28325043",
+  "https://wordwall.net/tr/resource/28323897",
+  "https://wordwall.net/tr/resource/28326684",
+  "https://wordwall.net/tr/resource/28326729",
+  "https://wordwall.net/tr/resource/10789139/aile-oyunu/karde%C5%9Flik",
+  "https://wordwall.net/tr-tr/community/konu%C5%9Fma-ileti%C5%9Fim-adab%C4%B1",
+  "https://wordwall.net/tr/resource/9718215a",
+];
+// A sample of the replacements: main suggestion first, then the extra option.
+const replacedActivities: Record<"7-10" | "11-14", Record<number, string[]>> = {
+  "7-10": {
+    9: ["https://wordwall.net/tr/resource/80589610/evimizdeki-kaynaklar", "https://wordwall.net/es/resource/69834740/temel-ihtiya%C3%A7lar-ve-istekler"],
+    25: ["https://wordwall.net/tr/resource/57703911/hayat-bilgisi/nezaket-ifadeleri"],
+    42: ["https://wordwall.net/bg/resource/37787104/akraba"],
+  },
+  "11-14": {
+    25: ["https://wordwall.net/resource/27768041/adab-ve-nezaket-kurallar%C4%B1-tekrar-oyunu-5-s%C4%B1n%C4%B1f", "https://wordwall.net/tr/resource/88133149/g%C3%B6rg%C3%BC-ve-nezaket/g%C3%B6rg%C3%BC-kurallar%C4%B1-ve-nezaket-7-s%C4%B1n%C4%B1f"],
+    28: ["https://wordwall.net/tr/resource/89097948/ahilik-ve-lonca"],
+    59: ["https://wordwall.net/tr/resource/87214016/sosyal-bilgiler/hak-ve-sorumluluk"],
+  },
+};
 
 test("every grade and month splits into ordered weeks that cover each readable page once", () => {
   for (const [band, months] of Object.entries(archive.plans)) {
@@ -74,6 +96,11 @@ test("programme books hold only the teacher's reading text, with the Wordwall ac
     const links = programBlocks(vatan, age).flatMap((block) => block.kind === "activities" ? block.links.map((link) => link.href) : []);
     assert.ok(links.includes(newVatanActivity));
     assert.ok(!links.includes("https://wordwall.net/tr/resource/28325043"));
+    // Activities that no longer open are replaced everywhere (scripts/replace-wordwall-links.py).
+    const activities = (number: number) => programBlocks(data.topics[number - 1], age).flatMap((block) => block.kind === "activities" ? block.links.map((link) => link.href) : []);
+    const everyActivity = data.topics.flatMap((topic: { number: number }) => activities(topic.number));
+    for (const gone of brokenActivities) assert.ok(!everyActivity.includes(gone) && !JSON.stringify(data).includes(`"${gone}"`), `${age} no longer links ${gone}`);
+    for (const [number, expected] of Object.entries(replacedActivities[age])) assert.deepEqual(activities(Number(number)), expected, `${age} ${number}`);
   }
 });
 
