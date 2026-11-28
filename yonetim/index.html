@@ -92,17 +92,24 @@ async function doLogin() {
     // Middleware için JWT token'ı cookie'de sakla (8 saat, Secure)
     document.cookie = `bia_auth=${token}; path=/yonetim; SameSite=Lax; Secure; max-age=28800`;
 
-    window.location.href = '/yonetim/panel.html';
+    window.location.href = donusAdresi();
   } catch(e) {
     document.getElementById('loginErr').innerHTML = `<div class="notice err">${e.message}</div>`;
   }
   btn.disabled = false; btn.innerHTML = 'Giriş Yap';
 }
 
+// Girişten sonra gelinen sayfaya dön (yalnızca /yonetim/ altındaki sayfalar; ör. sistem rehberi)
+function donusAdresi() {
+  const donus = sessionStorage.getItem('biaDonus') || '';
+  sessionStorage.removeItem('biaDonus');
+  return /^\/yonetim\/[a-z0-9-]+(\.html)?$/.test(donus) ? donus : '/yonetim/panel.html';
+}
+
 // Zaten giriş yapılmışsa panele yönlendir
 window.onload = () => {
   if (sessionStorage.getItem('biaToken')) {
-    window.location.href = '/yonetim/panel.html';
+    window.location.href = donusAdresi();
   }
 };
 </script>

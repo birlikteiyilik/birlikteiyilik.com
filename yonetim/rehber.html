@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Sistem Rehberi · Birlikte İyilik</title>
+<link rel="icon" href="/images/logo_icon.png">
+<!--
+  Sistem rehberi: ne nerede, hangi hesap neye yarar, sunucuya nasıl girilir, nasıl devredilir.
+  Bu dosyada içerik YOKTUR (depo herkese açık). İçerik /api/bia-rehber üzerinden yalnızca yönetici
+  oturumuna gelir. Hesap şifreleri ayrı bir kasa şifresiyle tarayıcıda şifrelenir; sunucu çözemez.
+-->
+<style>
+:root{
+  --kagit:#f7f5f0;--yuzey:#fffdf9;--murekkep:#1d1a16;--ikincil:#6b645a;--soluk:#968e81;
+  --cizgi:#e5dfd4;--cizgi-koyu:#cbc2b2;--vurgu:#9b2226;--vurgu-zemin:#f4e8e5;--kod:#eeeae2;
+  --serif:"Iowan Old Style","Palatino Linotype","Book Antiqua",Palatino,Charter,Georgia,serif;
+  --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+}
+@media (prefers-color-scheme:dark){:root{
+  --kagit:#151311;--yuzey:#1c1a17;--murekkep:#ece7de;--ikincil:#a69e91;--soluk:#7d766b;
+  --cizgi:#2d2924;--cizgi-koyu:#403a32;--vurgu:#e58a7f;--vurgu-zemin:#2c1b19;--kod:#24211d;
+}}
+*{box-sizing:border-box}
+html{scroll-padding-top:76px}
+body{margin:0;background:var(--kagit);color:var(--murekkep);font:15.5px/1.65 var(--sans);-webkit-font-smoothing:antialiased;overflow-wrap:break-word}
+a{color:var(--vurgu);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;text-decoration-color:color-mix(in srgb,var(--vurgu) 40%,transparent)}
+a:hover{text-decoration-color:var(--vurgu)}
+button{font:inherit;color:inherit;cursor:pointer}
+.gizli{display:none!important}
+.kucuk-harf{font:600 11px/1.4 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ikincil)}
+
+/* Üst satır */
+.ust{position:sticky;top:0;z-index:30;background:var(--kagit);border-bottom:1px solid var(--cizgi)}
+.ust-ic{max-width:1180px;margin:0 auto;padding:12px 28px;display:flex;align-items:center;gap:22px}
+.imza{display:flex;align-items:baseline;gap:12px;white-space:nowrap}
+.imza b{font:600 18px/1 var(--serif);letter-spacing:-.01em}
+.arama{flex:1;max-width:420px;margin-left:auto;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--cizgi-koyu);padding:4px 0}
+.arama:focus-within{border-color:var(--murekkep)}
+.arama input{flex:1;border:0;background:transparent;color:var(--murekkep);font:inherit;outline:none;min-width:0}
+.arama input::placeholder{color:var(--soluk)}
+.arama kbd{font:11px var(--mono);color:var(--soluk);border:1px solid var(--cizgi);border-radius:3px;padding:0 5px}
+.metin-dugme{border:0;background:none;padding:4px 0;color:var(--ikincil);font-size:14px;text-decoration:none;white-space:nowrap}
+.metin-dugme:hover{color:var(--murekkep);text-decoration:underline;text-underline-offset:3px}
+.dugme{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--cizgi-koyu);background:transparent;border-radius:4px;padding:7px 14px;font-size:14px;white-space:nowrap}
+.dugme:hover{border-color:var(--murekkep)}
+.dugme.ana{background:var(--murekkep);border-color:var(--murekkep);color:var(--kagit)}
+.dugme.ana:hover{opacity:.88}
+.dugme.kucuk{padding:4px 10px;font-size:13px}
+.dugme:disabled{opacity:.5;cursor:not-allowed}
+
+/* Yerleşim */
+.duzen{max-width:1180px;margin:0 auto;padding:0 28px 120px;display:grid;grid-template-columns:200px minmax(0,1fr);gap:56px}
+.dizin{position:sticky;top:76px;align-self:start;padding-top:44px;max-height:calc(100vh - 80px);overflow-y:auto}
+.dizin ol{list-style:none;margin:10px 0 0;padding:0;border-left:1px solid var(--cizgi)}
+.dizin a{display:flex;gap:10px;padding:5px 0 5px 14px;margin-left:-1px;border-left:1px solid transparent;color:var(--ikincil);text-decoration:none;font-size:14px;line-height:1.35}
+.dizin a span{font:12px/1.6 var(--mono);color:var(--soluk);min-width:18px}
+.dizin a:hover{color:var(--murekkep)}
+.dizin a.etkin{color:var(--murekkep);border-left-color:var(--vurgu)}
+.dizin a.etkin span{color:var(--vurgu)}
+.dizin .alt{margin-top:26px;font-size:12.5px;color:var(--soluk);line-height:1.5}
+main{min-width:0;max-width:820px}
+
+/* Giriş ve durum */
+.durum{max-width:520px;margin:16vh auto;padding:0 24px}
+.durum h1{font:400 30px/1.2 var(--serif);margin:10px 0}
+.durum p{color:var(--ikincil);margin:0 0 22px}
+
+/* Kapak */
+.kapak{padding:56px 0 30px;border-bottom:1px solid var(--murekkep)}
+.kapak h1{font:400 44px/1.08 var(--serif);letter-spacing:-.02em;margin:10px 0 14px}
+.kapak p{font:400 18px/1.55 var(--serif);color:var(--ikincil);margin:0;max-width:620px}
+.kunye{display:flex;flex-wrap:wrap;gap:6px 22px;margin-top:22px;font:12.5px var(--mono);color:var(--ikincil)}
+
+/* Bölüm */
+.bolum{padding:40px 0 34px;border-bottom:1px solid var(--cizgi)}
+.bolum>header{display:flex;align-items:baseline;gap:16px;margin-bottom:12px}
+.bolum>header .no{font:13px var(--mono);color:var(--vurgu);min-width:22px}
+.bolum>header h2{font:400 27px/1.2 var(--serif);letter-spacing:-.01em;margin:0}
+.bolum>header .baglanti{margin-left:auto;opacity:0;transition:opacity .15s}
+.bolum:hover>header .baglanti{opacity:1}
+.yazi{padding-left:38px}
+.yazi h3{font:600 12px/1.4 var(--sans);letter-spacing:.11em;text-transform:uppercase;color:var(--ikincil);margin:30px 0 10px}
+.yazi h4{font:600 15px/1.4 var(--sans);margin:22px 0 6px}
+.yazi p{margin:10px 0}
+.yazi ul,.yazi ol{margin:10px 0;padding-left:20px}
+.yazi li{margin:5px 0;padding-left:4px}
+.yazi li::marker{color:var(--soluk)}
+.yazi li.kutu{list-style:none;position:relative;padding-left:28px;margin-left:-20px}
+.yazi li.kutu::before{content:"";position:absolute;left:2px;top:.42em;width:12px;height:12px;border:1.5px solid var(--cizgi-koyu);border-radius:2px}
+.yazi li.kutu.tamam::before{background:var(--murekkep);border-color:var(--murekkep)}
+.yazi blockquote{margin:18px 0;padding:2px 0 2px 18px;border-left:2px solid var(--vurgu)}
+.yazi blockquote::before{content:"Not";display:block;font:600 11px/1.6 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--vurgu)}
+.yazi blockquote p{margin:4px 0}
+.tablo-kaydir{overflow-x:auto;margin:14px 0}
+.yazi table{width:100%;border-collapse:collapse;font-size:14.5px}
+.yazi th{text-align:left;font:600 11px/1.4 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--ikincil);padding:0 14px 8px 0;border-bottom:1px solid var(--murekkep)}
+.yazi td{padding:9px 14px 9px 0;border-bottom:1px solid var(--cizgi);vertical-align:top}
+.yazi td:first-child{font-weight:500;white-space:nowrap}
+.yazi tr:last-child td{border-bottom:0}
+code.kod{font:.86em var(--mono);background:var(--kod);border-radius:3px;padding:1px 5px;cursor:copy;word-break:break-word}
+code.kod:hover{background:var(--vurgu-zemin);color:var(--vurgu)}
+.kod-blok{position:relative;margin:12px 0}
+.kod-blok pre{margin:0;background:var(--kod);border-radius:4px;padding:13px 16px;padding-right:92px;overflow-x:auto;font:13.5px/1.6 var(--mono)}
+.kod-blok .kopyala{position:absolute;top:9px;right:10px;border:0;background:none;font:600 11px/1.4 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--ikincil);padding:2px 4px}
+.kod-blok .kopyala:hover{color:var(--vurgu)}
+.kopya-mini{border:0;background:none;padding:0 2px;margin-left:4px;vertical-align:middle;opacity:.3;line-height:1}
+.kopya-mini::before{content:"";display:inline-block;width:9px;height:10px;border:1.3px solid currentColor;border-radius:2px;box-shadow:2.5px -2.5px 0 -1px var(--kagit),2.5px -2.5px 0 0 currentColor;color:var(--ikincil)}
+td:hover .kopya-mini,li:hover .kopya-mini,p:hover .kopya-mini,.kopya-mini:focus{opacity:1}
+.kopya-mini:hover::before{color:var(--vurgu)}
+mark{background:var(--vurgu-zemin);color:inherit}
+
+/* Düzenleme */
+.duzenle{display:grid;gap:12px}
+.duzenle-ust{display:flex;gap:14px;align-items:baseline}
+.duzenle-ust .no{font:13px var(--mono);color:var(--vurgu)}
+.duzenle-ust input{flex:1;border:0;border-bottom:1px solid var(--cizgi-koyu);background:transparent;color:var(--murekkep);font:400 24px/1.3 var(--serif);padding:2px 0;outline:none}
+.duzenle-ust input:focus{border-color:var(--murekkep)}
+.ikili{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.alan{width:100%;padding:8px 10px;border:1px solid var(--cizgi-koyu);border-radius:4px;background:var(--yuzey);color:var(--murekkep);font:inherit;outline:none}
+.alan:focus{border-color:var(--murekkep)}
+textarea.kaynak{min-height:300px;font:13px/1.6 var(--mono);resize:vertical}
+.onizleme{border-left:1px solid var(--cizgi);padding-left:18px;max-height:560px;overflow:auto}
+.onizleme .yazi{padding-left:0}
+.yazim-notu{font-size:13px;color:var(--ikincil);line-height:1.9}
+.kaydet-cubugu{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:40;display:flex;align-items:center;gap:14px;background:var(--murekkep);color:var(--kagit);padding:9px 10px 9px 18px;border-radius:4px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.18)}
+.kaydet-cubugu .dugme{border-color:color-mix(in srgb,var(--kagit) 35%,transparent);color:var(--kagit)}
+.kaydet-cubugu .dugme.ana{background:var(--kagit);color:var(--murekkep);border-color:var(--kagit)}
+
+/* Kasa */
+.kasa-kutu{border:1px solid var(--cizgi-koyu);border-radius:4px;padding:22px 24px;background:var(--yuzey);max-width:560px}
+.yazi .kasa-kutu h3{font:400 21px/1.3 var(--serif);letter-spacing:-.005em;text-transform:none;color:var(--murekkep);margin:0 0 6px}
+.kasa-kutu p{color:var(--ikincil);margin:6px 0 14px;font-size:14.5px}
+.satir-form{display:flex;gap:8px;margin-top:10px}
+.satir-form .alan{flex:1}
+.guc{height:2px;background:var(--cizgi);margin:6px 0 2px}
+.guc i{display:block;height:100%;width:0;background:var(--vurgu);transition:width .2s}
+.hata{color:var(--vurgu);font-size:13.5px;min-height:20px;margin-top:6px}
+.secim{display:flex;gap:8px;align-items:flex-start;font-size:14px;color:var(--ikincil);margin:12px 0 4px}
+.kasa-arac{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;margin:4px 0 18px}
+.kasa-arac .arama-kasa{flex:1;min-width:200px;border:0;border-bottom:1px solid var(--cizgi-koyu);background:transparent;color:var(--murekkep);font:inherit;padding:5px 0;outline:none}
+.defter{width:100%;border-collapse:collapse;font-size:14.5px}
+.defter th{text-align:left;font:600 11px/1.4 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--ikincil);padding:0 12px 8px 0;border-bottom:1px solid var(--murekkep)}
+.defter td{padding:11px 12px 11px 0;border-bottom:1px solid var(--cizgi);vertical-align:top}
+.defter .hizmet b{display:block;font-weight:600}
+.defter .hizmet small{display:block;color:var(--ikincil);font-size:13px;line-height:1.4;margin-top:2px}
+.defter .hizmet a{font-size:13px}
+.deger{font:13.5px var(--mono);word-break:break-all}
+.deger.bos{font:italic 13.5px var(--sans);color:var(--soluk);white-space:nowrap}
+.defter th:nth-child(1){width:46%}.defter th:nth-child(2){width:28%}
+.satir-eylem{margin-top:7px}
+.eylemler{display:flex;gap:10px;margin-top:3px}
+.eylemler button{border:0;background:none;padding:0;font:600 11px/1.6 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--ikincil)}
+.eylemler button:hover{color:var(--vurgu)}
+.ayrinti td{padding-top:0;color:var(--ikincil);font-size:13.5px}
+.ayrinti dl{display:grid;grid-template-columns:120px 1fr;gap:4px 14px;margin:0;padding:2px 0 6px}
+.ayrinti dt{font:600 11px/1.9 var(--sans);letter-spacing:.08em;text-transform:uppercase}
+.ayrinti dd{margin:0;white-space:pre-wrap;color:var(--murekkep)}
+
+/* Pencere ve bildirim */
+dialog{border:1px solid var(--cizgi-koyu);border-radius:6px;padding:0;background:var(--yuzey);color:var(--murekkep);width:min(600px,94vw);box-shadow:0 20px 60px rgba(0,0,0,.2)}
+dialog::backdrop{background:rgba(20,18,16,.4)}
+.pencere-ic{padding:24px 26px 8px;display:grid;gap:12px}
+.pencere-ic h2{font:400 23px/1.25 var(--serif);margin:0 0 4px}
+.pencere-ic label{display:grid;gap:5px;font:600 11px/1.4 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--ikincil)}
+.pencere-ic label .alan{font:15px/1.5 var(--sans);letter-spacing:0;text-transform:none;color:var(--murekkep)}
+.pencere-alt{display:flex;gap:8px;justify-content:flex-end;padding:16px 26px 22px}
+.sifre-alani{display:flex;gap:6px}
+.sifre-alani .alan{flex:1;font-family:var(--mono)!important}
+.gecmis-liste{display:grid;max-height:50vh;overflow:auto;border-top:1px solid var(--cizgi)}
+.gecmis-liste div{display:flex;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid var(--cizgi);font-size:14px}
+.gecmis-liste div span{flex:1}
+.bildirim{position:fixed;right:28px;top:68px;z-index:60;background:var(--murekkep);color:var(--kagit);padding:9px 14px;border-radius:4px;font-size:14px;opacity:0;transform:translateY(-6px);transition:all .18s;pointer-events:none}
+.bildirim.gor{opacity:1;transform:none}
+
+@media (max-width:900px){
+  html{scroll-padding-top:12px}
+  .ust{position:static}
+  .imza .kucuk-harf{display:none}
+  .bildirim{right:14px;left:14px;top:auto;bottom:86px;text-align:center}
+  .ust-ic{flex-wrap:wrap;padding:10px 18px;gap:8px 16px}
+  .arama{order:3;max-width:none;flex-basis:100%;margin-left:0}
+  .duzen{grid-template-columns:1fr;padding:0 18px 110px;gap:0}
+  .dizin{position:static;padding-top:18px;max-height:none}
+  .dizin ol{display:flex;gap:4px 14px;flex-wrap:wrap;border:0}
+  .dizin a{padding:2px 0;border:0}
+  .dizin .alt{display:none}
+  .kapak{padding-top:30px}.kapak h1{font-size:34px}
+  .yazi{padding-left:0}
+  .ikili{grid-template-columns:1fr}
+  .onizleme{border-left:0;padding-left:0;border-top:1px solid var(--cizgi);padding-top:10px}
+  .defter thead{display:none}
+  .defter tr:not(.ayrinti){display:grid;grid-template-columns:1fr;border-bottom:1px solid var(--cizgi);padding:8px 0}
+  .defter td{border:0;padding:3px 0}
+  .ayrinti dl{grid-template-columns:1fr}
+}
+@media print{.ust,.dizin,#kasa,.kaydet-cubugu,.baglanti,.kopyala,.kopya-mini{display:none!important}.duzen{display:block}}
+</style>
+</head>
+<body>
+
+<header class="ust"><div class="ust-ic">
+  <div class="imza"><span class="kucuk-harf">Birlikte İyilik</span><b>Sistem Rehberi</b></div>
+  <label class="arama"><input id="arama" type="search" placeholder="Ara: başvuru, sunucu, yedek…" autocomplete="off"><kbd>/</kbd></label>
+  <button class="metin-dugme gizli" id="dGecmis" type="button">Geçmiş</button>
+  <button class="metin-dugme gizli" id="dDuzenle" type="button">Düzenle</button>
+  <a class="metin-dugme" href="/yonetim/panel.html">Panele dön</a>
+</div></header>
+
+<div id="durum" class="durum"><span class="kucuk-harf">Sistem rehberi</span><h1>Yükleniyor…</h1></div>
+
+<div class="duzen gizli" id="duzen">
+  <nav class="dizin" id="dizin" aria-label="Bölümler"></nav>
+  <main id="icerik"></main>
+</div>
+
+<div class="kaydet-cubugu gizli" id="kaydetCubugu">
+  <span id="kaydetMetin">Kaydedilmemiş değişiklikler var.</span>
+  <button class="dugme kucuk" id="dVazgec" type="button">Vazgeç</button>
+  <button class="dugme kucuk ana" id="dKaydet" type="button">Kaydet</button>
+</div>
+
+<dialog id="hesapPencere">
+  <form method="dialog" id="hesapForm">
+    <div class="pencere-ic">
+      <h2 id="hesapBaslik">Hesap</h2>
+      <label>Hizmet<input class="alan" name="hizmet" required maxlength="120" placeholder="ör. Hostinger"></label>
+      <label>Ne için kullanılır<input class="alan" name="amac" maxlength="300" placeholder="ör. Sunucu ve fatura"></label>
+      <label>Giriş adresi<input class="alan" name="adres" maxlength="500" placeholder="https://"></label>
+      <label>Kullanıcı adı ya da e-posta<input class="alan" name="kullanici" maxlength="200" autocomplete="off"></label>
+      <label>Şifre
+        <div class="sifre-alani"><input class="alan" name="sifre" type="password" maxlength="500" autocomplete="new-password">
+          <button class="dugme kucuk" type="button" id="sGoster">Göster</button>
+          <button class="dugme kucuk" type="button" id="sUret" title="Güçlü, rastgele bir şifre üretir">Üret</button></div>
+      </label>
+      <label>İki adımlı doğrulama, kurtarma kodları<textarea class="alan" name="ikiAdim" rows="2" maxlength="2000" placeholder="ör. Kodlar kimin telefonunda, kurtarma kodları"></textarea></label>
+      <label>Not<textarea class="alan" name="not" rows="3" maxlength="4000"></textarea></label>
+    </div>
+    <div class="pencere-alt">
+      <button class="dugme" value="iptal" formnovalidate>Vazgeç</button>
+      <button class="dugme ana" value="tamam">Tamam</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="gecmisPencere">
+  <div class="pencere-ic">
+    <h2 id="gecmisBaslik">Önceki sürümler</h2>
+    <p style="margin:0;color:var(--ikincil);font-size:14px" id="gecmisAciklama"></p>
+    <div class="gecmis-liste" id="gecmisListe"></div>
+  </div>
+  <div class="pencere-alt"><button class="dugme" type="button" id="gecmisKapat">Kapat</button></div>
+</dialog>
+
+<div class="bildirim" id="bildirim" role="status"></div>
+
+<script>
+(() => {
+'use strict';
+const API = '/api/bia-rehber';
+const KASA_TUR = 'PBKDF2-SHA256', KASA_TEKRAR = 600000, KASA_EK = new TextEncoder().encode('birlikte-rehber-kasa-v1');
+const KILIT_SURESI = 10 * 60 * 1000;
+const ALANLAR = ['hizmet', 'amac', 'adres', 'kullanici', 'sifre', 'ikiAdim', 'not'];
+const $ = (s, k = document) => k.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const tarih = (iso) => iso ? new Date(iso).toLocaleString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+const no = (i) => String(i + 1).padStart(2, '0');
+
+const durum = {
+  token: sessionStorage.getItem('biaToken') || '',
+  rehber: null, rehberSurum: 0, kasaZarf: null, kasaSurum: 0, gecmis: { rehber: [], kasa: [] }, kullanici: '',
+  duzenleme: false, taslak: null,
+  kasa: { acik: false, anahtar: null, salt: null, iterations: KASA_TEKRAR, kayitlar: [], degisti: false, filtre: '', acikAyrinti: new Set() }
+};
+
+/* ---------- Ortak ---------- */
+let bildirimZamani;
+function bildir(metin) {
+  const b = $('#bildirim'); b.textContent = metin; b.classList.add('gor');
+  clearTimeout(bildirimZamani); bildirimZamani = setTimeout(() => b.classList.remove('gor'), 1800);
+}
+async function kopyala(metin, ne = 'Kopyalandı') {
+  try { await navigator.clipboard.writeText(metin); }
+  catch { const t = document.createElement('textarea'); t.value = metin; document.body.append(t); t.select(); document.execCommand('copy'); t.remove(); }
+  bildir(ne);
+}
+document.addEventListener('click', (e) => {
+  const k = e.target.closest('[data-kopya]');
+  if (k) { e.preventDefault(); kopyala(k.getAttribute('data-kopya'), k.dataset.kopyaMesaj || 'Kopyalandı'); }
+});
+async function api(yontem, govde, sorgu = '') {
+  const r = await fetch(API + sorgu, {
+    method: yontem, cache: 'no-store',
+    headers: { Authorization: 'Bearer ' + durum.token, ...(govde ? { 'Content-Type': 'application/json' } : {}) },
+    body: govde ? JSON.stringify(govde) : undefined
+  });
+  let veri = {}; try { veri = await r.json(); } catch {}
+  if (r.status === 401) { girisGerekli(); throw Object.assign(new Error(veri.error || 'Oturum gerekli'), { status: 401 }); }
+  if (!r.ok) throw Object.assign(new Error(veri.error || 'İstek başarısız (' + r.status + ')'), { status: r.status });
+  return veri;
+}
+function durumGoster(ust, baslik, aciklama, dugmeler = '') {
+  $('#duzen').classList.add('gizli');
+  const d = $('#durum'); d.classList.remove('gizli');
+  d.innerHTML = `<span class="kucuk-harf">${esc(ust)}</span><h1>${esc(baslik)}</h1><p>${esc(aciklama)}</p>${dugmeler}`;
+}
+function girisGerekli() {
+  durumGoster('Erişim', 'Önce yönetim paneline giriş yapın.', 'Bu rehberi yalnızca yönetim paneline giriş yapmış yöneticiler görebilir. Giriş yaptıktan sonra bu sayfaya geri dönersiniz.',
+    '<button class="dugme ana" id="girisDugme" type="button">Yönetim girişine git</button>');
+  $('#girisDugme').onclick = () => { sessionStorage.setItem('biaDonus', '/yonetim/rehber'); location.href = '/yonetim/'; };
+}
+
+/* ---------- Küçük ve güvenli Markdown ---------- */
+function guvenliAdres(url) { return /^(https?:\/\/|mailto:|\/(?!\/))/i.test(url) ? url : null; }
+function kopyaDugmesi(deger) { return `<button class="kopya-mini" type="button" data-kopya="${esc(deger)}" data-kopya-mesaj="Adres kopyalandı" aria-label="Adresi kopyala"></button>`; }
+function satirIci(ham) {
+  return String(ham).split(/(`[^`]+`)/g).map((parca) => {
+    if (parca.length > 2 && parca.startsWith('`') && parca.endsWith('`')) {
+      const kod = parca.slice(1, -1);
+      return `<code class="kod" data-kopya="${esc(kod)}" title="Kopyalamak için tıklayın">${esc(kod)}</code>`;
+    }
+    let t = esc(parca);
+    t = t.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    t = t.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (m, yazi, url) => {
+      const g = guvenliAdres(url.replace(/&amp;/g, '&'));
+      if (!g) return yazi;
+      const dis = /^https?:/i.test(g);
+      return `<a href="${esc(g)}"${dis ? ' target="_blank" rel="noopener noreferrer"' : ''}>${yazi}</a>${kopyaDugmesi(dis ? g : location.origin + g)}`;
+    });
+    t = t.replace(/(^|[\s(])(https?:\/\/[^\s<)"]+)/g, (m, once, url) => {
+      const ham = url.replace(/&amp;/g, '&');
+      return `${once}<a href="${esc(ham)}" target="_blank" rel="noopener noreferrer">${url.replace(/^https?:\/\//, '')}</a>${kopyaDugmesi(ham)}`;
+    });
+    return t;
+  }).join('');
+}
+function markdown(kaynak) {
+  const satirlar = String(kaynak || '').replace(/\r\n?/g, '\n').split('\n');
+  let html = '', i = 0;
+  const liste = (tip) => {
+    let ic = '';
+    while (i < satirlar.length) {
+      const m = tip === 'ol' ? satirlar[i].match(/^\s*\d+[.)]\s+(.*)$/) : satirlar[i].match(/^\s*[-*]\s+(.*)$/);
+      if (!m) break;
+      const kutu = tip === 'ul' && m[1].match(/^\[( |x|X)\]\s+(.*)$/);
+      ic += kutu ? `<li class="kutu${kutu[1].trim() ? ' tamam' : ''}">${satirIci(kutu[2])}</li>` : `<li>${satirIci(m[1])}</li>`;
+      i += 1;
+    }
+    return `<${tip}>${ic}</${tip}>`;
+  };
+  while (i < satirlar.length) {
+    const s = satirlar[i];
+    if (/^```/.test(s)) {
+      const kod = []; i += 1;
+      while (i < satirlar.length && !/^```/.test(satirlar[i])) { kod.push(satirlar[i]); i += 1; }
+      i += 1;
+      const metin = kod.join('\n');
+      html += `<div class="kod-blok"><button class="kopyala" type="button" data-kopya="${esc(metin)}" data-kopya-mesaj="Komut kopyalandı">Kopyala</button><pre><code>${esc(metin)}</code></pre></div>`;
+      continue;
+    }
+    if (/^\s*$/.test(s)) { i += 1; continue; }
+    let m;
+    if ((m = s.match(/^(#{3,4})\s+(.*)$/))) { const n = m[1].length; html += `<h${n}>${satirIci(m[2])}</h${n}>`; i += 1; continue; }
+    if (/^\s*[-*]\s+/.test(s)) { html += liste('ul'); continue; }
+    if (/^\s*\d+[.)]\s+/.test(s)) { html += liste('ol'); continue; }
+    if (/^\s*>/.test(s)) {
+      const ic = [];
+      while (i < satirlar.length && /^\s*>/.test(satirlar[i])) { ic.push(satirlar[i].replace(/^\s*>\s?/, '')); i += 1; }
+      html += `<blockquote>${markdown(ic.join('\n'))}</blockquote>`; continue;
+    }
+    if (/^\s*\|/.test(s)) {
+      const satir = [];
+      while (i < satirlar.length && /^\s*\|/.test(satirlar[i])) { satir.push(satirlar[i]); i += 1; }
+      const hucre = (r) => r.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map((c) => c.trim());
+      const ayrac = satir[1] && /^\s*\|?\s*:?-{2,}/.test(satir[1]);
+      const bas = ayrac ? hucre(satir[0]) : null;
+      const govde = (ayrac ? satir.slice(2) : satir).map(hucre);
+      const basVar = bas && bas.some(Boolean);
+      html += '<div class="tablo-kaydir"><table>' + (basVar ? `<thead><tr>${bas.map((c) => `<th>${satirIci(c)}</th>`).join('')}</tr></thead>` : '') +
+        `<tbody>${govde.map((r) => `<tr>${r.map((c) => `<td>${satirIci(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+      continue;
+    }
+    const p = [];
+    while (i < satirlar.length && satirlar[i].trim() && !/^(```|#{3,4}\s|\s*[-*]\s|\s*\d+[.)]\s|\s*>|\s*\|)/.test(satirlar[i])) { p.push(satirlar[i].trim()); i += 1; }
+    html += `<p>${satirIci(p.join(' '))}</p>`;
+  }
+  return html;
+}
+
+/* ---------- Rehber görünümü ---------- */
+function bolumler() { return (durum.duzenleme ? durum.taslak : durum.rehber)?.bolumler || []; }
+function ciz() {
+  $('#durum').classList.add('gizli'); $('#duzen').classList.remove('gizli');
+  $('#dDuzenle').classList.remove('gizli'); $('#dGecmis').classList.toggle('gizli', !durum.gecmis.rehber.length);
+  $('#dDuzenle').textContent = durum.duzenleme ? 'Düzenlemeden çık' : 'Düzenle';
+  const b = bolumler(), kasaNo = no(b.length);
+  $('#dizin').innerHTML = '<span class="kucuk-harf">İçindekiler</span><ol>' +
+    b.map((x, i) => `<li><a href="#${esc(x.id)}" data-bolum="${esc(x.id)}"><span>${no(i)}</span>${esc(x.baslik)}</a></li>`).join('') +
+    `<li><a href="#kasa" data-bolum="kasa"><span>${kasaNo}</span>Hesaplar ve şifreler</a></li></ol>` +
+    `<div class="alt">Sürüm ${durum.rehberSurum || 0}<br>${esc(tarih(durum.rehber?.guncellendi) || 'henüz kaydedilmedi')}${durum.rehber?.guncelleyen ? '<br>' + esc(durum.rehber.guncelleyen) : ''}</div>`;
+  const kapak = `<section class="kapak"><span class="kucuk-harf">Yöneticiler için · gizli</span><h1>Sistem Rehberi</h1>
+    <p>Sitelerin nerede çalıştığı, işlerin nereden yürüdüğü, hangi hesabın neye yaradığı ve sistemin bir sonraki kişiye nasıl devredileceği.</p>
+    <div class="kunye"><span>Sürüm ${durum.rehberSurum || 0}</span><span>${esc(tarih(durum.rehber?.guncellendi) || '—')}</span>${durum.rehber?.guncelleyen ? `<span>${esc(durum.rehber.guncelleyen)}</span>` : ''}${durum.kullanici ? `<span>Oturum: ${esc(durum.kullanici)}</span>` : ''}</div></section>`;
+  $('#icerik').innerHTML = kapak + (durum.duzenleme ? duzenlemeHtml(b) : b.map(bolumHtml).join('')) +
+    `<section class="bolum" id="kasa"></section>`;
+  if (durum.duzenleme) duzenlemeBagla(); else ara($('#arama').value);
+  kasaCiz(); etkinBolum();
+  if (!durum.duzenleme && location.hash) setTimeout(() => document.getElementById(decodeURIComponent(location.hash.slice(1)))?.scrollIntoView(), 30);
+}
+function bolumHtml(x, i) {
+  return `<section class="bolum" id="${esc(x.id)}" data-ara="${esc((x.baslik + ' ' + x.metin).toLocaleLowerCase('tr-TR'))}">
+    <header><span class="no">${no(i)}</span><h2>${esc(x.baslik)}</h2>
+    <button class="metin-dugme baglanti" type="button" data-kopya="${esc(location.origin + '/yonetim/rehber#' + x.id)}" data-kopya-mesaj="Bölüm bağlantısı kopyalandı">Bağlantıyı kopyala</button></header>
+    <div class="yazi">${markdown(x.metin)}</div></section>`;
+}
+function ara(q) {
+  const s = q.trim().toLocaleLowerCase('tr-TR');
+  document.querySelectorAll('.bolum[data-ara]').forEach((el) => el.classList.toggle('gizli', !!s && !el.dataset.ara.includes(s)));
+  document.querySelectorAll('.dizin a[data-bolum]').forEach((a) => {
+    const el = document.getElementById(a.dataset.bolum);
+    a.parentElement.classList.toggle('gizli', !!s && a.dataset.bolum !== 'kasa' && (!el || el.classList.contains('gizli')));
+  });
+}
+$('#arama').addEventListener('input', (e) => { if (!durum.duzenleme) ara(e.target.value); durum.kasa.filtre = e.target.value; if (durum.kasa.acik) kasaListeCiz(); });
+document.addEventListener('keydown', (e) => {
+  if (e.key === '/' && !/INPUT|TEXTAREA/.test(document.activeElement.tagName)) { e.preventDefault(); $('#arama').focus(); }
+});
+// Dizinde etkin bölüm: üst kenarı başlık çubuğunun altına gelen son bölüm
+function etkinBolum() {
+  const bolumler = [...document.querySelectorAll('main .bolum[id]:not(.gizli)')];
+  let etkin = bolumler[0]?.id;
+  for (const el of bolumler) { if (el.getBoundingClientRect().top <= 120) etkin = el.id; }
+  if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 4) etkin = bolumler[bolumler.length - 1]?.id;
+  document.querySelectorAll('.dizin a').forEach((a) => a.classList.toggle('etkin', a.dataset.bolum === etkin));
+}
+let kaydirmaBekliyor = false;
+window.addEventListener('scroll', () => { if (!kaydirmaBekliyor) { kaydirmaBekliyor = true; requestAnimationFrame(() => { kaydirmaBekliyor = false; etkinBolum(); }); } }, { passive: true });
+
+/* ---------- Rehberi düzenleme ---------- */
+function kimlikUret(baslik, mevcut) {
+  const tr = { ç: 'c', ğ: 'g', ı: 'i', ö: 'o', ş: 's', ü: 'u', â: 'a', î: 'i', û: 'u' };
+  const k = String(baslik).toLocaleLowerCase('tr-TR').replace(/[çğıöşüâîû]/g, (c) => tr[c]).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 50) || 'bolum';
+  let n = k, i = 2; while (mevcut.has(n)) n = `${k}-${i++}`; return n;
+}
+function duzenlemeHtml(b) {
+  return b.map((x, i) => `<section class="bolum" data-sira="${i}"><div class="duzenle">
+      <div class="duzenle-ust"><span class="no">${no(i)}</span><input data-alan="baslik" value="${esc(x.baslik)}" maxlength="120" placeholder="Bölüm başlığı" aria-label="Bölüm başlığı">
+        <button class="metin-dugme" type="button" data-eylem="yukari" ${i ? '' : 'disabled'}>Yukarı</button><button class="metin-dugme" type="button" data-eylem="asagi" ${i < b.length - 1 ? '' : 'disabled'}>Aşağı</button><button class="metin-dugme" type="button" data-eylem="sil">Sil</button></div>
+      <div class="ikili"><textarea class="alan kaynak" data-alan="metin" spellcheck="false" aria-label="Bölüm metni">${esc(x.metin)}</textarea><div class="onizleme"><div class="yazi">${markdown(x.metin)}</div></div></div>
+    </div></section>`).join('') +
+    `<section class="bolum"><button class="dugme" type="button" id="bolumEkle">Yeni bölüm ekle</button>
+      <p class="yazim-notu">Yazım kuralları: <code class="kod">### Ara başlık</code> · <code class="kod">- madde</code> · <code class="kod">- [ ] yapılacak iş</code> · <code class="kod">**kalın**</code> · <code class="kod">[yazı](https://adres)</code> · ters tırnak içindeki metin tıklayınca kopyalanır · üç ters tırnakla açılıp kapanan blok, kopyalanabilir komut kutusu olur · <code class="kod">| a | b |</code> satırları tablo olur · <code class="kod">&gt; metin</code> not kutusu olur.</p></section>`;
+}
+function duzenlemeBagla() {
+  document.querySelectorAll('section[data-sira]').forEach((el) => {
+    const i = Number(el.dataset.sira), x = durum.taslak.bolumler[i];
+    el.querySelectorAll('[data-alan]').forEach((a) => a.addEventListener('input', () => {
+      x[a.dataset.alan] = a.value; degisti(true);
+      if (a.dataset.alan === 'metin') el.querySelector('.onizleme .yazi').innerHTML = markdown(a.value);
+    }));
+    el.querySelectorAll('[data-eylem]').forEach((d) => d.addEventListener('click', () => {
+      const liste = durum.taslak.bolumler;
+      if (d.dataset.eylem === 'sil') { if (!confirm(`"${x.baslik}" bölümü silinsin mi? Kaydetmeden önce vazgeçebilirsiniz.`)) return; liste.splice(i, 1); }
+      if (d.dataset.eylem === 'yukari') [liste[i - 1], liste[i]] = [liste[i], liste[i - 1]];
+      if (d.dataset.eylem === 'asagi') [liste[i + 1], liste[i]] = [liste[i], liste[i + 1]];
+      degisti(true); ciz();
+    }));
+  });
+  $('#bolumEkle').onclick = () => {
+    const baslik = prompt('Yeni bölümün başlığı:'); if (!baslik?.trim()) return;
+    durum.taslak.bolumler.push({ id: kimlikUret(baslik, new Set(durum.taslak.bolumler.map((x) => x.id))), baslik: baslik.trim(), ikon: '', metin: '' });
+    degisti(true); ciz(); window.scrollTo(0, document.body.scrollHeight);
+  };
+}
+let kaydetHedefi = null;
+function degisti(evet, hedef = 'rehber') {
+  kaydetHedefi = evet ? hedef : null;
+  $('#kaydetCubugu').classList.toggle('gizli', !evet);
+  $('#kaydetMetin').textContent = hedef === 'kasa' ? 'Kasada kaydedilmemiş değişiklikler var.' : 'Rehberde kaydedilmemiş değişiklikler var.';
+}
+$('#dDuzenle').onclick = () => {
+  if (durum.duzenleme && kaydetHedefi === 'rehber' && !confirm('Kaydedilmemiş değişiklikler silinsin mi?')) return;
+  if (!durum.duzenleme && durum.kasa.degisti) { bildir('Önce kasadaki değişiklikleri kaydedin'); return; }
+  durum.duzenleme = !durum.duzenleme;
+  durum.taslak = durum.duzenleme ? structuredClone(durum.rehber || { bolumler: [], sablon: [] }) : null;
+  if (durum.duzenleme && !durum.taslak.bolumler.length) durum.taslak.bolumler.push({ id: 'baslarken', baslik: 'Başlarken', ikon: '', metin: '' });
+  degisti(false); ciz(); window.scrollTo(0, 0);
+};
+$('#dVazgec').onclick = () => {
+  if (kaydetHedefi === 'kasa') { kasaKilitle(); return; }
+  durum.duzenleme = false; durum.taslak = null; degisti(false); ciz();
+};
+$('#dKaydet').onclick = async () => {
+  const d = $('#dKaydet'); d.disabled = true;
+  try {
+    if (kaydetHedefi === 'kasa') { await kasaKaydet(); return; }
+    await api('POST', { action: 'rehber-kaydet', rehber: durum.taslak, surum: durum.rehberSurum });
+    bildir('Rehber kaydedildi'); durum.duzenleme = false; durum.taslak = null; degisti(false);
+    await yukle();
+  } catch (e) { if (e.status !== 401) alert(e.message); } finally { d.disabled = false; }
+};
+window.addEventListener('beforeunload', (e) => { if (kaydetHedefi) { e.preventDefault(); e.returnValue = ''; } });
+
+/* ---------- Geçmiş ---------- */
+$('#dGecmis').onclick = () => gecmisAc('rehber');
+$('#gecmisKapat').onclick = () => $('#gecmisPencere').close();
+function gecmisAc(tur) {
+  const liste = durum.gecmis[tur] || [];
+  $('#gecmisBaslik').textContent = tur === 'rehber' ? 'Rehberin önceki sürümleri' : 'Kasanın önceki sürümleri';
+  $('#gecmisAciklama').textContent = tur === 'rehber'
+    ? 'Açtığınız sürüm düzenleyiciye yüklenir. Kaydederseniz yeni bir sürüm olur; hiçbir sürüm silinmez.'
+    : 'Eski bir kasa sürümü, o tarihte geçerli olan kasa şifresiyle açılır. Kaydederseniz güncel kasa olur.';
+  $('#gecmisListe').innerHTML = liste.length ? liste.map((g) => `<div><span>Sürüm ${esc(g.surum ?? '?')} · ${esc(tarih(g.guncellendi))}${g.guncelleyen ? ' · ' + esc(g.guncelleyen) : ''}</span><button class="dugme kucuk" type="button" data-gecmis="${tur}" data-sira="${g.sira}">Aç</button></div>`).join('') : '<p style="color:var(--ikincil)">Henüz önceki sürüm yok.</p>';
+  $('#gecmisListe').querySelectorAll('[data-gecmis]').forEach((d) => d.onclick = () => gecmisYukle(d.dataset.gecmis, Number(d.dataset.sira)));
+  $('#gecmisPencere').showModal();
+}
+async function gecmisYukle(tur, sira) {
+  try {
+    const { kayit } = await api('GET', null, `?gecmis=${tur}&sira=${sira}`);
+    $('#gecmisPencere').close();
+    if (tur === 'rehber') {
+      durum.duzenleme = true; durum.taslak = { bolumler: kayit.bolumler, sablon: kayit.sablon || [] };
+      degisti(true); ciz(); window.scrollTo(0, 0); bildir('Eski sürüm düzenleyiciye yüklendi');
+    } else {
+      const parola = prompt('Bu kasa sürümünün kasa şifresi:'); if (!parola) return;
+      const acilan = await kasaCoz(kayit, parola);
+      Object.assign(durum.kasa, { acik: true, anahtar: acilan.anahtar, salt: acilan.salt, iterations: acilan.iterations, kayitlar: acilan.veri.kayitlar || [] });
+      durum.kasa.degisti = true; degisti(true, 'kasa'); kasaCiz();
+      bildir('Eski kasa sürümü açıldı; kaydederseniz geçerli olur');
+    }
+  } catch (e) { if (e.status !== 401) alert(e.message || 'Açılamadı'); }
+}
+
+/* ---------- Şifreli kasa ---------- */
+const b64 = (u8) => btoa(String.fromCharCode(...u8));
+const b64Coz = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+async function anahtarTuret(parola, salt, iterations) {
+  const temel = await crypto.subtle.importKey('raw', new TextEncoder().encode(parola.normalize('NFC')), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({ name: 'PBKDF2', hash: 'SHA-256', salt, iterations }, temel, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+}
+async function kasaCoz(zarf, parola) {
+  const salt = b64Coz(zarf.salt), iterations = zarf.iterations;
+  const anahtar = await anahtarTuret(parola, salt, iterations);
+  let duz;
+  try { duz = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64Coz(zarf.iv), additionalData: KASA_EK }, anahtar, b64Coz(zarf.data)); }
+  catch { throw new Error('Kasa şifresi yanlış.'); }
+  return { anahtar, salt, iterations, veri: JSON.parse(new TextDecoder().decode(duz)) };
+}
+async function kasaSifrele() {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const veri = new TextEncoder().encode(JSON.stringify({ kayitlar: durum.kasa.kayitlar }));
+  const sifreli = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv, additionalData: KASA_EK }, durum.kasa.anahtar, veri));
+  let ikili = ''; for (let i = 0; i < sifreli.length; i += 0x8000) ikili += String.fromCharCode(...sifreli.subarray(i, i + 0x8000));
+  return { v: 1, kdf: KASA_TUR, iterations: durum.kasa.iterations, salt: b64(durum.kasa.salt), iv: b64(iv), data: btoa(ikili) };
+}
+async function kasaKaydet() {
+  const zarf = await kasaSifrele();
+  const r = await api('POST', { action: 'kasa-kaydet', kasa: zarf, surum: durum.kasaSurum });
+  durum.kasaSurum = r.surum; durum.kasa.degisti = false; degisti(false);
+  const v = await api('GET'); durum.kasaZarf = v.kasa; durum.gecmis = v.gecmis;
+  bildir('Kasa şifrelenip kaydedildi'); kasaCiz(); kilitZamanla();
+}
+function kasaKilitle() {
+  Object.assign(durum.kasa, { acik: false, anahtar: null, kayitlar: [], degisti: false });
+  durum.kasa.acikAyrinti.clear();
+  if (kaydetHedefi === 'kasa') degisti(false);
+  kasaCiz();
+}
+let kilitZamani;
+function kilitZamanla(sure = KILIT_SURESI) {
+  clearTimeout(kilitZamani);
+  if (durum.kasa.acik && !durum.kasa.degisti) kilitZamani = setTimeout(() => { kasaKilitle(); bildir('Kasa güvenlik için kilitlendi'); }, sure);
+}
+['click', 'keydown', 'scroll'].forEach((o) => document.addEventListener(o, () => { if (durum.kasa.acik) kilitZamanla(); }, { passive: true }));
+document.addEventListener('visibilitychange', () => { if (document.hidden) kilitZamanla(2 * 60 * 1000); });
+function sifreGucu(s) {
+  let p = Math.min(s.length, 24) * 3;
+  if (/[a-zçğıöşü]/.test(s)) p += 8; if (/[A-ZÇĞİÖŞÜ]/.test(s)) p += 8; if (/\d/.test(s)) p += 8; if (/[^\wçğıöşüÇĞİÖŞÜ]/.test(s)) p += 10; if (/\s/.test(s.trim())) p += 6;
+  return Math.min(100, p);
+}
+function sifreUret(uzunluk = 20) {
+  const k = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789-_.!@#%+=';
+  const sinir = Math.floor(2 ** 32 / k.length) * k.length, sonuc = [];
+  while (sonuc.length < uzunluk) for (const n of crypto.getRandomValues(new Uint32Array(uzunluk))) if (n < sinir && sonuc.length < uzunluk) sonuc.push(k[n % k.length]);
+  return sonuc.join('');
+}
+function kasaBaslik() {
+  return `<header><span class="no">${no(bolumler().length)}</span><h2>Hesaplar ve şifreler</h2>${durum.kasa.acik ? '<button class="metin-dugme" type="button" id="kKilitle" style="margin-left:auto">Kasayı kilitle</button>' : ''}</header>`;
+}
+function kasaCiz() {
+  const el = $('#kasa'); if (!el) return;
+  if (!durum.kasaZarf && !durum.kasa.acik) {
+    el.innerHTML = kasaBaslik() + `<div class="yazi"><div class="kasa-kutu">
+      <h3>Kasa henüz kurulmadı.</h3>
+      <p>Hesapların kullanıcı adları ve şifreleri burada, sizin belirleyeceğiniz bir <strong>kasa şifresiyle</strong> şifrelenerek saklanır. Şifreleme tarayıcınızda yapılır; sunucu kasa şifresini de kasanın içini de göremez.</p>
+      <p>Kasa şifresi unutulursa kasa açılamaz ve kurtarılamaz. Yazılı olarak, güvenli bir yerde saklayın.</p>
+      <input class="alan" id="kYeni1" type="password" placeholder="Kasa şifresi, en az 12 karakter" autocomplete="new-password">
+      <div class="guc"><i id="kGuc"></i></div>
+      <input class="alan" id="kYeni2" type="password" placeholder="Kasa şifresi, tekrar" autocomplete="new-password" style="margin-top:8px">
+      <label class="secim"><input type="checkbox" id="kSablon" checked> Bilinen ${(durum.rehber?.sablon || []).length} hizmeti boş hesap satırı olarak ekle; siz yalnızca kullanıcı adı ve şifreleri doldurun.</label>
+      <div class="hata" id="kHata"></div>
+      <button class="dugme ana" type="button" id="kKur">Kasayı kur</button></div></div>`;
+    $('#kYeni1').oninput = (e) => { $('#kGuc').style.width = sifreGucu(e.target.value) + '%'; };
+    $('#kKur').onclick = async () => {
+      const p1 = $('#kYeni1').value, p2 = $('#kYeni2').value;
+      if (p1.length < 12) return void ($('#kHata').textContent = 'Kasa şifresi en az 12 karakter olmalı.');
+      if (p1 !== p2) return void ($('#kHata').textContent = 'İki şifre aynı değil.');
+      $('#kKur').disabled = true;
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+      const anahtar = await anahtarTuret(p1, salt, KASA_TEKRAR);
+      const simdi = new Date().toISOString();
+      const kayitlar = $('#kSablon').checked ? (durum.rehber?.sablon || []).map((s) => ({ ...s, sifre: '', ikiAdim: '', guncellendi: simdi })) : [];
+      Object.assign(durum.kasa, { acik: true, anahtar, salt, iterations: KASA_TEKRAR, kayitlar });
+      try { await kasaKaydet(); bildir('Kasa kuruldu'); }
+      catch (e) { $('#kHata').textContent = e.message; kasaKilitle(); }
+    };
+    return;
+  }
+  if (!durum.kasa.acik) {
+    el.innerHTML = kasaBaslik() + `<div class="yazi"><div class="kasa-kutu">
+      <h3>Kasa kilitli.</h3>
+      <p>Hesap bilgilerini görmek için kasa şifresini girin. Kasa yalnızca bu tarayıcı sekmesinde açılır ve 10 dakika işlem yapılmazsa yeniden kilitlenir.</p>
+      <form id="kAcForm" class="satir-form"><input class="alan" id="kParola" type="password" placeholder="Kasa şifresi" autocomplete="current-password" aria-label="Kasa şifresi"><button class="dugme ana" type="submit" id="kAc">Aç</button></form>
+      <div class="hata" id="kHata"></div>
+      ${durum.kasaZarf?.guncellendi ? `<p style="margin:0;font-size:13px">Son kayıt: ${esc(tarih(durum.kasaZarf.guncellendi))}${durum.kasaZarf.guncelleyen ? ' · ' + esc(durum.kasaZarf.guncelleyen) : ''}</p>` : ''}</div></div>`;
+    $('#kAcForm').onsubmit = async (e) => {
+      e.preventDefault(); const d = $('#kAc'); d.disabled = true; d.textContent = 'Açılıyor'; $('#kHata').textContent = '';
+      try {
+        const acilan = await kasaCoz(durum.kasaZarf, $('#kParola').value);
+        Object.assign(durum.kasa, { acik: true, anahtar: acilan.anahtar, salt: acilan.salt, iterations: acilan.iterations, kayitlar: acilan.veri.kayitlar || [], degisti: false });
+        kasaCiz(); kilitZamanla();
+      } catch (err) { $('#kHata').textContent = err.message; d.disabled = false; d.textContent = 'Aç'; }
+    };
+    return;
+  }
+  el.innerHTML = kasaBaslik() + `<div class="yazi"><div class="kasa-arac">
+      <input class="arama-kasa" id="kAra" type="search" placeholder="Hesaplarda ara" value="${esc(durum.kasa.filtre)}" aria-label="Hesaplarda ara">
+      <button class="dugme ana" type="button" id="kEkle">Hesap ekle</button>
+      <button class="metin-dugme" type="button" id="kParolaDegistir">Kasa şifresini değiştir</button>
+      ${durum.gecmis.kasa.length ? '<button class="metin-dugme" type="button" id="kGecmis">Önceki sürümler</button>' : ''}
+    </div>
+    <div class="tablo-kaydir"><table class="defter"><thead><tr><th>Hizmet</th><th>Kullanıcı adı</th><th>Şifre</th></tr></thead><tbody id="kListe"></tbody></table></div></div>`;
+  $('#kKilitle').onclick = () => { if (durum.kasa.degisti && !confirm('Kaydedilmemiş değişiklikler silinsin mi?')) return; kasaKilitle(); };
+  $('#kAra').oninput = (e) => { durum.kasa.filtre = e.target.value; kasaListeCiz(); };
+  $('#kEkle').onclick = () => hesapDuzenle(-1);
+  $('#kParolaDegistir').onclick = parolaDegistir;
+  if ($('#kGecmis')) $('#kGecmis').onclick = () => gecmisAc('kasa');
+  kasaListeCiz();
+}
+function degerHucre(deger, sira, alan, gizli) {
+  if (!deger) return '<span class="deger bos">girilmedi</span>';
+  return `<span class="deger" ${gizli ? `data-gizli="${sira}-${alan}"` : ''}>${esc(gizli ? '••••••••••' : deger)}</span>
+    <div class="eylemler">${gizli ? `<button type="button" data-goster="${sira}-${alan}">Göster</button>` : ''}<button type="button" data-kopya-kasa="${sira}-${alan}">Kopyala</button></div>`;
+}
+function kasaListeCiz() {
+  const liste = $('#kListe'); if (!liste) return;
+  const q = durum.kasa.filtre.trim().toLocaleLowerCase('tr-TR');
+  const kayitlar = durum.kasa.kayitlar.map((k, sira) => ({ k, sira })).filter(({ k }) => !q || [k.hizmet, k.amac, k.adres, k.kullanici, k.not].join(' ').toLocaleLowerCase('tr-TR').includes(q));
+  liste.innerHTML = kayitlar.length ? kayitlar.map(({ k, sira }) => {
+    const adres = k.adres && guvenliAdres(k.adres) ? `<a href="${esc(k.adres)}" target="_blank" rel="noopener noreferrer">${esc(k.adres.replace(/^https?:\/\//, ''))}</a>${kopyaDugmesi(k.adres)}` : esc(k.adres || '');
+    const acik = durum.kasa.acikAyrinti.has(sira);
+    return `<tr><td class="hizmet"><b>${esc(k.hizmet)}</b>${k.amac ? `<small>${esc(k.amac)}</small>` : ''}${adres ? `<small>${adres}</small>` : ''}
+        <div class="eylemler satir-eylem">${k.ikiAdim || k.not ? `<button type="button" data-ayrinti="${sira}">${acik ? 'Ayrıntıyı kapat' : 'Ayrıntı'}</button>` : ''}<button type="button" data-duzenle="${sira}">Düzenle</button><button type="button" data-sil="${sira}">Sil</button></div></td>
+      <td>${degerHucre(k.kullanici, sira, 'kullanici', false)}</td>
+      <td>${degerHucre(k.sifre, sira, 'sifre', true)}</td></tr>` +
+      (acik ? `<tr class="ayrinti"><td colspan="3"><dl>${k.ikiAdim ? `<dt>İki adım</dt><dd>${esc(k.ikiAdim)} <button class="kopya-mini" type="button" data-kopya-kasa="${sira}-ikiAdim" aria-label="Kopyala"></button></dd>` : ''}${k.not ? `<dt>Not</dt><dd>${esc(k.not)}</dd>` : ''}<dt>Güncelleme</dt><dd>${esc(tarih(k.guncellendi))}</dd></dl></td></tr>` : '');
+  }).join('') : `<tr><td colspan="3" style="color:var(--ikincil)">${q ? 'Aramaya uyan hesap yok.' : 'Kasada henüz hesap yok. “Hesap ekle” ile başlayın.'}</td></tr>`;
+  liste.querySelectorAll('[data-kopya-kasa]').forEach((d) => d.onclick = () => {
+    const [s, alan] = d.dataset.kopyaKasa.split('-');
+    kopyala(durum.kasa.kayitlar[s][alan], ({ kullanici: 'Kullanıcı adı', sifre: 'Şifre', ikiAdim: 'İki adım bilgisi' }[alan] || 'Değer') + ' kopyalandı');
+  });
+  liste.querySelectorAll('[data-goster]').forEach((d) => d.onclick = () => {
+    const [s, alan] = d.dataset.goster.split('-'); const hedef = liste.querySelector(`[data-gizli="${d.dataset.goster}"]`);
+    const acik = d.textContent === 'Gizle'; hedef.textContent = acik ? '••••••••••' : durum.kasa.kayitlar[s][alan]; d.textContent = acik ? 'Göster' : 'Gizle';
+  });
+  liste.querySelectorAll('[data-ayrinti]').forEach((d) => d.onclick = () => {
+    const s = Number(d.dataset.ayrinti); durum.kasa.acikAyrinti.has(s) ? durum.kasa.acikAyrinti.delete(s) : durum.kasa.acikAyrinti.add(s); kasaListeCiz();
+  });
+  liste.querySelectorAll('[data-duzenle]').forEach((d) => d.onclick = () => hesapDuzenle(Number(d.dataset.duzenle)));
+  liste.querySelectorAll('[data-sil]').forEach((d) => d.onclick = () => {
+    const k = durum.kasa.kayitlar[d.dataset.sil];
+    if (!confirm(`"${k.hizmet}" hesabı kasadan silinsin mi? Kaydedene kadar vazgeçebilirsiniz.`)) return;
+    durum.kasa.kayitlar.splice(Number(d.dataset.sil), 1); durum.kasa.acikAyrinti.clear(); kasaDegisti();
+  });
+}
+function kasaDegisti() { durum.kasa.degisti = true; clearTimeout(kilitZamani); degisti(true, 'kasa'); kasaListeCiz(); }
+function hesapDuzenle(sira) {
+  const form = $('#hesapForm'), k = sira >= 0 ? durum.kasa.kayitlar[sira] : {};
+  $('#hesapBaslik').textContent = sira >= 0 ? k.hizmet : 'Yeni hesap';
+  ALANLAR.forEach((a) => { form.elements[a].value = k[a] || ''; });
+  form.elements.sifre.type = 'password'; $('#sGoster').textContent = 'Göster';
+  const p = $('#hesapPencere');
+  p.onclose = () => {
+    if (p.returnValue !== 'tamam') return;
+    const yeni = { guncellendi: new Date().toISOString() };
+    ALANLAR.forEach((a) => { yeni[a] = form.elements[a].value.trim(); });
+    if (!yeni.hizmet) return;
+    if (sira >= 0) durum.kasa.kayitlar[sira] = { ...k, ...yeni }; else durum.kasa.kayitlar.push(yeni);
+    kasaDegisti(); bildir('Kasada değişti; kaydetmeyi unutmayın');
+  };
+  p.returnValue = ''; p.showModal();
+}
+$('#sGoster').onclick = () => { const s = $('#hesapForm').elements.sifre; s.type = s.type === 'password' ? 'text' : 'password'; $('#sGoster').textContent = s.type === 'password' ? 'Göster' : 'Gizle'; };
+$('#sUret').onclick = () => { const s = $('#hesapForm').elements.sifre; s.value = sifreUret(); s.type = 'text'; $('#sGoster').textContent = 'Gizle'; };
+async function parolaDegistir() {
+  if (durum.kasa.degisti) { bildir('Önce değişiklikleri kaydedin'); return; }
+  const eski = prompt('Şu anki kasa şifresi:'); if (!eski) return;
+  try { await kasaCoz(durum.kasaZarf, eski); } catch { alert('Şu anki kasa şifresi yanlış.'); return; }
+  const yeni = prompt('Yeni kasa şifresi (en az 12 karakter):'); if (!yeni) return;
+  if (yeni.length < 12) { alert('Yeni şifre en az 12 karakter olmalı.'); return; }
+  if (prompt('Yeni kasa şifresi (tekrar):') !== yeni) { alert('İki şifre aynı değil.'); return; }
+  durum.kasa.salt = crypto.getRandomValues(new Uint8Array(16));
+  durum.kasa.iterations = KASA_TEKRAR;
+  durum.kasa.anahtar = await anahtarTuret(yeni, durum.kasa.salt, KASA_TEKRAR);
+  try { await kasaKaydet(); alert('Kasa şifresi değişti. Yeni şifreyi güvenli bir yerde saklayın. Önceki sürümler eski şifreyle açılmaya devam eder.'); }
+  catch (e) { if (e.status !== 401) alert(e.message); }
+}
+
+/* ---------- Açılış ---------- */
+async function yukle() {
+  const v = await api('GET');
+  Object.assign(durum, { rehber: v.rehber, rehberSurum: v.rehberSurum, kasaZarf: v.kasa, kasaSurum: v.kasaSurum, gecmis: v.gecmis, kullanici: v.kullanici });
+  if (!durum.rehber) {
+    durumGoster('Sistem rehberi', 'Rehber henüz yazılmadı.', 'İlk bölümü siz yazabilirsiniz. Kaydettikten sonra bütün yöneticiler görür.', '<button class="dugme ana" id="ilkBolum" type="button">Rehberi başlat</button>');
+    $('#ilkBolum').onclick = () => $('#dDuzenle').click();
+    $('#dDuzenle').classList.remove('gizli');
+    return;
+  }
+  ciz();
+}
+if (!durum.token) girisGerekli();
+else yukle().catch((e) => { if (e.status !== 401) durumGoster('Hata', 'Rehber yüklenemedi.', e.message, '<button class="dugme" type="button" onclick="location.reload()">Yeniden dene</button>'); });
+})();
+</script>
+</body>
+</html>

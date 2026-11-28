@@ -1,4 +1,4 @@
-// Ana site uygulaması: statik dosyalar + vercel.json kuralları + iki API işlevi + sağlık kontrolü.
+// Ana site uygulaması: statik dosyalar + vercel.json kuralları + üç API işlevi (başvurular, haberler, sistem rehberi) + sağlık kontrolü.
 // Giriş noktası sunucu/server.mjs'tir; testler createSiteApp ile uygulamayı rastgele bir portta kurar.
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
@@ -6,6 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import applicationsHandler from '../api/bia-applications.js';
 import newsHandler from '../api/bia-news.js';
+import rehberHandler from '../api/bia-rehber.js';
 import { closeStore, ensureArchiveSchema, pingStore } from '../api/_bia-store.js';
 import { compileVercelConfig, matchHeaders, matchRedirect, withQuery } from './lib/vercel.mjs';
 import { DEFAULT_CACHE_CONTROL, createStaticFiles, normalizePathname, sendFile } from './lib/statik.mjs';
@@ -18,10 +19,12 @@ const MB = 1024 * 1024;
 // olarak gelir; panel en fazla 5 MB dosya kabul eder → base64 ~6,7 MB + JSON zarfı → 8 MB.
 export const API_ROUTES = {
   '/api/bia-applications': { handler: applicationsHandler, bodyLimit: 1 * MB },
-  '/api/bia-news': { handler: newsHandler, bodyLimit: 8 * MB }
+  '/api/bia-news': { handler: newsHandler, bodyLimit: 8 * MB },
+  // Sistem rehberi (yalnızca yönetici): rehber metni ≤ 400 KB, şifreli kasa ≤ 512 KB (base64 ~700 KB)
+  '/api/bia-rehber': { handler: rehberHandler, bodyLimit: 1 * MB }
 };
 // cleanUrls: Vercel işlevlerinde de uzantı kaldırılır (/api/bia-news.js → 308 /api/bia-news).
-const API_EXTENSION = /^\/api\/(bia-applications|bia-news)\.js$/;
+const API_EXTENSION = /^\/api\/(bia-applications|bia-news|bia-rehber)\.js$/;
 
 const HOP_BY_HOP = new Set(['connection', 'keep-alive', 'transfer-encoding', 'upgrade', 'proxy-connection', 'te', 'trailer', 'content-length']);
 const HEALTH_PATH = '/__saglik';

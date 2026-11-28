@@ -93,6 +93,18 @@ test('API yolları gerçek işleyicilere gider (başvurular: PostgreSQL, haberle
   assert.equal(unauthorized.status, 401);
 });
 
+test('sistem rehberi API\'si gerçek işleyiciye gider ve yalnızca yöneticiye açıktır; sayfası /yonetim/rehber', async () => {
+  const yetkisiz = await realApp.request('/api/bia-rehber');
+  assert.equal(yetkisiz.status, 401);
+  assert.equal(yetkisiz.headers['cache-control'], 'no-store');
+  const uzantili = await realApp.request('/api/bia-rehber.js');
+  assert.equal(uzantili.status, 308);
+  assert.equal(uzantili.headers.location, '/api/bia-rehber');
+  const sayfa = await realApp.request('/yonetim/rehber');
+  assert.equal(sayfa.status, 200);
+  assert.match(sayfa.headers['x-robots-tag'] || '', /noindex/);
+});
+
 test('istemci IP: X-Forwarded-For\'daki ilk adres deneme sınırına ulaşır', async () => {
   resetLoginAttempts();
   const login = (ip, password) => realApp.request('/api/bia-applications', {
