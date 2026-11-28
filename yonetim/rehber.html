@@ -141,17 +141,18 @@ textarea.kaynak{min-height:300px;font:13px/1.6 var(--mono);resize:vertical}
 .secim{display:flex;gap:8px;align-items:flex-start;font-size:14px;color:var(--ikincil);margin:12px 0 4px}
 .kasa-arac{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;margin:4px 0 18px}
 .kasa-arac .arama-kasa{flex:1;min-width:200px;border:0;border-bottom:1px solid var(--cizgi-koyu);background:transparent;color:var(--murekkep);font:inherit;padding:5px 0;outline:none}
-.defter{width:100%;border-collapse:collapse;font-size:14.5px}
+.defter{width:100%;border-collapse:collapse;font-size:14.5px;table-layout:fixed}
 .defter th{text-align:left;font:600 11px/1.4 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--ikincil);padding:0 12px 8px 0;border-bottom:1px solid var(--murekkep)}
 .defter td{padding:11px 12px 11px 0;border-bottom:1px solid var(--cizgi);vertical-align:top}
 .defter .hizmet b{display:block;font-weight:600}
 .defter .hizmet small{display:block;color:var(--ikincil);font-size:13px;line-height:1.4;margin-top:2px}
 .defter .hizmet a{font-size:13px}
-.deger{font:13.5px var(--mono);word-break:break-all}
-.deger.bos{font:italic 13.5px var(--sans);color:var(--soluk);white-space:nowrap}
-.defter th:nth-child(1){width:46%}.defter th:nth-child(2){width:28%}
+.deger{font:13.5px var(--mono);overflow-wrap:anywhere}
+.deger.bos{font:italic 13.5px var(--sans);color:var(--soluk)}
+.defter th:nth-child(1){width:44%}.defter th:nth-child(2){width:28%}.defter th:nth-child(3){width:28%}
+.yazi .defter td:first-child{white-space:normal;font-weight:400}
 .satir-eylem{margin-top:7px}
-.eylemler{display:flex;gap:10px;margin-top:3px}
+.eylemler{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:3px}
 .eylemler button{border:0;background:none;padding:0;font:600 11px/1.6 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--ikincil)}
 .eylemler button:hover{color:var(--vurgu)}
 .ayrinti td{padding-top:0;color:var(--ikincil);font-size:13.5px}
@@ -195,6 +196,7 @@ dialog::backdrop{background:rgba(20,18,16,.4)}
   .defter thead{display:none}
   .defter tr:not(.ayrinti){display:grid;grid-template-columns:1fr;border-bottom:1px solid var(--cizgi);padding:8px 0}
   .defter td{border:0;padding:3px 0}
+  .defter td[data-etiket]::before{content:attr(data-etiket);display:block;font:600 11px/1.6 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--soluk);margin-top:4px}
   .ayrinti dl{grid-template-columns:1fr}
 }
 @media print{.ust,.dizin,#kasa,.kaydet-cubugu,.baglanti,.kopyala,.kopya-mini{display:none!important}.duzen{display:block}}
@@ -643,7 +645,7 @@ function kasaCiz() {
       <button class="metin-dugme" type="button" id="kParolaDegistir">Kasa şifresini değiştir</button>
       ${durum.gecmis.kasa.length ? '<button class="metin-dugme" type="button" id="kGecmis">Önceki sürümler</button>' : ''}
     </div>
-    <div class="tablo-kaydir"><table class="defter"><thead><tr><th>Hizmet</th><th>Kullanıcı adı</th><th>Şifre</th></tr></thead><tbody id="kListe"></tbody></table></div></div>`;
+    <table class="defter"><thead><tr><th>Hizmet</th><th>Kullanıcı adı</th><th>Şifre ya da anahtar</th></tr></thead><tbody id="kListe"></tbody></table></div>`;
   $('#kKilitle').onclick = () => { if (durum.kasa.degisti && !confirm('Kaydedilmemiş değişiklikler silinsin mi?')) return; kasaKilitle(); };
   $('#kAra').oninput = (e) => { durum.kasa.filtre = e.target.value; kasaListeCiz(); };
   $('#kEkle').onclick = () => hesapDuzenle(-1);
@@ -654,7 +656,7 @@ function kasaCiz() {
 function gizliOzet(deger) { const n = String(deger).split('\n').length; return '••••••••••' + (n > 1 ? `  (${n} satır)` : ''); }
 function degerHucre(deger, sira, alan, gizli) {
   if (!deger) return '<span class="deger bos">girilmedi</span>';
-  return `<span class="deger" ${gizli ? `data-gizli="${sira}-${alan}"` : ''}>${esc(gizli ? '••••••••••' : deger)}</span>
+  return `<span class="deger" ${gizli ? `data-gizli="${sira}-${alan}"` : ''}>${esc(gizli ? gizliOzet(deger) : deger)}</span>
     <div class="eylemler">${gizli ? `<button type="button" data-goster="${sira}-${alan}">Göster</button>` : ''}<button type="button" data-kopya-kasa="${sira}-${alan}">Kopyala</button></div>`;
 }
 function kasaListeCiz() {
@@ -664,11 +666,13 @@ function kasaListeCiz() {
   liste.innerHTML = kayitlar.length ? kayitlar.map(({ k, sira }) => {
     const adres = k.adres && guvenliAdres(k.adres) ? `<a href="${esc(k.adres)}" target="_blank" rel="noopener noreferrer">${esc(k.adres.replace(/^https?:\/\//, ''))}</a>${kopyaDugmesi(k.adres)}` : esc(k.adres || '');
     const acik = durum.kasa.acikAyrinti.has(sira);
+    // Şifresi olmayıp anahtarı olan kayıtta (ör. sunucu erişimi) anahtar doğrudan şifre sütununda görünür
+    const anahtarSutunda = !k.sifre && !!k.anahtar;
     return `<tr><td class="hizmet"><b>${esc(k.hizmet)}</b>${k.amac ? `<small>${esc(k.amac)}</small>` : ''}${adres ? `<small>${adres}</small>` : ''}
-        <div class="eylemler satir-eylem">${k.ikiAdim || k.not || k.anahtar ? `<button type="button" data-ayrinti="${sira}">${acik ? 'Ayrıntıyı kapat' : 'Ayrıntı'}</button>` : ''}<button type="button" data-duzenle="${sira}">Düzenle</button><button type="button" data-sil="${sira}">Sil</button></div></td>
-      <td>${degerHucre(k.kullanici, sira, 'kullanici', false)}</td>
-      <td>${degerHucre(k.sifre, sira, 'sifre', true)}</td></tr>` +
-      (acik ? `<tr class="ayrinti"><td colspan="3"><dl>${k.anahtar ? `<dt>Anahtar</dt><dd><span class="deger" data-gizli="${sira}-anahtar">${esc(gizliOzet(k.anahtar))}</span><span class="eylemler"><button type="button" data-goster="${sira}-anahtar">Göster</button><button type="button" data-kopya-kasa="${sira}-anahtar">Kopyala</button></span></dd>` : ''}${k.ikiAdim ? `<dt>İki adım</dt><dd>${esc(k.ikiAdim)} <button class="kopya-mini" type="button" data-kopya-kasa="${sira}-ikiAdim" aria-label="Kopyala"></button></dd>` : ''}${k.not ? `<dt>Not</dt><dd>${esc(k.not)}</dd>` : ''}<dt>Güncelleme</dt><dd>${esc(tarih(k.guncellendi))}</dd></dl></td></tr>` : '');
+        <div class="eylemler satir-eylem">${k.ikiAdim || k.not || (k.anahtar && !anahtarSutunda) ? `<button type="button" data-ayrinti="${sira}">${acik ? 'Ayrıntıyı kapat' : 'Ayrıntı'}</button>` : ''}<button type="button" data-duzenle="${sira}">Düzenle</button><button type="button" data-sil="${sira}">Sil</button></div></td>
+      <td data-etiket="Kullanıcı adı">${degerHucre(k.kullanici, sira, 'kullanici', false)}</td>
+      <td data-etiket="${anahtarSutunda ? 'Anahtar' : 'Şifre'}">${anahtarSutunda ? degerHucre(k.anahtar, sira, 'anahtar', true) : degerHucre(k.sifre, sira, 'sifre', true)}</td></tr>` +
+      (acik ? `<tr class="ayrinti"><td colspan="3"><dl>${k.anahtar && !anahtarSutunda ? `<dt>Anahtar</dt><dd><span class="deger" data-gizli="${sira}-anahtar">${esc(gizliOzet(k.anahtar))}</span><span class="eylemler"><button type="button" data-goster="${sira}-anahtar">Göster</button><button type="button" data-kopya-kasa="${sira}-anahtar">Kopyala</button></span></dd>` : ''}${k.ikiAdim ? `<dt>İki adım</dt><dd>${esc(k.ikiAdim)} <button class="kopya-mini" type="button" data-kopya-kasa="${sira}-ikiAdim" aria-label="Kopyala"></button></dd>` : ''}${k.not ? `<dt>Not</dt><dd>${esc(k.not)}</dd>` : ''}<dt>Güncelleme</dt><dd>${esc(tarih(k.guncellendi))}</dd></dl></td></tr>` : '');
   }).join('') : `<tr><td colspan="3" style="color:var(--ikincil)">${q ? 'Aramaya uyan hesap yok.' : 'Kasada henüz hesap yok. “Hesap ekle” ile başlayın.'}</td></tr>`;
   liste.querySelectorAll('[data-kopya-kasa]').forEach((d) => d.onclick = () => {
     const [s, alan] = d.dataset.kopyaKasa.split('-');
