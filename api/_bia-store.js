@@ -14,7 +14,7 @@ import pg from 'pg';
 
 export const ARCHIVE_TABLE = 'bia_archives';
 
-const SCHEMA_SQL = `CREATE TABLE IF NOT EXISTS ${ARCHIVE_TABLE} (
+export const ARCHIVE_SCHEMA_SQL = `CREATE TABLE IF NOT EXISTS ${ARCHIVE_TABLE} (
   archive_name text PRIMARY KEY,
   data jsonb NOT NULL,
   version bigint NOT NULL DEFAULT 1,
@@ -90,7 +90,7 @@ export function ensureArchiveSchema() {
   if (!schemaReady) {
     let pending;
     try {
-      pending = Promise.resolve(db().query(SCHEMA_SQL, []));
+      pending = Promise.resolve(db().query(ARCHIVE_SCHEMA_SQL, []));
     } catch (error) {
       pending = Promise.reject(error);
     }
