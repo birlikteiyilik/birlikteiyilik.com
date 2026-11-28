@@ -1,0 +1,111 @@
+# Ana siteyi sunucuya yayınlar (uygulama: site). Sözleşme: sunucu-kurulum/SOZLESME.md
+# Gerekli sırlar: SUNUCU_SSH_ANAHTARI, SUNUCU_BILINEN_HOST, SUNUCU_ADRESI.
+# Sunucudaki deploy anahtarı yalnızca iki komuta izin verir: gelen/<sha> klasörüne rsync ve
+# `sudo /usr/local/bin/birlikte-yayinla site <sha>`. SSH ile başka hiçbir şey çalıştırılmaz.
+name: Sunucuya yayın
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: sunucu-yayin-site-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  yayin:
+    name: Test ve yayın (site)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Bağımlılıkları kur
+        run: npm ci --no-audit --no-fund
+
+      - name: Testler
+        run: npm test
+
+      - name: Sürüm klasörünü hazırla
+        run: |
+          set -euo pipefail
+          SURUM_KLASORU="$RUNNER_TEMP/surum"
+          # git'te izlenen dosyalar; geliştirme dosyaları, testler, kaynaklar ve belgeler hariç.
+          node sunucu/surum-hazirla.mjs "$SURUM_KLASORU"
+          # Yalnızca üretim bağımlılıkları (pg). Kurulum betiği çalıştırılmaz.
+          (cd "$SURUM_KLASORU" && npm ci --omit=dev --ignore-scripts --no-audit --no-fund)
+          # Gerekenler var, geliştirme dosyaları yok.
+          for gerekli in sunucu/server.mjs sunucu/uygulama.mjs sunucu/tasima/arsivleri-ac.mjs vercel.json package.json \
+            api/bia-applications.js api/bia-news.js 404/index.html index.html sw.js yoklama/index.html node_modules/pg/package.json; do
+            test -e "$SURUM_KLASORU/$gerekli" || { echo "eksik: $gerekli"; exit 1; }
+          done
+          for yasak in .git .github .hallmark .gitignore _src tests sunucu/test sunucu/surum-hazirla.mjs yon/remotion content/applications node_modules/@electric-sql/pglite BASVURU-KURULUM.md; do
+            test ! -e "$SURUM_KLASORU/$yasak" || { echo "sürümde olmamalı: $yasak"; exit 1; }
+          done
+          test -z "$(find "$SURUM_KLASORU" -name '*.md' -not -path '*/node_modules/*' -print -quit)" || { echo "sürümde .md dosyası var"; exit 1; }
+          du -sh "$SURUM_KLASORU"
+          echo "SURUM_KLASORU=$SURUM_KLASORU" >> "$GITHUB_ENV"
+
+      - name: Sürüm klasörünü kendi başına çalıştırıp dene
+        run: |
+          set -euo pipefail
+          PORT=3999 APP_ENV=test BIA_JWT_SECRET=yalnizca-deneme node "$SURUM_KLASORU/sunucu/server.mjs" > "$RUNNER_TEMP/sunucu.log" 2>&1 &
+          SUNUCU_PID=$!
+          trap 'kill "$SUNUCU_PID" 2>/dev/null || true' EXIT
+          for _ in $(seq 1 50); do curl -fsS -o /dev/null http://127.0.0.1:3999/ && break; sleep 0.2; done
+          kod() { curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:3999$1"; }
+          test "$(kod /)" = 200
+          test "$(kod /yoklama)" = 200
+          test "$(kod /index.html)" = 308
+          test "$(kod /package.json)" = 404
+          test "$(kod /vercel.json)" = 404
+          test "$(kod /api/bia-news.js)" = 308
+          test "$(kod '/api/bia-news?type=gizli&public=1')" = 400
+          test "$(kod /__saglik)" = 503   # burada veritabanı yok
+          kill "$SUNUCU_PID"
+          wait "$SUNUCU_PID" || true
+          cat "$RUNNER_TEMP/sunucu.log"
+
+      - name: SSH ayarı
+        env:
+          SUNUCU_SSH_ANAHTARI: ${{ secrets.SUNUCU_SSH_ANAHTARI }}
+          SUNUCU_BILINEN_HOST: ${{ secrets.SUNUCU_BILINEN_HOST }}
+        run: |
+          set -euo pipefail
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$SUNUCU_SSH_ANAHTARI" > "$HOME/.ssh/yayin_anahtari"
+          chmod 600 "$HOME/.ssh/yayin_anahtari"
+          printf '%s\n' "$SUNUCU_BILINEN_HOST" > "$HOME/.ssh/known_hosts"
+          chmod 644 "$HOME/.ssh/known_hosts"
+          echo "SSH_KOMUTU=ssh -i $HOME/.ssh/yayin_anahtari -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=$HOME/.ssh/known_hosts" >> "$GITHUB_ENV"
+
+      # -c: değişmeyen dosyalar (yaklaşık 1 GB medya) sağlama toplamıyla tanınır ve yeniden
+      # gönderilmez; --link-dest ile şu anki sürümden sabit bağlantıyla alınır.
+      - name: Dosyaları sunucuya gönder
+        env:
+          SUNUCU_ADRESI: ${{ secrets.SUNUCU_ADRESI }}
+        run: |
+          rsync -rlc --delete --link-dest=/srv/site/simdiki/ -e "$SSH_KOMUTU" \
+            "$SURUM_KLASORU/" "deploy@${SUNUCU_ADRESI}:/srv/site/gelen/${GITHUB_SHA}/"
+
+      - name: Yayınla (servis yeniden başlar, sağlık kontrolü beklenir)
+        env:
+          SUNUCU_ADRESI: ${{ secrets.SUNUCU_ADRESI }}
+        run: $SSH_KOMUTU "deploy@${SUNUCU_ADRESI}" "sudo /usr/local/bin/birlikte-yayinla site ${GITHUB_SHA}"
+
+      - name: SSH anahtarını sil
+        if: always()
+        run: rm -f "$HOME/.ssh/yayin_anahtari"
