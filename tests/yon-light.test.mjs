@@ -2,8 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync, existsSync} from 'node:fs';
 import {resolve} from 'node:path';
+import {fileURLToPath} from 'node:url';
 import vm from 'node:vm';
-const root = new URL('../', import.meta.url).pathname;
+// fileURLToPath: depo yolunda boşluk olduğunda da (%20) doğru klasörü bulur.
+const root = fileURLToPath(new URL('../', import.meta.url));
 const html = readFileSync(resolve(root, 'yon/index.html'), 'utf8');
 
 test('all local images, video, CSS, scripts and PDF links exist', () => {
