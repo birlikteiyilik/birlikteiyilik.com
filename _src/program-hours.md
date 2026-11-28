@@ -17,7 +17,7 @@ Program, başvurudaki müsait saatler, hoca seçimine göre öğrenci atama saat
 
 ## Kayıt ve tutarlılık
 
-`program-hours-save` yalnızca yöneticilere açıktır. Ortak liste `planning.enc.json` içindeki `kind: "program-hours"` kaydında, özel liste hocanın `programSlots` alanında saklanır. `programRevision` eşzamanlı düzenlemelerde eski pencerenin yeni programı ezmesini engeller. Tüm program/atama değişikliği aynı şifreli arşiv yazımında yapılır; öğrenci geçmişi mevcut mekanizmayla kaydedilir. Öğretmen bilgilerini düzenlemek özel saatleri silmez.
+`program-hours-save` yalnızca yöneticilere açıktır. Ortak liste `planning.enc.json` içindeki `kind: "program-hours"` kaydında, özel liste hocanın `programSlots` alanında saklanır. `programRevision` eşzamanlı düzenlemelerde eski pencerenin yeni programı ezmesini engeller. Tüm program/atama değişikliği aynı arşiv yazımında yapılır; öğrenci geçmişi mevcut mekanizmayla kaydedilir. Öğretmen bilgilerini düzenlemek özel saatleri silmez.
 
 Değişiklik günü İstanbul saatine göre belirlenir. Önceki günlerdeki program `programScheduleHistory` içinde korunur; yoklama ve devamsızlık raporları ilgili günün programını kullanır. Önceki günlerin yoklamaları ve saatleri değiştirilmez. Bugüne ait alınmış yoklamanın durumu ve notu aynı derse bağlı kalır; ilk kayıt saati `slotAtAttendance` alanında korunur. Eski günlere dönük yönetici yoklama düzeltmesi o günün programını kullanır.
 
@@ -25,6 +25,6 @@ Değişiklik günü İstanbul saatine göre belirlenir. Önceki günlerdeki prog
 
 ## Doğrulama
 
-`node --test tests/*.test.mjs` ortak ve seçili hoca kapsamlarını, ekleme/değiştirme/boş saati kaldırmayı, çakışmaları, yetkileri, eski revizyonu, geçmiş günlerin oranlarını ve Excel modelini kapsar. API testleri şifreli arşivi taklit eder. Tarayıcı kontrolleri örnek kayıtlarla masaüstü, 390px ve 320px ekranlarda çalıştırılır; canlı öğrenci verileri veya program ayarları değiştirilmez. Kullanıcı incelemesinden önce yayın yapılmaz.
+`node --test tests/*.test.mjs` ortak ve seçili hoca kapsamlarını, ekleme/değiştirme/boş saati kaldırmayı, çakışmaları, yetkileri, eski revizyonu, geçmiş günlerin oranlarını ve Excel modelini kapsar. API testleri bellek içi PostgreSQL (PGlite) kullanır. Tarayıcı kontrolleri örnek kayıtlarla masaüstü, 390px ve 320px ekranlarda çalıştırılır; canlı öğrenci verileri veya program ayarları değiştirilmez. Kullanıcı incelemesinden önce yayın yapılmaz.
 
-`tests/neon-program-hours.test.mjs` gerçek API işleyicisi, AES-GCM şifreleme ve Neon sürücüsü üzerinden kayıt/yeniden okuma akışını doğrular; uzak SQL servisi test verileriyle taklit edilir. Aynı anda iki program kaydı, başka bir arşiv güncellemesiyle çakışma ve yeniden deneme, veritabanı yazma hatası, ilk kayıt ve yetkisiz erişim de kapsanır. Eski revizyon reddedildiğinde kullanıcı sayfayı yenileyerek güncel saatleri ve revizyonu alır.
+`tests/program-hours-store.test.mjs` gerçek API işleyicisi ve gerçek PostgreSQL sorgularıyla (bellek içi PGlite) kayıt/yeniden okuma akışını doğrular. Aynı anda iki program kaydı, başka bir arşiv güncellemesiyle çakışma ve yeniden deneme, veritabanı yazma hatası, ilk kayıt ve yetkisiz erişim de kapsanır. Eski revizyon reddedildiğinde kullanıcı sayfayı yenileyerek güncel saatleri ve revizyonu alır.
