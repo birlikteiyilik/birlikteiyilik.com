@@ -1,4 +1,4 @@
-// Events live in the same encrypted archive/write as the change they describe.
+// Events live in the same archive/write as the change they describe.
 // This avoids partial two-archive updates and includes them in existing backups.
 function event(type, actor, at, details = {}) {
   return { id: crypto.randomUUID(), type, actor, at, ...details };

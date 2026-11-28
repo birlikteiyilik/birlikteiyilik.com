@@ -1,53 +1,14 @@
 import assert from 'node:assert/strict';
 import handler from '../api/bia-applications.js';
+import { createTestStore } from './_pglite-store.mjs';
 
-process.env.BIA_GITHUB_TOKEN = 'test-token';
+// Gerçek işleyici, gerçek PostgreSQL sorguları (bellekte PGlite) ve iyimser eşzamanlılık.
 process.env.BIA_JWT_SECRET = 'test-jwt-secret-with-enough-entropy';
-process.env.BIA_APPLICATIONS_ENCRYPTION_KEY = 'test-encryption-secret-with-enough-entropy';
 process.env.BIA_LISTE_PASSWORD = 'test-directory-password-2026';
 
-let putPayload = null;
-let shaCounter = 0;
-let conflictNextPut = false;
-const remoteFiles = new Map();
-const originalFetch = globalThis.fetch;
-globalThis.fetch = async (url, options = {}) => {
-  const method = options.method || 'GET';
-  const marker = '/contents/content/applications';
-  const path = new URL(url).pathname;
-  const fileName = decodeURIComponent(path.slice(path.indexOf(marker) + marker.length).replace(/^\//, ''));
-  if (method === 'GET' && !fileName) {
-    return new Response(JSON.stringify([...remoteFiles.keys()].map((name) => ({ type: 'file', name }))), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
-    });
-  }
-  if (method === 'GET') {
-    const stored = remoteFiles.get(fileName);
-    if (stored) {
-      return new Response(JSON.stringify(stored), { status: 200, headers: { 'Content-Type': 'application/json' } });
-    }
-    return new Response(JSON.stringify({ message: 'Not Found' }), {
-      status: 404,
-      headers: { 'Content-Type': 'application/json' }
-    });
-  }
-  putPayload = JSON.parse(options.body);
-  if (conflictNextPut) {
-    conflictNextPut = false;
-    return new Response(JSON.stringify({ message: 'Conflict' }), { status: 409 });
-  }
-  const current = remoteFiles.get(fileName);
-  if (current && putPayload.sha !== current.sha) {
-    return new Response(JSON.stringify({ message: 'Conflict' }), { status: 409, headers: { 'Content-Type': 'application/json' } });
-  }
-  const sha = `test-sha-${++shaCounter}`;
-  remoteFiles.set(fileName, { content: putPayload.content, sha });
-  return new Response(JSON.stringify({ content: { sha } }), {
-    status: 201,
-    headers: { 'Content-Type': 'application/json' }
-  });
-};
+const store = await createTestStore();
+await store.reset();
+const currentMonthArchive = `${new Date().toISOString().slice(0, 7)}.enc.json`;
 
 const validSubmission = {
   action: 'submit',
@@ -90,11 +51,13 @@ const result = await response.json();
 assert.equal(response.status, 201);
 assert.equal(result.ok, true);
 assert.match(result.reference, /^BIA-\d{8}-[A-Z0-9]{6}$/);
-assert.ok(putPayload?.content, 'GitHub payload should be produced');
-
-const storedEnvelope = Buffer.from(putPayload.content, 'base64').toString('utf8');
-assert.doesNotMatch(storedEnvelope, /Test Öğrenci|10000000146|05321112233/);
-assert.equal(JSON.parse(storedEnvelope).alg, 'AES-256-GCM');
+const storedArchive = await store.row(currentMonthArchive);
+assert.equal(storedArchive.version, 1, 'first submission creates the monthly archive');
+assert.equal(storedArchive.data.length, 1);
+assert.equal(storedArchive.data[0].studentName, 'Test Öğrenci');
+assert.equal(storedArchive.data[0].tckn, '10000000146');
+assert.equal(storedArchive.data[0].reference, result.reference);
+assert.deepEqual(await store.names(), [currentMonthArchive], 'submission does not create other archives');
 
 const invalidResponse = await handler(new Request('http://localhost:4173/api/bia-applications', {
   method: 'POST',
@@ -263,9 +226,18 @@ assert.ok(initialHistory.history.some((e) => e.type === 'status-changed' && e.af
 assert.ok(!('tckn' in initialHistory.application));
 assert.equal((await adminPost({ action: 'update', id: firstApplication.id, createdAt: firstApplication.createdAt, status: 'kayit-tamamlandi', adminNote: 'Plan hazır.' })).status, 200);
 assert.equal((await getHistory()).history.length, initialHistory.history.length, 'no-op save must not duplicate history');
-conflictNextPut = true;
+// Kayıttan hemen önce başka bir oturum planlamayı yazmış gibi sürümü artır: ilk yazma
+// reddedilir, işlem güncel arşivle yeniden denenir ve yalnızca bir olay kaydedilir.
+store.state.beforeWrite = async (db) => {
+  await db.query("UPDATE bia_archives SET version = version + 1 WHERE archive_name = 'planning.enc.json'");
+};
+const planningVersionBeforeConflict = (await store.row('planning.enc.json')).version;
+const writesBeforeConflict = store.state.writes;
 assert.equal((await adminPost({ action: 'placement-save', applicationId: firstApplication.id, applicationCreatedAt: firstApplication.createdAt,
   startDate: '2020-01-01', schedule: splitSchedule.map((entry) => ({ ...entry, slot: '15:20-15:40' })) })).status, 200);
+assert.equal(store.state.beforeWrite, null, 'the concurrent write was injected');
+assert.equal(store.state.writes - writesBeforeConflict, 2, 'rejected write is retried exactly once');
+assert.equal((await store.row('planning.enc.json')).version, planningVersionBeforeConflict + 2);
 let changedHistory = await getHistory();
 assert.equal(changedHistory.history.filter((e) => e.type === 'placement-changed').length, 1, 'CAS retry must only persist one event');
 assert.equal(changedHistory.history.find((e) => e.type === 'placement-changed').before.schedule[0].slot, '15:00-15:20');
@@ -760,5 +732,5 @@ assert.equal(emptyList.teachers.length, 0);
 assert.equal(emptyList.placements.length, 0);
 assert.equal(emptyList.attendance.length, 0);
 
-globalThis.fetch = originalFetch;
+await store.close();
 console.log('bia-applications tests passed');

@@ -1,19 +1,12 @@
-import {
-  ensureArchiveSchema,
-  insertArchiveEnvelope,
-  listArchiveEnvelopes,
-  neonSql,
-  readArchiveEnvelope,
-  updateArchiveEnvelope
-} from './_bia-neon-store.js';
+import { archiveStamp, listArchiveVersions, loadArchive, saveArchive, storeConfigured } from './_bia-store.js';
+import { clientIpFrom, rateLimitMessage, takeLoginAttempt } from './_bia-rate-limit.js';
 import { applicationHistory, trackApplicationChanges } from './_bia-application-history.js';
 import { DEFAULT_PROGRAM_SLOTS, applyProgramHours, availableProgramSlots, programDay, programHours, scheduleForDate, scheduleHistory, teacherProgramSlots } from './_bia-program-hours.js';
 
-export const config = { runtime: 'edge' };
-
-const DEFAULT_REPO = 'birlikteiyilik/birlikteiyilik.com';
-const GH_API = 'https://api.github.com';
+// Arşiv adları geçmişten kalma ".enc.json" ekini korur; veriler artık düz JSONB olarak
+// PostgreSQL'de tutulur (bkz. _bia-store.js).
 const PLANNING_FILE = 'planning.enc.json';
+const APPLICATION_ARCHIVE_PATTERN = /^\d{4}-\d{2}\.enc\.json$/;
 const STATUS_VALUES = ['yeni', 'inceleniyor', 'uygun', 'yedek', 'kayit-tamamlandi', 'uygun-degil'];
 const WEEKDAYS = ['pazartesi', 'sali', 'carsamba', 'persembe', 'cuma'];
 const TIME_SLOTS = DEFAULT_PROGRAM_SLOTS;
@@ -65,35 +58,43 @@ class RequestError extends Error {
   }
 }
 
-// Depolama/şifre çözme hatalarını sınıflandırır. Önceden tüm hatalar sessizce
-// "şifreleme anahtarı" mesajına dönüşüyordu ve Vercel loglarına hiçbir şey düşmüyordu.
+// Depolama hatalarını sınıflandırır: günlüğe gerçek sebep yazılır, yöneticiye anlaşılır bir
+// açıklama gösterilir. PostgreSQL hata kodları: https://www.postgresql.org/docs/current/errcodes-appendix.html
 function classifyStorageError(error) {
   const name = String(error?.name || '');
-  const text = [error?.message, error?.sourceError?.message, error?.cause?.message].filter(Boolean).join(' ');
-  if (name === 'OperationError') {
-    return { reason: 'sifre-cozme', message: 'Şifreli arşiv mevcut anahtarla açılamadı. Vercel\'deki BIA_APPLICATIONS_ENCRYPTION_KEY (yoksa BIA_JWT_SECRET / BIA_ADMIN_PASSWORD) değeri değişmiş olabilir.' };
+  const code = String(error?.code || '');
+  const text = [error?.message, error?.cause?.message].filter(Boolean).join(' ');
+  if (name === 'StoreConfigError') {
+    return { reason: 'veritabani-ayarsiz', message: 'Veritabanı bağlantısı yapılandırılmamış. Sunucudaki DATABASE_URL değerini kontrol edin.' };
   }
-  if (/quota/i.test(text)) {
-    return { reason: 'neon-kota', message: 'Neon veritabanı kullanım kotası dolmuş. Neon hesabındaki kullanım ve plan sayfasını kontrol edin.' };
+  if (name === 'ArchiveFormatError') {
+    return { reason: 'arsiv-bicimi', message: 'Başvuru arşivi beklenen biçimde değil. Veritabanındaki arşiv kaydını yedekten kontrol edin.' };
   }
-  if (/password authentication failed|authentication failed|role "?[^"\s]*"? does not exist/i.test(text)) {
-    return { reason: 'neon-kimlik', message: 'Neon veritabanı giriş bilgisi geçersiz. Vercel\'deki DATABASE_URL değerini kontrol edin.' };
+  if (['28P01', '28000'].includes(code) || /password authentication failed|peer authentication failed|authentication failed|role "?[^"\s]*"? does not exist/i.test(text)) {
+    return { reason: 'veritabani-kimlik', message: 'Veritabanı girişi reddedildi. Sunucudaki DATABASE_URL değerini ve PostgreSQL rolünü kontrol edin.' };
   }
-  if (/relation "?bia_encrypted_archives"? does not exist|database "?[^"\s]*"? does not exist/i.test(text)) {
-    return { reason: 'neon-bos-veritabani', message: 'DATABASE_URL başvuru tablosu olmayan bir veritabanını gösteriyor. Vercel\'deki DATABASE_URL değerini kontrol edin.' };
+  if (code === '3D000' || /database "?[^"\s]*"? does not exist/i.test(text)) {
+    return { reason: 'veritabani-yok', message: 'DATABASE_URL var olmayan bir veritabanını gösteriyor. Sunucudaki DATABASE_URL değerini kontrol edin.' };
   }
-  if (/endpoint[^.]*(disabled|not found|does not exist)|project[^.]*(not found|suspended|disabled)/i.test(text)) {
-    return { reason: 'neon-proje', message: 'Neon veritabanı projesi bulunamadı veya devre dışı. Neon panelini kontrol edin.' };
+  if (code === '42P01' || code === '42501') {
+    return { reason: 'veritabani-tablo', message: 'Başvuru tablosuna erişilemedi. Veritabanı sahibini ve tablo izinlerini kontrol edin.' };
   }
-  if (name === 'NeonDbError' || /fetch failed|ECONN|ETIMEDOUT|timed? ?out|network|connect/i.test(text)) {
-    return { reason: 'neon-baglanti', message: 'Neon veritabanına ulaşılamadı. Neon durumunu ve Vercel\'deki DATABASE_URL değerini kontrol edin.' };
+  if (code === '53300' || /too many (clients|connections)/i.test(text)) {
+    return { reason: 'veritabani-dolu', message: 'Veritabanı bağlantı sınırı doldu. Biraz sonra yeniden deneyin.' };
+  }
+  if (code === '57014' || /statement timeout|canceling statement/i.test(text)) {
+    return { reason: 'veritabani-zaman-asimi', message: 'Veritabanı zamanında yanıt vermedi. Biraz sonra yeniden deneyin.' };
+  }
+  if (['ECONNREFUSED', 'ENOENT', 'ETIMEDOUT', 'EHOSTUNREACH', 'ECONNRESET', '57P01', '57P03'].includes(code) ||
+    /ECONN|ETIMEDOUT|ENOENT|connection terminated|timeout exceeded when trying to connect|the database system is (starting up|shutting down)|connect/i.test(text)) {
+    return { reason: 'veritabani-baglanti', message: 'Veritabanına ulaşılamadı. Sunucudaki PostgreSQL servisini ve DATABASE_URL değerini kontrol edin.' };
   }
   return null;
 }
 
 function logStorageError(context, error) {
   const classified = classifyStorageError(error);
-  const detail = [error?.name, error?.message, error?.sourceError?.message].filter(Boolean).join(': ').slice(0, 500);
+  const detail = [error?.name, error?.code, error?.message].filter(Boolean).join(': ').replace(/\s+/g, ' ').slice(0, 500);
   console.error(`[bia-applications] ${context} başarısız (${classified?.reason || 'bilinmiyor'}) ${detail}`);
   return classified;
 }
@@ -183,38 +184,6 @@ async function verifyJwt(token, secret) {
   } catch (_) {
     return null;
   }
-}
-
-async function getEncryptionKey(secret) {
-  const digest = await crypto.subtle.digest('SHA-256', encoder.encode(secret));
-  return crypto.subtle.importKey('raw', digest, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
-}
-
-async function encryptRecords(records, secret) {
-  const key = await getEncryptionKey(secret);
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-  const ciphertext = await crypto.subtle.encrypt(
-    { name: 'AES-GCM', iv }, key, encoder.encode(JSON.stringify(records))
-  );
-  return {
-    v: 1,
-    alg: 'AES-256-GCM',
-    iv: base64FromBytes(iv),
-    data: base64FromBytes(new Uint8Array(ciphertext))
-  };
-}
-
-async function decryptRecords(envelope, secret) {
-  if (!envelope || envelope.v !== 1 || !envelope.iv || !envelope.data) {
-    throw new Error('Başvuru arşivi biçimi geçersiz.');
-  }
-  const key = await getEncryptionKey(secret);
-  const plaintext = await crypto.subtle.decrypt(
-    { name: 'AES-GCM', iv: bytesFromBase64(envelope.iv) }, key, bytesFromBase64(envelope.data)
-  );
-  const records = JSON.parse(decoder.decode(plaintext));
-  if (!Array.isArray(records)) throw new Error('Başvuru arşivi okunamadı.');
-  return records;
 }
 
 function cleanText(value, maxLength) {
@@ -507,24 +476,24 @@ function demoTckn(index) {
   return [...firstNine, tenth, ([...firstNine, tenth].reduce((sum, digit) => sum + digit, 0) % 10)].join('');
 }
 
-function sameEncryptedEnvelope(left, right) {
-  return Boolean(left && right && left.v === right.v && left.alg === right.alg &&
-    left.iv === right.iv && left.data === right.data);
-}
+// Herkese açık ders saatleri (?action=program-hours) yalnızca planlama arşivinin damgası
+// (sürüm + xmin) değişince yeniden hesaplanır. Tek süreç çalıştığı için bellek yeterlidir.
+let programHoursCache = null; // { stamp, body }
 
-export default async function handler(req) {
-  const githubToken = process.env.BIA_GITHUB_TOKEN || '';
+/**
+ * @param {Request} req
+ * @param {{ clientIp?: string }} [context] Sunucunun güvendiği istemci IP'si (deneme sınırı için).
+ */
+export default async function handler(req, context) {
   const jwtSecret = process.env.BIA_JWT_SECRET || process.env.BIA_ADMIN_PASSWORD || '';
   const directoryPassword = process.env.BIA_LISTE_PASSWORD || '';
   const directoryJwtSecret = `${jwtSecret}:liste:v1`;
-  const encryptionSecret = process.env.BIA_APPLICATIONS_ENCRYPTION_KEY || jwtSecret;
-  const dataRepo = process.env.BIA_APPLICATIONS_REPO || DEFAULT_REPO;
-  const dataBranch = process.env.BIA_APPLICATIONS_BRANCH || 'main';
-  const dataPath = (process.env.BIA_APPLICATIONS_PATH || 'content/applications').replace(/^\/+|\/+$/g, '');
-  const useNeonStorage = process.env.BIA_APPLICATIONS_STORAGE === 'neon';
+  const clientIp = clientIpFrom(context);
   let historyActor = 'Veli başvurusu';
   let deletingApplications = false;
   let requestAction = req.method;
+  // Depolama sorunlarının ayrıntılı açıklaması yalnızca doğrulanmış yöneticiye gösterilir.
+  let showStorageDetail = false;
 
   const requestOrigin = req.headers.get('origin') || '';
   const allowedOrigin = requestOrigin === 'https://birlikteiyilik.com' || requestOrigin === 'https://www.birlikteiyilik.com' ||
@@ -536,75 +505,43 @@ export default async function handler(req) {
 
   if (req.method === 'OPTIONS') return new Response(null, { status: allowedOrigin ? 204 : 403, headers: cors });
   if (requestOrigin && !allowedOrigin) return json({ error: 'İzin verilmeyen istek kaynağı.' }, 403, cors);
-  if ((!useNeonStorage && !githubToken) || (useNeonStorage && !process.env.DATABASE_URL) || !jwtSecret || !encryptionSecret) {
+  if (!storeConfigured() || !jwtSecret) {
     return json({ error: 'Başvuru sistemi henüz yapılandırılmadı.' }, 503, cors);
   }
 
-  // Beklenen (RequestError) hatalar olduğu gibi döner; diğerleri Vercel loguna yazılır
-  // ve tanınan depolama sorunlarında kullanıcıya gerçek sebep gösterilir.
+  // Beklenen (RequestError) hatalar olduğu gibi döner; diğerleri sunucu günlüğüne (stderr)
+  // yazılır. Tanınan depolama sorunlarının açıklamasını yalnızca yönetici görür; diğer
+  // kullanıcılara iç ayrıntı içermeyen genel mesaj döner.
   function failure(error, fallback) {
     // RequestError ve yardımcı modüllerin kendi durum kodlu hataları (ör. ders saatleri 409).
     if (Number.isInteger(error?.status)) return json({ error: error.message }, error.status, cors);
     const classified = logStorageError(requestAction, error);
-    return json({ error: classified?.message || error?.message || fallback }, 500, cors);
+    return json({ error: (showStorageDetail && classified?.message) || fallback }, 500, cors);
   }
 
-  async function github(path, method, body) {
-    const response = await fetch(`${GH_API}${path}`, {
-      method: method || 'GET',
-      headers: {
-        'Authorization': `Bearer ${githubToken}`, 'Accept': 'application/vnd.github+json',
-        'Content-Type': 'application/json', 'X-GitHub-Api-Version': '2022-11-28',
-        'User-Agent': 'BIA-Applications/2.0'
-      },
-      ...(body ? { body: JSON.stringify(body) } : {})
-    });
-    const text = await response.text();
-    let data = {};
-    try { data = text ? JSON.parse(text) : {}; } catch (_) { data = {}; }
-    return { status: response.status, ok: response.ok, data };
-  }
-
-  async function getGithubArchiveEnvelope(fileName) {
-    const path = `/repos/${dataRepo}/contents/${dataPath}/${fileName}?ref=${encodeURIComponent(dataBranch)}`;
-    const response = await github(path);
-    if (response.status === 404) return { envelope: null, sha: '' };
-    if (!response.ok || !response.data.content) throw new Error('Başvuru arşivi okunamadı.');
-    const envelopeText = decoder.decode(bytesFromBase64(response.data.content));
-    return { envelope: JSON.parse(envelopeText), sha: response.data.sha || '' };
-  }
-
-  async function getArchive(fileName) {
-    if (useNeonStorage) {
-      const stored = await readArchiveEnvelope(fileName);
-      if (!stored) return { records: [], version: 0 };
-      return {
-        records: await decryptRecords(stored.envelope, encryptionSecret),
-        version: Number(stored.version)
-      };
+  // Giriş uçlarında IP başına deneme sınırı. Hatalı şifre (401) dışındaki sonuçlarda hak geri verilir.
+  async function limitedLogin(scope, attemptLogin) {
+    const attempt = takeLoginAttempt(scope, clientIp);
+    if (!attempt.ok) {
+      const response = json({ error: rateLimitMessage(attempt.retryAfter) }, 429, cors);
+      response.headers.set('Retry-After', String(attempt.retryAfter));
+      return response;
     }
-    const stored = await getGithubArchiveEnvelope(fileName);
-    if (!stored.envelope) return { records: [], sha: '' };
-    return { records: await decryptRecords(stored.envelope, encryptionSecret), sha: stored.sha };
-  }
-
-  async function putArchive(fileName, records, current, message) {
-    const envelope = await encryptRecords(records, encryptionSecret);
-    if (useNeonStorage) {
-      const savedRows = current.version
-        ? await updateArchiveEnvelope(fileName, envelope, current.version)
-        : await insertArchiveEnvelope(fileName, envelope);
-      return savedRows.length
-        ? { ok: true, status: 200, data: { content: { sha: `neon-${savedRows[0].version}` } } }
-        : { ok: false, status: 409, data: {} };
+    let response;
+    try {
+      response = await attemptLogin();
+    } finally {
+      if (response?.status !== 401) attempt.refund();
     }
-    const content = base64FromBytes(encoder.encode(JSON.stringify(envelope)));
-    return github(`/repos/${dataRepo}/contents/${dataPath}/${fileName}`, 'PUT', {
-      message, content, branch: dataBranch, ...(current.sha ? { sha: current.sha } : {})
-    });
+    return response;
   }
 
-  async function mutateArchive(fileName, mutator, message) {
+  function getArchive(fileName, knownStamp) {
+    return loadArchive(fileName, knownStamp);
+  }
+
+  // Oku → değiştir → sürüm koşuluyla yaz. Araya başka bir yazma girerse 3 kez yeniden dener.
+  async function mutateArchive(fileName, mutator, description) {
     for (let attempt = 0; attempt < 3; attempt += 1) {
       const current = await getArchive(fileName);
       const before = structuredClone(current.records);
@@ -612,10 +549,10 @@ export default async function handler(req) {
       if (!deletingApplications) trackApplicationChanges(before, result.records, {
         planning: fileName === PLANNING_FILE, actor: historyActor
       });
-      const saved = await putArchive(fileName, result.records, current, message);
-      if (saved.ok && saved.data.content?.sha) return result.value;
-      if (saved.status !== 409 && saved.status !== 422) throw new Error('Başvuru arşivi kaydedilemedi.');
+      const savedVersion = await saveArchive(fileName, result.records, current.version);
+      if (savedVersion) return result.value;
     }
+    console.error(`[bia-applications] ${requestAction} eşzamanlı yazma nedeniyle kaydedilemedi: ${description || fileName}`);
     throw new RequestError('Veriler aynı anda güncellendi. Lütfen tekrar deneyin.', 409);
   }
 
@@ -771,84 +708,16 @@ export default async function handler(req) {
     return application;
   }
 
+  // Aylık başvuru arşivleri, yeniden eskiye. Yalnızca ad, sürüm ve damga okunur; veri taşınmaz.
   async function getApplicationFiles() {
-    if (useNeonStorage) {
-      const rows = await listArchiveEnvelopes();
-      return rows.map((row) => row.archive_name)
-        .filter((fileName) => /^\d{4}-\d{2}\.enc\.json$/.test(fileName))
-        .sort((a, b) => b.localeCompare(a));
-    }
-    return getGithubApplicationFiles();
-  }
-
-  async function getGithubApplicationFiles() {
-    const listing = await github(`/repos/${dataRepo}/contents/${dataPath}?ref=${encodeURIComponent(dataBranch)}`);
-    if (listing.status !== 404 && (!listing.ok || !Array.isArray(listing.data))) throw new Error('Arşiv listelenemedi.');
-    return listing.status === 404 ? [] : listing.data
-      .filter((entry) => entry.type === 'file' && /^\d{4}-\d{2}\.enc\.json$/.test(entry.name))
-      .map((entry) => entry.name)
-      .sort((a, b) => b.localeCompare(a));
-  }
-
-  async function migrateEncryptedArchivesToNeon() {
-    if (useNeonStorage) throw new RequestError('Veritabanı zaten etkin. Taşıma işlemi reddedildi.', 409);
-    if (!process.env.DATABASE_URL) throw new RequestError('Neon bağlantısı yapılandırılmamış.', 503);
-    await ensureArchiveSchema();
-
-    const sourceNames = [...new Set([PLANNING_FILE, ...(await getGithubApplicationFiles())])].sort();
-    const initialRows = await listArchiveEnvelopes();
-    const sourceNameSet = new Set(sourceNames);
-    const unexpected = initialRows.filter((row) => !sourceNameSet.has(row.archive_name));
-    if (unexpected.length) {
-      throw new RequestError('Neon veritabanında kaynak arşivlerde bulunmayan kayıtlar var; taşıma güvenlik için durduruldu.', 409);
-    }
-
-    const initialByName = new Map(initialRows.map((row) => [row.archive_name, row]));
-    const summary = [];
-    for (const archiveName of sourceNames) {
-      const source = await getGithubArchiveEnvelope(archiveName);
-      if (!source.envelope) throw new RequestError(`Kaynak arşiv bulunamadı: ${archiveName}`, 409);
-      const existing = initialByName.get(archiveName);
-      if (existing && !sameEncryptedEnvelope(existing.envelope, source.envelope)) {
-        throw new RequestError(`Kaynak ve Neon arşivi farklı: ${archiveName}. Hiçbir mevcut Neon verisi üzerine yazılmadı.`, 409);
-      }
-      if (!existing) await insertArchiveEnvelope(archiveName, source.envelope);
-
-      const saved = await readArchiveEnvelope(archiveName);
-      if (!saved || !sameEncryptedEnvelope(saved.envelope, source.envelope)) {
-        throw new RequestError(`Neon arşiv doğrulaması başarısız: ${archiveName}`, 500);
-      }
-      const records = await decryptRecords(saved.envelope, encryptionSecret);
-      summary.push({ name: archiveName, records: records.length, encryptedBytes: JSON.stringify(saved.envelope).length });
-    }
-
-    // Re-read both stores immediately before cutover so a concurrent GitHub update
-    // cannot silently leave Neon with a stale copy.
-    const finalSourceNames = [...new Set([PLANNING_FILE, ...(await getGithubApplicationFiles())])].sort();
-    const finalRows = await listArchiveEnvelopes();
-    const finalByName = new Map(finalRows.map((row) => [row.archive_name, row]));
-    if (JSON.stringify(finalSourceNames) !== JSON.stringify(sourceNames) ||
-      JSON.stringify([...finalByName.keys()].sort()) !== JSON.stringify(sourceNames)) {
-      throw new RequestError('Arşiv listesi taşıma sırasında değişti; kesim yapılmadı. İşlemi yeniden deneyin.', 409);
-    }
-    for (const archiveName of sourceNames) {
-      const source = await getGithubArchiveEnvelope(archiveName);
-      if (!source.envelope || !sameEncryptedEnvelope(finalByName.get(archiveName)?.envelope, source.envelope)) {
-        throw new RequestError(`Taşıma sırasında arşiv değişti: ${archiveName}. Kesim yapılmadı; işlemi yeniden deneyin.`, 409);
-      }
-    }
-
-    return {
-      ok: true, verified: true, storage: 'neon', archiveCount: summary.length,
-      recordCount: summary.reduce((total, archive) => total + archive.records, 0),
-      encryptedBytes: summary.reduce((total, archive) => total + archive.encryptedBytes, 0),
-      archives: summary.map(({ name, records }) => ({ name, records }))
-    };
+    const archives = await listArchiveVersions();
+    return archives.filter((archive) => APPLICATION_ARCHIVE_PATTERN.test(archive.name))
+      .sort((a, b) => b.name.localeCompare(a.name));
   }
 
   async function getAllApplications() {
     const files = await getApplicationFiles();
-    const archives = await Promise.all(files.map((fileName) => getArchive(fileName)));
+    const archives = await Promise.all(files.map((file) => getArchive(file.name, file.stamp)));
     return archives.flatMap((archive) => archive.records)
       .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
   }
@@ -856,8 +725,8 @@ export default async function handler(req) {
   async function removeApplicationsFromArchives(predicate, message) {
     const files = await getApplicationFiles();
     const removed = [];
-    for (const fileName of files) {
-      const current = await getArchive(fileName);
+    for (const { name: fileName, stamp } of files) {
+      const current = await getArchive(fileName, stamp);
       if (!current.records.some(predicate)) continue;
       const deleted = await mutateArchive(fileName, (records) => {
         const matches = records.filter(predicate);
@@ -871,8 +740,15 @@ export default async function handler(req) {
   if (req.method === 'GET') {
     if (new URL(req.url).searchParams.get('action') === 'program-hours') {
       try {
-        const planning = await getArchive(PLANNING_FILE);
-        return json({ ok: true, slots: availableProgramSlots(planning.records), revision: programHours(planning.records).revision }, 200, cors);
+        const stamp = await archiveStamp(PLANNING_FILE);
+        if (!programHoursCache || programHoursCache.stamp !== stamp) {
+          const planning = await getArchive(PLANNING_FILE);
+          programHoursCache = {
+            stamp: planning.stamp,
+            body: { ok: true, slots: availableProgramSlots(planning.records), revision: programHours(planning.records).revision }
+          };
+        }
+        return json(programHoursCache.body, 200, cors);
       } catch (error) {
         logStorageError('program-hours', error);
         return json({ error: 'Ders saatleri yüklenemedi.' }, 503, cors);
@@ -903,23 +779,26 @@ export default async function handler(req) {
   if (req.method === 'POST') {
     let body = {};
     try { body = await req.json(); } catch (_) { return json({ error: 'İstek biçimi geçersiz.' }, 400, cors); }
+    if (!body || typeof body !== 'object' || Array.isArray(body)) return json({ error: 'İstek biçimi geçersiz.' }, 400, cors);
     requestAction = cleanText(body.action, 60) || 'POST';
 
     if (body.action === 'directory-login') {
       if (directoryPassword && directoryPassword.length < 12) {
         return json({ error: 'Liste şifresi yapılandırması geçersiz.' }, 503, cors);
       }
-      const password = cleanPassword(body.password);
-      const matches = password && (directoryPassword
-        ? await sameSecret(password, directoryPassword)
-        : await passwordMatches(password, DIRECTORY_PASSWORD_VERIFIER, DIRECTORY_PASSWORD_ITERATIONS));
-      if (!matches) {
-        return json({ error: 'Şifre eşleşmedi. Yeniden deneyin.' }, 401, cors);
-      }
-      const now = Math.floor(Date.now() / 1000);
-      const ttl = body.remember === true ? 14 * 24 * 60 * 60 : 2 * 60 * 60;
-      const token = await signJwt({ role: 'directory', iat: now, exp: now + ttl }, directoryJwtSecret);
-      return json({ ok: true, token, expiresAt: (now + ttl) * 1000 }, 200, cors);
+      return limitedLogin('liste', async () => {
+        const password = cleanPassword(body.password);
+        const matches = password && (directoryPassword
+          ? await sameSecret(password, directoryPassword)
+          : await passwordMatches(password, DIRECTORY_PASSWORD_VERIFIER, DIRECTORY_PASSWORD_ITERATIONS));
+        if (!matches) {
+          return json({ error: 'Şifre eşleşmedi. Yeniden deneyin.' }, 401, cors);
+        }
+        const now = Math.floor(Date.now() / 1000);
+        const ttl = body.remember === true ? 14 * 24 * 60 * 60 : 2 * 60 * 60;
+        const token = await signJwt({ role: 'directory', iat: now, exp: now + ttl }, directoryJwtSecret);
+        return json({ ok: true, token, expiresAt: (now + ttl) * 1000 }, 200, cors);
+      });
     }
 
     if (body.action === 'directory-search') {
@@ -1011,24 +890,26 @@ export default async function handler(req) {
       const username = normalizeUsername(body.username);
       const password = cleanPassword(body.password);
       if (!username || !password) return json({ error: 'Kullanıcı adı ve şifre gereklidir.' }, 400, cors);
-      try {
-        const planning = await getArchive(PLANNING_FILE);
-        const teacher = planning.records.find((item) => item.kind === 'teacher' && item.username === username);
-        let matches = false;
-        if (teacher) matches = await passwordMatches(password, teacher);
-        else await hashPassword(password, 'AAAAAAAAAAAAAAAAAAAAAA==');
-        if (!teacher || !matches || !teacher.active) {
-          return json({ error: 'Kullanıcı adı veya şifre hatalı.' }, 401, cors);
+      return limitedLogin('ogretmen', async () => {
+        try {
+          const planning = await getArchive(PLANNING_FILE);
+          const teacher = planning.records.find((item) => item.kind === 'teacher' && item.username === username);
+          let matches = false;
+          if (teacher) matches = await passwordMatches(password, teacher);
+          else await hashPassword(password, 'AAAAAAAAAAAAAAAAAAAAAA==');
+          if (!teacher || !matches || !teacher.active) {
+            return json({ error: 'Kullanıcı adı veya şifre hatalı.' }, 401, cors);
+          }
+          const now = Math.floor(Date.now() / 1000);
+          const token = await signJwt({
+            sub: teacher.id, role: 'teacher', name: teacher.name, iat: now, exp: now + (12 * 60 * 60)
+          }, jwtSecret);
+          return json({ ok: true, token, teacher: publicTeacher(teacher) }, 200, cors);
+        } catch (error) {
+          logStorageError('teacher-login', error);
+          return json({ error: 'Öğretmen oturumu şu anda açılamadı. Veri deposuna ulaşılamıyor; yöneticiye haber verin.' }, 500, cors);
         }
-        const now = Math.floor(Date.now() / 1000);
-        const token = await signJwt({
-          sub: teacher.id, role: 'teacher', name: teacher.name, iat: now, exp: now + (12 * 60 * 60)
-        }, jwtSecret);
-        return json({ ok: true, token, teacher: publicTeacher(teacher) }, 200, cors);
-      } catch (error) {
-        logStorageError('teacher-login', error);
-        return json({ error: 'Öğretmen oturumu şu anda açılamadı. Veri deposuna ulaşılamıyor; yöneticiye haber verin.' }, 500, cors);
-      }
+      });
     }
 
     if (body.action === 'teacher-data') {
@@ -1120,6 +1001,7 @@ export default async function handler(req) {
     const admin = await checkAdmin();
     if (!admin) return json({ error: 'Yetkisiz erişim.' }, 401, cors);
     historyActor = adminIdentity(admin);
+    showStorageDetail = true;
     deletingApplications = body.action === 'application-delete' ||
       (body.action === 'bulk-delete' && ['applications', 'demo'].includes(body.scope));
 
@@ -1139,14 +1021,6 @@ export default async function handler(req) {
         } }, 200, cors);
       } catch (error) {
         return failure(error, 'Öğrenci geçmişi yüklenemedi.');
-      }
-    }
-
-    if (body.action === 'applications-storage-migrate') {
-      try {
-        return json(await migrateEncryptedArchivesToNeon(), 200, cors);
-      } catch (error) {
-        return failure(error, 'Şifreli arşivler Neon veritabanına taşınamadı.');
       }
     }
 
